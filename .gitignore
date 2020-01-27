@@ -1,3 +1,14 @@
+netsim
+packages/**/load-dir
+packages/**/*_ns.py
+packages/**/namespaces
+packages/**/ncsc-out
+packages/**/private-jar
+packages/**/shared-jar
+state
+storedstate
+target
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

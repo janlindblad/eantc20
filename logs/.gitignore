@@ -1,0 +1,6 @@
+rollback*
+ncserr*
+*.log
+*.trace
+*.access
+
