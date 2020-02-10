@@ -1,0 +1,724 @@
+mkdir -p ncsc-out
+mkdir -p ../load-dir
+mkdir -p ../shared-jar
+mkdir -p ../private-jar
+rm -rf ../package-meta-data.xml
+if [ -x /Users/jlindbla/nso/5.3/support/ned-make-package-meta-data ]; then \
+	    /Users/jlindbla/nso/5.3/support/ned-make-package-meta-data package-meta-data.xml.in;         \
+	else                                                          \
+	    cp package-meta-data.xml.in ../package-meta-data.xml;                                                 \
+	fi
+--ncs-ned-id eos4230f_128-nc-1.0:eos4230f_128-nc-1.0
+chmod -w ../package-meta-data.xml
+/Users/jlindbla/nso/5.3/bin/ncsc --ncs-compile-bundle yang                       \
+                --ncs-device-dir ncsc-out                       \
+                                            \
+                --ncs-device-type netconf                       \
+                                                     \
+                --ncs-ned-id eos4230f_128-nc-1.0:eos4230f_128-nc-1.0                                   \
+                 &&                          \
+        cp ncsc-out/modules/fxs/*.fxs ../load-dir;
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/arista-intf-augments.yang:165: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/arista-intf-augments.yang:175: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-bgp-policy.yang:770: warning: The XPath expression references an undefined node: the node 'INLINE' from module 'openconfig-bgp-policy' (in node 'inline' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+yang/openconfig-bgp-policy.yang:770: warning: The when expression refers to descendant node 'INLINE', will probably not work as intended.
+yang/openconfig-bgp-policy.yang:829: warning: The XPath expression references an undefined node: the node 'REFERENCE' from module 'openconfig-bgp-policy' (in node 'reference' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+yang/openconfig-bgp-policy.yang:829: warning: The when expression refers to descendant node 'REFERENCE', will probably not work as intended.
+yang/openconfig-bgp-policy.yang:933: warning: The XPath expression references an undefined node: the node 'INLINE' from module 'openconfig-bgp-policy' (in node 'inline' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+yang/openconfig-bgp-policy.yang:933: warning: The when expression refers to descendant node 'INLINE', will probably not work as intended.
+yang/openconfig-bgp-policy.yang:994: warning: The XPath expression references an undefined node: the node 'REFERENCE' from module 'openconfig-bgp-policy' (in node 'reference' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+yang/openconfig-bgp-policy.yang:994: warning: The when expression refers to descendant node 'REFERENCE', will probably not work as intended.
+yang/openconfig-bgp-policy.yang:770: warning: The XPath expression references an undefined node: the node 'INLINE' from module 'openconfig-bgp-policy' (in node 'inline' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+yang/openconfig-bgp-policy.yang:770: warning: The when expression refers to descendant node 'INLINE', will probably not work as intended.
+yang/openconfig-bgp-policy.yang:829: warning: The XPath expression references an undefined node: the node 'REFERENCE' from module 'openconfig-bgp-policy' (in node 'reference' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+yang/openconfig-bgp-policy.yang:829: warning: The when expression refers to descendant node 'REFERENCE', will probably not work as intended.
+yang/openconfig-bgp-policy.yang:933: warning: The XPath expression references an undefined node: the node 'INLINE' from module 'openconfig-bgp-policy' (in node 'inline' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+yang/openconfig-bgp-policy.yang:933: warning: The when expression refers to descendant node 'INLINE', will probably not work as intended.
+yang/openconfig-bgp-policy.yang:994: warning: The XPath expression references an undefined node: the node 'REFERENCE' from module 'openconfig-bgp-policy' (in node 'reference' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+yang/openconfig-bgp-policy.yang:994: warning: The when expression refers to descendant node 'REFERENCE', will probably not work as intended.
+yang/openconfig-bgp-policy.yang:770: warning: The XPath expression references an undefined node: the node 'INLINE' from module 'openconfig-bgp-policy' (in node 'inline' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+yang/openconfig-bgp-policy.yang:770: warning: The when expression refers to descendant node 'INLINE', will probably not work as intended.
+yang/openconfig-bgp-policy.yang:829: warning: The XPath expression references an undefined node: the node 'REFERENCE' from module 'openconfig-bgp-policy' (in node 'reference' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+yang/openconfig-bgp-policy.yang:829: warning: The when expression refers to descendant node 'REFERENCE', will probably not work as intended.
+yang/openconfig-bgp-policy.yang:933: warning: The XPath expression references an undefined node: the node 'INLINE' from module 'openconfig-bgp-policy' (in node 'inline' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+yang/openconfig-bgp-policy.yang:933: warning: The when expression refers to descendant node 'INLINE', will probably not work as intended.
+yang/openconfig-bgp-policy.yang:994: warning: The XPath expression references an undefined node: the node 'REFERENCE' from module 'openconfig-bgp-policy' (in node 'reference' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+yang/openconfig-bgp-policy.yang:994: warning: The when expression refers to descendant node 'REFERENCE', will probably not work as intended.
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-bgp-policy.yang:770: warning: The XPath expression references an undefined node: the node 'INLINE' from module 'openconfig-bgp-policy' (in node 'inline' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+yang/openconfig-bgp-policy.yang:770: warning: The when expression refers to descendant node 'INLINE', will probably not work as intended.
+yang/openconfig-bgp-policy.yang:829: warning: The XPath expression references an undefined node: the node 'REFERENCE' from module 'openconfig-bgp-policy' (in node 'reference' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+yang/openconfig-bgp-policy.yang:829: warning: The when expression refers to descendant node 'REFERENCE', will probably not work as intended.
+yang/openconfig-bgp-policy.yang:933: warning: The XPath expression references an undefined node: the node 'INLINE' from module 'openconfig-bgp-policy' (in node 'inline' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+yang/openconfig-bgp-policy.yang:933: warning: The when expression refers to descendant node 'INLINE', will probably not work as intended.
+yang/openconfig-bgp-policy.yang:994: warning: The XPath expression references an undefined node: the node 'REFERENCE' from module 'openconfig-bgp-policy' (in node 'reference' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+yang/openconfig-bgp-policy.yang:994: warning: The when expression refers to descendant node 'REFERENCE', will probably not work as intended.
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/vlan-translation.yang:158: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/vlan-translation.yang:169: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/vlan-translation.yang:179: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+yang/vlan-translation.yang:189: warning: the node is config, but refers to a non-config node 'type' defined at yang/openconfig-interfaces.yang:341
+for f in `echo ../load-dir/*.fxs`; do \
+           n=`basename $f | sed 's/\.fxs//'`; \
+	   /Users/jlindbla/nso/5.3/bin/ncsc --java-disable-prefix --exclude-enums --fail-on-warnings --java-package com.example.eos4230f_128.namespaces --emit-java java/src/com/example/eos4230f_128/namespaces/${n}.java $f  || exit 1; \
+	   /Users/jlindbla/nso/5.3/bin/ncsc --emit-python ../python/eos4230f_128 $f  || exit 1; \
+	   true; \
+	done
+Warning: the following symbols have been suppressed due to a
+conflict with an enum or bit with the same mapped name but a different value:
+ 'inactive'.
+Use tailf:code-name on the conflicting enums, bits, or nodes
+to avoid the conflict.
+Warning: the following symbols have been suppressed due to a
+conflict with an enum or bit with the same mapped name but a different value:
+ 'enabled'.
+Use tailf:code-name on the conflicting enums, bits, or nodes
+to avoid the conflict.
+Warning: the following symbols have been suppressed due to a
+conflict with an enum or bit with the same mapped name but a different value:
+ 'DOWN', 'TESTING', 'UP'.
+Use tailf:code-name on the conflicting enums, bits, or nodes
+to avoid the conflict.
+Warning: the following symbols have been suppressed due to a
+conflict with an enum or bit with the same mapped name but a different value:
+ 'EXPLICIT_NULL', 'LOCAL', 'NO_PHP', 'OVERLOAD',
+ 'VALUE'.
+Use tailf:code-name on the conflicting enums, bits, or nodes
+to avoid the conflict.
+Warning: the following symbols have been suppressed due to a
+conflict with an enum or bit with the same mapped name but a different value:
+ 'P2MP', 'P2P'.
+Use tailf:code-name on the conflicting enums, bits, or nodes
+to avoid the conflict.
+Warning: the following symbols have been suppressed due to a
+conflict with an enum or bit with the same mapped name but a different value:
+ 'ACTIVE', 'EXPLICIT_NULL', 'LOCAL', 'NO_PHP',
+ 'OVERLOAD', 'UNKNOWN', 'VALUE'.
+Use tailf:code-name on the conflicting enums, bits, or nodes
+to avoid the conflict.
+Warning: the following symbols have been suppressed due to a
+conflict with an enum or bit with the same mapped name but a different value:
+ 'UNKNOWN'.
+Use tailf:code-name on the conflicting enums, bits, or nodes
+to avoid the conflict.
+Warning: the following symbols have been suppressed due to a
+conflict with an enum or bit with the same mapped name but a different value:
+ 'INVERT'.
+Use tailf:code-name on the conflicting enums, bits, or nodes
+to avoid the conflict.
+touch ncsc-out/.done
+cd java && ant -q all
+
+BUILD SUCCESSFUL
+Total time: 4 seconds
+/Applications/Xcode.app/Contents/Developer/usr/bin/make -C ../netsim  all
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-acl-deviations-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-acl-deviations-ann.yang"` \
+          -c -o arista-acl-deviations.fxs  ../src/yang/arista-acl-deviations.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-bgp-augments-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-bgp-augments-ann.yang"` \
+          -c -o arista-bgp-augments.fxs  ../src/yang/arista-bgp-augments.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-bgp-deviations-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-bgp-deviations-ann.yang"` \
+          -c -o arista-bgp-deviations.fxs  ../src/yang/arista-bgp-deviations.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-bgp-notsupported-deviations-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-bgp-notsupported-deviations-ann.yang"` \
+          -c -o arista-bgp-notsupported-deviations.fxs  ../src/yang/arista-bgp-notsupported-deviations.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-eos-types-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-eos-types-ann.yang"` \
+          -c -o arista-eos-types.fxs  ../src/yang/arista-eos-types.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-exp-eos-multicast-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-exp-eos-multicast-ann.yang"` \
+          -c -o arista-exp-eos-multicast.fxs  ../src/yang/arista-exp-eos-multicast.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-exp-eos-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-exp-eos-ann.yang"` \
+          -c -o arista-exp-eos.fxs  ../src/yang/arista-exp-eos.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-interfaces-notsupported-deviations-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-interfaces-notsupported-deviations-ann.yang"` \
+          -c -o arista-interfaces-notsupported-deviations.fxs  ../src/yang/arista-interfaces-notsupported-deviations.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-intf-augments-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-intf-augments-ann.yang"` \
+          -c -o arista-intf-augments.fxs  ../src/yang/arista-intf-augments.yang
+../src/yang/arista-intf-augments.yang:165: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/arista-intf-augments.yang:175: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-intf-deviations-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-intf-deviations-ann.yang"` \
+          -c -o arista-intf-deviations.fxs  ../src/yang/arista-intf-deviations.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-isis-augments-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-isis-augments-ann.yang"` \
+          -c -o arista-isis-augments.fxs  ../src/yang/arista-isis-augments.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-isis-deviations-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-isis-deviations-ann.yang"` \
+          -c -o arista-isis-deviations.fxs  ../src/yang/arista-isis-deviations.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-local-routing-deviations-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-local-routing-deviations-ann.yang"` \
+          -c -o arista-local-routing-deviations.fxs  ../src/yang/arista-local-routing-deviations.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-local-routing-notsupported-deviations-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-local-routing-notsupported-deviations-ann.yang"` \
+          -c -o arista-local-routing-notsupported-deviations.fxs  ../src/yang/arista-local-routing-notsupported-deviations.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-mpls-augments-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-mpls-augments-ann.yang"` \
+          -c -o arista-mpls-augments.fxs  ../src/yang/arista-mpls-augments.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-mpls-deviations-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-mpls-deviations-ann.yang"` \
+          -c -o arista-mpls-deviations.fxs  ../src/yang/arista-mpls-deviations.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-netinst-deviations-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-netinst-deviations-ann.yang"` \
+          -c -o arista-netinst-deviations.fxs  ../src/yang/arista-netinst-deviations.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-network-instance-notsupported-deviations-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-network-instance-notsupported-deviations-ann.yang"` \
+          -c -o arista-network-instance-notsupported-deviations.fxs  ../src/yang/arista-network-instance-notsupported-deviations.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-pim-augments-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-pim-augments-ann.yang"` \
+          -c -o arista-pim-augments.fxs  ../src/yang/arista-pim-augments.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-routing-policy-notsupported-deviations-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-routing-policy-notsupported-deviations-ann.yang"` \
+          -c -o arista-routing-policy-notsupported-deviations.fxs  ../src/yang/arista-routing-policy-notsupported-deviations.yang
+../src/yang/openconfig-bgp-policy.yang:770: warning: The XPath expression references an undefined node: the node 'INLINE' from module 'openconfig-bgp-policy' (in node 'inline' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+../src/yang/openconfig-bgp-policy.yang:770: warning: The when expression refers to descendant node 'INLINE', will probably not work as intended.
+../src/yang/openconfig-bgp-policy.yang:829: warning: The XPath expression references an undefined node: the node 'REFERENCE' from module 'openconfig-bgp-policy' (in node 'reference' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+../src/yang/openconfig-bgp-policy.yang:829: warning: The when expression refers to descendant node 'REFERENCE', will probably not work as intended.
+../src/yang/openconfig-bgp-policy.yang:933: warning: The XPath expression references an undefined node: the node 'INLINE' from module 'openconfig-bgp-policy' (in node 'inline' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+../src/yang/openconfig-bgp-policy.yang:933: warning: The when expression refers to descendant node 'INLINE', will probably not work as intended.
+../src/yang/openconfig-bgp-policy.yang:994: warning: The XPath expression references an undefined node: the node 'REFERENCE' from module 'openconfig-bgp-policy' (in node 'reference' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+../src/yang/openconfig-bgp-policy.yang:994: warning: The when expression refers to descendant node 'REFERENCE', will probably not work as intended.
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-rpol-augments-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-rpol-augments-ann.yang"` \
+          -c -o arista-rpol-augments.fxs  ../src/yang/arista-rpol-augments.yang
+../src/yang/openconfig-bgp-policy.yang:770: warning: The XPath expression references an undefined node: the node 'INLINE' from module 'openconfig-bgp-policy' (in node 'inline' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+../src/yang/openconfig-bgp-policy.yang:770: warning: The when expression refers to descendant node 'INLINE', will probably not work as intended.
+../src/yang/openconfig-bgp-policy.yang:829: warning: The XPath expression references an undefined node: the node 'REFERENCE' from module 'openconfig-bgp-policy' (in node 'reference' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+../src/yang/openconfig-bgp-policy.yang:829: warning: The when expression refers to descendant node 'REFERENCE', will probably not work as intended.
+../src/yang/openconfig-bgp-policy.yang:933: warning: The XPath expression references an undefined node: the node 'INLINE' from module 'openconfig-bgp-policy' (in node 'inline' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+../src/yang/openconfig-bgp-policy.yang:933: warning: The when expression refers to descendant node 'INLINE', will probably not work as intended.
+../src/yang/openconfig-bgp-policy.yang:994: warning: The when expression refers to descendant node 'REFERENCE', will probably not work as intended.
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-rpol-deviations-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-rpol-deviations-ann.yang"` \
+          -c -o arista-rpol-deviations.fxs  ../src/yang/arista-rpol-deviations.yang
+../src/yang/openconfig-bgp-policy.yang:770: warning: The XPath expression references an undefined node: the node 'INLINE' from module 'openconfig-bgp-policy' (in node 'inline' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+../src/yang/openconfig-bgp-policy.yang:770: warning: The when expression refers to descendant node 'INLINE', will probably not work as intended.
+../src/yang/openconfig-bgp-policy.yang:829: warning: The XPath expression references an undefined node: the node 'REFERENCE' from module 'openconfig-bgp-policy' (in node 'reference' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+../src/yang/openconfig-bgp-policy.yang:829: warning: The when expression refers to descendant node 'REFERENCE', will probably not work as intended.
+../src/yang/openconfig-bgp-policy.yang:933: warning: The XPath expression references an undefined node: the node 'INLINE' from module 'openconfig-bgp-policy' (in node 'inline' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+../src/yang/openconfig-bgp-policy.yang:933: warning: The when expression refers to descendant node 'INLINE', will probably not work as intended.
+../src/yang/openconfig-bgp-policy.yang:994: warning: The when expression refers to descendant node 'REFERENCE', will probably not work as intended.
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-srte-deviations-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-srte-deviations-ann.yang"` \
+          -c -o arista-srte-deviations.fxs  ../src/yang/arista-srte-deviations.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-vlan-augments-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-vlan-augments-ann.yang"` \
+          -c -o arista-vlan-augments.fxs  ../src/yang/arista-vlan-augments.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/arista-vlan-deviations-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/arista-vlan-deviations-ann.yang"` \
+          -c -o arista-vlan-deviations.fxs  ../src/yang/arista-vlan-deviations.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/iana-if-type-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/iana-if-type-ann.yang"` \
+          -c -o iana-if-type.fxs  ../src/yang/iana-if-type.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/ietf-interfaces-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/ietf-interfaces-ann.yang"` \
+          -c -o ietf-interfaces.fxs  ../src/yang/ietf-interfaces.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-acl-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-acl-ann.yang"` \
+          -c -o openconfig-acl.fxs  ../src/yang/openconfig-acl.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-aft-network-instance-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-aft-network-instance-ann.yang"` \
+          -c -o openconfig-aft-network-instance.fxs  ../src/yang/openconfig-aft-network-instance.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-aft-types-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-aft-types-ann.yang"` \
+          -c -o openconfig-aft-types.fxs  ../src/yang/openconfig-aft-types.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-aft-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-aft-ann.yang"` \
+          -c -o openconfig-aft.fxs  ../src/yang/openconfig-aft.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-bgp-evpn-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-bgp-evpn-ann.yang"` \
+          -c -o openconfig-bgp-evpn.fxs  ../src/yang/openconfig-bgp-evpn.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-bgp-policy-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-bgp-policy-ann.yang"` \
+          -c -o openconfig-bgp-policy.fxs  ../src/yang/openconfig-bgp-policy.yang
+../src/yang/openconfig-bgp-policy.yang:770: warning: The XPath expression references an undefined node: the node 'INLINE' from module 'openconfig-bgp-policy' (in node 'inline' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+../src/yang/openconfig-bgp-policy.yang:770: warning: The when expression refers to descendant node 'INLINE', will probably not work as intended.
+../src/yang/openconfig-bgp-policy.yang:829: warning: The XPath expression references an undefined node: the node 'REFERENCE' from module 'openconfig-bgp-policy' (in node 'reference' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+../src/yang/openconfig-bgp-policy.yang:829: warning: The when expression refers to descendant node 'REFERENCE', will probably not work as intended.
+../src/yang/openconfig-bgp-policy.yang:933: warning: The XPath expression references an undefined node: the node 'INLINE' from module 'openconfig-bgp-policy' (in node 'inline' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+../src/yang/openconfig-bgp-policy.yang:933: warning: The when expression refers to descendant node 'INLINE', will probably not work as intended.
+../src/yang/openconfig-bgp-policy.yang:994: warning: The XPath expression references an undefined node: the node 'REFERENCE' from module 'openconfig-bgp-policy' (in node 'reference' in module 'openconfig-bgp-policy' from 'openconfig-bgp-policy') is not found
+../src/yang/openconfig-bgp-policy.yang:994: warning: The when expression refers to descendant node 'REFERENCE', will probably not work as intended.
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-bgp-types-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-bgp-types-ann.yang"` \
+          -c -o openconfig-bgp-types.fxs  ../src/yang/openconfig-bgp-types.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-bgp-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-bgp-ann.yang"` \
+          -c -o openconfig-bgp.fxs  ../src/yang/openconfig-bgp.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-extensions-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-extensions-ann.yang"` \
+          -c -o openconfig-extensions.fxs  ../src/yang/openconfig-extensions.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-if-aggregate-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-if-aggregate-ann.yang"` \
+          -c -o openconfig-if-aggregate.fxs  ../src/yang/openconfig-if-aggregate.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-if-ethernet-ext-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-if-ethernet-ext-ann.yang"` \
+          -c -o openconfig-if-ethernet-ext.fxs  ../src/yang/openconfig-if-ethernet-ext.yang
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-if-ethernet-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-if-ethernet-ann.yang"` \
+          -c -o openconfig-if-ethernet.fxs  ../src/yang/openconfig-if-ethernet.yang
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-if-ip-ext-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-if-ip-ext-ann.yang"` \
+          -c -o openconfig-if-ip-ext.fxs  ../src/yang/openconfig-if-ip-ext.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-if-ip-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-if-ip-ann.yang"` \
+          -c -o openconfig-if-ip.fxs  ../src/yang/openconfig-if-ip.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-if-poe-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-if-poe-ann.yang"` \
+          -c -o openconfig-if-poe.fxs  ../src/yang/openconfig-if-poe.yang
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-if-tunnel-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-if-tunnel-ann.yang"` \
+          -c -o openconfig-if-tunnel.fxs  ../src/yang/openconfig-if-tunnel.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-if-types-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-if-types-ann.yang"` \
+          -c -o openconfig-if-types.fxs  ../src/yang/openconfig-if-types.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-igmp-types-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-igmp-types-ann.yang"` \
+          -c -o openconfig-igmp-types.fxs  ../src/yang/openconfig-igmp-types.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-igmp-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-igmp-ann.yang"` \
+          -c -o openconfig-igmp.fxs  ../src/yang/openconfig-igmp.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-inet-types-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-inet-types-ann.yang"` \
+          -c -o openconfig-inet-types.fxs  ../src/yang/openconfig-inet-types.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-interfaces-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-interfaces-ann.yang"` \
+          -c -o openconfig-interfaces.fxs  ../src/yang/openconfig-interfaces.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-isis-lsdb-types-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-isis-lsdb-types-ann.yang"` \
+          -c -o openconfig-isis-lsdb-types.fxs  ../src/yang/openconfig-isis-lsdb-types.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-isis-policy-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-isis-policy-ann.yang"` \
+          -c -o openconfig-isis-policy.fxs  ../src/yang/openconfig-isis-policy.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-isis-types-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-isis-types-ann.yang"` \
+          -c -o openconfig-isis-types.fxs  ../src/yang/openconfig-isis-types.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-isis-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-isis-ann.yang"` \
+          -c -o openconfig-isis.fxs  ../src/yang/openconfig-isis.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-local-routing-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-local-routing-ann.yang"` \
+          -c -o openconfig-local-routing.fxs  ../src/yang/openconfig-local-routing.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-mpls-ldp-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-mpls-ldp-ann.yang"` \
+          -c -o openconfig-mpls-ldp.fxs  ../src/yang/openconfig-mpls-ldp.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-mpls-rsvp-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-mpls-rsvp-ann.yang"` \
+          -c -o openconfig-mpls-rsvp.fxs  ../src/yang/openconfig-mpls-rsvp.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-mpls-sr-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-mpls-sr-ann.yang"` \
+          -c -o openconfig-mpls-sr.fxs  ../src/yang/openconfig-mpls-sr.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-mpls-types-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-mpls-types-ann.yang"` \
+          -c -o openconfig-mpls-types.fxs  ../src/yang/openconfig-mpls-types.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-mpls-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-mpls-ann.yang"` \
+          -c -o openconfig-mpls.fxs  ../src/yang/openconfig-mpls.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-network-instance-l3-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-network-instance-l3-ann.yang"` \
+          -c -o openconfig-network-instance-l3.fxs  ../src/yang/openconfig-network-instance-l3.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-network-instance-policy-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-network-instance-policy-ann.yang"` \
+          -c -o openconfig-network-instance-policy.fxs  ../src/yang/openconfig-network-instance-policy.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-network-instance-types-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-network-instance-types-ann.yang"` \
+          -c -o openconfig-network-instance-types.fxs  ../src/yang/openconfig-network-instance-types.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-network-instance-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-network-instance-ann.yang"` \
+          -c -o openconfig-network-instance.fxs  ../src/yang/openconfig-network-instance.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-ospf-policy-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-ospf-policy-ann.yang"` \
+          -c -o openconfig-ospf-policy.fxs  ../src/yang/openconfig-ospf-policy.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-ospf-types-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-ospf-types-ann.yang"` \
+          -c -o openconfig-ospf-types.fxs  ../src/yang/openconfig-ospf-types.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-ospfv2-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-ospfv2-ann.yang"` \
+          -c -o openconfig-ospfv2.fxs  ../src/yang/openconfig-ospfv2.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-packet-match-types-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-packet-match-types-ann.yang"` \
+          -c -o openconfig-packet-match-types.fxs  ../src/yang/openconfig-packet-match-types.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-packet-match-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-packet-match-ann.yang"` \
+          -c -o openconfig-packet-match.fxs  ../src/yang/openconfig-packet-match.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-pf-srte-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-pf-srte-ann.yang"` \
+          -c -o openconfig-pf-srte.fxs  ../src/yang/openconfig-pf-srte.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-pim-types-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-pim-types-ann.yang"` \
+          -c -o openconfig-pim-types.fxs  ../src/yang/openconfig-pim-types.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-pim-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-pim-ann.yang"` \
+          -c -o openconfig-pim.fxs  ../src/yang/openconfig-pim.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-policy-forwarding-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-policy-forwarding-ann.yang"` \
+          -c -o openconfig-policy-forwarding.fxs  ../src/yang/openconfig-policy-forwarding.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-policy-types-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-policy-types-ann.yang"` \
+          -c -o openconfig-policy-types.fxs  ../src/yang/openconfig-policy-types.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-rib-bgp-ext-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-rib-bgp-ext-ann.yang"` \
+          -c -o openconfig-rib-bgp-ext.fxs  ../src/yang/openconfig-rib-bgp-ext.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-rib-bgp-types-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-rib-bgp-types-ann.yang"` \
+          -c -o openconfig-rib-bgp-types.fxs  ../src/yang/openconfig-rib-bgp-types.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-rib-bgp-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-rib-bgp-ann.yang"` \
+          -c -o openconfig-rib-bgp.fxs  ../src/yang/openconfig-rib-bgp.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-routing-policy-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-routing-policy-ann.yang"` \
+          -c -o openconfig-routing-policy.fxs  ../src/yang/openconfig-routing-policy.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-rsvp-sr-ext-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-rsvp-sr-ext-ann.yang"` \
+          -c -o openconfig-rsvp-sr-ext.fxs  ../src/yang/openconfig-rsvp-sr-ext.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+../src/yang/openconfig-network-instance.yang:402: warning: The XPath expression references an undefined node: the node 'type' from module 'openconfig-network-instance' (in node 'network-instance' from 'openconfig-network-instance') is not found
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-segment-routing-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-segment-routing-ann.yang"` \
+          -c -o openconfig-segment-routing.fxs  ../src/yang/openconfig-segment-routing.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-types-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-types-ann.yang"` \
+          -c -o openconfig-types.fxs  ../src/yang/openconfig-types.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-vlan-types-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-vlan-types-ann.yang"` \
+          -c -o openconfig-vlan-types.fxs  ../src/yang/openconfig-vlan-types.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-vlan-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-vlan-ann.yang"` \
+          -c -o openconfig-vlan.fxs  ../src/yang/openconfig-vlan.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/openconfig-yang-types-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/openconfig-yang-types-ann.yang"` \
+          -c -o openconfig-yang-types.fxs  ../src/yang/openconfig-yang-types.yang
+/Users/jlindbla/nso/5.3/netsim/confd/bin/confdc --yangpath ../src/yang \
+          `ls ../src/yang/vlan-translation-ann.yang  > /dev/null 2>&1 && \
+              echo "-a ../src/yang/vlan-translation-ann.yang"` \
+          -c -o vlan-translation.fxs  ../src/yang/vlan-translation.yang
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-aggregate.yang:210: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/openconfig-if-ethernet.yang:433: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/vlan-translation.yang:158: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/vlan-translation.yang:169: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/vlan-translation.yang:179: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341
+../src/yang/vlan-translation.yang:189: warning: the node is config, but refers to a non-config node 'type' defined at ../src/yang/openconfig-interfaces.yang:341

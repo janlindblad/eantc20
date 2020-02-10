@@ -411,7 +411,7 @@ module openconfig-if-ip {
     }
     leaf link-layer-address {
      type oc-yang:phys-address;
-     mandatory true;
+     //JLINDBLA mandatory true;
      description
        "The link-layer address of the neighbor node.";
     }
@@ -592,7 +592,7 @@ module openconfig-if-ip {
 
     leaf link-layer-address {
       type oc-yang:phys-address;
-      mandatory true;
+      //JLINDBLA mandatory true;
       description
         "The link-layer address of the neighbor node.";
     }

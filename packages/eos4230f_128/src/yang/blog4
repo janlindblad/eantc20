@@ -1,0 +1,78 @@
+rm -rf ncsc-out ../load-dir ../shared-jar ../private-jar java/src/com/example/eos4230f_128/namespaces ../python/eos4230f_128
+rm -rf ../package-meta-data.xml
+/Applications/Xcode.app/Contents/Developer/usr/bin/make -C ../netsim clean
+cd java && ant -q clean || true
+
+BUILD SUCCESSFUL
+Total time: 0 seconds
+mkdir -p ncsc-out
+mkdir -p ../load-dir
+mkdir -p ../shared-jar
+mkdir -p ../private-jar
+mkdir -p java/src/com/example/eos4230f_128/namespaces
+mkdir -p ../python/eos4230f_128
+rm -rf ../package-meta-data.xml
+if [ -x /Users/jlindbla/nso/5.3/support/ned-make-package-meta-data ]; then \
+	    /Users/jlindbla/nso/5.3/support/ned-make-package-meta-data package-meta-data.xml.in;         \
+	else                                                          \
+	    cp package-meta-data.xml.in ../package-meta-data.xml;                                                 \
+	fi
+--ncs-ned-id eos4230f_128-nc-1.0:eos4230f_128-nc-1.0
+chmod -w ../package-meta-data.xml
+/Users/jlindbla/nso/5.3/bin/ncsc --ncs-compile-bundle yang                       \
+                --ncs-device-dir ncsc-out                       \
+                                            \
+                --ncs-device-type netconf                       \
+                                                     \
+                --ncs-ned-id eos4230f_128-nc-1.0:eos4230f_128-nc-1.0                                   \
+                 &&                          \
+        cp ncsc-out/modules/fxs/*.fxs ../load-dir;
+for f in `echo ../load-dir/*.fxs`; do \
+           n=`basename $f | sed 's/\.fxs//'`; \
+	   /Users/jlindbla/nso/5.3/bin/ncsc --java-disable-prefix --exclude-enums --fail-on-warnings --java-package com.example.eos4230f_128.namespaces --emit-java java/src/com/example/eos4230f_128/namespaces/${n}.java $f  || exit 1; \
+	   /Users/jlindbla/nso/5.3/bin/ncsc --emit-python ../python/eos4230f_128 $f  || exit 1; \
+	   true; \
+	done
+Warning: the following symbols have been suppressed due to a
+conflict with an enum or bit with the same mapped name but a different value:
+ 'inactive'.
+Use tailf:code-name on the conflicting enums, bits, or nodes
+to avoid the conflict.
+Warning: the following symbols have been suppressed due to a
+conflict with an enum or bit with the same mapped name but a different value:
+ 'enabled'.
+Use tailf:code-name on the conflicting enums, bits, or nodes
+to avoid the conflict.
+Warning: the following symbols have been suppressed due to a
+conflict with an enum or bit with the same mapped name but a different value:
+ 'DOWN', 'TESTING', 'UP'.
+Use tailf:code-name on the conflicting enums, bits, or nodes
+to avoid the conflict.
+Warning: the following symbols have been suppressed due to a
+conflict with an enum or bit with the same mapped name but a different value:
+ 'EXPLICIT_NULL', 'LOCAL', 'NO_PHP', 'OVERLOAD',
+ 'VALUE'.
+Use tailf:code-name on the conflicting enums, bits, or nodes
+to avoid the conflict.
+Warning: the following symbols have been suppressed due to a
+conflict with an enum or bit with the same mapped name but a different value:
+ 'P2MP', 'P2P'.
+Use tailf:code-name on the conflicting enums, bits, or nodes
+to avoid the conflict.
+Warning: the following symbols have been suppressed due to a
+conflict with an enum or bit with the same mapped name but a different value:
+ 'ACTIVE', 'EXPLICIT_NULL', 'LOCAL', 'NO_PHP',
+ 'OVERLOAD', 'UNKNOWN', 'VALUE'.
+Use tailf:code-name on the conflicting enums, bits, or nodes
+to avoid the conflict.
+Warning: the following symbols have been suppressed due to a
+conflict with an enum or bit with the same mapped name but a different value:
+ 'UNKNOWN'.
+Use tailf:code-name on the conflicting enums, bits, or nodes
+to avoid the conflict.
+Warning: the following symbols have been suppressed due to a
+conflict with an enum or bit with the same mapped name but a different value:
+ 'INVERT'.
+Use tailf:code-name on the conflicting enums, bits, or nodes
+to avoid the conflict.
+touch ncsc-out/.done
