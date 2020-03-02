@@ -1,0 +1,874 @@
+module metaswitch-yang-types {
+
+  namespace "http://metaswitch.com/yang/nbu/yang-types/201510290000Z";
+
+  prefix meta;
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Metaswitch yang data types";
+
+  revision 2015-10-29 {
+    description
+      "Second revision.";
+  }
+
+  revision 2015-09-17 {
+    description
+      "Initial revision.";
+  }
+
+
+  typedef oper-status {
+    type enumeration {
+      enum up {
+        description "Active";
+        value 1;
+      }
+      enum down {
+        description "Inactive";
+        value 2;
+      }
+      enum going-up {
+        description "Activating";
+        value 3;
+      }
+      enum going-down {
+        description "Deactivating";
+        value 4;
+      }
+      enum activation-failed {
+        description "Activation failed";
+        value 5;
+      }
+      enum quiescing {
+        description "Quiescing";
+        value 6;
+      }
+      enum not-ready {
+        description "Not ready to activate";
+        value 7;
+      }
+      enum failed {
+        description "Failed - will recover when possible";
+        value 8;
+      }
+      enum parent-failed {
+        description "A parent or ancestor has failed";
+        value 9;
+      }
+      enum failed-permanently {
+        description "Failed - operator intervention is required";
+        value 10;
+      }
+      enum failing {
+        description "Failure in progress";
+        value 11;
+      }
+    }
+    description
+      "Operational status";
+  }
+
+  typedef if-oper-status {
+    type enumeration {
+      enum up {
+        description
+          "Ready to pass packets";
+        value 1;
+      }
+      enum down {
+        description
+          "The interface does not pass any packets";
+        value 2;
+      }
+      enum testing {
+        description
+          "In some test mode.  No operational packets can be passed";
+        value 3;
+      }
+      enum unknown {
+        description
+          "Status cannot be determined for some reason";
+        value 4;
+      }
+      enum dormant {
+        description
+          "Waiting for some external event";
+        value 5;
+      }
+      enum not-present {
+        description
+          "Some component (typically hardware) is missing";
+        value 6;
+      }
+      enum lower-layer-down {
+        description
+          "Down due to state of lower-layer interface(s)";
+        value 7;
+      }
+    }
+    description
+      "Interface operational status";
+  }
+
+  typedef bfd-sess-state {
+    type enumeration {
+      enum not-required {
+        description
+          "A BFD session is not required";
+        value 0;
+      }
+      enum initial {
+        description
+          "A BFD session has not been activated";
+        value 1;
+      }
+      enum activating {
+        description
+          "The BFD session is activating";
+        value 2;
+      }
+      enum active {
+        description
+          "The BFD session is active";
+        value 3;
+      }
+      enum inactive {
+        description
+          "The BFD session is inactive";
+        value 4;
+      }
+      enum admin-down {
+        description
+          "The BFD session has been set to admin down";
+        value 5;
+      }
+      enum no-contact {
+        description
+          "The BFD session has not made contact with the remote peer";
+        value 6;
+      }
+    }
+    description
+      "BFD session states";
+  }
+
+  typedef name-string {
+    type meta:ascii-string {
+      length "1..64";
+    }
+    description
+      "WORD (1-64)";
+  }
+
+  typedef admin-status {
+    type enumeration {
+      enum up                               { value 1; description "Up"; }
+      enum down                             { value 2; description "Down"; }
+    }
+    description
+      "Admin status";
+  }
+
+  typedef basic-if-index {
+    type uint32 {
+      range "1..2147483647";
+    }
+    description
+      "(1-2147483647)";
+  }
+
+  typedef ascii-string {
+    type string {
+      pattern "[ -~]*" {
+        error-message "String must be ASCII";
+      }
+    }
+    description
+      "Printable ASCII string with no length restrictions.  Allowed
+      characters are 0x20 (space) - 0x7E (~).";
+  }
+
+  typedef dotted-quad {
+    type string {
+      pattern
+        '(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}' +
+        '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])';
+    }
+    description
+      "Dotted quad number (A.B.C.D)";
+  }
+
+  typedef mac-address {
+    type string {
+      pattern "([0-9a-fA-F]{2})(:[0-9a-fA-F]{2}){5}";
+    }
+    description
+      "MAC (XX:XX:XX:XX:XX:XX)";
+  }
+
+// A MAC address is defined as unicast or multicast based on the most
+// significant bit of the most significant byte.  If it is a 1, the address
+// is multicast; if it is a zero, the address is unicast.
+// The most significant byte is the left most byte in the address, and the most
+// significant bit is the right most bit of the byte (this is counter
+// intuitive to most binary implementations where the left most bit is usually
+// labeled most significant).
+
+  typedef unicast-mac-address {
+    type string {
+      pattern "([0-9a-fA-F][02468aceACE])(:[0-9a-fA-F]{2}){5}";
+    }
+    description
+      "MAC (XX:XX:XX:XX:XX:XX)";
+  }
+
+  typedef multicast-mac-address {
+    type string {
+      pattern "([0-9a-fA-F][13579bdfBDF])(:[0-9a-fA-F]{2}){5}";
+    }
+    description
+      "MAC (XX:XX:XX:XX:XX:XX)";
+  }
+
+  typedef vpn-id {
+    type string {
+      pattern "([0-9a-fA-F]{1,6})(:)([0-9a-fA-F]{1,8})";
+    }
+    description
+      "VPN ID (XXXXXX:XXXXXXXX)";
+  }
+
+  typedef router-id {
+    type string {
+      pattern
+        '(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}' +
+        '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])';
+    }
+    description
+      "Router ID (A.B.C.D)";
+  }
+
+  typedef ldp-id {
+    type string {
+      pattern
+        '(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}' +
+        '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]):' +
+        '((6553[0-5])|(655[0-2][0-9])|(65[0-4][0-9]{2})' +
+        '|(6[0-4][0-9]{3})|([1-5][0-9]{4})|([0-9]{1,4}))';
+    }
+    description
+      "LDP ID (A.B.C.D:IF IDX)";
+  }
+
+  typedef ro-if-index {
+    type uint32 {
+      range "1..2147483647";
+    }
+    description
+      "(1-2147483647)";
+  }
+
+  typedef ro-if-index-or-zero {
+    type uint32 {
+      range "0..2147483647";
+    }
+    description
+      "(0-2147483647)";
+  }
+
+  // The following typedef is taken from ietf-routing-types
+  typedef route-target-t {
+    type enumeration {
+      enum "import" {
+        value "0";
+        description
+          "The route target applies to route import.";
+       }
+      enum "export" {
+        value "1";
+        description
+          "The route target applies to route export.";
+       }
+      enum "both" {
+        value "2";
+        description
+          "The route target applies to both route import and
+           route export.";
+       }
+      enum "none" {
+        value "3";
+        description
+          "The route target applies to neither route import or
+           route export.";
+       }
+    }
+    description
+      "Indicates the role a route target takes
+       in route filtering.";
+    reference
+      "RFC4364: BGP/MPLS IP Virtual Private Networks (VPNs).";
+  }
+
+  // Low-level model info: Numbers need to be mapped to values in the AMB_Q0_UC_RT_PROTS group.  Note that this is a subset.
+  typedef route-protocols {
+    type enumeration {
+      enum other                            { value 1; }
+      enum local                            { value 2; }
+      enum static                           { value 3; }
+      enum icmp                             { value 4; }
+      enum egp                              { value 5; }
+      enum ggp                              { value 6; }
+      enum hello                            { value 7; }
+      enum rip                              { value 8; }
+      enum isis                             { value 9; }
+      enum esis                             { value 10; }
+      enum cisco-igrp                       { value 11; }
+      enum bbn-spf-igp                      { value 12; }
+      enum ospf                             { value 13; }
+      enum bgp                              { value 14; }
+      enum idpr                             { value 15; }
+      enum cisco-eigrp                      { value 16; }
+      enum dvmrp                            { value 17; }
+      enum lfa                              { value 18; }
+    }
+    description
+      "Route protocol";
+  }
+
+  // Low-level model info: Numbers need to be mapped to values in the ATG_QC_PATH_TYPES group.  Note that this is a subset for configuration.
+  // Low-level model info: The bgp-vpn type is rejected by RTM for a static route.
+  typedef route-path-types-cfg {
+    type enumeration {
+      enum connected                        { value 1; description "Route to directly connected IP address or subnet"; }
+      enum i3-local                         { value 2; description "Route to local IP address learned from I3"; }
+      enum i3-connected                     { value 3; description "Route to directly connected IP address or subnet learned from I3"; }
+      enum static                           { value 4; description "Static route"; }
+      enum rip                              { value 5; description "RIP route"; }
+      enum isis-level1-internal             { value 6; description "Level 1 route to dest internal to ISIS"; }
+      enum isis-level2-internal             { value 7; description "Level 2 route to dest internal to ISIS"; }
+      enum isis-level1-external             { value 8; description "Level 1 route to dest external to ISIS"; }
+      enum isis-level2-external             { value 9; description "Level 2 route to dest external to ISIS"; }
+      enum ospf-intra-area                  { value 10; description "Path to dest in attached OSPF area"; }
+      enum ospf-inter-area                  { value 11; description "Path to dest in another OSPF area "; }
+      enum ospf-type1-external              { value 12; description "Path to dest external to OSPF with metric in same units"; }
+      enum ospf-type2-external              { value 13; description "Path to dest external to OSPF with a much larger metric"; }
+      enum ospf-type1-nssa                  { value 14; description "Path to dest external to OSPF through NSSA with metric in same units"; }
+      enum ospf-type2-nssa                  { value 15; description "Path to dest external to OSPF through NSSA with a much larger metric"; }
+      enum bgp-internal                     { value 16; description "Path learned from iBGP peer"; }
+      enum bgp-external                     { value 17; description "Path learned from eBGP peer"; }
+      enum none                             { value 100; description "No path type associated with this route"; }
+    }
+    description
+      "Route path type";
+  }
+
+  // Low-level model info: Corresponds to the AMB_RTM_RM_RT_TYPE group.
+  // Superset of typedef route-path-types-cfg and can be used for state.
+  typedef route-path-types-all {
+    type enumeration {
+      enum none                             { value 0; description "No path type associated with this route"; }
+      enum other                            { value 1; description "Path type asscoiated with this route is unknown"; }
+      enum connected                        { value 2; description "Path is directly connected or to a static route"; }
+      enum i3-local                         { value 3; description "Path to address on a local interface"; }
+      enum i3-connected                     { value 4; description "Path to address directly connected to a local interface"; }
+      enum static                           { value 5; description "Path to static route"; }
+      enum ospf-intra-area                  { value 6; description "Path to dest in attached OSPF area"; }
+      enum ospf-inter-area                  { value 7; description "Path to dest in another OSPF area"; }
+      enum ospf-type1-external              { value 8; description "Path to dest external to OSPF with metric in same units"; }
+      enum ospf-type2-external              { value 9; description "Path to dest external to OSPF with a much larger metric"; }
+      enum ospf-type1-nssa                  { value 10; description "Path to dest external to OSPF through NSSA with metric in same units"; }
+      enum ospf-type2-nssa                  { value 11; description "Path to dest external to OSPF through NSSA with a much larger metric"; }
+      enum bgp-internal                     { value 12; description "Path learned from iBGP peer"; }
+      enum bgp-external                     { value 13; description "Path learned from eBGP peer"; }
+      enum bgp-vpn                          { value 14; description "Path to a VPN destination"; }
+      enum isis-level1-internal             { value 15; description "Level 1 route to dest internal to ISIS"; }
+      enum isis-level2-internal             { value 16; description "Level 2 route to dest internal to ISIS"; }
+      enum isis-level1-external             { value 17; description "Level 1 route to dest external to ISIS"; }
+      enum isis-level2-external             { value 18; description "Level 2 route to dest external to ISIS"; }
+      enum igrp                             { value 19; description "IGRP Route"; }
+      enum rip                              { value 20; description "RIP Route"; }
+      enum hello                            { value 21; description "HELLO protocol Route"; }
+      enum egp                              { value 22; description "EGP Route"; }
+      enum ggp                              { value 23; description "GGP Route"; }
+      enum eigpr-summary                    { value 24; description "Enhanced IGRP summary route"; }
+      enum eigpr-internal                   { value 25; description "Enhanced internal IGRP route"; }
+      enum eigpr-external                   { value 26; description "Enhanced external IGRP route"; }
+      enum esis                             { value 27; description "ESIS route"; }
+      enum bbn-spf-igp                      { value 28; description "BBNSPFIGP route"; }
+      enum idpr                             { value 29; description "IDRP route"; }
+      enum dvmrp                            { value 30; description "DVMRP route"; }
+      enum icmp                             { value 31; description "ICMP route"; }
+      enum lfa                              { value 32; description "LFA route"; }
+      enum summ-addr                        { value 33; description "Summary address generated locally"; }
+      enum def-info-orig                    { value 34; description "Default route generated locally"; }
+      enum local                            { value 35; description "Locally generated route"; }
+    }
+    description
+      "Route map path type";
+  }
+
+
+
+  typedef ip-prefix-name {
+    type ascii-string {
+      length "1..32";
+    }
+    description
+      "WORD (1-32)";
+  }
+
+  typedef route-map-name {
+    type ascii-string {
+      length "1..32";
+    }
+    description
+      "WORD (1-32)";
+  }
+
+  typedef route-map-action {
+    type enumeration {
+      enum permit                          { value 1; description "Permit"; }
+      enum deny                            { value 2; description "Deny"; }
+    }
+    description
+      "Route map action";
+  }
+
+  // IPv4 Unicast address in the range 0.0.0.0 - 223.255.255.255
+  typedef ipv4-unicast-address {
+    type string {
+      pattern
+        '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-1][0-9]|22[0-3])' +
+        '(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}';
+    }
+    description
+      "IPv4 Unicast (A.B.C.D)";
+  }
+
+  // IPv4 Multicast address in the range 224.0.0.0/4
+  typedef ipv4-multicast-address {
+    type string {
+      pattern
+        '(2((2[4-9])|(3[0-9])))' +
+        '(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}';
+    }
+    description
+      "IPv4 Multicast (A.B.C.D)";
+  }
+
+  // IPv4 Multicast prefix in the range 224.0.0.0/4
+  typedef ipv4-multicast-prefix {
+    type string {
+      pattern
+        '(2((2[4-9])|(3[0-9])))' +
+        '(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}' +
+        '/(([4-9])|([1-2][0-9])|(3[0-2]))';
+    }
+    description
+      "IPv4 Multicast (A.B.C.D/N)";
+  }
+
+  // IPv4 prefix with a prefix length up to 31 (so not a full prefix)
+  typedef ipv4-short-prefix {
+    type string {
+      pattern
+        '(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}' +
+        '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])' +
+        '/(([0-9])|([1-2][0-9])|(3[0-1]))';
+    }
+    description
+      "IPv4 Prefix (A.B.C.D/N) with N < 32";
+  }
+
+  // IPv6 Multicast address in the range FF00::/8
+  // This uses any of the full, mixed, shortened or shortened mixed styles.
+  typedef ipv6-multicast-address {
+    type string {
+      pattern
+        '(((FF|ff)[0-9a-fA-F]{2}):)' +
+        '([0-9a-fA-F]{0,4}:){0,5}' +
+        '((([0-9a-fA-F]{0,4}:)?(:|[0-9a-fA-F]{0,4}))|' +
+        '(((25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.){3}' +
+        '(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])))';
+
+      pattern
+        '(([^:]+:){6}(([^:]+:[^:]+)|(.*\..*)))|' +
+        '((([^:]+:)*[^:]+)?::(([^:]+:)*[^:]+)?)' +
+        '(%.+)?';
+    }
+    description
+      "IPv6 Multicast (X:X:X:X::X)";
+  }
+
+  // IPv6 Multicast prefix in the range FF00::/8
+  // This uses any of the full, mixed, shortened or shortened mixed styles.
+  typedef ipv6-multicast-prefix {
+    type string {
+      pattern
+        '(((FF|ff)[0-9a-fA-F]{2}):)' +
+        '([0-9a-fA-F]{0,4}:){0,5}' +
+        '((([0-9a-fA-F]{0,4}:)?(:|[0-9a-fA-F]{0,4}))|' +
+        '(((25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.){3}' +
+        '(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])))' +
+        '(/(([8-9])|([0-9]{2})|(1[0-1][0-9])|(12[0-8])))';
+
+      pattern
+        '(([^:]+:){6}(([^:]+:[^:]+)|(.*\..*)))|' +
+        '((([^:]+:)*[^:]+)?::(([^:]+:)*[^:]+)?)' +
+        '(/.+)';
+    }
+    description
+      "IPv6 Multicast (X:X:X:X::X/N)";
+  }
+
+  // IPv6 prefix with a prefix length up to 127 (so not a full prefix)
+  typedef ipv6-short-prefix {
+    type string {
+      pattern
+        '((:|[0-9a-fA-F]{0,4}):)([0-9a-fA-F]{0,4}:){0,5}' +
+        '((([0-9a-fA-F]{0,4}:)?(:|[0-9a-fA-F]{0,4}))|' +
+        '(((25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.){3}'+
+        '(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])))' +
+        '(/(([0-9])|([0-9]{2})|(1[0-1][0-9])|(12[0-7])))';
+      pattern
+        '(([^:]+:){6}(([^:]+:[^:]+)|(.*\..*)))|' +
+        '((([^:]+:)*[^:]+)?::(([^:]+:)*[^:]+)?)' +
+        '(/.+)';
+    }
+    description
+      "IPv6 Prefix (X:X:X:X::X/N) with N < 128";
+  }
+
+  typedef ip-multicast-address {
+    type union {
+      type ipv4-multicast-address;
+      type ipv6-multicast-address;
+    }
+    description
+     "IPv4 or IPv6 multicast address (A.B.C.D or X:X:X:X::X).";
+  }
+
+  typedef l3vpn-vrf-name {
+    type ascii-string {
+      length "1..31";
+    }
+    description
+      "VRF name (length: 1-31 characters)";
+  }
+
+  typedef l3vpn-vrf-description {
+    type meta:ascii-string {
+      length "1..255";
+    }
+    description
+      "WORD (1-255)";
+  }
+
+  typedef route-target-value-t {
+    type string {
+      pattern '((((429496729[0-5]|42949672[0-8][0-9]|4294967[0-1][0-9]{2}|429496[0-6][0-9]{3}|42949[0-5][0-9]{4}|4294[0-8][0-9]{5}|429[0-3][0-9]{6}|42[0-8][0-9]{7}|4[0-1][0-9]{8}|[1-3][0-9]{9}|[0-9]{1,9})'
+            + '|(((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])))(:)'
+            + '(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[0-9][0-9]{0,3}))|'
+            + '((6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{0,3})(:)'
+            + '(429496729[0-5]|42949672[0-8][0-9]|4294967[0-1][0-9]{2}|429496[0-6][0-9]{3}|42949[0-5][0-9]{4}|4294[0-8][0-9]{5}|429[0-3][0-9]{6}|42[0-8][0-9]{7}|4[0-1][0-9]{8}|[1-3][0-9]{9}|[0-9]{1,9}))|'
+            + '(([0-9a-fA-F]{1,2})(:[0-9a-fA-F]{1,2}){5}))';
+    }
+    description
+      "BGP route target (AS:nr) or (IP:nr) or (ES import)";
+  }
+
+  typedef vpn-rt-value-t {
+    type string {
+      pattern '((((429496729[0-5]|42949672[0-8][0-9]|4294967[0-1][0-9]{2}|429496[0-6][0-9]{3}|42949[0-5][0-9]{4}|4294[0-8][0-9]{5}|429[0-3][0-9]{6}|42[0-8][0-9]{7}|4[0-1][0-9]{8}|[1-3][0-9]{9}|[0-9]{1,9})'
+            + '|(((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])))(:)'
+            + '(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[0-9][0-9]{0,3}))|'
+            + '((6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{0,3})(:)'
+            + '(429496729[0-5]|42949672[0-8][0-9]|4294967[0-1][0-9]{2}|429496[0-6][0-9]{3}|42949[0-5][0-9]{4}|4294[0-8][0-9]{5}|429[0-3][0-9]{6}|42[0-8][0-9]{7}|4[0-1][0-9]{8}|[1-3][0-9]{9}|[0-9]{1,9})))';
+    }
+    description
+      "BGP route target (AS:nr) or (IP:nr)";
+  }
+
+  typedef bfd-sess-states {
+    type enumeration {
+      enum not-required                     { value 0; }
+      enum initial                          { value 1; }
+      enum activating                       { value 2; }
+      enum active                           { value 3; }
+      enum inactive                         { value 4; }
+      enum admin-down                       { value 5; }
+      enum no-contact                       { value 6; }
+    }
+    description
+      "BFD session states.";
+  }
+
+  // RFC 1997 reserves the community values 0x0000000 through 0x0000FFFF and 0xFFFF0000 through 0xFFFFFFFF.
+  // However, we allow the full 0x0000000 through 0xFFFFFFFF range (using either the nr or AS:nr methods).
+  typedef bgp-community {
+    type string {
+      pattern '(((6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[0-9]{1,4})(:)(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[0-9]{1,4}))|'
+             + '(429496729[0-5]|42949672[0-8][0-9]|4294967[0-1][0-9]{2}|429496[0-6][0-9]{3}|42949[0-5][0-9]{4}|4294[0-8][0-9]{5}|429[0-3][0-9]{6}|42[0-8][0-9]{7}|4[0-1][0-9]{8}|[1-3][0-9]{9}|[0-9]{1,9}))';
+    }
+
+    description "BGP COMMUNITY (nr (0-4294967295) or AS:nr (0-65535:0-65535))";
+  }
+
+  typedef bgp-extended-community {
+    type string {
+      pattern '(((6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[0-9]{1,4})(:)(429496729[0-5]|42949672[0-8][0-9]|4294967[0-1][0-9]{2}|429496[0-6][0-9]{3}|42949[0-5][0-9]{4}|4294[0-8][0-9]{5}|429[0-3][0-9]{6}|42[0-8][0-9]{7}|4[0-1][0-9]{8}|[1-3][0-9]{9}|[0-9]{1,9}))|'
+             + '((((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]))(:)(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[0-9]{1,4}))|'
+             + '((429496729[0-5]|42949672[0-8][0-9]|4294967[0-1][0-9]{2}|429496[0-6][0-9]{3}|42949[0-5][0-9]{4}|4294[0-8][0-9]{5}|429[0-3][0-9]{6}|42[0-8][0-9]{7}|4[0-1][0-9]{8}|[1-3][0-9]{9}|[0-9]{0,9})(:)(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[0-9]{1,4})))';
+    }
+
+    description
+      "BGP EXT COMM (AS(0-65535):nr(0-4294967295)) or (IPv4):nr(0-65535)) or (AS(0-4294967295):nr(0-65535))";
+  }
+
+  typedef bgp-route-distinguisher {
+    // Low-level model info:
+    // Route Distinguishers are defined in RFC 4364 section 4, and their
+    // encoding is specified in RFC 4364 section 4.2.  They consist of a 2 byte
+    // type field followed by a 6 byte value field.  The format of the value
+    // field depends on the type field value.  Three types are defined:
+    //
+    // - Type 0:  <2-byte AS number : 4-byte assigned number>
+    // - Type 1:  <4-byte IPv4 address : 2-byte assigned number>
+    // - Type 2:  <4-byte AS number : 2-byte assigned number>.
+    //
+    // The Type field is not encoded in the Yang, but derived from the
+    // format of the Route Distinguisher value passed in.
+    //
+    // Note that Route Distinguishers are NOT BGP extended communities.
+    // BGP extended communities are defined in RFC 4360 and their encoding
+    // is different.
+    // (Route Targets are also defined in RFCs 4360 and 4364 and they ARE BGP
+    // extended communities, but Route Distinguishers and Route Targets occur
+    // in different parts of BGP messages and serve different purposes.)
+
+    type string {
+      pattern '(((6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[0-9]{1,4})(:)(429496729[0-5]|42949672[0-8][0-9]|4294967[0-1][0-9]{2}|429496[0-6][0-9]{3}|42949[0-5][0-9]{4}|4294[0-8][0-9]{5}|429[0-3][0-9]{6}|42[0-8][0-9]{7}|4[0-1][0-9]{8}|[1-3][0-9]{9}|[0-9]{1,9}))|'
+             + '((((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]))(:)(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[0-9]{1,4}))|'
+             + '((429496729[0-5]|42949672[0-8][0-9]|4294967[0-1][0-9]{2}|429496[0-6][0-9]{3}|42949[0-5][0-9]{4}|4294[0-8][0-9]{5}|429[0-3][0-9]{6}|42[0-8][0-9]{7}|4[0-1][0-9]{8}|[1-3][0-9]{9}|[0-9]{1,9})(:)(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[0-9]{1,4})))';
+    }
+
+    description
+      "BGP RD (AS(0-65535):nr(0-4294967295)) or (IPv4):nr(0-65535)) or (AS(0-4294967295):nr(0-65535))";
+  }
+
+  typedef igp-shortcut-metric-type {
+    description
+      "IGP shortcut metric type";
+    type enumeration {
+      enum absolute                     { value 1; }
+      enum relative                     { value 2; }
+    }
+  }
+
+  typedef bandwidth-kbps {
+    type uint32 {
+        range "0..4294967295";
+    }
+    units "Kbps";
+    description
+      "Units in kilobits per second";
+  }
+
+  typedef bandwidth-units-t {
+    type enumeration {
+      enum bps;
+      enum kbps;
+      enum mbps;
+      enum gbps;
+    }
+    description "Supported units:
+                 bps          - units in bits/second
+                 kbps         - units in kilobits/second
+                 mbps         - units in Megabits/second
+                 gbps         - units in Gigabits/second";
+  }
+
+  typedef timer-units-t {
+    type enumeration {
+      enum seconds;
+      enum minutes;
+      enum hours;
+    }
+    description "Supported units:
+                 seconds      - units in seconds
+                 minutes      - units in minutes
+                 hours        - units in hours";
+  }
+
+  // VLAN ID HARDWARE NOTE: VLAN IDs are restricted to 1-4092 with 4093 and
+  // 4094 regarded as reserved.  If your hardware has different reserved VLAN
+  // Ids or is able to support a range of 1-4094, then you should change the
+  // typedef pattern here and any corresponding help text.
+
+  typedef vlan-id-ranges {
+    type string {
+      length "0..127";
+      pattern '(([1-9][0-9]{0,2}|[1-3][0-9]{3}|40[0-8][0-9]|409[0-2])(-([1-9][0-9]{0,2}|[1-3][0-9]{3}|40[0-8][0-9]|409[0-2]))?' +
+               '(,([1-9][0-9]{0,2}|[1-3][0-9]{3}|40[0-8][0-9]|409[0-2])(-([1-9][0-9]{0,2}|[1-3][0-9]{3}|40[0-8][0-9]|409[0-2]))?)*)';
+    }
+    description "A list of VLAN IDs and/or non-overlapping hyphen-separated VLAN ID ranges
+                 between 1 and 4092.  For example 1, 2-10, 30, 400-500";
+  }
+
+  typedef vid-range-type {
+    /*
+     * Defines the type used to represent a VLAN ID or range of VLAN IDs.
+     *
+     * Ideally we would model that as a list of VLAN IDs in YANG,
+     * but the model is easier to use if this is just represented
+     * as a string.
+     *
+     */
+    type string {
+      pattern "(([1-9][0-9]{0,2}|[1-3][0-9]{3}|40[0-8][0-9]|409[0-2])" +
+              "(-([1-9][0-9]{0,2}|[1-3][0-9]{3}|40[0-8][0-9]|409[0-2]))?)";
+    }
+    description
+      "A VLAN ID or a single VLAN ID range, between 1 and 4092.
+
+       This type is used to match an VLAN IDs or a range of VLANs.
+       Valid VLAN IDs must be in the range 1 to 4092.
+
+       For example: 10-100";
+  }
+
+  typedef monitor-refresh-interval-t {
+    type uint32 {
+      range "1..3600";
+    }
+    description
+      "(1-3600)";
+  }
+
+  typedef mpls-lsp-name-string {
+    type string {
+      length "1..64";
+    }
+    description
+      "WORD (1-64)";
+  }
+
+  typedef mpls-label-integer-t {
+    type uint32 {
+      range "16..1048575";
+    }
+    description
+      "MPLS Integer label (16..1048575)";
+  }
+
+  typedef mpls-label-string-t {
+    type string {
+      length "0..16";
+    }
+    description
+      "MPLS String label (length: 0-16 characters)";
+  }
+
+  typedef mpls-label-binary-t {
+    type binary {
+      length "0..16";
+    }
+    description
+      "MPLS Binary label (length: 0-16)";
+  }
+
+  typedef mpls-label-state-integer-t {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "MPLS Integer label type for state (range allows for the Implicit
+      and Explicit Null label values)";
+  }
+
+  typedef mpls-exp-value-t {
+    type uint8 {
+      range "0..7";
+    }
+    description
+      "0-7";
+  }
+
+  typedef l2vpn-pw-type-t {
+    type enumeration {
+      enum frame-relay-dlci                { value 1; description "Frame Relay DLCI"; }
+      enum atm-aal5-sdu-vcc                { value 2; description "ATM AAL5 SDU VCC"; }
+      enum atm-transparent                 { value 3; description "Transparent ATM"; }
+      enum ethernet-tagged                 { value 4; description "Tagged Ethernet"; }
+      enum ethernet                        { value 5; description "Ethernet"; }
+      enum hdlc                            { value 6; description "HDLC"; }
+      enum ppp                             { value 7; description "PPP"; }
+      enum cem                             { value 8; description "CEM"; }
+      enum atm-cell-n-to-1-vcc             { value 9; description "ATM N to 1 VCC cell"; }
+      enum atm-cell-n-to-1-vpc             { value 10; description "ATM N to 1 VPC cell"; }
+      enum ip-layer2-transport             { value 11; description "IP layer 2 transport"; }
+      enum atm-cell-1-to-1-vcc             { value 12; description "ATM 1 to 1 VCC cell"; }
+      enum atm-cell-1-to-1-vpc             { value 13; description "ATM 1 to 1 VPC cell"; }
+      enum atm-aal5-pdu-vcc                { value 14; description "ATM AAL5 PDU VCC"; }
+      enum frame-relay-port-mode           { value 15; description "Frame Relay Port mode"; }
+      enum cep                             { value 16; description "CEP"; }
+      enum e1-satop                        { value 17; description "E1 SAToP"; }
+      enum t1-satop                        { value 18; description "T1 SAToP"; }
+      enum e3-satop                        { value 19; description "E3 SAToP"; }
+      enum t3-satop                        { value 20; description "T3 SAToP"; }
+      enum basic-ces-psn                   { value 21; description "Basic CES PSN"; }
+      enum basic-tdm-ip                    { value 22; description "Basic TDM IP"; }
+      enum tdm-cas-ces-psn                 { value 23; description "TDM CAS CES PSN"; }
+      enum tdm-cas-tdm-ip                  { value 24; description "TDM CAS TDM IP"; }
+      enum fr-dlci                         { value 25; description "Frame Relay DLCI"; }
+      enum other                           { value 100; description "Other"; }
+    }
+    description
+      "Pseudowire type";
+  }
+
+  typedef l2vpn-pw-id-t {
+    type uint32 {
+        range "1..1073741823";
+      }
+    description
+      "(1-1073741823)";
+  }
+
+  typedef l2vpn-pw-gen-id-type-t {
+    type uint32 {
+        range "0..254";
+      }
+    description
+      "Generalized PW ID type (0-254)";
+  }
+
+  typedef l2vpn-pw-attachment-id-t {
+    type binary {
+      length "0..255";
+    }
+    description
+      "Generalized PW Attachment ID (length: 0-255)";
+  }
+
+  typedef tunnel-lsp-id-t {
+    type uint16 {
+      range "0..65535";
+    }
+    description
+      "RSVP Tunnel ID and Tunnel LSP ID fields.";
+  }
+
+} // metaswitch-yang-types
+

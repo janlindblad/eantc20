@@ -1,0 +1,85 @@
+<config-template xmlns="http://tail-f.com/ns/config/1.0">
+ <devices xmlns="http://tail-f.com/ns/ncs">
+  <device tags="nocreate">
+    <name>{$DEVICE}</name>
+      <config>
+
+        <!-- ECI -->
+        <!--?ned-id eci6-nc-1.0:eci6-nc-1.0?>
+        <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+          <interface tags="merge">
+            <name>{$INTERFACE}.{$VLANID}</name>
+            <type xmlns:eci-if-aug="urn:eci:params:xml:ns:yang:eci-interfaces-aug">eci-if-aug:pif-lif</type>
+            <vlan-tagged xmlns="urn:eci:params:xml:ns:yang:eci-interfaces-aug"></vlan-tagged>
+            <pif-lif xmlns="urn:eci:params:xml:ns:yang:eci-interfaces-aug">
+              <vlans>{$VLANID}</vlans>
+            </pif-lif>
+            <bind-ni-name xmlns="urn:ietf:params:xml:ns:yang:ietf-network-instance">{$VPN_NAME}</bind-ni-name>
+            <ipv4 xmlns="urn:ietf:params:xml:ns:yang:ietf-ip">
+              <address>
+                <ip>{$NET}</ip>
+                <netmask>{$MASK}</netmask>
+              </address>
+            </ipv4>
+            <ipv6 xmlns="urn:ietf:params:xml:ns:yang:ietf-ip"/>
+          </interface>
+        </interfaces-->
+        <!-- END ECI -->
+
+        <!-- ERICSSON -->
+        <!--?ned-id eri0-nc-1.0:eri0-nc-1.0?>
+        <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+          <interface tags="nocreate">
+            <name>{$PHYS_INTERFACE}</name>
+            <type tags="merge" xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">ianaift:ethernetCsmacd</type>
+            <enabled tags="merge">true</enabled>
+            <ethernet tags="merge" xmlns="urn:rdns:com:ericsson:oammodel:ericsson-ethernet-ext-router6000">
+              <bind-interface>
+                <intf-name>{$INTERFACE}</intf-name>
+                <intf-ctx>vpn{$VPN_NAME}</intf-ctx>
+              </bind-interface>
+              <port-type>10ge</port-type>
+            </ethernet>
+          </interface>
+          <interface tags="merge">
+            <name>{$INTERFACE}</name>
+            <type xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">ianaift:ipForward</type>
+            <l3-interface xmlns="urn:rdns:com:ericsson:oammodel:ericsson-interfaces-ext-router6000">
+              <ip>
+                <address>
+                  <addr-primary>
+                    <addr>{$NET}/{$PREFIXLEN}</addr>
+                  </addr-primary>
+                </address>
+              </ip>
+              <context>vpn{$VPN_NAME}</context>
+            </l3-interface>
+          </interface>
+        </interfaces-->
+        <!-- END ERICSSON -->
+
+        <!-- CISCO XR -->
+        <!--?ned-id xr-5500a-nc-1.0:xr-5500a-nc-1.0?>
+        <interface-configurations xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-ifmgr-cfg">
+          <interface-configuration>
+            <active>act</active>
+            <interface-name>GigabitEthernet0/{$INTERFACE}</interface-name>
+            <vrf xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-infra-rsi-cfg" tags="merge">{$VPN_NAME}</vrf>
+            <ipv4-network xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-ipv4-io-cfg" tags="merge">
+              <addresses>
+                <primary>
+                  <address>20.46.174.46</address>
+                  <netmask>{$MASK}</netmask>
+                </primary>
+              </addresses>
+            </ipv4-network>
+          </interface-configuration>
+        </interface-configurations-->
+        <!-- END CISCO XR -->
+
+        <!-- OTHER VENDOR -->
+
+      </config>
+    </device>
+  </devices>
+</config-template>

@@ -1,0 +1,3679 @@
+module interfaces
+{
+    namespace "http://metaswitch.com/yang/nbu/interfaces/201510090000Z";
+
+    prefix "interfaces";
+
+    import user-extensions { prefix "user-ext"; }
+    import metaswitch-custom-yang-types { prefix "custom"; }
+
+    description "Interfaces YANG module.";
+
+    revision 2015-10-09
+    {
+        description "Draft variant of Interfaces";
+    }
+
+    feature standard-interfaces {
+      description
+        "This feature means that the device supports standard interfaces.";
+    }
+
+    feature custom-interfaces {
+      description
+        "This feature means that the device supports of interfaces using
+         a custom model.";
+    }
+
+    typedef iface-base-name
+    {
+        type string;
+        description
+            "The interface base name.
+
+            Every interface has a base name and an extended ID that together
+            identify the interface.
+
+            Interface configuration consists of a separate interface list
+            for each interface type, with the list name giving the interface's
+            base name.
+
+            Interface base names include:
+            - gigabitethernet
+            - gigabitethernet-sub
+            - tengigabitethernet
+            - tengigabitethernet-sub
+            - fortygigabitethernet
+            - fortygigabitethernet-sub
+            - hundredgigabitethernet
+            - hundredgigabitethernet-sub
+            - bundle-ether
+            - bundle-ether-sub
+            - tunnel-gre.";
+    }
+
+    typedef iface-name
+    {
+      type string
+      {
+        length "1..255";
+      }
+      description
+        "WORD (1-255)";
+    }
+
+    typedef iface-ext-id
+    {
+        type string;
+        description
+            "The interface extended ID.
+
+            Every interface has a base name and an extended ID that together
+            identify the interface.
+
+            Interface configuration consists of a separate interface list
+            for each interface type, with the list key value in each list
+            giving the interface's extended ID.";
+    }
+
+    grouping iface-id
+    {
+        leaf if-base-name {
+            type iface-base-name;
+            description "The interface base name.";
+        }
+
+        leaf if-ext-id {
+            type iface-ext-id;
+            description "The interface extended ID.";
+        }
+    }
+
+    typedef iface-mac-t
+    {
+        type string
+        {
+            pattern "([0-9a-fA-F]{2})(:[0-9a-fA-F]{2}){5}";
+        }
+        description "MAC (XX:XX:XX:XX:XX:XX)";
+    }
+
+    typedef eth-subiface-range-t
+    {
+        type string
+        {
+            pattern '((([1]/[0]/([1-9]|1[0-9]|2[0-4])){1})((\.(409[0-4]|40[0-8][0-9]|[1-3][0-9]{3}|[1-9][0-9]{2}|[1-9][0-9]|[1-9])){1}))';
+        }
+        description "SUBIF <unit>/<dev>/<port>.<sub-id>";
+    }
+
+    typedef eth-iface-num-t
+    {
+        type string
+        {
+            pattern "[1]/[0]/([1-9]|1[0-9]|2[0-4])";
+        }
+        description "IF    <unit>/<dev>/<port>";
+    }
+
+    typedef eth-iface-mgmt-num-t
+    {
+        type string
+        {
+            pattern "[1]/[0]/([1-9]|1[0-9]|2[0-4])";
+        }
+        description "MGMT    <unit>/<dev>/<port>";
+    }
+
+    typedef eth-iface-num-or-sub-t
+    {
+        type string
+        {
+            pattern '([1]/[0]/([1-9]|1[0-9]|2[0-4]))'
+                  + '((([1]/[0]/([1-9]|1[0-9]|2[0-4])){1})((\.(409[0-4]|40[0-8][0-9]|[1-3][0-9]{3}|[1-9][0-9]{2}|[1-9][0-9]|[1-9])){1}))';
+        }
+        description "IF <unit>/<dev>/<port> or SUBIF <unit>/<dev>/<port>.<vid>";
+    }
+
+    typedef iface-wire-speed-t
+    {
+        type enumeration
+        {
+            enum "1G" { description "1 Gbit"; }
+            enum "10G" { description "10 Gbit"; }
+            enum "40G" { description "40 Gbit"; }
+            enum "100G" { description "100 Gbit"; }
+            enum "Unknown" { description "Unknown"; }
+        }
+        description "SPEED";
+    }
+
+    typedef iface-wire-type-t
+    {
+        type enumeration
+        {
+            enum "Copper" { description "Copper"; }
+            enum "Fiber" { description "Fiber"; }
+            enum "Unknown" { description "Unknown"; }
+        }
+        description "TYPE";
+    }
+
+    typedef iface-speed-one-t
+    {
+        type enumeration
+        {
+            enum "auto" { description "auto negotiation"; }
+            enum "10" { description "10 Mbit"; }
+            enum "100" { description "100 Mbit"; }
+            enum "1G" { description "1 Gbit"; }
+        }
+        description "SPEED";
+        default auto;
+    }
+
+    typedef iface-speed-ten-t
+    {
+        type enumeration
+        {
+            enum "auto" { description "auto negotiation"; }
+            enum "10" { description "10 Mbit"; }
+            enum "100" { description "100 Mbit"; }
+            enum "1G" { description "1 Gbit"; }
+            enum "10G" { description "10 Gbit"; }
+        }
+        description "SPEED";
+        default auto;
+    }
+
+    typedef iface-speed-forty-t
+    {
+        type enumeration
+        {
+            enum "auto" { description "auto negotiation"; }
+            enum "10" { description "10 Mbit"; }
+            enum "100" { description "100 Mbit"; }
+            enum "1G" { description "1 Gbit"; }
+            enum "10G" { description "10 Gbit"; }
+            enum "40G" { description "40 Gbit"; }
+        }
+        description "SPEED";
+        default auto;
+    }
+
+    typedef iface-speed-hund-t
+    {
+        type enumeration
+        {
+            enum "auto" { description "auto negotiation"; }
+            enum "10" { description "10 Mbit"; }
+            enum "100" { description "100 Mbit"; }
+            enum "1G" { description "1 Gbit"; }
+            enum "10G" { description "10 Gbit"; }
+            enum "40G" { description "40 Gbit"; }
+            enum "100G" { description "100 Gbit"; }
+        }
+        description "SPEED";
+        default auto;
+    }
+
+
+    typedef iface-duplex-mode-t
+    {
+        type enumeration
+        {
+            enum "full" { description "Full duplex"; }
+            enum "half" { description "Half duplex"; }
+            enum "auto" { description "Auto config duplex"; }
+        }
+        description "DUPLEX MODE";
+        default auto;
+    }
+
+    typedef iface-neg-support-t
+    {
+        type enumeration
+        {
+            enum "full" { description "Full duplex"; }
+            enum "half" { description "Half duplex"; }
+            enum "auto" { description "Auto config duplex"; }
+        }
+        description "NEGOTIATION SUPPORT";
+        default auto;
+    }
+
+    typedef iface-bandwidth-t
+    {
+        type uint32
+        {
+            range "0..4294967295";
+        }
+        description "KBPS (0-4294967295)";
+    }
+
+    typedef iface-mtu-t
+    {
+        type uint32
+        {
+            range "1294..10022";
+        }
+        description "BYTES";
+    }
+
+    typedef iface-load-int-t
+    {
+        type int32
+        {
+            range "15..500";
+        }
+        description "SECONDS";
+    }
+
+    typedef bundle-id-t
+    {
+        type string
+        {
+            pattern "([1-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8])";
+        }
+        description "IF    <bundle-id>";
+    }
+
+    typedef bundle-sub-id-t
+    {
+        type string
+        {
+            pattern '(([1-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8])(\.(([1-9][0-9]{0,8})|([1-3][0-9]{1,9})|(4[0-1][0-9]{8})|(42[0-8][0-9]{7})|(429[0-3][0-9]{6})|(4294[0-8][0-9]{5})|(42949[0-5][0-9]{4})|(429496[0-6][0-9]{3})|(4294967[0-1][0-9]{2})|(42949672[0-8][0-9])|(429496729[0-5])){1}))';
+        }
+        description "SUBIF <bundle-id>.<sub-id>";
+    }
+
+    typedef bundle-index-show-t
+    {
+        type string
+        {
+            pattern '(([1-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8])((\.(([1-9][0-9]{0,8})|([1-3][0-9]{1,9})|(4[0-1][0-9]{8})|(42[0-8][0-9]{7})|(429[0-3][0-9]{6})|(4294[0-8][0-9]{5})|(42949[0-5][0-9]{4})|(429496[0-6][0-9]{3})|(4294967[0-1][0-9]{2})|(42949672[0-8][0-9])|(429496729[0-5])){1}))?)';
+        }
+        description "IF <bundle-id> or SUBIF <bundle-id>.<bundle-subid>";
+    }
+
+    typedef loopback-id-t
+    {
+        type string
+        {
+            pattern "([1-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1-7][0-9][0-9][0-9]|8000)";
+        }
+        description "Loopback ID (1-8000)";
+    }
+
+    typedef tunnel-gre-id-t
+    {
+        type int32
+        {
+            range "0..65535";
+        }
+        description "TUNNEL ID (0-65535)";
+    }
+
+    typedef tunnel-gre-key-t
+    {
+        type uint64
+        {
+            range "0..4294967295";
+        }
+        description "KEY";
+    }
+
+    typedef tunnel-gre-tos-t
+    {
+        type int32
+        {
+            range "0..255";
+        }
+        description "TOS";
+    }
+
+    typedef tunnel-gre-df-t
+    {
+        type enumeration
+        {
+            enum enable;
+            enum disable;
+            enum copy;
+        }
+        description "DF-BIT MODE (enable/disable/copy)";
+    }
+
+    typedef tunnel-ttl-t
+    {
+        type int32
+        {
+            range "1..255";
+        }
+        description "TTL ";
+    }
+
+    typedef string-128
+    {
+        type string
+        {
+            length "1..128";
+        }
+        description "WORD (1..128)";
+    }
+
+    typedef protocol-mtu-t
+    {
+        type uint32
+        {
+            // 1280 is the minimum IPv6 MTU allowed by RFCs.
+            range "1280..10000";
+        }
+        description "BYTES";
+    }
+
+    typedef interf-index
+    {
+        type int32
+        {
+            range "0..65535";
+        }
+        description "Interface index";
+    }
+
+    typedef iface-negotiation-mode-t
+    {
+        type enumeration
+        {
+            enum "auto";
+        }
+
+        default auto;
+
+        description "auto";
+    }
+
+    typedef iface-negotiation-type-t
+    {
+        type enumeration
+        {
+            enum "10baseT" { description "10baseT"; }
+            enum "100baseT" { description "100baseT"; }
+        }
+        description "TYPE";
+    }
+
+    typedef iface-duplex-type-t
+    {
+        type enumeration
+        {
+            enum "Full" { description "Full"; }
+            enum "Half" { description "Half"; }
+            enum "Unknown" { description "Unknown"; }
+        }
+        description "DUPLEX";
+    }
+
+    typedef iface-flow-ctr-t
+    {
+        type enumeration
+        {
+            enum "on" { description "on"; }
+            enum "off" { description "off"; }
+            enum "rx" { description "rx"; }
+            enum "tx" { description "tx"; }
+            enum "unknown" { description "unknown"; }
+        }
+        description "TYPE";
+    }
+
+    typedef iface-back-pressure-t
+    {
+        type enumeration
+        {
+            enum "enable" { description "enable"; }
+            enum "disable" { description "disable"; }
+            enum "hybrid" { description "hybrid"; }
+            enum "unknown" { description "unknown"; }
+        }
+        description "TYPE";
+    }
+
+    typedef iface-link-state-t
+    {
+         type enumeration
+        {
+            enum "Up" { description "Up"; }
+            enum "Down" { description "Down"; }
+            enum "LowLayerDwn" { description "lowLayerDwn"; }
+            enum "Unknown" { description "unknown"; }
+        }
+        description "TYPE";
+    }
+
+    typedef bfd-lacp-packet-processing
+    {
+        type enumeration
+        {
+            enum off;
+            enum on;
+        }
+    }
+
+    typedef bfd-discriminator
+    {
+        type uint32
+        {
+            range 1..4294967295;
+        }
+        description "BFD discriminator";
+    }
+
+    typedef bfd-port
+    {
+        type uint32
+        {
+            range 1..65535;
+        }
+        description "BFD UDP port";
+    }
+
+    typedef bfd-diagnostic
+    {
+        type enumeration
+        {
+            enum none
+            {
+                value 0;
+                description "None";
+            }
+            enum controlExpiry
+            {
+                value 1;
+                description "Control timer expiry";
+            }
+            enum echoFailed
+            {
+                value 2;
+                description "Echo failure";
+            }
+            enum nborDown
+            {
+                value 3;
+                description "Neighbor down";
+            }
+            enum fwdingReset
+            {
+                value 4;
+                description "Forwarding reset";
+            }
+            enum pathDown
+            {
+                value 5;
+                description "Path down";
+            }
+            enum concPathDown
+            {
+                value 6;
+                description "Concatenated path down";
+            }
+            enum adminDown
+            {
+                value 7;
+                description "Admin down";
+            }
+            enum reverseConcPathDown
+            {
+                value 8;
+                description "Reverse concatenated path down";
+            }
+        }
+        description "BFD diagnostic";
+    }
+
+    typedef bfd-state-enum
+    {
+        type enumeration
+        {
+            enum adminDown
+            {
+                value 0;
+                description "AdminDown";
+            }
+            enum down
+            {
+                value 1;
+                description "Down";
+            }
+            enum init
+            {
+                value 2;
+                description "Init";
+            }
+            enum up
+            {
+                value 3;
+                description "Up";
+            }
+        }
+        description "BFD state";
+    }
+
+    typedef bfd-multiplier
+    {
+        type uint32
+        {
+            range 2..50;
+        }
+        description "(2-50)";
+    }
+
+    typedef bfd-min-interval
+    {
+        type uint32
+        {
+            range 3..30000;
+        }
+        description "(3-30000)";
+    }
+
+    grouping neg-support-gr
+    {
+        list neg-support
+        {
+            leaf type
+            {
+                config false;
+                type iface-negotiation-type-t;
+            }
+
+            leaf duplex
+            {
+                config false;
+                type iface-duplex-type-t;
+            }
+
+            description "List of support negotiation";
+        }
+
+    }
+
+    grouping all-ifaces-types-if-index
+    {
+        leaf if-index
+        {
+            config false;
+
+            type interf-index;
+
+            description "Get interface index";
+            user-ext:CLI-ucallback "iface_if_index_get";
+        }
+    }
+
+    grouping all-ifaces-types-state
+    {
+        leaf oper-status
+        {
+            config false;
+
+            type enumeration
+            {
+                enum down {value 0;}
+                enum up {value 1;}
+                enum unknown {value 2;}
+            }
+
+            description "Get interface oper-status";
+            user-ext:CLI-ucallback "iface_oper_status_get";
+        }
+
+        leaf leaf-running-config
+        {
+            type empty;
+            description "Fake leaf that need for getting filter";
+            config false;
+        }
+
+        leaf is-l3
+        {
+            config false;
+
+            type boolean;
+            user-ext:CLI-ucallback "iface_l3_status_get";
+            description "Check when l3 is active";
+
+        }
+    }
+
+    grouping interface-state
+    {
+        leaf oper-mtu
+        {
+            type uint32;
+            description "Oper mtu value";
+            config false;
+        }
+
+        leaf mac-address
+        {
+            type iface-mac-t;
+            description "Mac address";
+            config false;
+        }
+
+        leaf flow-control
+        {
+            type iface-flow-ctr-t;
+            description "State of Flow Control";
+            config false;
+        }
+
+        leaf back-pressure
+        {
+            type iface-back-pressure-t;
+            description "Back Pressure mode";
+            config false;
+        }
+
+        leaf oper-duplex
+        {
+            type interface_string64_t;
+            description "
+                Operation duplex
+
+                Power1 values include:
+                    -Full-duplex
+                    -Half-duplex
+                    -Unknown-duplex.";
+            config false;
+        }
+
+        leaf oper-speed
+        {
+            type iface-wire-speed-t;
+            config false;
+        }
+
+
+        leaf state-time
+        {
+            type uint64;
+            default 0;
+            description "Time standing interface in current state (in sec)";
+            config false;
+        }
+
+        leaf link-state
+        {
+            type iface-link-state-t;
+            default Down;
+            description "Link status";
+            config false;
+        }
+
+        leaf in-packets-per-time
+        {
+            type uint64;
+            default 0;
+            description "Input Rate(packets/s) in last 300sec (average)";
+            config false;
+        }
+
+        leaf out-packets-per-time
+        {
+            type uint64;
+            default 0;
+            description "Output Rate(packets/s) in last 300sec (average)";
+            config false;
+        }
+
+        leaf in-unicast-packets-per-time
+        {
+            type uint64;
+            default 0;
+            description "Input Unicast Rate(packets/s) in last 300sec (average)";
+            config false;
+        }
+
+        leaf out-unicast-packets-per-time
+        {
+            type uint64;
+            default 0;
+            description "Output Unicast Rate(packets/s) in last 300sec (average)";
+            config false;
+        }
+
+        leaf in-multicast-packets-per-time
+        {
+            type uint64;
+            default 0;
+            description "Input Multicast Rate(packets/s) in last 300sec (average)";
+            config false;
+        }
+
+        leaf out-multicast-packets-per-time
+        {
+            type uint64;
+            default 0;
+            description "Output Multicast Rate(packets/s) in last 300sec (average)";
+            config false;
+        }
+
+        leaf in-broadcast-packets-per-time
+        {
+            type uint64;
+            default 0;
+            description "Input Broadcasts Rate(packets/s) in last 300sec (average)";
+            config false;
+        }
+
+        leaf out-broadcast-packets-per-time
+        {
+            type uint64;
+            default 0;
+            description "Output Broadcasts Rate(packets/s) in last 300sec (average)";
+            config false;
+        }
+
+        leaf in-total-err
+        {
+            type uint64;
+            default 0;
+            description "Number of incoming total errors";
+            config false;
+        }
+
+        leaf out-total-err
+        {
+            type uint64;
+            default 0;
+            description "Number of outgoing total errors";
+            config false;
+        }
+
+        leaf fcs
+        {
+            type uint64;
+            default 0;
+            description "Number of incoming FCS Check Failures";
+            config false;
+        }
+
+        leaf oversize-err
+        {
+            type uint64;
+            default 0;
+            description "Number of incoming Oversize Errors";
+            config false;
+        }
+
+        leaf in-mac-err
+        {
+            type uint64;
+            default 0;
+            description "Number of incoming Internal MAC Errors";
+            config false;
+        }
+
+        leaf out-ex-collision
+        {
+            type uint64;
+            default 0;
+            description "Number of outgoing Excessive Collisions";
+            config false;
+        }
+
+        leaf out-lt-collision
+        {
+            type uint64;
+            default 0;
+            description "Number of outgoing Late Collisions";
+            config false;
+        }
+
+        leaf out-single-collision
+        {
+            type uint64;
+            default 0;
+            description "Number of outgoing Single Frame Collisions";
+            config false;
+        }
+
+        leaf out-multiple-collision
+        {
+            type uint64;
+            default 0;
+            description "Number of outgoing Multiple Frame Collisions";
+            config false;
+        }
+
+        leaf out-total-collision
+        {
+            type uint64;
+            default 0;
+            description "Number of outgoing total Collisions (Single Frame + Multiple Frame)";
+            config false;
+        }
+
+        leaf out-symbol-error
+        {
+            type string { length "0..255";}
+            description "Out symbol error";
+            config false;
+
+        }
+
+        leaf out-carrier-error
+        {
+            type uint64;
+            default 0;
+            description "Number of outgoing Carrier Sense Errors";
+            config false;
+        }
+
+        leaf out-sqe-error
+        {
+            type uint64;
+            default 0;
+            description "Number of outgoing SQE Check Errors";
+            config false;
+        }
+
+        leaf in-drop
+        {
+            type uint64;
+            default 0;
+            description "Number of incoming droped packets";
+            config false;
+        }
+
+        leaf out-drop
+        {
+            type uint64;
+            default 0;
+            description "Number of outgoing droped packets";
+            config false;
+        }
+
+
+        leaf in-unicast-packet
+        {
+            type uint64;
+            default 0;
+            description "Number of incoming unicast packets";
+            config false;
+        }
+
+        leaf out-unicast-packet
+        {
+            type uint64;
+            default 0;
+            description "Number of outgoing unicast packets";
+            config false;
+        }
+
+
+        leaf in-multicast-packet
+        {
+            type uint64;
+            default 0;
+            description "Number of incoming multicast packets";
+            config false;
+        }
+
+        leaf out-multicast-packet
+        {
+            type uint64;
+            default 0;
+            description "Number of outgoing multicast packets";
+            config false;
+        }
+
+        leaf in-broadcast-packet
+        {
+            type uint64;
+            default 0;
+            description "Number of incoming broadcast packets";
+            config false;
+        }
+
+        leaf out-broadcast-packet
+        {
+            type uint64;
+            default 0;
+            description "Number of outgoing broadcast packets";
+            config false;
+        }
+
+        leaf in-total-packet
+        {
+            type uint64;
+            default 0;
+            description "Number of incoming broadcast + multicast + unicast packets";
+            config false;
+        }
+
+        leaf out-total-packet
+        {
+            type uint64;
+            default 0;
+            description "Number of outgoing broadcast + multicast + unicast packets";
+            config false;
+        }
+
+        leaf in-byte
+        {
+            type uint64;
+            default 0;
+            description "Number of incoming bytes";
+            config false;
+        }
+
+        leaf out-byte
+        {
+            type uint64;
+            default 0;
+            description "Number of outgoing bytes";
+            config false;
+        }
+
+        leaf in-trafic-measurement
+        {
+            type uint32;
+            default 0;
+            description "Time counting incoming traffic (sec)";
+            config false;
+        }
+
+        leaf out-trafic-measurement
+        {
+            type uint32;
+            default 0;
+            description "Time counting outgoing traffic (sec)";
+            config false;
+        }
+
+        leaf rx-speed-kbs
+        {
+            type uint64;
+            default 0;
+            description "Incoming speed (kBit/s)";
+            config false;
+        }
+
+        leaf tx-speed-kbs
+        {
+            type uint64;
+            default 0;
+            description "Outgoing speed (kBit/s)";
+            config false;
+        }
+
+        leaf rx-speed-bs
+        {
+            type uint64;
+            default 0;
+            description "Incoming speed (Bit/s)";
+            config false;
+        }
+
+        leaf tx-speed-bs
+        {
+            type uint64;
+            default 0;
+            description "Outgoing speed (Bit/s)";
+            config false;
+        }
+
+        leaf wire-type
+        {
+            config false;
+
+            type iface-wire-type-t;
+            default Unknown;
+            description "Connected wire type";
+        }
+
+        leaf wire-speed
+        {
+            config false;
+
+            type iface-wire-speed-t;
+            default Unknown;
+            description "Connected wire speed";
+        }
+    }
+
+    grouping data-ifaces-parameters-non-physical
+    {
+        leaf vrf
+        {
+            type string-128;
+            description "Configure Virtual Routing/Forwarding parameters";
+            user-ext:CLI-param-help "Set VRF on interface";
+            user-ext:CLI-comm-help "Configure Virtual Routing/Forwarding parameters";
+            user-ext:CLI-no-comm-help "Remove Virtual Routing/Forwarding parameters";
+            user-ext:CLI-validate "modify_validate_vrf";
+        }
+
+        leaf description
+        {
+            type string-128;
+            description "Set interface description";
+            user-ext:CLI-param-help "Interface description value";
+            user-ext:CLI-comm-help "Set interface description";
+            user-ext:CLI-no-comm-help "Remove interface description";
+        }
+
+        leaf shutdown
+        {
+            type empty;
+            description "Disable interface";
+            user-ext:CLI-ucallback "modify_interface_parameter";
+            user-ext:CLI-comm-help "Disable interface";
+            user-ext:CLI-no-comm-help "Enable interface";
+        }
+
+        leaf bandwidth
+        {
+            type iface-bandwidth-t;
+            description "Set the bandwidth of an interface";
+            user-ext:CLI-ucallback "modify_interface_parameter";
+            user-ext:CLI-param-help "Bandwidth of an interface value";
+            user-ext:CLI-comm-help "Set the bandwidth of an interface";
+            user-ext:CLI-no-comm-help "Remove the bandwidth of an interface";
+        }
+
+        container service-policy
+        {
+            description "Configure a service policy";
+            user-ext:CLI-comm-help "Configure a service policy";
+            user-ext:CLI-no-comm-help "Configure a service policy";
+
+            leaf input
+            {
+                type string-128;
+                description "Configure a policy in the input direction";
+                user-ext:CLI-ucallback "modify_interface_parameter";
+                user-ext:CLI-param-help "Name of the service policy";
+                user-ext:CLI-comm-help "Configure a policy in the input direction";
+                user-ext:CLI-no-comm-help "Remove policy in the input direction";
+            }
+
+            leaf output
+            {
+                type string-128;
+                description "Configure a policy in the output direction";
+                user-ext:CLI-ucallback "modify_interface_parameter";
+                user-ext:CLI-param-help "Name of the service policy";
+                user-ext:CLI-comm-help "Configure a policy in the output direction";
+                user-ext:CLI-no-comm-help "Remove policy in the output direction";
+            }
+        }
+    }
+
+
+    grouping data-ifaces-parameters-physic
+    {
+        leaf mtu
+        {
+            type iface-mtu-t;
+
+            default 1522;
+
+            description "Set L2 MTU on an interface";
+            user-ext:CLI-ucallback "modify_interface_parameter";
+            user-ext:CLI-param-help "L2 MTU on an interface value";
+            user-ext:CLI-comm-help "Set L2 MTU on an interface";
+            user-ext:CLI-no-comm-help "Remove L2 MTU on an interface";
+        }
+
+        container ip
+        {
+            description "Configure IPv4 and IPv6 protocol parameters";
+            user-ext:CLI-comm-help "Configure IPv4 and IPv6 protocol parameters";
+            user-ext:CLI-no-comm-help "Configure IPv4 and IPv6 protocol parameters";
+
+            leaf mtu
+            {
+                type protocol-mtu-t;
+
+                default 1500;
+
+                description "Set IPv4 and IPv6 MTU on an interface";
+                user-ext:CLI-ucallback "modify_interface_parameter";
+                user-ext:CLI-param-help "IPv4 and IPv6 MTU on an interface value";
+                user-ext:CLI-comm-help "Set IPv4 and IPv6 MTU on an interface";
+                user-ext:CLI-no-comm-help "Remove IPv4 and IPv6 MTU on an interface";
+            }
+        }
+
+        uses data-ifaces-parameters-non-physical;
+    }
+
+    grouping data-eth-ifaces-parameters
+    {
+        leaf load-interval
+        {
+            type iface-load-int-t;
+
+            default 15;
+
+            description "Specify interval for load calculation for an interface";
+            user-ext:CLI-ucallback "modify_interface_parameter";
+            user-ext:CLI-param-help "Interval for load calculation for an interface value";
+            user-ext:CLI-comm-help "Specify interval for load calculation for an interface";
+            user-ext:CLI-no-comm-help "Remove interval for load calculation for an interface";
+        }
+
+        leaf mac-address
+        {
+            type iface-mac-t;
+            description "Set mac address";
+            user-ext:CLI-ucallback "modify_interface_parameter";
+            user-ext:CLI-param-help "Mac address value";
+            user-ext:CLI-comm-help "Set mac address";
+            user-ext:CLI-no-comm-help "Remove mac address";
+        }
+    }
+
+    typedef iface-ipv4-address-t
+    {
+        // Use this version for leafs where 0.0.0.0 in invalid.
+        type string
+        {
+            pattern '(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}'
+                  + '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])';
+        }
+
+        description "IPv4 (A.B.C.D)";
+    }
+
+    typedef iface-ipv4-address-allow-zero-t
+    {
+        // Use this version for leafs where 0.0.0.0 in valid.
+        type string
+        {
+            pattern '(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}'
+                  + '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])';
+        }
+
+        description "IPv4 (A.B.C.D)";
+    }
+
+    typedef iface-ip-address-allow-zero-t
+    {
+        type string
+        {
+            pattern '((([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}'
+                  + '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]))|'
+                  + '(((:|[0-9a-fA-F]{0,4}):)([0-9a-fA-F]{0,4}:){0,5}'
+                  + '((([0-9a-fA-F]{0,4}:)?(:|[0-9a-fA-F]{0,4}))|'
+                  + '(((25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.){3}'
+                  + '(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9]))))';
+            pattern '((([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}'
+                  + '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]))|'
+                  + '((([^:]+:){6}(([^:]+:[^:]+)|(.*\..*)))|'
+                  + '((([^:]+:)*[^:]+)?::(([^:]+:)*[^:]+)?)'
+                  + '(%.+)?)';
+        }
+
+        description "IPv4 (A.B.C.D) or IPv6 (X:X:X:X::X)";
+    }
+
+    typedef iface-ipv6-address-t
+    {
+        type string
+        {
+            pattern '((:|[0-9a-fA-F]{0,4}):)([0-9a-fA-F]{0,4}:){0,5}'
+                  + '((([0-9a-fA-F]{0,4}:)?(:|[0-9a-fA-F]{0,4}))|'
+                  + '(((25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.){3}'
+                  + '(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])))';
+            pattern '(([^:]+:){6}(([^:]+:[^:]+)|(.*\..*)))|'
+                  + '((([^:]+:)*[^:]+)?::(([^:]+:)*[^:]+)?)'
+                  + '(%.+)?';
+        }
+
+        description "IPv6 (X:X:X:X::X)";
+    }
+
+    typedef iface-ip-address-t
+    {
+        type string
+        {
+            pattern '((([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}'
+                  + '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]))|'
+                  + '(((:|[0-9a-fA-F]{0,4}):)([0-9a-fA-F]{0,4}:){0,5}'
+                  + '((([0-9a-fA-F]{0,4}:)?(:|[0-9a-fA-F]{0,4}))|'
+                  + '(((25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.){3}'
+                  + '(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9]))))';
+            pattern '((([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}'
+                  + '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]))|'
+                  + '((([^:]+:){6}(([^:]+:[^:]+)|(.*\..*)))|'
+                  + '((([^:]+:)*[^:]+)?::(([^:]+:)*[^:]+)?)'
+                  + '(%.+)?)';
+        }
+
+        description "IPv4 (A.B.C.D) or IPv6 (X:X:X:X::X)";
+    }
+
+    typedef iface-ipv4-prefix-t
+    {
+        type string
+        {
+            pattern '(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}'
+                  + '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])'
+                  + '/(([0-9])|([1-2][0-9])|(3[0-2]))';
+        }
+
+        description "IPv4 (A.B.C.D/N)";
+    }
+
+    typedef iface-ipv4-prefix-allow-zero-t
+    {
+        type string
+        {
+            pattern '(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}'
+                  + '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])'
+                  + '/(([0-9])|([1-2][0-9])|(3[0-2]))';
+        }
+
+        description "IPv4 (A.B.C.D/N)";
+    }
+
+    typedef iface-ipv4-prefix-length-t
+    {
+        type uint32
+        {
+            range "0..32";
+        }
+
+        description "IPv4 prefix length";
+    }
+
+    typedef iface-ipv6-prefix-t
+    {
+        type string
+        {
+            pattern '((:|[0-9a-fA-F]{0,4}):)([0-9a-fA-F]{0,4}:){0,5}'
+                  + '((([0-9a-fA-F]{0,4}:)?(:|[0-9a-fA-F]{0,4}))|'
+                  + '(((25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.){3}'
+                  + '(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])))'
+                  + '(/(([0-9])|([0-9]{2})|(1[0-1][0-9])|(12[0-8])))';
+            pattern '(([^:]+:){6}(([^:]+:[^:]+)|(.*\..*)))|'
+                  + '((([^:]+:)*[^:]+)?::(([^:]+:)*[^:]+)?)'
+                  + '(/.+)';
+        }
+
+        description "IPV6 (X:X:X:X::X/N)";
+    }
+
+    typedef iface-ipv6-prefix-allow-zero-t
+    {
+        type string
+        {
+            pattern '((:|[0-9a-fA-F]{0,4}):)([0-9a-fA-F]{0,4}:){0,5}'
+                  + '((([0-9a-fA-F]{0,4}:)?(:|[0-9a-fA-F]{0,4}))|'
+                  + '(((25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.){3}'
+                  + '(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])))'
+                  + '(/(([0-9])|([0-9]{2})|(1[0-1][0-9])|(12[0-8])))';
+            pattern '(([^:]+:){6}(([^:]+:[^:]+)|(.*\..*)))|'
+                  + '((([^:]+:)*[^:]+)?::(([^:]+:)*[^:]+)?)'
+                  + '(/.+)';
+        }
+
+        description "IPV6 (X:X:X:X::X/N)";
+    }
+
+    typedef iface-ip-prefix-t
+    {
+        type string
+        {
+            pattern '((([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}'
+                  + '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])'
+                  + '/(([0-9])|([1-2][0-9])|(3[0-2])))|'
+                  + '(((:|[0-9a-fA-F]{0,4}):)([0-9a-fA-F]{0,4}:){0,5}'
+                  + '((([0-9a-fA-F]{0,4}:)?(:|[0-9a-fA-F]{0,4}))|'
+                  + '(((25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.){3}'
+                  + '(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])))'
+                  + '(/(([0-9])|([0-9]{2})|(1[0-1][0-9])|(12[0-8]))))';
+            pattern '((([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}'
+                  + '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])'
+                  + '/(([0-9])|([1-2][0-9])|(3[0-2])))|'
+                  + '((([^:]+:){6}(([^:]+:[^:]+)|(.*\..*)))|'
+                  + '((([^:]+:)*[^:]+)?::(([^:]+:)*[^:]+)?)'
+                  + '(/.+))';
+        }
+
+        description "IPv4 (A.B.C.D/N) or IPV6 (X:X:X:X::X/N)";
+    }
+
+    typedef iface-ip-prefix-allow-zero-t
+    {
+        type string
+        {
+            pattern '((([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}'
+                  + '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])'
+                  + '/(([0-9])|([1-2][0-9])|(3[0-2])))|'
+                  + '(((:|[0-9a-fA-F]{0,4}):)([0-9a-fA-F]{0,4}:){0,5}'
+                  + '((([0-9a-fA-F]{0,4}:)?(:|[0-9a-fA-F]{0,4}))|'
+                  + '(((25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.){3}'
+                  + '(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])))'
+                  + '(/(([0-9])|([0-9]{2})|(1[0-1][0-9])|(12[0-8]))))';
+            pattern '((([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}'
+                  + '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])'
+                  + '/(([0-9])|([1-2][0-9])|(3[0-2])))|'
+                  + '((([^:]+:){6}(([^:]+:[^:]+)|(.*\..*)))|'
+                  + '((([^:]+:)*[^:]+)?::(([^:]+:)*[^:]+)?)'
+                  + '(/.+))';
+        }
+
+        description "IPv4 (A.B.C.D/N) or IPV6 (X:X:X:X::X/N)";
+    }
+
+    typedef bundle-lb-hash-t
+    {
+        type enumeration
+        {
+            enum src-ip;
+            enum dst-ip;
+        }
+
+        description "LB METHOD";
+    }
+
+
+    typedef arp-timeout-t
+    {
+        type uint32
+        {
+            range "30..76400";
+        }
+        description "SECONDS";
+    }
+
+    typedef nd-reacheable-time-t
+    {
+        type int32
+        {
+            range "0..3600000";
+        }
+
+        description "MILLISECONDS";
+    }
+
+    typedef outer-vid-t
+    {
+        type int32
+        {
+            range "1..4094";
+        }
+
+        description "VID";
+    }
+
+    typedef inner-vid-t
+    {
+        type int32
+        {
+            range "0..4094";
+        }
+
+        default 0;
+        description "VID";
+    }
+
+    /* FOR METASWITCH
+    typedef bundle-load-balancing-hash-opts-t
+    {
+        description "";
+        type bits
+        {
+            bit src-mac;
+            bit dst-mac;
+            bit src-ip;
+            bit dest-ip;
+            bit src-port;
+            bit dest-port;
+            bit mpls-label;
+        }
+    }*/
+
+    typedef interface_string64_t
+    {
+        type string
+        {
+            length "1..64";
+        }
+
+        description "WORD (1..64)";
+    }
+
+    typedef vrf-name-for-show
+    {
+        type string
+        {
+            length "1..31";
+        }
+
+        description "all | VRF name WORD (1-31)";
+    }
+
+    grouping acl-access-list-group
+    {
+        list access-group
+        {
+
+            description "Specify access control for packets";
+            user-ext:CLI-comm-help "Specify access control for packets";
+            user-ext:CLI-no-comm-help "Specify access control for packets";
+
+            key "ipv_iface_acl_name";
+
+            leaf ipv_iface_acl_name
+            {
+                type interface_string64_t;
+
+                description "Access-list name";
+
+                user-ext:CLI-no-comm-help "Set access-list name";
+            }
+
+            leaf ingress
+            {
+                type empty;
+
+                description "Filter outgoing packets";
+
+                user-ext:CLI-comm-help "Enable outgoing packets";
+                user-ext:CLI-no-comm-help "Disable outgoing packets";
+                user-ext:CLI-param-help "Set ipv4 ingress";
+            }
+
+            leaf egress
+            {
+                type empty;
+
+                description "Filter incoming packets";
+
+                user-ext:CLI-comm-help "Enable incoming packets";
+                user-ext:CLI-no-comm-help "Disable incoming packets";
+                user-ext:CLI-param-help "Set ipv4 ingress";
+            }
+        }
+    }
+
+    grouping ipv4-data-ifaces-parameters
+    {
+        leaf-list address
+        {
+            type iface-ipv4-prefix-t;
+            description "Add IPv4 address on interface";
+            user-ext:CLI-validate "modify_validate_ipv4_address";
+            user-ext:CLI-ucallback "modify_if_address";
+            user-ext:CLI-param-help "IPv4 address value";
+            user-ext:CLI-comm-help "Add IPv4 address on interface";
+            user-ext:CLI-no-comm-help "Remove IPv4 address on interface";
+        }
+
+        leaf unreachables
+        {
+            type empty;
+            description "Enable sending ICMP unreachable packets";
+            user-ext:CLI-ucallback "modify_interface_parameter";
+            user-ext:CLI-comm-help "Enable sending ICMP unreachable packets";
+            user-ext:CLI-no-comm-help "Disable sending ICMP unreachable packets";
+        }
+
+        container verify
+        {
+            description "Enable per packet validation";
+            user-ext:CLI-comm-help "Enable per packet validation";
+            user-ext:CLI-no-comm-help "Disable per packet validation";
+
+            container unicast
+            {
+                description "Enable per packet validation for unicast";
+                user-ext:CLI-comm-help "Enable per packet validation for unicast";
+                user-ext:CLI-no-comm-help "Disable per packet validation for unicast";
+
+                container source
+                {
+                    description "Validation of source address";
+                    user-ext:CLI-comm-help "Validation of source address";
+                    user-ext:CLI-no-comm-help "Validation of source address";
+
+                    container reachable-via
+                    {
+                        description "Specify reachability check to apply to the source address";
+                        user-ext:CLI-comm-help "Specify reachability check to apply to the source address";
+                        user-ext:CLI-no-comm-help "Specify reachability check to apply to the source address";
+
+                        choice any-rx
+                        {
+                            case any-case
+                            {
+                                container any
+                                {
+                                    presence "Source is reachable via any interface";
+
+                                    description "Source is reachable via any interface";
+                                    user-ext:CLI-comm-help "Source is reachable via any interface";
+                                    user-ext:CLI-no-comm-help "Source is reachable via any interface";
+
+                                    leaf allow-default
+                                    {
+                                        type empty;
+                                        description "Allow default route to match when checking source address";
+                                        user-ext:CLI-comm-help "Allow default route to match when checking source address";
+                                        user-ext:CLI-no-comm-help "Remove default route to match when checking source address";
+                                    }
+                                }
+                            }
+
+                            case rx-case
+                            {
+                                container rx
+                                {
+                                    presence "Source is reachable via interface on which packet was received";
+
+                                    description "Source is reachable via interface on which packet was received";
+                                    user-ext:CLI-comm-help "Source is reachable via interface on which packet was received";
+                                    user-ext:CLI-no-comm-help "Source is reachable via interface on which packet was received";
+
+                                    leaf allow-default
+                                    {
+                                        type empty;
+                                        description "Allow default route to match when checking source address";
+                                        user-ext:CLI-comm-help "Allow default route to match when checking source address";
+                                        user-ext:CLI-no-comm-help "Disallow default route to match when checking source address";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        uses acl-access-list-group;
+    }
+
+    grouping ipv4-mgmt-data-ifaces-parameters-physic
+    {
+        container ipv4
+        {
+            description "Configure IPv4 parameters";
+            user-ext:CLI-comm-help "Configure IPv4 parameters";
+            user-ext:CLI-no-comm-help "Configure IPv4 parameters";
+
+            leaf-list address
+            {
+                type iface-ipv4-prefix-t;
+                description "Add IPv4 address on interface";
+                user-ext:CLI-validate "modify_validate_ipv4_address";
+                user-ext:CLI-ucallback "modify_if_address";
+                user-ext:CLI-param-help "IPv4 address value";
+                user-ext:CLI-comm-help "Add IPv4 address on interface";
+                user-ext:CLI-no-comm-help "Remove IPv4 address on interface";
+            }
+
+        }
+    }
+
+    grouping ipv4-data-ifaces-parameters-physic
+    {
+        container ipv4
+        {
+            description "Configure IPv4 parameters";
+            user-ext:CLI-comm-help "Configure IPv4 parameters";
+            user-ext:CLI-no-comm-help "Configure IPv4 parameters";
+
+            uses ipv4-data-ifaces-parameters;
+        }
+    }
+
+    grouping ipv4-data-ifaces-parameters-non-physical
+    {
+        container ipv4
+        {
+            description "Configure IPv4 parameters";
+            user-ext:CLI-comm-help "Configure IPv4 parameters";
+            user-ext:CLI-no-comm-help "Configure IPv4 parameters";
+
+            uses ipv4-data-ifaces-parameters;
+        }
+    }
+
+    grouping ipv6-data-ifaces-parameters
+    {
+        leaf-list address
+        {
+            type iface-ipv6-prefix-t;
+            description "Add IPv6 address on interface";
+            user-ext:CLI-ucallback "modify_if_address";
+            user-ext:CLI-validate "modify_validate_ipv6_address";
+            user-ext:CLI-param-help "IPv6 address on interface value";
+            user-ext:CLI-comm-help "Add IPv6 address on interface";
+            user-ext:CLI-no-comm-help "Remove IPv6 address on interface";
+        }
+
+        leaf unreachables
+        {
+            type empty;
+            description "Enable sending ICMP unreachable packets";
+            user-ext:CLI-ucallback "modify_interface_parameter";
+            user-ext:CLI-comm-help "Enable sending ICMP unreachable packets";
+            user-ext:CLI-no-comm-help "Disable sending ICMP unreachable packets";
+        }
+
+        container nd
+        {
+            description "Configure Neighbor Discovery parameters";
+            user-ext:CLI-comm-help "Configure Neighbor Discovery parameters";
+            user-ext:CLI-no-comm-help "Configure Neighbor Discovery parameters";
+
+            leaf suppress-ra
+            {
+                type empty;
+                description "Enable suppress sending router advertisement";
+                user-ext:CLI-comm-help "Enable suppress sending router advertisement";
+                user-ext:CLI-no-comm-help "Disable suppress sending router advertisement";
+            }
+
+            leaf reachable-time
+            {
+                type nd-reacheable-time-t;
+                description "Set reacheable time";
+                user-ext:CLI-param-help "Reacheable time value";
+                user-ext:CLI-comm-help "Set reacheable time";
+                user-ext:CLI-no-comm-help "Remove reacheable time";
+            }
+        }
+
+        container verify
+        {
+            description "Enable per packet validation";
+            user-ext:CLI-comm-help "Enable per packet validation";
+            user-ext:CLI-no-comm-help "Disable per packet validation";
+
+            container unicast
+            {
+                description "Enable per packet validation for unicast";
+                user-ext:CLI-comm-help "Enable per packet validation for unicast";
+                user-ext:CLI-no-comm-help "Disable per packet validation for unicast";
+
+                container source
+                {
+                    description "Validation of source address";
+                    user-ext:CLI-comm-help "Validation of source address";
+                    user-ext:CLI-no-comm-help "Validation of source address";
+
+                    container reachable-via
+                    {
+                        description "Specify reachability check to apply to the source address";
+                        user-ext:CLI-comm-help "Specify reachability check to apply to the source address";
+                        user-ext:CLI-no-comm-help "Specify reachability check to apply to the source address";
+
+                        choice any-rx
+                        {
+                            case any-case
+                            {
+                                container any
+                                {
+                                    presence "Source is reachable via any interface";
+
+                                    description "Source is reachable via any interface";
+                                    user-ext:CLI-comm-help "Source is reachable via any interface";
+                                    user-ext:CLI-no-comm-help "Source is reachable via any interface";
+
+                                    leaf allow-default
+                                    {
+                                        type empty;
+                                        description "Allow default route to match when checking source address";
+                                        user-ext:CLI-comm-help "Allow default route to match when checking source address";
+                                        user-ext:CLI-no-comm-help "Disallow default route to match when checking source address";
+                                    }
+                                }
+                            }
+
+                            case rx-case
+                            {
+                                container rx
+                                {
+                                    presence "Source is reachable via interface on which packet was received";
+
+                                    description "Source is reachable via interface on which packet was received";
+                                    user-ext:CLI-comm-help "Source is reachable via interface on which packet was received";
+                                    user-ext:CLI-no-comm-help "Source is reachable via interface on which packet was received";
+
+                                    leaf allow-default
+                                    {
+                                        type empty;
+                                        description "Allow default route to match when checking source address";
+                                        user-ext:CLI-comm-help "Allow default route to match when checking source address";
+                                        user-ext:CLI-no-comm-help "Disallow default route to match when checking source address";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        uses acl-access-list-group;
+    }
+
+    grouping ipv6-data-ifaces-parameters-physic
+    {
+        container ipv6
+        {
+            description "Configure IPv6 parameters";
+            user-ext:CLI-comm-help "Configure IPv6 parameters";
+            user-ext:CLI-no-comm-help "Configure IPv6 parameters";
+
+            uses ipv6-data-ifaces-parameters;
+        }
+    }
+
+    grouping ipv6-mgmt-data-ifaces-parameters-physic
+    {
+        container ipv6
+        {
+            description "Configure IPv6 parameters";
+            user-ext:CLI-comm-help "Configure IPv6 parameters";
+            user-ext:CLI-no-comm-help "Configure IPv6 parameters";
+
+            leaf-list address
+            {
+                type iface-ipv6-prefix-t;
+                description "Add IPv6 address on interface";
+                user-ext:CLI-ucallback "modify_if_address";
+                user-ext:CLI-validate "modify_validate_ipv6_address";
+                user-ext:CLI-param-help "IPv6 address on interface value";
+                user-ext:CLI-comm-help "Add IPv6 address on interface";
+                user-ext:CLI-no-comm-help "Remove IPv6 address on interface";
+            }
+        }
+    }
+
+    grouping ipv6-data-ifaces-parameters-non-physical
+    {
+        container ipv6
+        {
+            description "Configure IPv6 parameters";
+            user-ext:CLI-comm-help "Configure IPv6 parameters";
+            user-ext:CLI-no-comm-help "Configure IPv6 parameters";
+
+            uses ipv6-data-ifaces-parameters;
+        }
+    }
+
+    grouping arp-data-ifaces-parameters
+    {
+        container arp
+        {
+            description "Configure ARP parameters";
+            user-ext:CLI-comm-help "Configure ARP parameters";
+            user-ext:CLI-no-comm-help "Configure ARP parameters";
+
+            leaf timeout
+            {
+                type arp-timeout-t;
+                description "Set ARP cache timeout on interface";
+                user-ext:CLI-ucallback "modify_interface_parameter";
+                user-ext:CLI-param-help "ARP cache timeout on interface value";
+                user-ext:CLI-comm-help "Set ARP cache timeout on interface";
+                user-ext:CLI-no-comm-help "Remove ARP cache timeout on interface";
+            }
+
+            leaf proxy
+            {
+                type empty;
+                description "Enable proxy ARP";
+                user-ext:CLI-ucallback "modify_interface_parameter";
+                user-ext:CLI-comm-help "Enable proxy ARP";
+                user-ext:CLI-no-comm-help "Disable proxy ARP";
+            }
+
+            leaf local-proxy
+            {
+                type empty;
+                description "Enable local-proxy ARP";
+                user-ext:CLI-ucallback "modify_interface_parameter";
+                user-ext:CLI-comm-help "Enable local-proxy ARP";
+                user-ext:CLI-no-comm-help "Disable local-proxy ARP";
+            }
+        }
+    }
+
+    grouping eth-bundle-ifaces-l2-parameters
+    {
+        container ethernet-services
+        {
+            description "Configure ethernet related services";
+            user-ext:CLI-comm-help "Configure ethernet related services";
+            user-ext:CLI-no-comm-help "Configure ethernet related services";
+
+            leaf access-group
+            {
+                type string-128;
+                description "Specify access control for packets";
+                user-ext:CLI-param-help "Access-list name";
+                user-ext:CLI-comm-help "Set access control for packets";
+                user-ext:CLI-no-comm-help "Remove access control for packets";
+            }
+        }
+    }
+
+    grouping eth-bundle-subifaces-rewrite-rule-tag
+    {
+        container tag
+        {
+            description "Tag rewrite rule";
+            user-ext:CLI-comm-help "Set the tag rewriting rule";
+            user-ext:CLI-no-comm-help "Remove the tag rewriting rule";
+
+            choice rewr-operation
+            {
+                case pop-oper
+                {
+                    leaf pop
+                    {
+                        description "Set pop tags rule";
+                        user-ext:CLI-ucallback "modify_interface_parameter";
+                        user-ext:CLI-comm-help "Set the tag rewriting rule to remove one or two tags";
+                        user-ext:CLI-no-comm-help "Remove the tag rewriting rule to remove one or two tags";
+                        user-ext:CLI-param-help "Remove one or two tags";
+
+                        type enumeration
+                        {
+                            enum one { value 1; description "Remove outer tag only"; }
+                            enum two { value 2; description "Remove both tags"; }
+                        }
+                    }
+                }
+
+                case push-oper
+                {
+                    container push
+                    {
+                        description "Set push tags rule";
+                        user-ext:CLI-comm-help "Set the tag rewriting rule to push one or two tags";
+                        user-ext:CLI-no-comm-help "Remove the tag rewriting rule to push one or two tags";
+
+                        leaf outer-vid
+                        {
+                            type outer-vid-t;
+                            description "Set outer-vid";
+                            user-ext:CLI-ucallback "modify_interface_parameter";
+                            user-ext:CLI-param-help "Outer-vid value";
+                            user-ext:CLI-comm-help "Set outer-vid";
+                            user-ext:CLI-no-comm-help "Remove outer-vid";
+                        }
+
+                        leaf inner-vid
+                        {
+                            user-ext:is-subparam-for "outer-vid";
+                            type inner-vid-t;
+                            description "Set inner-vid";
+                            user-ext:CLI-ucallback "modify_interface_parameter";
+                            user-ext:CLI-param-help "Inner-vid value";
+                            user-ext:CLI-comm-help "Set inner-vid";
+                            user-ext:CLI-no-comm-help "Remove inner-vid";
+                        }
+                    }
+                }
+
+                case replace-oper
+                {
+                    container replace
+                    {
+                        description "Set replace tags rule";
+                        user-ext:CLI-comm-help "Set the tag rewriting rule to replace one or two tags";
+                        user-ext:CLI-no-comm-help "Remove the tag rewriting rule to replace one or two tags";
+
+                        leaf outer-vid
+                        {
+                            type outer-vid-t;
+                            description "Set outer-vid";
+                            user-ext:CLI-ucallback "modify_interface_parameter";
+                            user-ext:CLI-param-help "Outer-vid value";
+                            user-ext:CLI-comm-help "Set outer-vid";
+                            user-ext:CLI-no-comm-help "Remove outer-vid";
+                        }
+
+                        leaf inner-vid
+                        {
+                            user-ext:is-subparam-for "outer-vid";
+                            type inner-vid-t;
+                            description "Set inner-vid";
+                            user-ext:CLI-ucallback "modify_interface_parameter";
+                            user-ext:CLI-param-help "Inner-vid value";
+                            user-ext:CLI-comm-help "Set inner-vid";
+                            user-ext:CLI-no-comm-help "Remove inner-vid";
+                        }
+                    }
+                }
+
+                case exchange-oper
+                {
+                    leaf exchange
+                    {
+                        description "Set exchange tags rule";
+                        user-ext:CLI-ucallback "modify_interface_parameter";
+                        user-ext:CLI-comm-help "Set the tag rewriting rule to exchange tags";
+                        user-ext:CLI-no-comm-help "Remove the tag rewriting rule to exchange tags";
+
+                        type empty;
+                    }
+                }
+            }
+        }
+    }
+
+    grouping eth-bundle-subifaces-parameters
+    {
+        container encapsulation
+        {
+            description "Set classification rule";
+            user-ext:CLI-comm-help "Set classification rule";
+            user-ext:CLI-no-comm-help "Set classification rule";
+            user-ext:CLI-no-comm-break;
+
+            choice enc-choice
+            {
+                case enc-default
+                {
+                    leaf def
+                    {
+                        type empty;
+                        description "Set classification by default";
+                        user-ext:CLI-ucallback "modify_interface_parameter";
+                        user-ext:CLI-comm-alias "encapsulation default";
+                        user-ext:CLI-comm-help "Set classification by default";
+                        user-ext:CLI-no-comm-help "Remove classification by default";
+                    }
+                }
+
+                case enc-untagged
+                {
+                    leaf untagged
+                    {
+                        type empty;
+
+                        description "Set classification by miss tags";
+                        user-ext:CLI-ucallback "modify_interface_parameter";
+                        user-ext:CLI-comm-help "Set classification by default";
+                        user-ext:CLI-no-comm-help "Remove classification by default";
+                    }
+                }
+
+                case enc-vids
+                {
+
+                    leaf outer-vid
+                    {
+                        type outer-vid-t;
+                        description "Set outer-vid";
+                        user-ext:CLI-ucallback "modify_interface_parameter";
+                        user-ext:CLI-param-help "Outer-vid value";
+                        user-ext:CLI-comm-help "Set outer-vid";
+                        user-ext:CLI-no-comm-help "Remove outer-vid";
+                    }
+
+                    leaf inner-vid
+                    {
+                        user-ext:is-subparam-for "outer-vid";
+                        type inner-vid-t;
+                        description "Set inner-vid";
+                        user-ext:CLI-ucallback "modify_interface_parameter";
+                        user-ext:CLI-param-help "Inner-vid value";
+                        user-ext:CLI-comm-help "Set inner-vid";
+                        user-ext:CLI-no-comm-help "Remove inner-vid";
+                    }
+                }
+            }
+        }
+
+        container rewrite
+        {
+            description "Rewrite rule";
+            user-ext:CLI-comm-help "Set rewrite rule";
+            user-ext:CLI-no-comm-help "Remove rewrite rule";
+
+            container egress
+            {
+                description "Egress rewrite rule";
+                user-ext:CLI-comm-help "Set rewriting egress rule";
+                user-ext:CLI-no-comm-help "Remove rewriting egress rule";
+                user-ext:CLI-no-comm-break;
+                user-ext:CLI-ucallback "modify_interface_parameter";
+
+                uses eth-bundle-subifaces-rewrite-rule-tag;
+            }
+
+            container ingress
+            {
+                description "Ingress rewrite rule";
+                user-ext:CLI-comm-help "Set rewriting ingress rule";
+                user-ext:CLI-no-comm-help "Remove rewriting ingress rule";
+                user-ext:CLI-no-comm-break;
+                user-ext:CLI-ucallback "modify_interface_parameter";
+
+                uses eth-bundle-subifaces-rewrite-rule-tag;
+            }
+        }
+    }
+
+    container interface
+    {
+        if-feature interfaces:custom-interfaces;
+        description "Configure interface";
+        user-ext:CLI-comm-help "Configure interface";
+        user-ext:CLI-no-comm-help "Configure interface";
+
+        container oneGE
+        {
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "gigabitethernet/gigabitethernet-sub";
+
+            list gigabitethernet
+            {
+                description "Configure 1G interface";
+                user-ext:CLI-comm-help "Configure 1G interface";
+                user-ext:CLI-no-comm-help "Configure 1G interface";
+
+                user-ext:CLI-sort-callback "compare_interfaces";
+
+                user-ext:CLI-ucallback "modify_interface";
+
+                key "if-num";
+
+                leaf if-num
+                {
+                    type eth-iface-num-t;
+                    description "<unit>/<dev>/<port>";
+                    user-ext:CLI-param-help "Configure 1G interface";
+                }
+
+                leaf speed
+                {
+                    type iface-speed-one-t;
+
+                    description "Set interface's speed";
+                    user-ext:CLI-ucallback "modify_interface_parameter";
+                    user-ext:CLI-comm-help "Set interface's speed";
+                    user-ext:CLI-no-comm-help "Set interface's speed to default";
+                }
+
+                leaf duplex
+                {
+                    type iface-duplex-mode-t;
+
+                    description "Set duplex mode";
+                    user-ext:CLI-ucallback "modify_interface_parameter";
+                    user-ext:CLI-comm-help "Set duplex mode";
+                    user-ext:CLI-no-comm-help "Set duplex mode to default";
+                }
+
+                container state
+                {
+                    config false;
+                    uses interface-state;
+                    user-ext:CLI-ucallback "iface_state_container_get";
+                }
+
+                uses all-ifaces-types-if-index;
+                uses all-ifaces-types-state;
+                uses data-ifaces-parameters-physic;
+                uses data-eth-ifaces-parameters;
+                uses ipv4-data-ifaces-parameters-physic;
+                uses ipv6-data-ifaces-parameters-physic;
+                uses arp-data-ifaces-parameters;
+                uses eth-bundle-ifaces-l2-parameters;
+            }
+
+            list gigabitethernet-sub
+            {
+                description "Configure 1G sub-interface";
+                user-ext:CLI-ucallback "modify_interface";
+
+                key "if-num";
+
+                user-ext:CLI-sort-callback "compare_interfaces";
+
+                leaf if-num
+                {
+                    type eth-subiface-range-t;
+                    description "<unit>/<dev>/<port>.<subid>";
+                    user-ext:CLI-param-help "Configure 1G subinterface";
+                }
+
+                container state
+                {
+                    config false;
+                    uses interface-state;
+                    user-ext:CLI-ucallback "sub_iface_state_container_get";
+                }
+
+                uses all-ifaces-types-if-index;
+                uses all-ifaces-types-state;
+                uses data-ifaces-parameters-non-physical;
+                uses ipv4-data-ifaces-parameters-non-physical;
+                uses ipv6-data-ifaces-parameters-non-physical;
+                uses arp-data-ifaces-parameters;
+                uses eth-bundle-ifaces-l2-parameters;
+                uses eth-bundle-subifaces-parameters;
+
+                must "encapsulation/def or encapsulation/untagged or encapsulation/outer-vid"
+                {
+                    error-message "Please, set encapsulation for subinterface first";
+                }
+            }
+        }
+
+        container tenGE
+        {
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "tengigabitethernet/tengigabitethernet-sub";
+
+            list tengigabitethernet
+            {
+                description "Configure 10G interface";
+                user-ext:CLI-comm-help "Configure 10G interface";
+                user-ext:CLI-no-comm-help "Configure 10G interface";
+
+                user-ext:CLI-sort-callback "compare_interfaces";
+
+                user-ext:CLI-ucallback "modify_interface";
+
+                key "if-num";
+
+                leaf if-num
+                {
+                    type eth-iface-num-t;
+                    description "<unit>/<dev>/<port>";
+                    user-ext:CLI-param-help "Configure 10G interface";
+                }
+
+                leaf speed
+                {
+                    type iface-speed-ten-t;
+
+                    description "Set interface's speed";
+                    user-ext:CLI-ucallback "modify_interface_parameter";
+                    user-ext:CLI-comm-help "Set interface's speed";
+                    user-ext:CLI-no-comm-help "Set interface's speed to default";
+                }
+
+                leaf duplex
+                {
+                    type iface-duplex-mode-t;
+
+                    description "Set duplex mode";
+                    user-ext:CLI-ucallback "modify_interface_parameter";
+                    user-ext:CLI-comm-help "Set duplex mode";
+                    user-ext:CLI-no-comm-help "Set duplex mode to default";
+                }
+
+                container state
+                {
+                    config false;
+                    uses interface-state;
+                    user-ext:CLI-ucallback "iface_state_container_get";
+                }
+
+                uses all-ifaces-types-if-index;
+                uses all-ifaces-types-state;
+                uses data-ifaces-parameters-physic;
+                uses data-eth-ifaces-parameters;
+                uses ipv4-data-ifaces-parameters-physic;
+                uses ipv6-data-ifaces-parameters-physic;
+                uses arp-data-ifaces-parameters;
+                uses eth-bundle-ifaces-l2-parameters;
+            }
+
+            list tengigabitethernet-sub
+            {
+                user-ext:CLI-ucallback "modify_interface";
+
+                description "Configure 10G sub-interface";
+
+                user-ext:CLI-sort-callback "compare_interfaces";
+
+                key "if-num";
+
+                leaf if-num
+                {
+                    type eth-subiface-range-t;
+                    description "<unit>/<dev>/<port>.<subid>";
+                    user-ext:CLI-param-help "Configure 10G subinterface";
+                }
+
+                container state
+                {
+                    config false;
+                    uses interface-state;
+                    user-ext:CLI-ucallback "sub_iface_state_container_get";
+                }
+
+                uses all-ifaces-types-if-index;
+                uses all-ifaces-types-state;
+                uses data-ifaces-parameters-non-physical;
+                uses ipv4-data-ifaces-parameters-non-physical;
+                uses ipv6-data-ifaces-parameters-non-physical;
+                uses arp-data-ifaces-parameters;
+                uses eth-bundle-ifaces-l2-parameters;
+                uses eth-bundle-subifaces-parameters;
+
+                must "encapsulation/def or encapsulation/untagged or encapsulation/outer-vid"
+                {
+                    error-message "Please, set encapsulation for subinterface first";
+                }
+            }
+        }
+
+        container fortyGE
+        {
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "fortygigabitethernet/fortygigabitethernet-sub";
+
+            list fortygigabitethernet
+            {
+                description "Configure 40G interface";
+                user-ext:CLI-comm-help "Configure 40G interface";
+                user-ext:CLI-no-comm-help "Configure 40G interface";
+
+                user-ext:CLI-sort-callback "compare_interfaces";
+
+                user-ext:CLI-ucallback "modify_interface";
+
+                key "if-num";
+
+                leaf if-num
+                {
+                    type eth-iface-num-t;
+                    description "<unit>/<dev>/<port>";
+                    user-ext:CLI-param-help "Configure 40G interface";
+                }
+
+                leaf speed
+                {
+                    type iface-speed-forty-t;
+
+                    description "Set interface's speed";
+                    user-ext:CLI-ucallback "modify_interface_parameter";
+                    user-ext:CLI-comm-help "Set interface's speed";
+                    user-ext:CLI-no-comm-help "Set interface's speed to default";
+                }
+
+                container state
+                {
+                    config false;
+                    uses interface-state;
+                    user-ext:CLI-ucallback "iface_state_container_get";
+                }
+
+                uses all-ifaces-types-if-index;
+                uses all-ifaces-types-state;
+                uses data-ifaces-parameters-physic;
+                uses data-eth-ifaces-parameters;
+                uses ipv4-data-ifaces-parameters-physic;
+                uses ipv6-data-ifaces-parameters-physic;
+                uses arp-data-ifaces-parameters;
+                uses eth-bundle-ifaces-l2-parameters;
+            }
+
+            list fortygigabitethernet-sub
+            {
+                user-ext:CLI-ucallback "modify_interface";
+
+                description "Configure 40G sub-interface";
+
+                user-ext:CLI-sort-callback "compare_interfaces";
+
+                key "if-num";
+
+                leaf if-num
+                {
+                    type eth-subiface-range-t;
+                    description "<unit>/<dev>/<port>.<subid>";
+                    user-ext:CLI-param-help "Configure 40G subinterface";
+                }
+
+                container state
+                {
+                    config false;
+                    uses interface-state;
+                    user-ext:CLI-ucallback "sub_iface_state_container_get";
+                }
+
+                uses all-ifaces-types-if-index;
+                uses all-ifaces-types-state;
+                uses data-ifaces-parameters-non-physical;
+                uses ipv4-data-ifaces-parameters-non-physical;
+                uses ipv6-data-ifaces-parameters-non-physical;
+                uses arp-data-ifaces-parameters;
+                uses eth-bundle-ifaces-l2-parameters;
+                uses eth-bundle-subifaces-parameters;
+
+                must "encapsulation/def or encapsulation/untagged or encapsulation/outer-vid"
+                {
+                    error-message "Please, set encapsulation for subinterface first";
+                }
+            }
+        }
+
+        container hundredGE
+        {
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "hundredgigabitethernet/hundredgigabitethernet-sub";
+
+            list hundredgigabitethernet
+            {
+                description "Configure 100G interface";
+                user-ext:CLI-comm-help "Configure 100G interface";
+                user-ext:CLI-no-comm-help "Configure 100G interface";
+
+                user-ext:CLI-sort-callback "compare_interfaces";
+
+                user-ext:CLI-ucallback "modify_interface";
+
+                key "if-num";
+
+                leaf if-num
+                {
+                    type eth-iface-num-t;
+                    description "<unit>/<dev>/<port>";
+                    user-ext:CLI-param-help "Configure 100G interface";
+                }
+
+                leaf speed
+                {
+                    type iface-speed-hund-t;
+
+                    description "Set interface's speed";
+                    user-ext:CLI-ucallback "modify_interface_parameter";
+                    user-ext:CLI-comm-help "Set interface's speed";
+                    user-ext:CLI-no-comm-help "Set interface's speed to default";
+                }
+
+
+                container state
+                {
+                    config false;
+                    uses interface-state;
+                    user-ext:CLI-ucallback "iface_state_container_get";
+                }
+
+                uses all-ifaces-types-if-index;
+                uses all-ifaces-types-state;
+                uses data-ifaces-parameters-physic;
+                uses data-eth-ifaces-parameters;
+                uses ipv4-data-ifaces-parameters-physic;
+                uses ipv6-data-ifaces-parameters-physic;
+                uses arp-data-ifaces-parameters;
+                uses eth-bundle-ifaces-l2-parameters;
+            }
+
+            list hundredgigabitethernet-sub
+            {
+                user-ext:CLI-ucallback "modify_interface";
+
+                description "Configure 100G sub-interface";
+
+                user-ext:CLI-sort-callback "compare_interfaces";
+
+                key "if-num";
+
+                leaf if-num
+                {
+                    type eth-subiface-range-t;
+                    description "<unit>/<dev>/<port>.<subid>";
+                    user-ext:CLI-param-help "Configure 100G subinterface";
+                }
+
+
+                container state
+                {
+                    config false;
+                    uses interface-state;
+                    user-ext:CLI-ucallback "sub_iface_state_container_get";
+                }
+
+                uses all-ifaces-types-if-index;
+                uses all-ifaces-types-state;
+                uses data-ifaces-parameters-non-physical;
+                uses ipv4-data-ifaces-parameters-non-physical;
+                uses ipv6-data-ifaces-parameters-non-physical;
+                uses arp-data-ifaces-parameters;
+                uses eth-bundle-ifaces-l2-parameters;
+                uses eth-bundle-subifaces-parameters;
+
+                must "encapsulation/def or encapsulation/untagged or encapsulation/outer-vid"
+                {
+                    error-message "Please, set encapsulation for subinterface first";
+                }
+            }
+        }
+
+        container bundle-ifaces
+        {
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "bundle-ether/bundle-ether-sub";
+
+            list bundle-ether
+            {
+                description "Configure bundle-ether interface";
+
+                user-ext:CLI-ucallback "modify_interface";
+                user-ext:CLI-comm-help "Configure bundle-ether interface";
+                user-ext:CLI-no-comm-help "Configure bundle-ether interface";
+
+                user-ext:CLI-sort-callback "compare_interfaces_bundle";
+
+                key "bundle-id";
+
+                leaf bundle-id
+                {
+                    type bundle-id-t;
+                    description "Bundle-ether id";
+                    user-ext:CLI-param-help "Configure bundle-eth interface";
+                    user-ext:CLI-validate "bundle_id_validate";
+                }
+
+                container bundle
+                {
+                    description "Configure load-balancing method";
+                    user-ext:CLI-comm-help "Configure load-balancing method";
+                    user-ext:CLI-no-comm-help "Configure load-balancing method";
+
+                    container load-balancing
+                    {
+                        description "Configure load-balancing method";
+                        user-ext:CLI-comm-help "Configure load-balancing method";
+                        user-ext:CLI-no-comm-help "Configure load-balancing method";
+
+                        leaf hash
+                        {
+
+                            type bundle-lb-hash-t; // type bundle-load-balancing-hash-opts-t; FOR METASWITCH
+
+                            description "Set hash type";
+                            user-ext:CLI-comm-help "Set load-balancing method hash type";
+                            user-ext:CLI-no-comm-help "Set load-balancing method hash type to default";
+                            user-ext:CLI-param-help "Set hash type";
+                        }
+                    }
+                }
+
+                container bfd
+                {
+                    description "Bundle-Ether BFD configuration";
+                    user-ext:CLI-comm-help "Bundle-Ether BFD configuration";
+                    user-ext:CLI-no-comm-help "Bundle-Ether BFD configuration";
+
+                    container address-family
+                    {
+                        description "Configure BFD address-family";
+                        user-ext:CLI-comm-help "Configure BFD address-family";
+                        user-ext:CLI-no-comm-help "Configure BFD address-family";
+
+                        container ipv4
+                        {
+                            description "Configure BFD address-family IPv4";
+                            user-ext:CLI-comm-help "Configure IPv4 parameters";
+                            user-ext:CLI-no-comm-help "Configure IPv4 parameters";
+
+                            leaf source
+                            {
+                                type iface-ipv4-address-t;
+                                user-ext:CLI-ucallback "modify_interface_parameter";
+                                description "Set BFD source IPv4 address";
+                                user-ext:CLI-comm-help "Set BFD source address";
+                                user-ext:CLI-no-comm-help "Remove BFD soruce address";
+                                user-ext:CLI-param-help "Set BFD source address";
+                            }
+
+                            leaf destination
+                            {
+                                type iface-ipv4-address-t;
+                                user-ext:CLI-ucallback "modify_interface_parameter";
+                                description "Set BFD destination IPv4 address";
+                                user-ext:CLI-comm-help "Set BFD destination address";
+                                user-ext:CLI-no-comm-help "Remove BFD destination address";
+                                user-ext:CLI-param-help "Set BFD destination address";
+                            }
+
+                            leaf fast-detect
+                            {
+                                type empty;
+                                user-ext:CLI-ucallback "modify_interface_parameter";
+                                description "Enables BFD to detect failures in the path between adjacent forwarding engines";
+                                user-ext:CLI-comm-help "Set enable BFD to detect failures in the path between adjacent forwarding engines";
+                                user-ext:CLI-no-comm-help "Set disable BFD to detect failures in the path between adjacent forwarding engines";
+                                user-ext:CLI-param-help "Set enable BFD to detect failures in the path between adjacent forwarding engines";
+                            }
+                        }
+
+                        container ipv6
+                        {
+                            description "Configure BFD address-family IPv6";
+                            user-ext:CLI-comm-help "Configure IPv6 parameters";
+                            user-ext:CLI-no-comm-help "Configure IPv6 parameters";
+
+                            leaf source
+                            {
+                                type iface-ipv6-address-t;
+                                user-ext:CLI-ucallback "modify_interface_parameter";
+                                description "Set BFD source IPv6 address";
+                                user-ext:CLI-comm-help "Set BFD source address";
+                                user-ext:CLI-no-comm-help "Remove BFD source address";
+                                user-ext:CLI-param-help "Set BFD source address";
+                            }
+
+                            leaf destination
+                            {
+                                type iface-ipv6-address-t;
+                                user-ext:CLI-ucallback "modify_interface_parameter";
+                                description "Set BFD destination IPv6 address";
+                                user-ext:CLI-comm-help "Set BFD destination address";
+                                user-ext:CLI-no-comm-help "Remove BFD destination address";
+                                user-ext:CLI-param-help "Set BFD destination address";
+                            }
+
+                            leaf fast-detect
+                            {
+                                type empty;
+                                user-ext:CLI-ucallback "modify_interface_parameter";
+                                description "Enables BFD to detect failures in the path between adjacent forwarding engines";
+                                user-ext:CLI-comm-help "Set enable BFD to detect failures in the path between adjacent forwarding engines";
+                                user-ext:CLI-no-comm-help "Set disable BFD to detect failures in the path between adjacent forwarding engines";
+                                user-ext:CLI-param-help "Set enable BFD to detect failures in the path between adjacent forwarding engines";
+                            }
+                        }
+                    }
+
+                    leaf tx-interval
+                    {
+                        type bfd-min-interval;
+                        user-ext:CLI-ucallback "modify_interface_parameter";
+                        default 100;
+                        units "milliseconds";
+
+                        user-ext:CLI-comm-help "Set transmission interval for BFD protocol in milliseconds";
+                        user-ext:CLI-no-comm-help "Set transmission interval for BFD protocol to default";
+                        user-ext:CLI-param-help "Set transmission interval in milliseconds";
+
+                        description
+                            "This object specifies the default minimum interval, in
+                            microseconds, that the local system would like to use when
+                            transmitting BFD Control packets.  This value is used for
+                            BFD sessions that do not have a corresponding entry in
+                            the BFD Session Table.";
+                    }
+
+                    leaf rx-interval
+                    {
+                        type bfd-min-interval;
+                        user-ext:CLI-ucallback "modify_interface_parameter";
+                        default 100;
+                        units "milliseconds";
+
+                        user-ext:CLI-comm-help "Set receive interval for BFD protocol in milliseconds";
+                        user-ext:CLI-no-comm-help "Set receive interval for BFD protocol to default";
+                        user-ext:CLI-param-help "Set interval in milliseconds";
+
+                        description
+                            "This object specifies the default minimum interval (in
+                            microseconds) between received BFD control packets
+                            that the local system will advertise itself as capable
+                            of receiving.  This value is used for BFD sessions that do
+                            not have a corresponding entry in the BFD Session Table.";
+                    }
+
+                    leaf multiplier
+                    {
+                        type bfd-multiplier;
+                        user-ext:CLI-ucallback "modify_interface_parameter";
+                        default 2;
+
+                        user-ext:CLI-comm-help "Set multiplier for BFD session";
+                        user-ext:CLI-no-comm-help "Set multiplier interval for BFD session to default";
+                        user-ext:CLI-param-help "Set multiplier";
+
+                        description "This object specifies the Detect time multiplier.";
+                    }
+                }
+
+                container state
+                {
+                    config false;
+                    uses interface-state;
+                    user-ext:CLI-ucallback "iface_state_container_get";
+
+                }
+
+                uses all-ifaces-types-if-index;
+                uses all-ifaces-types-state;
+                uses data-ifaces-parameters-physic;
+                uses ipv4-data-ifaces-parameters-non-physical;
+                uses ipv6-data-ifaces-parameters-non-physical;
+                uses arp-data-ifaces-parameters;
+                uses eth-bundle-ifaces-l2-parameters;
+            }
+
+            list bundle-ether-sub
+            {
+                user-ext:CLI-ucallback "modify_interface";
+
+                description "Configure bundle-ether subinterface";
+
+                user-ext:CLI-sort-callback "compare_interfaces_bundle";
+
+                key "bundle-id";
+
+                leaf bundle-id
+                {
+                    type bundle-sub-id-t;
+                    description "Bundle-ether id";
+                    user-ext:CLI-param-help "Configure bundle-eth subinterface";
+                    user-ext:CLI-validate "bundle_id_validate";
+                }
+
+                uses all-ifaces-types-if-index;
+                uses all-ifaces-types-state;
+                uses data-ifaces-parameters-non-physical;
+                uses ipv4-data-ifaces-parameters-non-physical;
+                uses ipv6-data-ifaces-parameters-non-physical;
+                uses arp-data-ifaces-parameters;
+                uses eth-bundle-ifaces-l2-parameters;
+                uses eth-bundle-subifaces-parameters;
+
+                container state
+                {
+                    config false;
+                    uses interface-state;
+                    //user-ext:CLI-ucallback "iface_state_container_get";
+                }
+
+                must "encapsulation/def or encapsulation/untagged or encapsulation/outer-vid"
+                {
+                    error-message "Please, set encapsulation for subinterface first";
+                }
+            }
+        }
+
+        container ipip-ifaces
+        {
+            user-ext:CLI-not-command;
+
+            list tunnel-gre
+            {
+                description "Configure GRE tunnel";
+                user-ext:CLI-comm-help "Configure GRE tunnel";
+                user-ext:CLI-no-comm-help "Configure GRE tunnel";
+
+                key "gre-id";
+
+                leaf gre-id
+                {
+                    type tunnel-gre-id-t;
+                    description "GRE id";
+                    user-ext:CLI-param-help "Set GRE tunnel id";
+                }
+
+                container tunnel
+                {
+                    container source
+                    {
+                        choice source-addr
+                        {
+                            case source-addr-ipv4
+                            {
+                                container ipv4
+                                {
+                                    leaf address
+                                    {
+                                        type iface-ipv4-address-t;
+                                        description "Set IPv4 address";
+                                        user-ext:CLI-param-help "Set IPv4 address";
+                                    }
+                                    description "Set IPv4 address";
+                                }
+                            }
+
+                            case source-addr-ipv6
+                            {
+                                container ipv6
+                                {
+                                    leaf address
+                                    {
+                                        type iface-ipv6-address-t;
+                                        description "Set IPv6 address";
+                                        user-ext:CLI-param-help "Set IPv6 address";
+                                    }
+                                    description "Set IPv6 address";
+                                }
+                            }
+
+                            description "Configure tunnel source";
+                        }
+
+                        description "Configure tunnel source";
+                    }
+
+                    container destination
+                    {
+                        choice dest-addr
+                        {
+                            case dest-addr-ipv4
+                            {
+                                container ipv4
+                                {
+                                    leaf address
+                                    {
+                                        type iface-ipv4-address-t;
+                                        description "Set IPv4 address";
+                                        user-ext:CLI-param-help "Set IPv4 address";
+                                    }
+                                    description "Set IPv4 address";
+                                }
+                            }
+
+                            case dest-addr-ipv6
+                            {
+                                container ipv6
+                                {
+                                    leaf address
+                                    {
+                                        type iface-ipv6-address-t;
+                                        description "Set IPv6 address";
+                                        user-ext:CLI-param-help "Set IPv6 address";
+                                    }
+                                    description "Set IPv6 address";
+                                }
+                            }
+
+                            description "Configure tunnel destination";
+                        }
+
+                        description "Configure tunnel destination";
+                    }
+
+                    leaf ttl
+                    {
+                        type tunnel-ttl-t;
+                        description "Set TTL for GRE packets";
+                    }
+
+                    leaf key
+                    {
+                        type tunnel-gre-key-t;
+                        description "Set GRE key for tunnel";
+                    }
+
+                    leaf tos
+                    {
+                        type tunnel-gre-tos-t;
+                        description "Set TOS for GRE packets";
+                    }
+
+                    leaf df-bit
+                    {
+                        type tunnel-gre-df-t;
+                        description "Configure DF-bit on GRE packets";
+                    }
+
+                    description "Configure tunnel parameters";
+                }
+
+                uses all-ifaces-types-if-index;
+                uses all-ifaces-types-state;
+                uses data-ifaces-parameters-non-physical;
+                uses ipv4-data-ifaces-parameters-non-physical;
+                uses ipv6-data-ifaces-parameters-non-physical;
+                uses arp-data-ifaces-parameters;
+                uses interface-state;
+            }
+        }
+
+        container mgmt-ifaces
+        {
+            user-ext:CLI-not-command;
+
+            list mgmt
+            {
+
+                description "Configure mgmt interface";
+                user-ext:CLI-ucallback "modify_interface";
+                user-ext:CLI-comm-help "Configure mgmt interface";
+                user-ext:CLI-no-comm-help "Configure mgmt interface";
+
+                key "if-num";
+
+                leaf if-num
+                {
+                    type eth-iface-mgmt-num-t;
+                    description "<unit>/<dev>/<port>";
+                    user-ext:CLI-param-help "Configure mgmt interface";
+                }
+
+                leaf shutdown
+                {
+                    type empty;
+                    description "Disable interface";
+                    user-ext:CLI-ucallback "modify_interface_parameter";
+                    user-ext:CLI-comm-help "Disable interface";
+                    user-ext:CLI-no-comm-help "Enable interface";
+                }
+
+                leaf oper-status
+                {
+                    config false;
+
+                    type enumeration
+                    {
+                        enum down {value 0;}
+                        enum up {value 1;}
+                        enum unknown {value 2;}
+                    }
+
+                    description "Get interface oper-status";
+                    user-ext:CLI-ucallback "iface_oper_status_get";
+                }
+
+                leaf description
+                {
+                    type string-128;
+                    description "Set interface description";
+                    user-ext:CLI-param-help "Interface description value";
+                    user-ext:CLI-comm-help "Set interface description";
+                    user-ext:CLI-no-comm-help "Remove interface description";
+                }
+
+                container state
+                {
+                    config false;
+                    uses interface-state;
+                    //user-ext:CLI-ucallback "iface_mgmt_state_container_get";
+                }
+
+                uses all-ifaces-types-if-index;
+                uses ipv4-mgmt-data-ifaces-parameters-physic;
+                uses ipv6-mgmt-data-ifaces-parameters-physic;
+            }
+
+        }
+
+        container spec-ifaces
+        {
+            user-ext:CLI-not-command;
+
+            list loopback
+            {
+                description "Configure loopback interface";
+
+                user-ext:CLI-ucallback "modify_interface";
+                user-ext:CLI-comm-help "Configure loopback interface";
+                user-ext:CLI-no-comm-help "Configure loopback interface";
+
+                key "if-num";
+
+                leaf if-num
+                {
+                    type loopback-id-t;
+                    description "Loopback ID";
+                    user-ext:CLI-param-help "Set loopback ID";
+                }
+
+                container state
+                {
+                    config false;
+                    uses interface-state;
+                    user-ext:CLI-ucallback "iface_state_container_get";
+                }
+
+                container ipv4
+                {
+                    description "Configure IPv4 parameters";
+                    user-ext:CLI-comm-help "Configure IPv4 parameters";
+                    user-ext:CLI-no-comm-help "Configure IPv4 parameters";
+
+                    leaf-list address
+                    {
+                        type iface-ipv4-prefix-t;
+                        description "Add IPv4 address on interface";
+                        user-ext:CLI-ucallback "modify_if_address";
+                        user-ext:CLI-validate "modify_validate_ipv4_address";
+                        user-ext:CLI-param-help "IPv4 address value";
+                        user-ext:CLI-comm-help "Add IPv4 address on interface";
+                        user-ext:CLI-no-comm-help "Remove IPv4 address on interface";
+                    }
+                }
+
+                container ipv6
+                {
+                    description "Configure IPv6 parameters";
+                    user-ext:CLI-comm-help "Configure IPv6 parameters";
+                    user-ext:CLI-no-comm-help "Configure IPv6 parameters";
+
+                    leaf-list address
+                    {
+                        type iface-ipv6-prefix-t;
+                        description "Add IPv6 address on interface";
+                        user-ext:CLI-ucallback "modify_if_address";
+                        user-ext:CLI-validate "modify_validate_ipv6_address";
+                        user-ext:CLI-param-help "IPv6 address on interface value";
+                        user-ext:CLI-comm-help "Add IPv6 address on interface";
+                        user-ext:CLI-no-comm-help "Remove IPv6 address on interface";
+                    }
+                }
+
+                uses all-ifaces-types-if-index;
+                uses all-ifaces-types-state;
+                uses data-ifaces-parameters-non-physical;
+            }
+        }
+    }
+
+
+    grouping all-ifaces-service-use
+    {
+        container interfaces {
+
+            if-feature interfaces:standard-interfaces;
+            user-ext:CLI-not-command;
+
+            list interface {
+
+                description "Specify the attachment interface";
+                user-ext:CLI-comm-help "Specify the attachment interface";
+                user-ext:CLI-no-comm-help "Specify the attachment interface";
+
+                key "if-name";
+
+                leaf if-name {
+                    type custom:iface-name;
+                    description
+                        "Interface";
+
+                    user-ext:CLI-comm-help "Set interface name";
+                    user-ext:CLI-param-help "Set interface name";
+                }
+            }
+
+            list interface-sub
+            {
+                description "Specify the attachment sub-interface";
+
+                key "if-name";
+
+                leaf if-name {
+                    type custom:iface-name;
+                    description
+                        "Interface";
+
+                    user-ext:CLI-comm-help "Set interface name";
+                    user-ext:CLI-param-help "Set interface name";
+                }
+            }
+        }
+
+        container custom-interfaces {
+
+            if-feature interfaces:custom-interfaces;
+            user-ext:CLI-not-command;
+
+            container interface {
+
+                description "Specify the attachment interface";
+                user-ext:CLI-comm-help "Specify the attachment interface";
+                user-ext:CLI-no-comm-help "Specify the attachment interface";
+
+                container oneGE
+                {
+                    user-ext:CLI-not-command;
+                    user-ext:CLI-comm-switch "gigabitethernet/gigabitethernet-sub";
+
+                    list gigabitethernet
+                    {
+                        description "Specify the attachment 1G interface";
+                        user-ext:CLI-comm-help "Specify the attachment 1G interface";
+                        user-ext:CLI-no-comm-help "Specify the attachment 1G interface";
+
+                        key "if-num";
+
+                        leaf if-num
+                        {
+                            type eth-iface-num-t;
+                            description "<unit>/<dev>/<port>";
+                            user-ext:CLI-param-help "Set 1G interface";
+                        }
+                    }
+
+                    list gigabitethernet-sub
+                    {
+                        description "Specify the attachment 1G sub-interface";
+
+                        key "if-num";
+
+                        leaf if-num
+                        {
+                            type eth-subiface-range-t;
+                            description "<unit>/<dev>/<port>.<subid>";
+                            user-ext:CLI-param-help "Set 1G subinterface";
+                        }
+                    }
+                }
+
+                container tenGE
+                {
+                    user-ext:CLI-not-command;
+                    user-ext:CLI-comm-switch "tengigabitethernet/tengigabitethernet-sub";
+
+                    list tengigabitethernet
+                    {
+                        description "Specify the attachment 10G interface";
+                        user-ext:CLI-comm-help "Specify the attachment 10G interface";
+                        user-ext:CLI-no-comm-help "Specify the attachment 10G interface";
+
+                        key "if-num";
+
+                        leaf if-num
+                        {
+                            type eth-iface-num-t;
+                            description "<unit>/<dev>/<port>";
+                            user-ext:CLI-param-help "Set 10G interface";
+                        }
+                    }
+
+                    list tengigabitethernet-sub
+                    {
+                        description "Specify the attachment 10G sub-interface";
+
+                        key "if-num";
+
+                        leaf if-num
+                        {
+                            type eth-subiface-range-t;
+                            description "<unit>/<dev>/<port>.<subid>";
+                            user-ext:CLI-param-help "Set 10G subinterface";
+                        }
+                    }
+                }
+
+                container fortyGE
+                {
+                    user-ext:CLI-not-command;
+                    user-ext:CLI-comm-switch "fortygigabitethernet/fortygigabitethernet-sub";
+
+                    list fortygigabitethernet
+                    {
+                        description "Specify the attachment 40G interface";
+                        user-ext:CLI-comm-help "Specify the attachment 40G interface";
+                        user-ext:CLI-no-comm-help "Specify the attachment 40G interface";
+
+                        key "if-num";
+
+                        leaf if-num
+                        {
+                            type eth-iface-num-t;
+                            description "<unit>/<dev>/<port>";
+                            user-ext:CLI-param-help "Set 40G interface";
+                        }
+                    }
+
+                    list fortygigabitethernet-sub
+                    {
+                        description "Specify the attachment 40G sub-interface";
+
+                        key "if-num";
+
+                        leaf if-num
+                        {
+                            type eth-subiface-range-t;
+                            description "<unit>/<dev>/<port>.<subid>";
+                            user-ext:CLI-param-help "Set 40G subinterface";
+                        }
+                    }
+                }
+
+                container hundredGE
+                {
+                    user-ext:CLI-not-command;
+                    user-ext:CLI-comm-switch "hundredgigabitethernet/hundredgigabitethernet-sub";
+
+                    list hundredgigabitethernet
+                    {
+                        description "Specify the attachment 100G interface";
+                        user-ext:CLI-comm-help "Specify the attachment 100G interface";
+                        user-ext:CLI-no-comm-help "Specify the attachment 100G interface";
+
+                        key "if-num";
+
+                        leaf if-num
+                        {
+                            type eth-iface-num-t;
+                            description "<unit>/<dev>/<port>";
+                            user-ext:CLI-param-help "Set 100G interface";
+                        }
+                    }
+
+                    list hundredgigabitethernet-sub
+                    {
+                        description "Specify the attachment 100G sub-interface";
+
+                        key "if-num";
+
+                        leaf if-num
+                        {
+                            type eth-subiface-range-t;
+                            description "<unit>/<dev>/<port>.<subid>";
+                            user-ext:CLI-param-help "Set 100G subinterface";
+                        }
+                    }
+                }
+
+                container bundle-ifaces
+                {
+                    user-ext:CLI-not-command;
+                    user-ext:CLI-comm-switch "bundle-ether/bundle-ether-sub";
+
+                    list bundle-ether
+                    {
+                        description "Specify the attachment bundle-ether interface";
+                        user-ext:CLI-comm-help "Specify the attachment bundle-ether interface";
+                        user-ext:CLI-no-comm-help "Specify the attachment bundle-ether interface";
+
+                        key "bundle-id";
+
+                        leaf bundle-id
+                        {
+                            type bundle-id-t;
+                            description "Bundle-ether id";
+                            user-ext:CLI-param-help "Set bundle-eth interface";
+                            user-ext:CLI-validate "bundle_id_validate";
+                        }
+                    }
+
+                    list bundle-ether-sub
+                    {
+                        description "Specify the attachment bundle-ether subinterface";
+
+                        key "bundle-id";
+
+                        leaf bundle-id
+                        {
+                            type bundle-sub-id-t;
+                            description "Bundle-ether id";
+                            user-ext:CLI-param-help "Specify the attachment bundle-eth subinterface";
+                            user-ext:CLI-validate "bundle_id_validate";
+                        }
+                    }
+                }
+
+                container ipip-ifaces
+                {
+                    user-ext:CLI-not-command;
+
+                    list tunnel-gre
+                    {
+                        description "Specify the attachment GRE tunnel";
+                        user-ext:CLI-comm-help "Specify the attachment GRE tunnel";
+                        user-ext:CLI-no-comm-help "Specify the attachment GRE tunnel";
+
+                        key "gre-id";
+
+                        leaf gre-id
+                        {
+                            type tunnel-gre-id-t;
+                            description "GRE id";
+                            user-ext:CLI-param-help "Set GRE tunnel id";
+                        }
+                     }
+                }
+            }
+        }
+    }
+
+    container load-balancing
+    {
+        if-feature interfaces:custom-interfaces;
+        description "Configure load balancing optimize";
+        user-ext:CLI-comm-help "Configure load balancing optimize";
+        user-ext:CLI-no-comm-help "Configure load balancing optimize";
+
+        container hash-fields
+        {
+            description "Configure load balancing hash fields";
+            user-ext:CLI-comm-help "Configure load balancing hash fields";
+            user-ext:CLI-no-comm-help "Configure load balancing hash fields";
+
+            leaf mac-src
+            {
+                type empty;
+                description "Enable source MAC address hash field";
+                user-ext:CLI-comm-help "Enable source MAC address hash field";
+                user-ext:CLI-no-comm-help "Disable source MAC address hash field";
+                user-ext:CLI-ucallback "modify_balancing_parameter";
+            }
+
+            leaf mac-dst
+            {
+                type empty;
+
+                description "Enable destination MAC address hash field";
+                user-ext:CLI-comm-help "Enable destination MAC address hash field";
+                user-ext:CLI-no-comm-help "Disable destination MAC address hash field";
+                user-ext:CLI-ucallback "modify_balancing_parameter";
+            }
+
+            leaf ip-src
+            {
+                type empty;
+
+                description "Enable source IP address hash field";
+                user-ext:CLI-comm-help "Enable source IP address hash field";
+                user-ext:CLI-no-comm-help "Disable source IP address hash field";
+                user-ext:CLI-ucallback "modify_balancing_parameter";
+            }
+
+            leaf ip-dst
+            {
+                type empty;
+
+                description "Enable destination IP address hash field";
+                user-ext:CLI-comm-help "Enable destination IP address hash field";
+                user-ext:CLI-no-comm-help "Disable destination IP address hash field";
+                user-ext:CLI-ucallback "modify_balancing_parameter";
+            }
+
+            leaf port-src
+            {
+                type empty;
+
+                description "Enable source L4PORT hash field";
+                user-ext:CLI-comm-help "Enable source L4PORT hash field";
+                user-ext:CLI-no-comm-help "Disable source L4PORT hash field";
+                user-ext:CLI-ucallback "modify_balancing_parameter";
+            }
+
+            leaf port-dst
+            {
+                type empty;
+
+                description "Enable destination L4PORT hash field";
+                user-ext:CLI-comm-help "Enable destination L4PORT hash field";
+                user-ext:CLI-no-comm-help "Disable destination L4PORT hash field";
+                user-ext:CLI-ucallback "modify_balancing_parameter";
+            }
+
+            leaf mpls
+            {
+                type empty;
+
+                description "Enable MPLS labels hash field";
+                user-ext:CLI-comm-help "Enable MPLS labels hash field";
+                user-ext:CLI-no-comm-help "Disable MPLS labels hash field";
+                user-ext:CLI-ucallback "modify_balancing_parameter";
+            }
+
+        }
+    }
+
+    typedef iface-base-name-no-sub
+    {
+        type enumeration
+        {
+            enum "gigabitethernet" { description "1G interface"; }
+            enum "tengigabitethernet" { description "10G interface"; }
+            enum "fortygigabitethernet" { description "40G interface"; }
+            enum "hundredgigabitethernet" { description "100G interface"; }
+        }
+        description " ";
+    }
+
+    grouping bfd-state
+    {
+        leaf packet-processing
+        {
+            type bfd-lacp-packet-processing;
+            description "Packet processing status based on micro-BFD session state";
+            config false;
+        }
+
+        leaf local-discriminator
+        {
+            type bfd-discriminator;
+            description "Local discriminator";
+            config false;
+        }
+        leaf remote-discriminator
+        {
+            type bfd-discriminator;
+            description "Remote discriminator";
+            config false;
+        }
+        leaf remote-multiplier
+        {
+            type bfd-multiplier;
+            description "Remote multiplier";
+            config false;
+        }
+        leaf source-port
+        {
+            type bfd-port;
+            description "Source UDP port";
+            config false;
+        }
+        leaf dest-port
+        {
+            type bfd-port;
+            description "Destination UDP port";
+            config false;
+        }
+
+        container session-running
+        {
+            description "BFD session running information";
+            config false;
+
+            leaf session-index
+            {
+                type uint32;
+                description "An index used to uniquely identify BFD sessions";
+            }
+            leaf remote-heard
+            {
+                type boolean;
+                description
+                    "True if the local system is actively receiving BFD packets
+                    from the remote system, and false if the local system has
+                    not received BFD packets recently (within the detection
+                    time) or if the local system is attempting to tear down the
+                    BFD session.";
+            }
+            leaf local-state
+            {
+                type bfd-state-enum;
+                description "Local state";
+            }
+            leaf remote-state
+            {
+                type bfd-state-enum;
+                description "Remote state";
+            }
+            leaf local-diagnostic
+            {
+                type bfd-diagnostic;
+                description "Local diagnostic";
+            }
+            leaf remote-diagnostic
+            {
+                type bfd-diagnostic;
+                description "Remote diagnostic";
+            }
+            leaf negotiated-tx-interval
+            {
+                type uint32;
+                units microseconds;
+                description "Negotiated transmit interval";
+            }
+            leaf negotiated-rx-interval
+            {
+                type uint32;
+                units microseconds;
+                description "Negotiated receive interval";
+            }
+            leaf detection-time
+            {
+                type uint32;
+                units microseconds;
+                description "Detection time";
+            }
+        }
+
+        container session-statistics
+        {
+            description "BFD per-session statistics";
+            config false;
+
+            leaf create-time
+            {
+                type uint64;
+                description "Seconds count since session was created";
+            }
+            leaf last-down-time
+            {
+                type uint64;
+                description "Seconds count since last time the session went down";
+            }
+            leaf last-up-time
+            {
+                type uint64;
+                description "Seconds count since last time the session went up";
+            }
+            leaf down-count
+            {
+                type uint32;
+                description "Session Down Count";
+            }
+            leaf admin-down-count
+            {
+                type uint32;
+                description "Session Admin-Down Count";
+            }
+            leaf receive-packet-count
+            {
+                type uint64;
+                description "Received Packet Count";
+            }
+            leaf send-packet-count
+            {
+                type uint64;
+                description "Sent Packet Count";
+            }
+            leaf receive-bad-packet
+            {
+                type uint64;
+                description "Received bad packet count";
+            }
+            leaf send-failed-packet
+            {
+                type uint64;
+                description "Packet Failed to Send Count";
+            }
+        }
+    }
+
+    grouping bfd-ipv4-conf
+    {
+        leaf source
+        {
+            type iface-ipv4-address-t;
+            config false;
+        }
+
+        leaf destination
+        {
+            type iface-ipv4-address-t;
+            config false;
+        }
+    }
+
+    grouping bfd-ipv6-conf
+    {
+        leaf source
+        {
+            type iface-ipv6-address-t;
+            config false;
+        }
+
+        leaf destination
+        {
+            type iface-ipv6-address-t;
+            config false;
+        }
+    }
+
+    notification point-to-point-subnet
+    {
+        user-ext:CLI-not-command;
+        leaf warning
+        {
+            user-ext:CLI-not-command;
+            description "point-to-point subnet warning";
+            type string;
+        }
+    }
+
+    grouping standard-interface
+    {
+
+        description "Standard interface information.";
+
+        leaf interface
+        {
+            type custom:iface-name;
+            description "Standard interface name.";
+
+            mandatory true;
+
+            user-ext:CLI-param-help "Set interface name";
+            user-ext:CLI-comm-help "Set interface name";
+            user-ext:CLI-no-comm-help "Remove interface name";
+        }
+    }
+
+    grouping custom-interface
+    {
+
+        description "Custom interface information.";
+
+        container interface
+        {
+            description "Specify the interface";
+            user-ext:CLI-comm-help "Specify the interface";
+            user-ext:CLI-no-comm-help "Specify the interface";
+
+
+            container oneGE
+            {
+                description "One GE interface information.";
+
+                user-ext:CLI-not-command;
+
+                leaf gigabitethernet
+                {
+                    type eth-iface-num-t;
+                    description "<unit>/<dev>/<port>";
+                    user-ext:CLI-param-help "1G interface name";
+                }
+
+            } // oneGE
+
+            container tenGE
+            {
+                description "Ten GE interface information.";
+
+                user-ext:CLI-not-command;
+
+                leaf tengigabitethernet
+                {
+                    type eth-iface-num-t;
+                    description "10G interface name";
+                    user-ext:CLI-param-help "10G interface name";
+                }
+
+            } // tenGE
+
+            container fortyGE
+            {
+                description "Forty GE interface information.";
+
+                user-ext:CLI-not-command;
+
+                leaf fortygigabitethernet
+                {
+                    type eth-iface-num-t;
+                    description "<unit>/<dev>/<port>";
+                    user-ext:CLI-param-help "40G interface name";
+                }
+
+            } // fortyGE
+
+            container hundredGE
+            {
+                description "Hundred GE interface information.";
+
+                user-ext:CLI-not-command;
+
+                leaf hundredgigabitethernet
+                {
+                    type eth-iface-num-t;
+                    description "<unit>/<dev>/<port>";
+                    user-ext:CLI-param-help "100G interface name";
+                }
+
+            } // hundredGE
+
+            container bundle-ifaces
+            {
+                description "Bundle interface information.";
+
+                user-ext:CLI-not-command;
+
+                leaf bundle-ether
+                {
+                    type bundle-id-t;
+                    description "Bundle-ether id";
+                    user-ext:CLI-param-help "Bundle interface name";
+                }
+
+            } // bundle-ifaces
+
+            container spec-ifaces
+            {
+                description "Special interface information.";
+
+                user-ext:CLI-not-command;
+
+                leaf loopback
+                {
+                    type loopback-id-t;
+                    description "Loopback ID";
+                    user-ext:CLI-param-help "Loopback ID";
+                }
+
+            } // spec-ifaces
+
+        } // interface
+
+    } // custom-interface
+
+    grouping iface-service-use
+    {
+
+        container interface {
+          if-feature interfaces:standard-interfaces;
+          description "Standard interface information.";
+
+          user-ext:CLI-not-command;
+
+          uses standard-interface;
+        }
+
+        container custom-interface {
+          if-feature interfaces:custom-interfaces;
+          description "Custom interface information.";
+
+          user-ext:CLI-not-command;
+          uses custom-interface;
+        }
+
+    } // iface-service-use
+
+}

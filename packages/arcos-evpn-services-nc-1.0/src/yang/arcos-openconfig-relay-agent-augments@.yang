@@ -1,0 +1,80 @@
+module arcos-openconfig-relay-agent-augments {
+  yang-version 1.1;
+  namespace "http://yang.arrcus.com/arcos/openconfig/relay-agent/augments";
+  prefix arc-oc-relay-aug;
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+
+  import openconfig-relay-agent {
+    prefix oc-relay;
+  }
+
+  import openconfig-interfaces {
+    prefix oc-if;
+  }
+
+  grouping relay-agent-ipv6-helper-config {
+    description
+      "DHCPv6 server configuration for relay";
+
+    container servers {
+      description
+        "Enclosing container for list of DHCPv6 servers";
+
+      list server {
+        key "name";
+        unique "helper-address helper-interface";
+        max-elements 64;
+        description
+          "DHCPv6 server to relay towards";
+
+        leaf name {
+          type string {
+            length "1..64";
+          }
+          description "Name of this server entry";
+        }
+
+        leaf helper-address {
+          mandatory true;
+          type inet:ipv6-address;
+          description "IPv6 address of DHCPv6 server to relay requests towards";
+        }
+
+        leaf helper-interface {
+          mandatory true;
+          type oc-if:base-interface-ref;
+          description
+            "The interface name to forward DHCPv6 requests out to reach this server";
+        }
+      }
+    }
+  }
+
+  augment "/oc-relay:relay-agent/oc-relay:dhcp/oc-relay:config" {
+    leaf-list helper-address {
+      max-elements 16;
+      type inet:ip-address;
+      description
+        "IPv4 address of DHCP server to relay requests towards";
+    }
+  }
+
+  augment "/oc-relay:relay-agent/oc-relay:dhcp/oc-relay:state" {
+    leaf-list helper-address {
+      type inet:ip-address;
+      description
+        "IPv4 address of DHCP server to relay requests towards";
+    }
+  }
+  augment "/oc-relay:relay-agent/oc-relay:dhcpv6/oc-relay:config" {
+    uses relay-agent-ipv6-helper-config;
+  }
+
+  augment "/oc-relay:relay-agent/oc-relay:dhcpv6/oc-relay:state" {
+    uses relay-agent-ipv6-helper-config;
+  }
+
+}

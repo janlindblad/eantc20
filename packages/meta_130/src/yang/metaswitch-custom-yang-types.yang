@@ -1,0 +1,44 @@
+module metaswitch-custom-yang-types {
+
+  namespace "http://metaswitch.com/yang/nbu/metaswitch-custom-yang-types/201803090000Z";
+
+  prefix custom;
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Metaswitch custom yang data types";
+
+  revision 2018-03-09 {
+    description
+      "Initial revision.";
+  }
+
+
+  feature standard-interfaces {
+    description
+      "This feature means that the device supports standard interfaces.";
+  }
+
+  typedef iface-name
+  {
+    type string {
+      length "1..255";
+// A pattern may be specified here to restrict the interface names that can be used.  For example:
+//    pattern "(eth([0-9])";
+    }
+    description
+      "Interface name";
+  }
+
+
+} // metaswitch-custom-yang-types
+

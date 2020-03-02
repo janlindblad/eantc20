@@ -1,0 +1,1960 @@
+module evpn {
+
+  namespace "http://metaswitch.com/yang/nbu/evpn/201703150000Z";
+
+  prefix evpn;
+
+  import bgp { prefix "bgp"; }
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix "interfaces"; }
+  import metaswitch-yang-types { prefix meta; }
+  import ethernet-segment { prefix es; }
+  import metaswitch-custom-yang-types { prefix "custom"; }
+  import routing { prefix "routing"; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Ethernet VPN Manager.";
+
+  revision 2017-03-15 {
+    description "Initial revision.";
+  }
+
+  feature evpn-mpls {
+    description
+      "This feature means that the device supports EVPN over MPLS.";
+  }
+
+  feature evpn-vxlan {
+    description
+      "This feature means that the device supports EVPN over VXLAN.";
+  }
+
+  feature static-type2-routes {
+    description
+      "This feature means that the device supports configuration of static
+      MAC and MAC/IP pairs that EVPN advertises as type-2 routes.";
+  }
+
+  typedef evpn-max-mac-limit-t {
+    type uint32 {
+      range "1..512000";
+    }
+    description
+      "(1-512000)";
+  }
+
+  typedef evpn-aging-time-t {
+    type uint32 {
+      range "300..86400";
+    }
+    description
+      "(300-86400)";
+  }
+
+  typedef evpn-index-t {
+    type uint32 {
+      range "1..65535";
+    }
+    description
+      "EVPN index (1..65535)";
+  }
+
+  typedef evpn-vni-t {
+    type uint32 {
+      range "1..16777215";
+    }
+    description
+      "VXLAN Network Identifer (1..16777215)";
+  }
+
+  typedef evi-name-t {
+    type meta:ascii-string {
+      length "1..32";
+    }
+    description
+      "WORD (1-32)";
+  }
+
+  typedef evi-name-string-or-empty {
+    type string {
+      length "0..32";
+    }
+    description
+      "EVI name used for state fields where the length may be zero";
+  }
+
+  typedef vrf-name-string-or-empty {
+    type string {
+      length "0..31";
+    }
+    description
+      "VRF name used for state fields where the length may be zero";
+  }
+
+  typedef route-source-t  {
+    type enumeration {
+
+      enum local {
+        value 1;
+        description
+          "Locally originated EVPN route";
+      }
+
+      enum remote {
+        value 2;
+        description
+          "EVPN route from a remote PE";
+      }
+    }
+    description
+      "The source of an EVPN route.";
+  }
+
+  typedef group-address-mode-t {
+    type enumeration {
+
+      enum pim-asm {
+        value 2;
+        description
+          "Any Source Multicast (ASM), with PIM Sparse Mode.";
+      }
+
+      enum pim-bidir {
+        value 3;
+        description
+          "Bi-directional PIM.";
+      }
+    }
+    description
+      "PIM mode for a configured multicast group address used for EVPN/VXLAN.";
+  }
+
+  typedef local-multicast-mode-t {
+    type enumeration {
+
+      enum ingress {
+        value 1;
+        description
+          "Ingress replication";
+      }
+
+      enum pim-asm {
+        value 2;
+        description
+          "Any Source Multicast (ASM), with PIM Sparse Mode.";
+      }
+
+      enum pim-bidir {
+        value 3;
+        description
+          "Bi-directional PIM.";
+      }
+    }
+    description
+      "Locally configured multicast mode.";
+  }
+
+  typedef multicast-mode-t {
+    type enumeration {
+
+      enum ingress {
+        value 1;
+        description
+          "Ingress replication";
+      }
+
+      enum pim-asm {
+        value 2;
+        description
+          "PIM-ASM multicast group.";
+      }
+
+      enum pim-bidir {
+        value 3;
+        description
+          "PIM-BIDIR multicast group.";
+      }
+
+      enum pim-ssm {
+        value 4;
+        description
+          "PIM-SSM multicast group.";
+      }
+
+      enum other {
+        value 5;
+        description
+          "Any other unsupported type.";
+      }
+    }
+    description
+      "The mode used for forwarding BUM traffic for a VXLAN bridge domain.";
+  }
+
+  typedef mac-error-t {
+    type enumeration {
+
+      enum mac-duplication {
+        value 1;
+        description
+          "MAC duplication error.";
+      }
+
+      enum sticky-mac {
+        value 2;
+        description
+          "Sticky MAC error.";
+      }
+    }
+    description
+      "Type of errors reported by the MAC error notification.";
+  }
+
+  typedef evi-oper-reason-t {
+    type enumeration {
+      enum none {
+        value 1;
+        description "EVI instance is up or going up";
+      }
+      enum entity-not-up {
+        value 2;
+        description "EVPN entity is not oper up";
+      }
+      enum admin-config {
+        value 3;
+        description "Row status or admin status configuration";
+      }
+      enum resource-failure {
+        value 4;
+        description "Insufficient resources";
+      }
+      enum no-route-distinguisher {
+        value 8;
+        description "No route distinguisher is available";
+      }
+      enum route-distinguisher-clash {
+        value 9;
+        description "Another active EVI instance has the same route distignuisher";
+      }
+      enum no-bgp-id {
+        value 14;
+        description "BGP router identifier is not yet available";
+      }
+    }
+    description "Reason for the state of the EVI instance.";
+  }
+
+  typedef bridge-domain-oper-reason-t {
+    type enumeration {
+      enum none {
+        value 1;
+        description "Bridge domain is up or going up";
+      }
+      enum admin-config {
+        value 3;
+        description "Row status or admin status configuration";
+      }
+      enum resource-failure {
+        value 4;
+        description "Insufficient resources";
+      }
+      enum evi-not-up {
+        value 6;
+        description "EVI instance is not oper up";
+      }
+      enum bad-vni{
+        value 11;
+        description "A valid VNI is not available";
+      }
+      enum vni-clash {
+        value 12;
+        description "Another bridge domain has the same VNI";
+      }
+      enum no-system-mac {
+        value 18;
+        description "The system MAC address is unknown";
+      }
+      enum no-mcast-grp {
+        value 20;
+        description "No multicast group address is available";
+      }
+      enum no-source-ip {
+        value 21;
+        description "No source IP address is available";
+      }
+      enum bad-tnnl-dest-type {
+        value 22;
+        description "The VXLAN tunnel destination type is invalid";
+      }
+    }
+    description "Reason for the state of the Bridge Domain.";
+  }
+
+  typedef bridge-domain-interface-oper-reason-t {
+    type enumeration {
+      enum none {
+        value 1;
+        description "Bridge domain interface is up or going up";
+      }
+      enum admin-config {
+        value 3;
+        description "Row status or admin status configuration";
+      }
+      enum resource-failure {
+        value 4;
+        description "Insufficient resources";
+      }
+      enum no-if-info {
+        value 5;
+        description "Interface information is not available";
+      }
+      enum bd-not-up {
+        value 7;
+        description "Bridge domain is not oper up";
+      }
+      enum vlan-sub-interface-evi-clash
+      { value 13;
+        description
+          "Multiple VLAN sub interfaces configured for the same EVI on the
+           same Ethernet Segment";
+      }
+    }
+    description "Reason for the state of the Bridge Domain Interface.";
+  }
+
+  typedef evi-route-target-oper-reason-t {
+    type enumeration {
+      enum none {
+        value 1;
+        description "Route target is up or going up";
+      }
+      enum admin-config {
+        value 3;
+        description "Row status or admin status configuration";
+      }
+      enum evi-not-up {
+        value 6;
+        description "EVI instance is not oper up";
+      }
+      enum rt-type-clash{
+        value 15;
+        description "Has same value as the auto route target but different type";
+      }
+      enum rt-clash {
+        value 19;
+        description "Another EVI route target has the same value";
+      }
+    }
+    description "Reason for the state of the EVI Route Target.";
+  }
+
+  typedef evpn-mac-move-limit-t {
+    type uint32 {
+      range "2..10";
+    }
+    description
+      "(2-10)";
+  }
+
+  typedef evpn-mac-move-duration-t {
+    type uint32 {
+      range "1..1000";
+    }
+    description
+      "SEC (1-1000)";
+  }
+
+  typedef evpn-irb-mode-t  {
+    type enumeration {
+      enum symmetric {
+        value 1;
+        description
+          "Symmetric";
+      }
+      enum asymmetric {
+        value 2;
+        description
+          "Asymmetric";
+      }
+    }
+    description
+      "The preferred mode for forwarding traffic on an IRB.";
+  }
+
+  typedef evpn-addr-type-t {
+    type enumeration {
+      enum ipv4 {
+        value 1;
+        description
+          "IPv4";
+      }
+      enum ipv6 {
+        value 2;
+        description
+          "IPv6";
+      }
+      enum both {
+        value 3;
+        description
+          "Both";
+      }
+    }
+    description
+      "Types of IP addresses that EVPN acts on.";
+  }
+
+  typedef activation-status-t {
+    type enumeration {
+
+      enum down {
+        value 1;
+        description "Down";
+      }
+      enum running {
+        value 2;
+        description "Running";
+      }
+      enum re-learning {
+        value 3;
+        description "Re-learning";
+      }
+      enum programming-remote {
+        value 4;
+        description "Programming remote state";
+      }
+      enum advertising-local {
+        value 5;
+        description "Advertising local state";
+      }
+      enum done {
+        value 6;
+        description "Done";
+      }
+    }
+    description
+      "The EVPN overall activation status.";
+  }
+
+  typedef exit-reason-t {
+    type enumeration {
+
+      enum none {
+        value 1;
+        description "None";
+      }
+      enum bgp-timeout {
+        value 2;
+        description "BGP timeout";
+      }
+      enum not-supported {
+        value 3;
+        description "Not supported";
+      }
+      enum success {
+        value 4;
+        description "Success";
+      }
+    }
+    description
+      "The EVPN graceful restart exit reason.";
+  }
+
+  typedef vrf-afi {
+    type enumeration {
+      enum ipv4                             { value 1; }
+      enum ipv6                             { value 2; }
+    }
+    description
+      "VRF AFI types";
+  }
+
+  grouping bridge-domain-config {
+
+    // Low-level model info: Corresponds to AMB_EVPN_BD (evpnBdTable).
+
+    description
+      "Configuration information for an EVPN bridge domain.";
+
+    container mac {
+
+      description
+        "MAC configuration.";
+
+      user-ext:CLI-comm-help "Configure MAC parameters for bridge-domain";
+      user-ext:CLI-no-comm-help "Configure MAC parameters for bridge-domain";
+
+      // Low-level model info: Corresponds to evpnBdMacLearning.
+      // Low-level model info: Note that the default is flipped (yang disabled, MIB enabled).  Use yang default.
+      leaf learning {
+        type empty;
+        description
+          "Enables/disables MAC learning on the attachment circuits of this
+           bridge domain.";
+
+        user-ext:CLI-comm-help "Enable MAC-learning";
+        user-ext:CLI-no-comm-help "Disable MAC-learning";
+      }
+
+      // Low-level model info: Corresponds to evpnBdMacAddrLimit.
+      // Low-level model info: Note that the yang default is different to the MIB default.
+      leaf limit {
+        type evpn-max-mac-limit-t;
+        default 4000;
+        description
+          "The maximum number of learned entries allowed in the
+           bridge domain's FDB for this interface.";
+
+        user-ext:CLI-comm-help "Set MAC-limit maximum learning";
+        user-ext:CLI-no-comm-help "Set MAC-limit maximum learning to default";
+        user-ext:CLI-param-help "Set maximum number of learning MACs";
+      }
+
+      // Low-level model info: Corresponds to evpnBdMacAgingTime.
+      // Low-level model info: Note that the yang default is different to the MIB default.
+      leaf aging-time {
+        type evpn-aging-time-t;
+        units "seconds";
+        default 300;
+        description
+          "The aging time for dynamic entries in the EVPN bridge domain's FDB.";
+
+        user-ext:CLI-comm-help "Set MAC-Aging time in seconds";
+        user-ext:CLI-no-comm-help "Set MAC-Aging time to default";
+        user-ext:CLI-param-help "Set MAC-Aging time in seconds";
+      }
+    } // mac
+
+    container vxlan-config {
+      if-feature evpn-vxlan;
+      description
+        "VXLAN configuration.";
+
+      user-ext:CLI-comm-help "Configure VXLAN parameters";
+      user-ext:CLI-no-comm-help "Remove VXLAN configuration";
+
+      // The VNI must be specified when VXLAN encapsulation is used
+      must "(vni) or (not(../../vxlan))" {
+         error-message "The VNI must be specified if VXLAN encapsulation is used";
+      }
+
+      // Low-level model info: Corresponds to evpnBdVni.
+      leaf vni {
+        type evpn-vni-t;
+        description
+          "The VXLAN network identifier for this bridge domain.";
+
+        user-ext:CLI-comm-help "Set VNI for the bridge-domain";
+        user-ext:CLI-no-comm-help "Remove VNI from bridge-domain";
+        user-ext:CLI-param-help "Set VNI for the bridge-domain";
+      }
+
+      container multicast {
+        description
+          "Multicast configuration.";
+        user-ext:CLI-comm-help "Configure multicast parameters";
+        user-ext:CLI-no-comm-help "Remove multicast configuration";
+        user-ext:CLI-param-help "Set multicast parameters for the bridge-domain";
+
+        // Low-level model info: Corresponds to evpnBdMcastGpAddress.
+        leaf group-address {
+          type meta:ip-multicast-address;
+          description
+            "Multicast group address";
+
+          user-ext:CLI-comm-help "Use IP multicast for BUM traffic for this bridge-domain";
+          user-ext:CLI-no-comm-help "Use ingress replication for BUM traffic for this bridge-domain";
+          user-ext:CLI-param-help "Set the IP multicast group address";
+        }
+
+        // Low-level model info: Corresponds to evpnBdMcastGpAddressMode.
+        leaf group-address-mode {
+          type group-address-mode-t;
+
+          // group-address-mode can only be set after configuring the group-address
+          when "(../group-address)";
+
+          default pim-asm;
+          description
+            "Multicast group address mode.
+            When group address is not set, default mode is ingress replication.
+            If the group address is configured, but the mode isn't, the default value is pim-asm.";
+
+          user-ext:CLI-comm-help "PIM mode for the IP multicast group address.";
+          user-ext:CLI-no-comm-help "Set PIM mode for the IP multicast group address to the default.";
+          user-ext:CLI-param-help "Set the PIM mode for the IP multicast group address";
+        }
+      }
+
+    }
+  } // bridge-domain-config
+
+  grouping static-type2-route-config {
+
+    description
+      "Static MAC or MAC / IP pairs that EVPN should adertise as type 2 routes";
+
+    container static-type2-routes {
+
+      if-feature static-type2-routes;
+
+      description
+        "Static MAC or MAC / IP pairs that EVPN should advertise as type 2
+        routes";
+
+      user-ext:CLI-comm-help "Configure Static type 2 routes";
+      user-ext:CLI-no-comm-help "Remove Static type 2 routes";
+
+      // Low-level model info: Corresponds to AMB_STUBS_MAI_MAC_IP_CFG with maiMacIpCfgSticky set to AMB_TRUE.
+      list static-mac-ip {
+
+        description
+          "Static MAC / IP pairs that EVPN should advertise as type 2 routes";
+
+        user-ext:CLI-comm-help "Configure Static MAC / IP pair";
+        user-ext:CLI-no-comm-help "Remove Static MAC / IP pair";
+
+        key "mac-address ip-address";
+
+        // The Interface corresponding to the ethernet segment must be configured.
+        must "(if-name)" {
+            error-message "The interface over which the MAC/IP pair is reached must be specified";
+        }
+
+        // Low-level model info: Corresponds to maiMacIpCfgMacAddress.
+        leaf mac-address {
+          type meta:mac-address;
+          description
+            "The MAC address to advertise in the type-2 route";
+
+          user-ext:CLI-param-help "Set the MAC address to advertise in the type-2 route";
+        }
+
+        // Low-level model info: Corresponds to maiMacIpCfgIpAddress(Type).
+        leaf ip-address {
+          type interfaces:iface-ip-address-t;
+          description
+            "The IP prefix to advertise in the type-2 route";
+
+          user-ext:CLI-param-help "Set the IP prefix to advertise in the type-2 route";
+        }
+
+        // Low-level model info: Corresponds to maiMacIpCfgIfIndex.
+        leaf if-name {
+          type custom:iface-name;
+          description
+            "The interface name of the ethernet segment that the MAC/IP pair is
+            reachable over";
+
+          user-ext:CLI-comm-help "Set interface name of the ethernet segment";
+          user-ext:CLI-no-comm-help "Remove interface name of the ethernet segment";
+          user-ext:CLI-param-help "Set interface name of the ethernet segment";
+        }
+
+      } // static-mac-ip
+
+      // Low-level model info: Corresponds to AMB_STUBS_MAI_MAC_IP_CFG with maiMacIpCfgIpAddressType set to other(0) and maiMacIpCfgSticky set to AMB_TRUE.
+      list static-mac {
+
+        description
+          "Static MACs that EVPN should advertise as type 2 routes";
+
+        user-ext:CLI-comm-help "Configure Static MAC";
+        user-ext:CLI-no-comm-help "Remove Static MAC";
+
+        key "mac-address";
+
+        // The Interface corresponding to the ethernet segment must be configured.
+        must "(if-name)" {
+            error-message "The interface over which the MAC/IP pair is reached must be specified";
+        }
+
+        // Low-level model info: Corresponds to maiMacIpCfgMacAddress.
+        leaf mac-address {
+          type meta:mac-address;
+          description
+            "The MAC address to advertise in the type-2 route";
+
+          user-ext:CLI-param-help "Set the MAC address to advertise in the type-2 route";
+        }
+
+        // Low-level model info: Corresponds to maiMacIpCfgIfIndex.
+        leaf if-name {
+          type custom:iface-name;
+          description
+            "The interface name of the ethernet segment that the MAC/IP pair is
+            reachable over";
+
+          user-ext:CLI-comm-help "Set interface name of the ethernet segment";
+          user-ext:CLI-no-comm-help "Remove interface name of the ethernet segment";
+          user-ext:CLI-param-help "Set interface name of the ethernet segment";
+        }
+
+      } // static-mac
+
+    } // static-type2-routes
+
+  } // static-type2-route-config
+
+  grouping bridge-domain-state {
+
+    // Low-level model info: Corresponds to read-only state in AMB_EVPN_BD.
+
+    description
+      "Bridge domain status information.";
+
+    // Low-level model info: Corresponds to evpnBdOperStatus.
+    leaf oper-status {
+      type meta:oper-status;
+      config false;
+      description
+        "The current operational state of this bridge-domain.";
+    }
+
+    // Low-level model info: Corresponds to evpnBdOperReason.
+    leaf oper-reason {
+      type bridge-domain-oper-reason-t;
+      config false;
+      description
+        "The reason for the operational state of this bridge domain";
+    }
+
+    container mac {
+
+      config false;
+
+      description
+        "MAC address related parameters.";
+
+      // Low-level model info: Corresponds to evpnBdMacAgingTime.
+      leaf aging-time {
+        type evpn-aging-time-t;
+        config false;
+        description
+          "The aging time for entries in the bridge domain.";
+      }
+
+      // Low-level model info: Corresponds to evpnBdMacAddrLimit.
+      leaf limit {
+        type evpn-max-mac-limit-t;
+        config false;
+        description
+          "The maximum number of learned entries allowed in the
+           bridge domain's FDB for this interface.";
+      }
+    } //mac
+
+    container vxlan {
+
+      if-feature evpn-vxlan;
+      description
+        "VXLAN parameters";
+
+      // Low-level model info: Corresponds to evpnBdVni.
+      leaf vni {
+        type evpn-vni-t;
+        description
+          "The VXLAN network identifier for this bridge domain..";
+      }
+    }
+  }
+
+  grouping bridge-domain-interface-config {
+
+    // Low-level model info: Corresponds to AMB_EVPN_IF_BIND_CFG (evpnIfBindCfgTable).
+
+    description
+      "This table provides an association between an interface (as
+      an attachment circuit) and an EVPN bridge domain.
+
+      Note that changes to this table may cause the corresponding
+      AC to go operationally down as it may involve re-programming
+      the AC in the data plane.";
+
+    user-ext:CLI-comm-help "Configure bridge domain interface parameters";
+    user-ext:CLI-no-comm-help "Configure bridge domain interface parameters";
+
+    container mac {
+
+      description
+        "MAC configuration.";
+
+      user-ext:CLI-comm-help "Configure MAC parameters on interface";
+      user-ext:CLI-no-comm-help "Configure MAC parameters on interface";
+
+      // Low-level model info: Corresponds to evpnIfBindCfgMacLearning.
+      // Low-level model info: Note that the default is flipped (yang disabled, MIB enabled).  Use yang default.
+      leaf learning {
+        type empty;
+        description
+          "Learning option enable.";
+
+        user-ext:CLI-comm-help "Enable MAC-learning";
+        user-ext:CLI-no-comm-help "Disable MAC-learning";
+      }
+
+      // Low-level model info: Corresponds to evpnIfBindCfgMacAddrLimit.
+      // Low-level model info: Note that the yang default is different to the MIB default.
+      leaf limit {
+        type evpn-max-mac-limit-t;
+        default 4000;
+        description
+          "The maximum number of learned and static entries allowed
+          in the FDB for this interface binding.";
+
+        user-ext:CLI-comm-help "Set maximum number of learning MACs";
+        user-ext:CLI-no-comm-help "Set maximum number of learning MACs to default";
+        user-ext:CLI-param-help "Set maximum number of learning MACs";
+      }
+
+    } // mac
+
+  } // bridge-domain-interface-config
+
+  grouping bridge-domain-interface-state {
+
+    // Low-level model info: Corresponds to read-only fields in AMB_EVPN_BD_IF table (evpnBdIfTable).
+
+    description
+      "Set of interfaces associated with an EVPN bridge-domain.";
+
+    // Low-level model info: Corresponds to evpnBdIfOperStatus.
+    leaf oper-status {
+      type meta:oper-status;
+      config false;
+      description
+        "The curent operational status of the binding.  If the
+        operational status is 'up' then the interface is programmed in
+        the data plane and bound to the EVPN bridge-domain.";
+    }
+
+    // Low-level model info: Corresponds to evpnBdIfOperReason.
+    leaf oper-reason {
+      type bridge-domain-interface-oper-reason-t;
+      config false;
+      description
+        "The reason for the operational state of this bridge domain interface";
+    }
+  }
+
+  grouping evi-route-target-state {
+
+    // Low-level model info: Corresponds to read-only fields in AMB_EVPN_EVI_RT table (evpEviRtTable).
+
+    description
+      "Set of route targets associated with an EVPN instance.";
+
+    list vpn-target {
+
+      description "A list of route targets";
+
+      // Low-level model info: Corresponds to evpnEviRtRouteTarget
+      leaf route-target {
+        type meta:route-target-value-t;
+        description "BGP route target";
+      }
+
+      // Low-level model info: Corresponds to evpnEviRtType
+      leaf route-target-type {
+        type meta:route-target-t;
+        description "BGP route target type";
+      }
+
+      // Low-level model info: Corresponds to evpnEviRtOperStatus.
+      leaf oper-status {
+        type meta:oper-status;
+        description
+          "The current operational state of this route target.";
+      }
+
+      // Low-level model info: Corresponds to evpnEviRtOperReason.
+      leaf oper-reason {
+        type evi-route-target-oper-reason-t;
+        description
+          "The reason for the operational state of this route target";
+      }
+    }
+  }
+
+  container evpn {
+    description "EVPN";
+
+    user-ext:CLI-comm-help "Configure EVPN";
+    user-ext:CLI-no-comm-help "Remove EVPN";
+
+    container vxlan {
+      if-feature evpn-vxlan;
+      description
+        "VXLAN global configuration.";
+
+      user-ext:CLI-comm-help "Configure global VXLAN parameters";
+      user-ext:CLI-no-comm-help "Remove global VXLAN configuration";
+
+      leaf source-ip {
+        type interfaces:iface-ip-address-t;
+        description
+          "Local IP address to use as VXLAN source";
+
+        user-ext:CLI-comm-help "Configure the VXLAN source IP address";
+        user-ext:CLI-no-comm-help "Remove the configured VXLAN source IP address";
+        user-ext:CLI-param-help "Configure the VXLAN source IP address";
+      }
+    }
+
+    // Low-level model info: Corresponds to evpnEntPartialRt.
+    // Note that the default is flipped (YANG enabled, MIB disabled).
+    container partial-rt {
+
+      description
+        "Configure partial route target matching";
+
+      user-ext:CLI-comm-help "Configure partial route target matching";
+      user-ext:CLI-no-comm-help "Configure partial route target matching";
+
+        leaf disable {
+            type empty;
+
+            description
+                "Disable the partial route target match";
+            user-ext:CLI-comm-help "Disable the partial route target match";
+            user-ext:CLI-no-comm-help "Enable the partial route target match";
+        }
+    }
+
+    container irb {
+
+      description
+        "IRB global configuration";
+
+        user-ext:CLI-comm-help "Configure IRB global parameters";
+        user-ext:CLI-no-comm-help "Configure IRB global parameters";
+
+        // Low-level model info: Corresponds to evpnEntIrbMode.
+        leaf irb-mode {
+          type evpn-irb-mode-t;
+          default symmetric;
+
+          description
+              "Configure traffic forwarding mode on IRBs";
+          user-ext:CLI-comm-help "Configure traffic forwarding mode";
+          user-ext:CLI-no-comm-help "Reset traffic forwarding mode to default";
+        }
+    }
+
+    // Low-level model info: Corresponds to AMB_EVPN_EVI (evpnEviTable).
+    list instance {
+
+      key "evi-name";
+
+      must "(count(/bgp:router/bgp:bgp/bgp:as-num) > 0)" {
+        error-message "The BGP AS number must be set if EVPN is configured";
+      }
+
+      // The EVI must be configured and must be unique.
+      unique "evi";
+      must "(evi)" {
+          error-message "An EVI index must be configured";
+      }
+
+      description
+        "An EVPN instance.";
+
+      leaf evi-name {
+        type evi-name-t;
+        description
+          "Name of EVPN instance.";
+
+        user-ext:CLI-param-help "EVPN instance name";
+      }
+
+      // Low-level model info: Corresponds to evpnEviIndex
+      leaf evi {
+        type evpn-index-t;
+        description
+          "EVPN instance index.";
+
+        user-ext:CLI-comm-help "Configure EVI index";
+        user-ext:CLI-no-comm-help "Remove EVI index";
+        user-ext:CLI-param-help "Configure EVI index";
+      }
+
+      // Low-level model info: Corresponds to evpnEviCfgRd,evpnEviRdCfgOrAuto.
+      leaf rd {
+        type meta:bgp-route-distinguisher;
+        description
+          "The configured route distinguisher for this EVI.";
+
+        user-ext:CLI-comm-help "Configure route distinguisher";
+        user-ext:CLI-no-comm-help "Remove route distinguisher";
+        user-ext:CLI-param-help "Configure route distinguisher";
+      }
+
+      // Low-level model info: Corresponds to rows in the evpnEviRtTable.
+      list vpn-target {
+
+        key "route-target";
+
+        description "A list of route targets";
+
+        user-ext:CLI-comm-help "Configure route targets";
+        user-ext:CLI-no-comm-help "Remove route targets";
+
+        leaf route-target {
+          type meta:route-target-value-t;
+          description "BGP route target";
+
+          user-ext:CLI-param-help "Set route target";
+        }
+
+        leaf route-target-type {
+          type meta:route-target-t;
+          description "BGP route target type";
+
+          user-ext:CLI-comm-help "Configure route target type";
+          user-ext:CLI-no-comm-help "Remove route target type";
+          user-ext:CLI-param-help "Configure route target type";
+        }
+      }
+
+      // Low-level model info: Corresponds to evpnEviEncapsulation
+      choice encapsulation {
+
+        description
+          "Encapsulation.";
+
+        case mpls-encapsulation {
+          if-feature evpn-mpls;
+
+          leaf mpls {
+            type empty;
+            description "MPLS encapsulation.";
+
+            user-ext:CLI-comm-help "Enable MPLS encapsulation";
+            user-ext:CLI-no-comm-help "Reset encapsulation to default";
+          }
+        }
+        case vxlan-encapsulation {
+          if-feature evpn-vxlan;
+          leaf vxlan {
+            type empty;
+            description "VXLAN encapsulation.";
+
+            user-ext:CLI-comm-help "Enable VXLAN encapsulation";
+            user-ext:CLI-no-comm-help "Reset encapsulation to default";
+          }
+        }
+      }
+
+      container bridge-domain {
+
+        description
+          "Bridge domain configuration parameters.";
+
+        user-ext:CLI-comm-help "Configure bridge-domain";
+        user-ext:CLI-no-comm-help "Remove bridge-domain";
+
+        uses bridge-domain-config;
+
+        container interfaces {
+
+          if-feature interfaces:standard-interfaces;
+          user-ext:CLI-not-command;
+
+          description
+            "Bridge domain interface configuration parameters.";
+
+          list interface {
+
+            key "if-name";
+
+            description "Per-interface EVPN configuration.";
+            user-ext:CLI-comm-help "Configure EVPN on interface";
+            user-ext:CLI-no-comm-help "Configure EVPN on interface";
+
+            leaf if-name {
+              type custom:iface-name;
+              description
+                "A unique identifier identifying the interface.";
+
+              user-ext:CLI-comm-help "Set interface name";
+              user-ext:CLI-param-help "Set interface name";
+            }
+
+            uses bridge-domain-interface-config;
+
+          } // interface
+        } // interfaces
+      } //bridge-domain
+
+      // Low-level model info: Corresponds to evpnEviAutoRtType
+      container auto-rt-type {
+
+        description
+          "Type of auto-derived RT for this EVI";
+
+        user-ext:CLI-comm-help "Set the type of auto-derived RT for this EVI";
+        user-ext:CLI-no-comm-help "Reset the type of auto-derived RT for this EVI";
+
+        choice auto-rt-type {
+
+          description
+            "Type of auto-derived RT for this EVI";
+
+          case import {
+            leaf import {
+              type empty;
+              description "Import-only RT.";
+
+              user-ext:CLI-comm-help "Import-only RT";
+              user-ext:CLI-no-comm-help "Reset auto-rt-type to default";
+            }
+          }
+          case export {
+            leaf export {
+              type empty;
+              description "Export-only RT.";
+
+              user-ext:CLI-comm-help "Export-only RT";
+              user-ext:CLI-no-comm-help "Reset auto-rt-type to default";
+            }
+          }
+          case import-export {
+            leaf import-export {
+              type empty;
+              description "Import and export RT.";
+
+              user-ext:CLI-comm-help "Import and export RT";
+              user-ext:CLI-no-comm-help "Reset auto-rt-type to default";
+            }
+          }
+          case none {
+            leaf none {
+              type empty;
+              description "No auto-derived RT.";
+
+              user-ext:CLI-comm-help "Do not use an auto-derived RT";
+              user-ext:CLI-no-comm-help "Reset auto-rt-type to default";
+            }
+          }
+        }
+      } // auto-rt-type
+
+      uses static-type2-route-config;
+
+    } // instance
+
+    container mac-mobility {
+      description
+        "MAC mobility parameters.";
+
+      leaf limit {
+        type evpn-mac-move-limit-t;
+        description "The maximum number of times a MAC address may move between hosts";
+
+        user-ext:CLI-comm-help "Set the maximum number of times a MAC address may move between hosts";
+        user-ext:CLI-param-help "The maximum number of times a MAC address may move between hosts";
+        user-ext:CLI-no-comm-help "Reset the maximum number of times a MAC address may move between hosts";
+      }
+
+      leaf duration {
+        type evpn-mac-move-duration-t;
+        units "seconds";
+        description "The duration for which MAC mobility events are tracked after MAC is learned locally";
+
+        user-ext:CLI-comm-help "Set the duration for which MAC mobility events are tracked after MAC is learned locally";
+        user-ext:CLI-param-help "The duration for which MAC mobility events are tracked after MAC is learned locally";
+        user-ext:CLI-no-comm-help "Reset the duration for which MAC mobility events are tracked after MAC is learned locally";
+      }
+    }
+
+    container instance-state-list {
+
+      config false;
+      description
+        "EVPN instance state.";
+
+      list instance-state {
+
+        description
+          "The state of an EVPN instance.";
+
+        key "evi-name";
+
+        leaf evi-name {
+          type evi-name-t;
+          description
+            "Name of EVPN instance.";
+        }
+
+        // Low-level model info: Corresponds to evpnEviIndex
+        leaf evi {
+          type evpn-index-t;
+          description
+            "EVPN index.";
+        }
+
+        // Low-level model info: Corresponds to evpnEviRd
+        leaf rd {
+          type meta:bgp-route-distinguisher;
+          description
+            "The route distinguisher for this EVPN instance.";
+        }
+
+        // Low-level model info: Corresponds to evpnEviAutoRt
+        leaf rt {
+          type meta:route-target-value-t;
+          description
+            "The auto-derived route target for this EVPN instance.";
+        }
+
+        // Low-level model info: Corresponds to evpnEviAutoRtType
+        leaf rt-type {
+          type meta:route-target-t;
+          description
+            "The auto-derived route target type for this EVPN instance.";
+        }
+
+        // Low-level model info: Corresponds to evpnEviOperStatus.
+        leaf oper-status {
+          type meta:oper-status;
+          config false;
+          description
+            "The current operational state of this EVI instance.";
+        }
+
+        // Low-level model info: Corresponds to evpnEviOperReason.
+        leaf oper-reason {
+          type evi-oper-reason-t;
+          config false;
+          description
+            "The reason for the operational state of this EVI instance";
+        }
+
+        uses evi-route-target-state;
+
+        container bridge-domain {
+
+          config false;
+          description
+            "Bridge domain state.";
+
+          uses bridge-domain-state;
+
+          container interfaces {
+
+            if-feature interfaces:standard-interfaces;
+            config false;
+            user-ext:CLI-not-command;
+            description
+              "Bridge domain interface.";
+
+            list interface {
+              description "Per-interface EVPN state.";
+
+              leaf if-name {
+                type custom:iface-name;
+                description
+                  "A unique identifier identifying the interface.";
+              }
+
+              uses bridge-domain-interface-state;
+
+            } // interface
+          } // interfaces
+        } // bridge-domain
+      } //instance-state
+    } //instance-state-list
+
+    container evpn-route-list {
+
+      config false;
+      user-ext:CLI-not-command;
+      description
+        "EVPN routing information.";
+
+      list evpn-route {
+
+        description
+          "EVPN routes.";
+
+        key "evi-name";
+
+        leaf evi-name {
+          type evi-name-t;
+          description
+            "Name of EVPN instance.";
+        }
+
+        leaf evi {
+          type evpn-index-t;
+          description
+            "EVPN instance index.";
+        }
+
+        container mac-ip-route-list {
+
+          config false;
+          user-ext:CLI-not-command;
+
+          description "MAC/IP routes";
+
+          // Low-level model info: Corresponds to evpnMacIpTable
+          list mac-ip-route {
+
+            description
+              "MAC/IP advertisement route";
+
+            // Low-level model info: Corresponds to evpnMacIpEsi
+            leaf esi {
+              type es:esi-t;
+              description
+                "Ethernet Segment Identifier (ESI)";
+            }
+
+            // Low-level model info: Corresponds to evpnMacIpEthernetTagId
+            leaf ethernet-tag {
+              type uint32;
+              description
+                "Ethernet tag";
+            }
+
+            // Low-level model info: Corresponds to evpnMacIpMacAddress
+            leaf mac-address {
+              type meta:mac-address;
+              description
+                "MAC address";
+            }
+
+            // Low-level model info: Corresponds to evpnMacIpIpAddress
+            leaf ip-addr {
+              type interfaces:iface-ip-address-t;
+              description
+                "IP-prefix";
+            }
+
+            container path-list {
+
+              description
+                "List of paths";
+
+              list path {
+
+                description
+                  "Path to the MAC/IP";
+
+                // Low-level model info: Corresponds to evpnMacIpSource
+                leaf source {
+                  type route-source-t;
+                  description
+                    "Source of the route";
+                }
+
+                // Low-level model info: Corresponds to evpnMacIpLabel
+                leaf label {
+                  type uint32;
+                  description
+                    "The label or VNI associated with the route.";
+                }
+
+                // Low-level model info: Corresponds to evpnMacIpInUse
+                leaf bestpath {
+                  type empty;
+                  description
+                    "Indicates that this is the best path.";
+                }
+
+                // Low-level model info: Corresponds to evpnMacIpBgpNhAddr
+                // Only present if source is 'remote'.
+                leaf next-hop {
+                  type interfaces:iface-ip-address-t;
+                  description
+                    "The BGP next hop to the destination.";
+                }
+
+                // Low-level model info: Corresponds to evpnMacIpLocalInterface
+                // Only present if source is 'local'.
+                leaf local-interface {
+                  type custom:iface-name;
+                  description
+                    "The local interface on which the MAC/IP was learnt.";
+                }
+
+                // Low-level model info: Corresponds to evpnMacIpSticky
+                leaf sticky {
+                  type empty;
+                  description
+                    "Indicates that this MAC/IP is sticky.";
+                }
+
+                // Low-level model info: Corresponds to evpnMacIpSequenceNum
+                leaf sequence-num {
+                  type uint32;
+                  description
+                    "The MAC Mobility sequence number associated with the route.";
+                }
+              } //path
+            } //path-list
+          } //mac-ip-route
+        } //mac-ip-route-list
+
+        container inclusive-multicast-route-list {
+
+          config false;
+          user-ext:CLI-not-command;
+
+          description "Inclusive multicast routes";
+
+          // Low-level model info: Corresponds to evpnIncMcastTable
+          list inclusive-multicast-route {
+
+            description
+              "Inclusive multicast route";
+
+            // Low-level model info: Corresponds to evpnIncMcastRd
+            leaf rd {
+              type meta:bgp-route-distinguisher;
+              description
+                "Route distinguisher";
+            }
+
+            // Low-level model info: Corresponds to evpnIncMcastEthernetTagId
+            leaf ethernet-tag {
+              type uint32;
+              description
+                "Ethernet tag";
+            }
+
+            // Low-level model info: Corresponds to evpnIncMcastIpAddress
+            leaf ip-address {
+              type interfaces:iface-ip-address-t;
+              description
+                "Originating router's IP address";
+            }
+
+            // Low-level model info: Corresponds to evpnIncMcastSource
+            leaf source {
+              type route-source-t;
+              description
+                "Source of the route";
+            }
+
+            // Low-level model info: Corresponds to evpnIncMcastTnnlType
+            leaf tunnel-type {
+              type multicast-mode-t;
+              description
+                "Tunnel type as advertised in the PMSI attribute.";
+            }
+
+            // Low-level model info: Corresponds to evpnIncMcastTnnlIpAddr
+            leaf tunnel-ip-address {
+              type interfaces:iface-ip-address-t;
+              description
+                "The tunnel endpoint IP address taken from the PMSI attribute
+                 associated with the route.  For multicast IP tunnels, this
+                 is the multicast group IP address.";
+            }
+          } //inclusive-multicast-route
+        } //inclusive-multicast-route-list
+      } //evpn-route
+    } //evpn-route-list
+
+    container evpn-vxlan-tunnel-list {
+
+      config false;
+      user-ext:CLI-not-command;
+      description
+        "EVPN VXLAN tunnel information.";
+
+      // Low-level model info: Corresponds to evpnVxlanTnnlTable
+      list evpn-vxlan-tunnel {
+
+        description
+          "VXLAN tunnel state";
+
+        // Low-level model info: Corresponds to evpnVxlanTnnlLocalVni
+        leaf local-vni {
+          type evpn-vni-t;
+          description
+            "The local VNI associated with the VXLAN tunnel.";
+        }
+
+        // Low-level model info: Corresponds to evpnVxlanTnnlRemoteVni
+        leaf remote-vni {
+          type evpn-vni-t;
+          description
+            "The remote VNI associated with the VXLAN tunnel.";
+        }
+
+        // Low-level model info: Corresponds to evpnVxlanTnnPeerAddress
+        leaf peer-address {
+          type interfaces:iface-ip-address-t;
+          description
+            "The destination IP address of the VXLAN tunnel.";
+        }
+
+        // Low-level model info: Corresponds to evpnVxlanTnnSourceAddress
+        leaf source-address {
+          type interfaces:iface-ip-address-t;
+          description
+            "The source IP address of the VXLAN tunnel.";
+        }
+
+        // Low-level model info: Corresponds to evpnVxlanTnnlOperStatus
+        leaf oper-status {
+          type meta:oper-status;
+          description
+            "The current operational state of the VXLAN tunnel.";
+        }
+
+        // Low-level model info: Corresponds to evpnVxlanTnnlPortIfIndex
+        leaf if-name {
+          type custom:iface-name;
+          description
+            "The interface name of the VXLAN tunnel used by EVPN instance.";
+        }
+
+        // Low-level model info: Corresponds to evpnVxlanTnnlEviIndex
+        leaf evi-name {
+          type evi-name-string-or-empty;
+          description
+            "The name of the EVPN instance or empty if the VXLAN tunnel
+            belongs to a VRF.";
+        }
+
+        // Low-level model info: Corresponds to evpnVxlanTnnlEviIndex
+        leaf evi {
+          type uint32;
+          description
+            "EVPN instance index or zero if the VXLAN tunnel belongs to a VRF.";
+        }
+
+        // Low-level model info: Corresponds to evpnVxlanTnnlVrfName
+        leaf vrf-name {
+          type vrf-name-string-or-empty;
+          description
+            "The name of the VRF that the VXLAN tunnel belongs to or empty
+             if the VXLAN tunnel belongs to an EVI.";
+        }
+      } // evpn-vxlan-tunnel
+    } // evpn-vxlan-tunnel-list
+
+    container evpn-activation-state {
+
+      config false;
+      user-ext:CLI-not-command;
+      description
+        "EVPN activation state information.";
+
+      // Low-level model info: Corresponds to evpnEntActivationStatus
+      leaf activation-status {
+        type activation-status-t;
+        description
+          "The overall activation status.";
+      }
+
+      // Low-level model info: Corresponds to evpnEntExitReason
+      leaf exit-reason {
+        type exit-reason-t;
+        description
+          "EVPN graceful-restart exit reason.";
+      }
+
+        // Low-level model info: Corresponds to evpnMjTable and evpnSjTable
+      container sync-status {
+
+        description
+          "The EVPN sync status information.";
+
+        // Low-level model info: Corresponds to evpnSjTable entry where the
+        // interface-id is qcrp.
+        container bgp {
+          description
+            "BGP sync status information.";
+
+          // Low-level model info: Corresponds to evpnMjJoinStatus
+          leaf connected {
+            type boolean;
+            description
+              "Whether this component is connected.";
+          }
+
+          // Low-level model info: Corresponds to evpnMjSnapshotRcvd
+          leaf snapshot-rcvd {
+            type boolean;
+            description
+              "Whether the snapshot has been received.";
+          }
+
+          // Low-level model info: Corresponds to evpnMjSnapshotSent
+          leaf snapshot-sent {
+            type boolean;
+            description
+              "Whether the snapshot has been sent.";
+          }
+        }
+
+        // Low-level model info: Corresponds to evpnMjTable entry where the
+        // interface-id is rpi.
+        list vrf {
+          description
+            "VRF sync status information.";
+
+          leaf vrf-name {
+            type meta:l3vpn-vrf-name;
+            description
+              "The name of this VRF.";
+          }
+
+          leaf afi {
+            type vrf-afi;
+            description
+              "The address family of this VRF instance.";
+          }
+
+          // Low-level model info: Corresponds to evpnMjJoinStatus
+          leaf connected {
+            type boolean;
+            description
+              "Whether this component is connected.";
+          }
+
+          // Low-level model info: Corresponds to evpnMjSnapshotRcvd
+          leaf snapshot-rcvd {
+            type boolean;
+            description
+              "Whether the snapshot has been received.";
+          }
+
+          // Low-level model info: Corresponds to evpnMjSnapshotSent
+          leaf snapshot-sent {
+            type boolean;
+            description
+              "Whether the snapshot has been sent.";
+          }
+        } // vrf
+
+        // Low-level model info: Corresponds to evpnMjTable entry where the
+        // interface-id is bdpi.
+        container l2-forwarding {
+          description
+            "L2 forwarding sync status information.";
+
+          // Low-level model info: Corresponds to evpnMjJoinStatus
+          leaf connected {
+            type boolean;
+            description
+              "Whether this component is connected.";
+          }
+
+          // Low-level model info: Corresponds to evpnMjSnapshotSent
+          leaf snapshot-sent {
+            type boolean;
+            description
+              "Whether the snapshot has been sent.";
+          }
+        }
+
+        // Low-level model info: Corresponds to evpnMjTable entry where the
+        // interface-id is mai.
+        container local-learning {
+          description
+            "Local learning sync status information.";
+
+          // Low-level model info: Corresponds to evpnMjJoinStatus
+          leaf connected {
+            type boolean;
+            description
+              "Whether this component is connected.";
+          }
+
+          // Low-level model info: Corresponds to evpnMjSnapshotRcvd
+          leaf snapshot-rcvd {
+            type boolean;
+            description
+              "Whether the snapshot has been received.";
+          }
+        } // local-learning
+
+        // Low-level model info: Corresponds to evpnMjTable entry where the
+        // interface-id is mai.
+        container proxy-arp {
+          description
+            "Proxy ARP sync status information.";
+
+          // Low-level model info: Corresponds to evpnMjJoinStatus
+          leaf connected {
+            type boolean;
+            description
+              "Whether this component is connected.";
+          }
+
+          // Low-level model info: Corresponds to evpnMjSnapshotRcvd
+          leaf snapshot-sent {
+            type boolean;
+            description
+              "Whether the snapshot has been sent.";
+          }
+        } // local-learning
+
+        // Low-level model info: Corresponds to evpnMjTable entry where the
+        // interface-id is i3 and tpi.
+        container interfaces {
+          description
+            "Interface sync status information.";
+
+          // Low-level model info: Corresponds to evpnMjJoinStatus
+          leaf connected {
+            type boolean;
+            description
+              "Whether this component is connected.";
+          }
+
+          // Low-level model info: Corresponds to evpnMjSnapshotRcvd
+          leaf snapshot-rcvd {
+            type boolean;
+            description
+              "Whether the snapshot has been received.";
+          }
+
+          // Low-level model info: Corresponds to evpnMjSnapshotSent
+          leaf snapshot-sent {
+            type boolean;
+            description
+              "Whether the snapshot has been sent.";
+          }
+        } // interfaces
+
+      } // sync-status
+    } // evpn-activation-state
+
+  } //evpn
+
+  /*
+   * Augments the routing model with additional EVPN properties for an IP-VRF.
+   */
+  augment "/routing:router/routing:vrf" {
+
+    description
+      "Augments the routing model with additional EVPN properties for an
+       IP-VRF";
+
+    // Low-level model info: Corresponds to AMB_EVPN_IP_VRF (evpnEviIpVrfTable).
+    // Low-level model info: Corresponds to evpnEviIpVrfVni.
+    leaf l3-vni {
+      type evpn-vni-t;
+      description
+        "The VNI for the IP-VRF that will be included in route advertisements
+         for routes containing the route target of this IP-VRF";
+
+        user-ext:CLI-comm-help "Configure VNI for the IP-VRF";
+        user-ext:CLI-no-comm-help "Remove VNI for the IP-VRF";
+        user-ext:CLI-param-help "Configure VNI for the IP-VRF";
+    }
+
+    leaf routers-mac {
+      type meta:mac-address;
+      description
+        "The MAC address to advertise in Router's MAC EC in type-2 routes";
+
+        user-ext:CLI-comm-help "Configure Router's MAC for the IP-VRF";
+        user-ext:CLI-no-comm-help "Remove Router's MAC for the IP-VRF";
+        user-ext:CLI-param-help "Configure Router's MAC for the IP-VRF";
+    }
+
+    // Low-level model info: Corresponds to rows in the evpnEviIpVrfRtTable.
+    list vpn-target {
+
+      key "route-target";
+
+      description "A list of route targets";
+
+      user-ext:CLI-comm-help "Configure route targets";
+      user-ext:CLI-no-comm-help "Remove route targets";
+
+      leaf route-target {
+        type meta:route-target-value-t;
+        description "BGP route target";
+
+        user-ext:CLI-param-help "Set route target";
+      }
+
+      leaf route-target-type {
+        type meta:route-target-t;
+        description "BGP route target type";
+
+        user-ext:CLI-comm-help "Configure route target type";
+        user-ext:CLI-no-comm-help "Remove route target type";
+        user-ext:CLI-param-help "Configure route target type";
+      }
+
+      // Low-level model info: Corresponds to evpnIpVrfRtAddressType.
+      leaf route-target-address-type {
+        type evpn-addr-type-t;
+        description "The address family to which this route target applies";
+
+        user-ext:CLI-comm-help "Configure route target address type";
+        user-ext:CLI-no-comm-help "Set route target address type to default";
+        user-ext:CLI-param-help "Configure route target address type";
+      }
+
+    } // vpn-target
+
+  } // augment - EVPN properties for an IP-VRF
+
+
+    // -- start notifications --
+
+    // Low-level model info:  Corresponds to evpnMulticastConfigError
+    notification multicast-config-error {
+      description
+        "Local and remote multicast configuration is inconsistent.";
+
+      leaf evi-name {
+        type evi-name-t;
+        description
+          "Name of EVPN instance.";
+      }
+
+      // Low-level model info: Corresponds to evpnEviIndex
+      leaf evi {
+        type evpn-index-t;
+        description
+          "EVPN instance index.";
+      }
+
+      leaf local-mode {
+        type local-multicast-mode-t;
+        description
+          "Local multicast mode.";
+      }
+
+      // Only present if local-mode is not ingress-replication.
+      leaf local-group-address {
+        type interfaces:iface-ip-address-allow-zero-t;
+        description
+          "The locally configured multicast group address.";
+      }
+
+      leaf remote-address {
+        type interfaces:iface-ip-address-t;
+        description
+          "IP address of the remote router.";
+      }
+
+      leaf remote-mode {
+        type multicast-mode-t;
+        description
+          "Remote multicast mode.";
+      }
+
+      // Only present if remote-mode is asm, bidir or ssm.
+      leaf remote-group-address {
+        type interfaces:iface-ip-address-allow-zero-t;
+        description
+          "The remote multicast group address.";
+      }
+    }
+
+    // Low-level model info:  Corresponds to evpnIpDuplicationError
+    notification ip-duplication-error {
+      description
+        "Either a duplicate IP address has been detected in the EVPN network or
+         an existing IP duplication event is cleared.";
+
+      leaf evi-name {
+        type evi-name-t;
+        description
+          "Name of EVPN instance.";
+      }
+
+      leaf evi {
+        type evpn-index-t;
+        description
+          "EVPN instance index.";
+      }
+
+      leaf ip-address {
+        type interfaces:iface-ip-address-t;
+        description
+          "The IP address for which a conflict has been detected.";
+      }
+
+      leaf error-detected {
+        type boolean;
+        description
+          "Whether the error is current or has been cleared for this IP address.";
+      }
+
+      leaf mac-address {
+          type meta:mac-address;
+          description
+            "The MAC address where the duplicate IP address is configured.";
+      }
+
+      leaf bgp-next-hop-address {
+        type interfaces:iface-ip-address-t;
+        description
+          "The BGP next hop address for the remote route that caused the error.";
+      }
+    }
+
+    // Low-level model info:  Corresponds to evpnMacError
+    notification mac-error {
+      description
+        "Either a duplicate MAC address has been detected in the EVPN network or
+         an existing MAC error event is cleared.";
+
+      leaf evi-name {
+        type evi-name-t;
+        description
+          "Name of EVPN instance.";
+      }
+
+      leaf evi {
+        type evpn-index-t;
+        description
+          "EVPN instance index.";
+      }
+
+      leaf mac-address {
+          type meta:mac-address;
+          description
+            "The MAC address for which a fault has been detected.";
+      }
+
+      leaf error-type {
+        type mac-error-t;
+        description
+          "Type of reported MAC error.";
+      }
+
+      leaf error-detected {
+        type boolean;
+        description
+          "Whether the error is current or has been cleared for this MAC address.";
+      }
+
+      leaf ip-address{
+        type interfaces:iface-ip-address-t;
+        description
+          "The IP address in the remote route which caused a conflict.";
+      }
+
+      leaf bgp-next-hop-address {
+        type interfaces:iface-ip-address-t;
+        description
+          "The BGP next hop address for the remote route that caused the error.";
+      }
+    }
+    // -- end notifications --
+
+} // evpn

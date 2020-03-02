@@ -1,0 +1,43 @@
+module topo {
+  namespace "http://example.com/eantc/topology";
+  prefix topo;
+
+  import tailf-ncs {
+    prefix ncs;
+  }
+  import ietf-inet-types {
+    prefix inet;
+  }
+
+  list topo {
+    key "vpn-name device-name";
+    leaf vpn-name {
+      type string;
+    }
+    leaf device-name {
+      type leafref {
+        path /ncs:devices/ncs:device/ncs:name;
+      }
+    }
+    leaf interface {
+      type string;
+    }
+    leaf phys-interface {
+      type string;
+    }
+    leaf address {
+      type inet:ipv4-address;
+    }
+    leaf remote-net {
+      type inet:ipv4-address;
+    }
+    leaf remote-prefixlen {
+      type uint32 { range 0..32; }
+    }
+    leaf locator {
+      type string {
+        pattern '([0-9a-fA-F]{1,4}:){3}[0-9a-fA-F]{1,4}';
+      }
+    }
+  }
+}

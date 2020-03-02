@@ -1,0 +1,225 @@
+<config-template xmlns="http://tail-f.com/ns/config/1.0">
+ <devices xmlns="http://tail-f.com/ns/ncs">
+  <device tags="nocreate">
+    <name>{$DEVICE}</name>
+      <config>
+
+        <!-- METASWITCH >
+        <interfaces xmlns="http://metaswitch.com/yang/nbu/interface/201709270000Z">
+          <interface tags="merge">
+            <name>{$INTERFACE}.{$VLANID}</name>
+            <type>vlanSubif</type>
+            <encapsulation>
+              <dot1q-vlan>
+                <outer-tag>
+                  <dot1q-tag>
+                    <tag-type>c-vlan</tag-type>
+                    <vlan-id>{$VLANID}</vlan-id>
+                  </dot1q-tag>
+                </outer-tag>
+              </dot1q-vlan>
+            </encapsulation>
+            <forwarding-mode>network-layer</forwarding-mode>
+            <mpls-enabled>false</mpls-enabled>
+            <parent-interface>{$INTERFACE}</parent-interface>
+            <ipv4>
+              <forwarding>true</forwarding>
+              <address>
+                <ip>{$IP}</ip>
+                <prefix-length>{$PREFIXLEN}</prefix-length>
+              </address>
+            </ipv4>
+            <bind-vrf-name>{$VPN_NAME}</bind-vrf-name>
+          </interface>
+        </interfaces>
+        <!- - END METASWITCH -->
+
+        <!-- ECI -->
+        <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces" when='{$VENDOR="eci"}'>
+          <interface tags="merge">
+            <name>{$INTERFACE}.{$VLANID}</name>
+            <type xmlns:eci-if-aug="urn:eci:params:xml:ns:yang:eci-interfaces-aug">eci-if-aug:pif-lif</type>
+            <vlan-tagged xmlns="urn:eci:params:xml:ns:yang:eci-interfaces-aug"></vlan-tagged>
+            <pif-lif xmlns="urn:eci:params:xml:ns:yang:eci-interfaces-aug">
+              <vlans>{$VLANID}</vlans>
+            </pif-lif>
+            <bind-ni-name xmlns="urn:ietf:params:xml:ns:yang:ietf-network-instance">{$VPN_NAME}</bind-ni-name>
+            <ipv4 xmlns="urn:ietf:params:xml:ns:yang:ietf-ip">
+              <address>
+                <ip>{$IP}</ip>
+                <netmask>{$MASK}</netmask>
+              </address>
+            </ipv4>
+            <ipv6 xmlns="urn:ietf:params:xml:ns:yang:ietf-ip"/>
+          </interface>
+        </interfaces>
+        <!-- END ECI -->
+
+        <!-- ERICSSON 6471 -->
+        <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces" when='{$VENDOR="ericsson"}'>
+          <interface tags="merge">
+            <name>{$INTERFACE}</name>
+            <type xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">ianaift:ipForward</type>
+            <l3-interface xmlns="urn:rdns:com:ericsson:oammodel:ericsson-interfaces-ext-ipos">
+              <ip>
+                <address>
+                  <addr-primary>
+                    <addr>{$IP}/{$PREFIXLEN}</addr>
+                  </addr-primary>
+                </address>
+              </ip>
+              <context>{$VPN_NAME}</context>
+            </l3-interface>
+          </interface>
+        </interfaces>
+        <!-- END ERICSSON 6471 -->
+
+        <!-- UTSTARCOM -->
+        <!-- END UTSTARCOM -->
+
+        <!-- CISCO XE1671 -->
+        <!--native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
+          <interface>
+            <GigabitEthernet>
+              <name>{$INTERFACE}</name>
+              <description tags="merge">connection to CE/Tgen</description-->
+              <!--shutdown/-->
+              <!--vrf tags="merge">
+                <forwarding>{$VPN_NAME}</forwarding>
+              </vrf>
+              <ip tags="merge">
+                <address>
+                  <primary>
+                    <address>{$IP}</address>
+                    <mask>{$MASK}</mask>
+                  </primary>
+                </address>
+              </ip>
+              <mop tags="merge">
+                <enabled>false</enabled>
+                <sysid>false</sysid>
+              </mop>
+              <negotiation xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-ethernet" tags="merge">
+                <auto>true</auto>
+              </negotiation>
+            </GigabitEthernet>
+          </interface>
+        </native-->
+        <!-- END CISCO XE1671 -->
+
+        <!-- CISCO XR631 -->
+        <interface-configurations xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-ifmgr-cfg">
+          <interface-configuration>
+            <active>act</active>
+            <interface-name>{$INTERFACE}</interface-name>
+            <ipv4-network xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-ipv4-io-cfg" tags="merge">
+              <addresses>
+                <primary>
+                  <address>{$IP}</address>
+                  <netmask>{$MASK}</netmask>
+                </primary>
+              </addresses>
+            </ipv4-network>
+          </interface-configuration>
+        </interface-configurations>
+        <!-- END CISCO XR631 -->
+
+        <!-- CISCO XR631 -->
+        <!--
+Interface <PE – CE>
+ipv4 address 1.1.1.2/24
+ipv6 address 100::99/64
+no shut
+!
+Interface <PE-PE>
+Ipv4 address 10.10.10.1/24
+!
+vrf Customer
+address-family ipv4 unicast
+  import route-target
+   1:1
+  !
+  export route-target
+   1:1
+  !
+!
+!
+interface loopback 0
+ipv4 address <y.y.y.y/32>
+!
+router ospf 100
+router-id y.y.y.y
+area 0
+interface loopback 0
+interface <PE -PE>
+!
+mpls ldp
+router-id y.y.y.y
+interface <PE-PE>
+!
+route-policy pass-all
+  pass
+end-policy
+!
+router bgp 65001
+router-id y.y.y.y
+address-family vpnv4 unicast
+ !
+address-family vpnv6 unicast
+ !
+neighbor <x.x.x.x>
+ remote-as 65001
+update-source Loopback0
+  address-family vpnv4 unicast
+  !
+  address-family vpnv6 unicast
+!
+vrf Customer
+  rd y.y.y.y:1
+  address-family ipv4 unicast
+  !
+  address-family ipv6 unicast
+  !
+    neighbor 1.1.1.1
+   remote-as 100
+   address-family ipv4 unicast
+    route-policy pass-all in
+    route-policy pass-all out
+   !
+    neighbor 100::100
+   remote-as 100
+   address-family ipv6 unicast
+    route-policy pass-all in
+    route-policy pass-all out
+   !
+ -->
+        <!-- END CISCO XR631 -->
+
+
+        <!-- HUAWEI NE9k -->
+        <ifm xmlns="http://www.huawei.com/netconf/vrp/huawei-ifm">
+          <interfaces>
+            <interface>
+              <ifName>{$INTERFACE}</ifName>
+              <ipv4Config>
+                <addrCfgType>config</addrCfgType>
+                <am4CfgAddrs>
+                  <am4CfgAddr>
+                    <ifIpAddr>{$IP}</ifIpAddr>
+                    <subnetMask>{$MASK}</subnetMask>
+                    <addrType>main</addrType>
+                  </am4CfgAddr>
+                </am4CfgAddrs>
+              </ipv4Config>
+            </interface>
+          </interfaces>
+        </ifm>
+        <!-- END HUAWEI NE9k -->
+
+
+        <!-- OTHER VENDOR -->
+
+      </config>
+    </device>
+  </devices>
+</config-template>

@@ -1,0 +1,127 @@
+<config-template xmlns="http://tail-f.com/ns/config/1.0">
+ <devices xmlns="http://tail-f.com/ns/ncs">
+  <device tags="nocreate">
+   <name>{$DEVICE}</name>
+    <config>
+
+      <!-- ERICSSON -->
+      <!--?ned-id eri0-nc-1.0:eri0-nc-1.0?>
+      <contexts xmlns="urn:rdns:com:ericsson:oammodel:ericsson-contexts-router6000" tags="merge">
+        <pseudowire xmlns="urn:rdns:com:ericsson:oammodel:ericsson-vpws-router6000">
+          <peer-profile>
+            <peer-profile>to_cisco</peer-profile>
+            <peer>
+              <ipv4>
+                <ipv4>{$REM_ROUTER_ID}</ipv4>
+                <vc-type>ethernet</vc-type>
+              </ipv4>
+            </peer>
+          </peer-profile>
+          <instance>
+            <instance>1</instance>
+            <pw-id>{$PW_ID}</pw-id>
+            <peer-profile>
+              <profile-name>to_cisco</profile-name>
+              <mpls/>
+            </peer-profile>
+          </instance>
+        </pseudowire>
+        <xc-group xmlns="urn:rdns:com:ericsson:oammodel:ericsson-xc-group-router6000">
+          <xc-group>to_cisco</xc-group>
+          <xc>
+            <slot-port-id>{$PHYS_INTERFACE}</slot-port-id>
+            <service-instance>1</service-instance>
+            <to/>
+            <pseudowire>
+              <instance>1</instance>
+            </pseudowire>
+          </xc>
+        </xc-group>
+      </contexts>
+      <?ned-id eri0-nc-1.0:eri0-nc-1.0?>
+      <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces" tags="merge">
+        <interface>
+          <name>1/3</name>
+          <type xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type" tags="merge">ianaift:ethernetCsmacd</type>
+          <enabled tags="merge">true</enabled>
+          <ethernet tags="merge" xmlns="urn:rdns:com:ericsson:oammodel:ericsson-ethernet-ext-router6000">
+            <bind-interface>
+              <intf-name>to_cisco@local</intf-name>
+              <intf-ctx>local</intf-ctx>
+            </bind-interface>
+            <encapsulation-dot1q/>
+            <auto-negotiate xmlns="urn:rdns:com:ericsson:oammodel:ericsson-auto-negotiate-router6000">
+              <auto-negotiate-enable>false</auto-negotiate-enable>
+            </auto-negotiate>
+          </ethernet>
+        </interface>
+        <interface tags="merge">
+          <name>1/4</name>
+          <type tags="merge" xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">ianaift:ethernetCsmacd</type>
+          <enabled tags="merge">true</enabled>
+          <ethernet tags="merge" xmlns="urn:rdns:com:ericsson:oammodel:ericsson-ethernet-ext-router6000">
+            <encapsulation-dot1q/>
+            <auto-negotiate xmlns="urn:rdns:com:ericsson:oammodel:ericsson-auto-negotiate-router6000">
+              <auto-negotiate-enable>false</auto-negotiate-enable>
+            </auto-negotiate>
+            <service-instance xmlns="urn:rdns:com:ericsson:oammodel:ericsson-l2-service-router6000">
+              <spec-instance-id>1</spec-instance-id>
+              <match>
+                <untagged/>
+              </match>
+            </service-instance>
+          </ethernet>
+        </interface>
+      </interfaces-->
+
+      <!-- END ERICSSON -->
+
+      <!-- XR NCS5500 -->
+      <!--?ned-id xr-5500a-nc-1.0:xr-5500a-nc-1.0?>
+      <interface-configurations xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-ifmgr-cfg" tags="merge">
+        <interface-configuration>
+          <active>act</active>
+          <interface-name>GigabitEthernet0/0/0/1</interface-name>
+          <statistics xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-infra-statsd-cfg">
+            <load-interval>30</load-interval>
+          </statistics>
+          <l2-transport xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-l2vpn-cfg">
+            <enabled/>
+          </l2-transport>
+        </interface-configuration>
+      </interface-configurations>
+      <l2vpn xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-l2vpn-cfg" >
+        <database>
+          <xconnect-groups>
+            <xconnect-group>
+              <name>vpws</name>
+              <p2p-xconnects tags="merge">
+                <p2p-xconnect>
+                  <name>vpws</name>
+                  <pseudowires>
+                    <pseudowire>
+                      <pseudowire-id>{$PW_ID}</pseudowire-id>
+                      <neighbor>
+                        <neighbor>{$REM_ROUTER_ID}</neighbor>
+                      </neighbor>
+                    </pseudowire>
+                  </pseudowires>
+                  <attachment-circuits>
+                    <attachment-circuit>
+                      <name>GigabitEthernet0/0/0/1</name>
+                      <enable/>
+                    </attachment-circuit>
+                  </attachment-circuits>
+                </p2p-xconnect>
+              </p2p-xconnects>
+            </xconnect-group>
+          </xconnect-groups>
+        </database>
+        <enable/>
+      </l2vpn-->
+      <!-- END XR NCS5500 -->
+
+   </config>
+  </device>
+ </devices>
+</config-template>

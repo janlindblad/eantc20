@@ -1,0 +1,764 @@
+<config-template xmlns="http://tail-f.com/ns/config/1.0">
+ <devices xmlns="http://tail-f.com/ns/ncs">
+  <device tags="nocreate">
+    <name>{$DEVICE}</name>
+      <config>
+
+        <!-- METASWITCH >
+        <l3vpn xmlns="http://metaswitch.com/yang/nbu/l3vpn/201511130000Z">
+          <vrf tags="merge">
+            <name>{$VPN_NAME}</name>
+            <vpn-id>100001:{$VLANID}</vpn-id>
+            <rd>300:{$VLANID}</rd>
+            <import>
+              <route-target>
+                <rt>300:{$VLANID}</rt>
+              </route-target>
+            </import>
+            <export>
+              <route-target>
+                <rt>300:{$VLANID}</rt>
+              </route-target>
+            </export>
+          </vrf>
+        </l3vpn>
+        <!- - END METASWITCH -->
+
+        <!-- ECI -->
+        <network-instances xmlns="urn:ietf:params:xml:ns:yang:ietf-network-instance">
+          <network-instance tags="merge">
+            <name>{$VPN_NAME}</name>
+            <l3vpn xmlns="urn:eci:params:xml:ns:yang:eci-bgp-l3vpn">
+              <route-targets>
+                <config>
+                  <both>
+                    <rts>
+                      <rt>0:300:{$VLANID}</rt>
+                    </rts>
+                  </both>
+                </config>
+              </route-targets>
+              <vrf-export-policy>
+                <export-policy>BGP_to_VRF</export-policy>
+              </vrf-export-policy>
+              <route-distinguisher>
+                <config>
+                  <rd>0:300:{$VLANID}</rd>
+                </config>
+              </route-distinguisher>
+            </l3vpn>
+          </network-instance>
+        </network-instances>
+        <!-- END ECI -->
+
+        <!-- ERICSSON 6471 -->
+        <contexts xmlns="urn:rdns:com:ericsson:oammodel:ericsson-contexts-ipos">
+          <context xmlns="urn:rdns:com:ericsson:oammodel:ericsson-context-ipos">
+            <context-name>{$VPN_NAME}</context-name>
+            <vpn-rd tags="merge">{$RD1}</vpn-rd>
+            <router tags="merge">
+              <bgp xmlns="urn:rdns:com:ericsson:oammodel:ericsson-bgp-ipos">
+                <bgp>vpn</bgp>
+                <address-family>
+                  <ipv4>
+                    <unicast>
+                      <import>
+                        <route-target>
+                          <rt-community>300:{$VLANID}</rt-community>
+                        </route-target>
+                      </import>
+                      <export>
+                        <route-target>
+                          <rt-community>300:{$VLANID}</rt-community>
+                        </route-target>
+                      </export>
+                      <redistribute>
+                        <connected></connected>
+                      </redistribute>
+                    </unicast>
+                  </ipv4>
+                </address-family>
+              </bgp>
+            </router>
+          </context>
+        </contexts>
+        <!-- END ERICSSON 6471 -->
+
+        <!-- UTSTARCOM - ->
+        <SRv6VpnCmmCfgs xmlns="urn.utstar:uar:SRv6VpnCmmCfg">
+          <SRv6VpnCmmCfg tags="merge" when="{/phase >= 1}">
+            <VpnId>{$VRF_ID}</VpnId>
+            <VrfId>{$VRF_ID}</VrfId>
+            <VpnName>{$VPN_NAME}</VpnName>
+            <ServiceType>1</ServiceType>
+          </SRv6VpnCmmCfg>  
+        </SRv6VpnCmmCfgs>    
+        <SubInterfaces xmlns="urn.utstar:uar:SubInterface">
+          <SubInterface tags="merge" when="{/phase >= 1}">
+            <IfIndex>{$INTERFACE}</IfIndex>
+            <IfAlias>L3VPN-AAA2</IfAlias>
+            <SpVlanId>{$VLANID}</SpVlanId>
+            <IfName>eth1.1.888</IfName><!- - NOT GOOD - ->
+            <CeVlanId>1</CeVlanId>
+            <EncapsMode>1</EncapsMode>
+          </SubInterface>
+        </SubInterfaces>
+        <SRv6Ipv4AcCfgs xmlns="urn.utstar:uar:SRv6Ipv4AcCfg">
+          <SRv6Ipv4AcCfg tags="merge" when="{/phase >= 1}">
+            <IfIndex>{$INTERFACE}</IfIndex>
+            <IpAddress>{$IP}</IpAddress>
+            <Mask>{$MASK}</Mask>
+            <VpnId>{$VRF_ID}</VpnId>
+          </SRv6Ipv4AcCfg>
+        </SRv6Ipv4AcCfgs>
+        <!- -IfCfgs xmlns="urn.utstar:uar:IfCfg">
+          <IfCfg tags="merge" when="{/phase >= 1}>
+            <IfIndex>{$PHYS_INTERFACE}</IfIndex>
+            <IfAdminStatus>2</IfAdminStatus>
+          </IfCfg>
+        </IfCfgs- ->
+        <!- - SLEEP 2 SECS HERE - -> 
+        <SRv6MyLocalSIDCfgs xmlns="urn.utstar:uar:SRv6MyLocalSIDCfg">
+          <SRv6MyLocalSIDCfg tags="merge" when="{/phase >= 2}">
+            <SID>{$LOCATOR}:0700:{$VRF_ID}:0000:0000</SID>
+            <Function>7</Function>
+            <ArgIndex>{$VRF_ID}</ArgIndex>
+            <SIDName>{$VPN_NAME}</SIDName>
+            <USP>false</USP>
+            <VpnId>{$VRF_ID}</VpnId>
+          </SRv6MyLocalSIDCfg>
+        </SRv6MyLocalSIDCfgs>
+        <SRv6PeerSIDCfgs xmlns="urn.utstar:uar:SRv6PeerSIDCfg">
+          <SRv6PeerSIDCfg tags="merge" when="{/phase>= 2}">
+            <PeerSID>{$OTHERSIDE_LOCATOR}:0700:{$VRF_ID}:0000:0000</PeerSID>
+            <VpnId>{$VRF_ID}</VpnId>
+            <Function>7</Function>
+            <PolicyIndex/>
+          </SRv6PeerSIDCfg>
+        </SRv6PeerSIDCfgs>
+        <!- -IfCfgs xmlns="urn.utstar:uar:IfCfg" when="{/phase >= 2}">
+          <IfCfg tags="merge">
+            <IfIndex>{$PHYS_INTERFACE}</IfIndex>
+            <IfAdminStatus>1</IfAdminStatus>
+          </IfCfg>
+        </IfCfgs- ->
+        <!- - SLEEP 2 SECS HERE - ->
+        <SRv6StaticIpv4RouteCfgs xmlns="urn.utstar:uar:SRv6StaticIpv4RouteCfg">
+          <SRv6StaticIpv4RouteCfg tags="merge" when="{/phase >= 3}">
+            <VpnId>{$VRF_ID}</VpnId>
+            <DestIp>{$NET_OTHERSIDE}</DestIp>
+            <Mask>{$MASK_OTHERSIDE}</Mask>
+            <NextHopIp>0.0.0.0</NextHopIp>
+            <NextHopId>{$OTHERSIDE_LOCATOR}:0700:{$VRF_ID}:0000:0000</NextHopId>
+            <Distance>100</Distance>
+          </SRv6StaticIpv4RouteCfg>
+        </SRv6StaticIpv4RouteCfgs>
+        <SRv6ArpCfgs xmlns="urn.utstar:uar:SRv6ArpCfg">
+          <SRv6ArpCfg tags="merge" when="{/phase >= 3}">
+            <VpnId>{$VRF_ID}</VpnId>
+            <IpAddress>{$IP_CUST}</IpAddress>
+            <MacAddress>AA:00:00:00:00:{$VRF_ID}</MacAddress>
+          </SRv6ArpCfg>
+        </SRv6ArpCfgs>   
+
+        <!- - END UTSTARCOM -->
+
+        <!-- CISCO XE1671 -->
+        <!--native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
+          <vrf>
+            <definition tags="merge">
+              <name>{$VPN_NAME}</name>
+              <rd>300:{$VLANID}</rd>
+              <address-family>
+                <ipv4/>
+              </address-family>
+              <route-target>
+                <export>
+                  <asn-ip>300:{$VLANID}</asn-ip>
+                </export>
+                <import>
+                  <asn-ip>300:{$VLANID}</asn-ip>
+                </import>
+              </route-target>
+            </definition>
+          </vrf>
+        </native-->
+        <!-- END CISCO XE1671 -->
+
+        <!-- CISCO XR631 -->
+        <router-static xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-ip-static-cfg">
+          <default-vrf>
+            <address-family>
+              <vrfipv4>
+                <vrf-unicast>
+                  <vrf-prefixes tags="merge">
+                    <vrf-prefix>
+                      <prefix>100.0.0.63</prefix>
+                      <prefix-length>32</prefix-length>
+                      <vrf-route>
+                        <vrf-next-hop-table>
+                          <vrf-next-hop-next-hop-address>
+                            <next-hop-address>20.63.172.63</next-hop-address>
+                          </vrf-next-hop-next-hop-address>
+                        </vrf-next-hop-table>
+                      </vrf-route>
+                    </vrf-prefix>
+                  </vrf-prefixes>
+                </vrf-unicast>
+              </vrfipv4>
+            </address-family>
+          </default-vrf>
+        </router-static>
+        <!-- END CISCO XR631 -->
+
+        <!-- HUAWEI NE9k -->
+        <arp xmlns="http://www.huawei.com/netconf/vrp/huawei-arp">
+          <arpTables>          
+            <arpTable>
+              <vrfName>{$VPN_NAME}</vrfName>
+              <ipAddr>{$IP}</ipAddr>
+              <styleType>InterfaceArp</styleType>
+            </arpTable>
+          </arpTables>
+        </arp>
+        <bgp xmlns="http://www.huawei.com/netconf/vrp/huawei-bgp">
+          <bgpcomm>
+            <bgpVrfs>
+              <bgpVrf>
+                <vrfName>{$VPN_NAME}</vrfName>
+                <defaultAfType>ipv4uni</defaultAfType>
+                <vrfRidAutoSel>false</vrfRidAutoSel>
+                <vrfSession>false</vrfSession>
+                <bgpVrfAFs>
+                  <bgpVrfAF>
+                    <afType>ipv4uni</afType>
+                    <asPathNeglect>false</asPathNeglect>
+                    <medNoneAsMaximum>false</medNoneAsMaximum>
+                    <alwaysCompareMed>false</alwaysCompareMed>
+                    <defaultLocalPref>100</defaultLocalPref>
+                    <defaultMed>0</defaultMed>
+                    <defaultRtImportEnable>false</defaultRtImportEnable>
+                    <maximumLoadBalance>1</maximumLoadBalance>
+                    <preferenceExternal>255</preferenceExternal>
+                    <preferenceInternal>255</preferenceInternal>
+                    <preferenceLocal>255</preferenceLocal>
+                    <reflectBetweenClient>true</reflectBetweenClient>
+                    <summaryAutomatic>false</summaryAutomatic>
+                    <routerIdNeglect>false</routerIdNeglect>
+                    <igpMetricIgnore>false</igpMetricIgnore>
+                    <autoFrrEnable>false</autoFrrEnable>
+                    <determinMed>false</determinMed>
+                    <ebgpIfSensitive>true</ebgpIfSensitive>
+                    <maxLoadEbgpNum>1</maxLoadEbgpNum>
+                    <maxLoadIbgpNum>1</maxLoadIbgpNum>
+                    <ecmpNexthopChanged>false</ecmpNexthopChanged>
+                    <eibgpEcmpNexthopChanged>false</eibgpEcmpNexthopChanged>
+                    <ebgpEcmpNexthopChanged>false</ebgpEcmpNexthopChanged>
+                    <ibgpEcmpNexthopChanged>false</ibgpEcmpNexthopChanged>
+                    <reflectChgPath>false</reflectChgPath>
+                    <vrfRidAutoSel>false</vrfRidAutoSel>
+                    <activeRouteAdvertise>false</activeRouteAdvertise>
+                    <routeSelDelay>0</routeSelDelay>
+                    <originAsValid>false</originAsValid>
+                    <allowInvalidAs>false</allowInvalidAs>
+                    <originAsValidEnable>false</originAsValidEnable>
+                    <policyExtCommEnable>false</policyExtCommEnable>
+                    <supernetUniAdv>false</supernetUniAdv>
+                    <supernetLabelAdv>true</supernetLabelAdv>
+                    <loadBalancingIgpMetricIgnore>false</loadBalancingIgpMetricIgnore>
+                    <loadBalancingEibgp>false</loadBalancingEibgp>
+                    <loadBalancingAsPathIgnore>false</loadBalancingAsPathIgnore>
+                    <loadBalancingAsPathRelax>false</loadBalancingAsPathRelax>
+                    <originatorPrior>false</originatorPrior>
+                    <relayDelayEnable>true</relayDelayEnable>
+                    <medPlusIgp>false</medPlusIgp>
+                    <medMultiplier>1</medMultiplier>
+                    <igpMultiplier>1</igpMultiplier>
+                    <vrfImportnhpinvariable>false</vrfImportnhpinvariable>
+                    <slowPeerDet>true</slowPeerDet>
+                    <slowPeerThVal>300</slowPeerThVal>
+                    <slowPeerAbDet>true</slowPeerAbDet>
+                    <slowPeerAbThVal>9</slowPeerAbThVal>
+                    <evpnBgpAFConfig>
+                      <dfDelayTime>0</dfDelayTime>
+                    </evpnBgpAFConfig>
+                    <importRoutes>
+                      <importRoute>
+                        <importProtocol>direct</importProtocol>
+                        <importProcessId>0</importProcessId>
+                        <nonRelayTnl>false</nonRelayTnl>
+                      </importRoute>
+                    </importRoutes>
+                  </bgpVrfAF>
+                </bgpVrfAFs>
+              </bgpVrf>
+            </bgpVrfs>
+          </bgpcomm>
+        </bgp>
+        <l3vpn xmlns="http://www.huawei.com/netconf/vrp/huawei-l3vpn">
+          <l3vpncomm>
+            <l3vpnInstances>
+              <l3vpnInstance>
+                <vrfName>{$VPN_NAME}</vrfName>
+                <trafficStatisticEnable>false</trafficStatisticEnable>
+                <vpnInstAFs>
+                  <vpnInstAF>
+                    <afType>ipv4uni</afType>
+                    <vrfLabelMode>perRoute</vrfLabelMode>
+                    <tnlPolicyName>AC_TNL_PL_1</tnlPolicyName>
+                    <vrfRD>300:{$VLANID}</vrfRD>
+                    <transitVpn>false</transitVpn>
+                    <vpnFrr>false</vpnFrr>
+                    <lspOperation>POP</lspOperation>
+                    <exPolicyAddErtFirst>false</exPolicyAddErtFirst>
+                    <vpnTargets>
+                      <vpnTarget>
+                        <vrfRTValue>300:{$VLANID}</vrfRTValue>
+                        <vrfRTType>import_extcommunity</vrfRTType>
+                      </vpnTarget>
+                      <vpnTarget>
+                        <vrfRTValue>300:{$VLANID}</vrfRTValue>
+                        <vrfRTType>export_extcommunity</vrfRTType>
+                      </vpnTarget>
+                    </vpnTargets>
+                    <l3vpnTtlMode>
+                      <ttlMode>pipe</ttlMode>
+                    </l3vpnTtlMode>
+                    <l3vpnP2mpVlinkLb>
+                      <p2mpVlinkLbEnable>false</p2mpVlinkLbEnable>
+                    </l3vpnP2mpVlinkLb>
+                    <l3vpnVrfPipe>
+                      <isPipeMode>false</isPipeMode>
+                      <pipeMode>uniform</pipeMode>
+                      <ingPipeMode>uniform</ingPipeMode>
+                      <serviceClass>be</serviceClass>
+                      <color>green</color>
+                      <egPipeMode>uniform</egPipeMode>
+                      <dsName>default</dsName>
+                    </l3vpnVrfPipe>
+                    <arpDualSendVpn>
+                      <arpDualEnable>false</arpDualEnable>
+                    </arpDualSendVpn>
+                  </vpnInstAF>
+                </vpnInstAFs>
+                <l3vpnIfs>
+                  <l3vpnIf>
+                    <ifName>{$INTERFACE}</ifName>
+                    <ipv4Addr>{$IP}</ipv4Addr>
+                    <subnetMask>{$MASK}</subnetMask>
+                  </l3vpnIf>
+                </l3vpnIfs>
+              </l3vpnInstance>
+            </l3vpnInstances>
+          </l3vpncomm>
+        </l3vpn>
+        <qos xmlns="http://www.huawei.com/netconf/vrp/huawei-qos">
+          <qosIfQoss>
+            <qosIfQos>
+              <ifName>{$INTERFACE}</ifName>
+              <qosIfCars>
+                <qosIfCar>
+                  <direction>inbound</direction>
+                  <vlanMode>false</vlanMode>
+                  <groupId>0</groupId>
+                  <identifier>no</identifier>
+                  <cir>345345</cir>
+                  <pir>345345</pir>
+                  <rateMode>value</rateMode>
+                  <cirPercent>0</cirPercent>
+                  <cbs>18700000</cbs>
+                  <pbs>18700000</pbs>
+                  <adjust>0</adjust>
+                  <greenAction>pass</greenAction>
+                  <yellowAction>pass</yellowAction>
+                  <redAction>discard</redAction>
+                  <colorAware>false</colorAware>
+                </qosIfCar>
+                <qosIfCar>
+                  <direction>outbound</direction>
+                  <vlanMode>false</vlanMode>
+                  <groupId>0</groupId>
+                  <identifier>no</identifier>
+                  <cir>345345</cir>
+                  <pir>345345</pir>
+                  <rateMode>value</rateMode>
+                  <cirPercent>0</cirPercent>
+                  <cbs>18700000</cbs>
+                  <pbs>18700000</pbs>
+                  <adjust>0</adjust>
+                  <greenAction>pass</greenAction>
+                  <yellowAction>pass</yellowAction>
+                  <redAction>discard</redAction>
+                  <colorAware>false</colorAware>
+                </qosIfCar>
+              </qosIfCars>
+            </qosIfQos>
+          </qosIfQoss>
+        </qos>
+        <rm xmlns="http://www.huawei.com/netconf/vrp/huawei-rm">
+          <rmbase>
+            <uniAfs>
+              <uniAf>
+                <vrfName>{$VPN_NAME}</vrfName>
+                <afType>ipv4unicast</afType>
+                <frrEnable>false</frrEnable>
+                <simplyAlert>false</simplyAlert>
+                <routeUnChanged>false</routeUnChanged>
+                <rtSimplyAlert>false</rtSimplyAlert>
+                <topologys>
+                  <topology>
+                    <topologyName>base</topologyName>
+                  </topology>
+                </topologys>
+              </uniAf>
+            </uniAfs>
+          </rmbase>
+        </rm>
+        <staticrt xmlns="http://www.huawei.com/netconf/vrp/huawei-staticrt">
+          <staticrtbase>
+            <srUniAfs>
+              <srUniAf>
+                <vrfName>{$VPN_NAME}</vrfName>
+                <afType>ipv4unicast</afType>
+                <frrEnable>false</frrEnable>
+                <rpfRouteFrrEnable>false</rpfRouteFrrEnable>
+              </srUniAf>
+            </srUniAfs>
+          </staticrtbase>
+        </staticrt>
+        <tnlm xmlns="http://www.huawei.com/netconf/vrp/huawei-tnlm">
+          <tunnelPolicys>
+            <tunnelPolicy>
+              <tnlPolicyName>AC_TNL_PL_1</tnlPolicyName>
+              <tnlPolicyType>tnlSelectSeq</tnlPolicyType>
+              <tnlSelSeqs>
+                <tnlSelSeq>
+                  <loadBalanceNum>1</loadBalanceNum>
+                  <selTnlType1>lsp</selTnlType1>
+                  <selTnlType2>invaild</selTnlType2>
+                  <selTnlType3>invaild</selTnlType3>
+                  <unmix>false</unmix>
+                  <selTnlType4>invaild</selTnlType4>
+                  <selTnlType5>invaild</selTnlType5>
+                </tnlSelSeq>
+              </tnlSelSeqs>
+            </tunnelPolicy>
+          </tunnelPolicys>
+        </tnlm>
+        <!-- END HUAWEI NE9k -->
+
+        <!-- CISCO NX -->
+        <System xmlns="http://cisco.com/ns/yang/cisco-nx-os-device">
+          <bgp-items>
+            <inst-items>
+              <dom-items>
+                <Dom-list tags="merge">
+                  <name>{$VPN_NAME}</name>
+                  <kaIntvl>60</kaIntvl>
+                  <holdIntvl>180</holdIntvl>
+                  <pfxPeerTimeout>30</pfxPeerTimeout>
+                  <pfxPeerWaitTime>90</pfxPeerWaitTime>
+                  <bestPathIntvl>300</bestPathIntvl>
+                  <always>disabled</always>
+                  <reConnIntvl>60</reConnIntvl>
+                  <af-items>
+                    <DomAf-list>
+                      <type>ipv4-ucast</type>
+                      <maxEcmp>1</maxEcmp>
+                      <maxExtEcmp>1</maxExtEcmp>
+                      <tblMapFltr>disabled</tblMapFltr>
+                      <vniEthTag>disabled</vniEthTag>
+                      <advSysMac>disabled</advSysMac>
+                      <critNhTimeout>3000</critNhTimeout>
+                      <nonCritNhTimeout>10000</nonCritNhTimeout>
+                      <clReflection>enabled</clReflection>
+                      <advertL2vpnEvpn>enabled</advertL2vpnEvpn>
+                      <allocLblAll>disabled</allocLblAll>
+                      <lblAllocMod>enabled</lblAllocMod>
+                      <retainRttAll>disabled</retainRttAll>
+                      <defInfOriginate>disabled</defInfOriginate>
+                      <igpMetric>600</igpMetric>
+                      <supprInactive>disabled</supprInactive>
+                      <advPip>disabled</advPip>
+                      <name>bgp-DomAf</name>
+                    </DomAf-list>
+                  </af-items>
+                </Dom-list>
+              </dom-items>
+            </inst-items>
+          </bgp-items>
+          <bd-items>
+            <bd-items>
+              <BD-list tags="merge">
+                <fabEncap>vlan-{$VLANID}</fabEncap>
+                <accEncap>vxlan-{$VLANID+50000}</accEncap>
+                <fwdMode>bridge,route</fwdMode>
+                <bridgeMode>mac</bridgeMode>
+                <fwdCtrl>mdst-flood</fwdCtrl>
+                <unkMacUcastAct>proxy</unkMacUcastAct>
+                <unkMcastAct>flood</unkMcastAct>
+                <pcTag>1</pcTag>
+                <media>enet</media>
+                <BdState>active</BdState>
+                <type>bd-regular</type>
+                <mode>CE</mode>
+                <adminSt>active</adminSt>
+                <epret-items>
+                  <localEpAgeIntvl>900</localEpAgeIntvl>
+                  <remoteEpAgeIntvl>300</remoteEpAgeIntvl>
+                  <bounceAgeIntvl>630</bounceAgeIntvl>
+                  <bounceTrig>protocol</bounceTrig>
+                  <moveFreq>256</moveFreq>
+                  <holdIntvl>300</holdIntvl>
+                </epret-items>
+              </BD-list>
+            </bd-items>
+          </bd-items>
+          <intf-items>
+            <svi-items>
+              <If-list tags="merge">
+                <id>vlan{$VLANID}</id>
+                <vlanId>0</vlanId>
+                <medium>bcast</medium>
+                <mtu>1500</mtu>
+                <mtuInherit>true</mtuInherit>
+                <delay>1</delay>
+                <bw>1000000</bw>
+                <carDel>100</carDel>
+                <loadIntvl1>60</loadIntvl1>
+                <loadIntvl2>300</loadIntvl2>
+                <loadIntvl3>60</loadIntvl3>
+                <inbMgmt>false</inbMgmt>
+                <autostate>true</autostate>
+                <snmpTrap>true</snmpTrap>
+                <adminSt>up</adminSt>
+                <rtvrfMbr-items>
+                  <tDn>/System/Inst-list[mode='{$VPN_NAME}']</tDn>
+                  <!--tCl>l3Inst</tCl-->
+                </rtvrfMbr-items>
+              </If-list>
+            </svi-items>
+          </intf-items>
+          <ipv4-items>
+            <inst-items>
+              <dom-items>
+                <Dom-list tags="merge">
+                  <name>{$VPN_NAME}</name>
+                  <if-items>
+                    <If-list>
+                      <id>vlan{$VLANID}</id>
+                      <directedBroadcast>disabled</directedBroadcast>
+                      <forward>enabled</forward>
+                      <urpf>disabled</urpf>
+                      <adminSt>enabled</adminSt>
+                    </If-list>
+                  </if-items>
+                </Dom-list>
+              </dom-items>
+            </inst-items>
+          </ipv4-items>
+          <ipv6-items>
+            <inst-items>
+              <dom-items>
+                <Dom-list tags="merge">
+                  <name>{$VPN_NAME}</name>
+                  <if-items>
+                    <If-list>
+                      <id>vlan{$VLANID}</id>
+                      <useLinkLocalAddr>disabled</useLinkLocalAddr>
+                      <urpf>disabled</urpf>
+                      <forward>enabled</forward>
+                      <autoconfig>disabled</autoconfig>
+                      <defaultRoute>disabled</defaultRoute>
+                      <adminSt>enabled</adminSt>
+                    </If-list>
+                  </if-items>
+                </Dom-list>
+              </dom-items>
+            </inst-items>
+          </ipv6-items>
+          <eps-items>
+            <epId-items>
+              <Ep-list>
+                <epId>1</epId>
+                <nws-items>
+                  <vni-items>
+                    <Nw-list tags="merge">
+                      <vni>{$VLANID+50000}</vni>
+                      <suppressARP>false</suppressARP>
+                      <associateVrfFlag>true</associateVrfFlag>
+                      <isLegacyMode>false</isLegacyMode>
+                      <multisiteIngRepl>disable</multisiteIngRepl>
+                    </Nw-list>
+                  </vni-items>
+                </nws-items>
+              </Ep-list>
+            </epId-items>
+          </eps-items>
+          <inst-items>
+            <Inst-list tags="merge">
+              <name>{$VPN_NAME}</name>
+              <encap>vxlan-{$VLANID+50000}</encap>
+              <ctrlrId>0</ctrlrId>
+              <adminState>admin-up</adminState>
+              <dom-items>
+                <Dom-list>
+                  <name>{$VPN_NAME}</name>
+                  <rd>rd:unknown:0:0</rd>
+                  <af-items>
+                    <DomAf-list>
+                      <type>ipv4-ucast</type>
+                      <ctrl-items>
+                        <AfCtrl-list>
+                          <type>ipv4-ucast</type>
+                          <rttp-items>
+                            <RttP-list>
+                              <type>import</type>
+                              <ent-items>
+                                <RttEntry-list>
+                                  <rtt>route-target:unknown:0:0</rtt>
+                                </RttEntry-list>
+                              </ent-items>
+                            </RttP-list>
+                            <RttP-list>
+                              <type>export</type>
+                              <ent-items>
+                                <RttEntry-list>
+                                  <rtt>route-target:unknown:0:0</rtt>
+                                </RttEntry-list>
+                              </ent-items>
+                            </RttP-list>
+                          </rttp-items>
+                        </AfCtrl-list>
+                        <AfCtrl-list>
+                          <type>l2vpn-evpn</type>
+                          <rttp-items>
+                            <RttP-list>
+                              <type>import</type>
+                              <ent-items>
+                                <RttEntry-list>
+                                  <rtt>route-target:unknown:0:0</rtt>
+                                </RttEntry-list>
+                              </ent-items>
+                            </RttP-list>
+                            <RttP-list>
+                              <type>export</type>
+                              <ent-items>
+                                <RttEntry-list>
+                                  <rtt>route-target:unknown:0:0</rtt>
+                                </RttEntry-list>
+                              </ent-items>
+                            </RttP-list>
+                          </rttp-items>
+                        </AfCtrl-list>
+                      </ctrl-items>
+                    </DomAf-list>
+                  </af-items>
+                </Dom-list>
+              </dom-items>
+              <rsvrfMbr-items>
+                <RsVrfMbr-list tags="merge">
+                  <tDn>/System/intf-items/If-list[id='vlan{$VLANID}']</tDn>
+                  <!--tCl>nwIf</tCl-->
+                </RsVrfMbr-list>
+              </rsvrfMbr-items>
+            </Inst-list>
+          </inst-items>
+          <pltfm-items>
+            <bd-items>
+              <bd-items>
+                <Bd-list tags="merge">
+                  <fabEncap>vlan-{$VLANID}</fabEncap>
+                </Bd-list>
+              </bd-items>
+            </bd-items>
+            <intf-items>
+              <if-items>
+                <If-list tags="merge">
+                  <id>vlan{$VLANID}</id>
+                </If-list>
+              </if-items>
+            </intf-items>
+          </pltfm-items>
+          <arp-items>
+            <inst-items>
+              <dom-items>
+                <Dom-list tags="merge">
+                  <name>{$VPN_NAME}</name>
+                  <if-items>
+                    <If-list>
+                      <id>vlan{$VLANID}</id>
+                      <timeout>1500</timeout>
+                      <gratuitousRequest>enabled</gratuitousRequest>
+                      <gratuitousUpdate>enabled</gratuitousUpdate>
+                      <gratuitousHsrpDup>enabled</gratuitousHsrpDup>
+                      <proxyArp>disabled</proxyArp>
+                      <localProxyArp>disabled</localProxyArp>
+                      <localProxyArpNoHwFlood>disabled</localProxyArpNoHwFlood>
+                      <deleteAdjOnMacDelete>disabled</deleteAdjOnMacDelete>
+                      <duplicateIpDetectionForUnnumberedSvi>disabled</duplicateIpDetectionForUnnumberedSvi>
+                      <adminSt>enabled</adminSt>
+                    </If-list>
+                  </if-items>
+                </Dom-list>
+              </dom-items>
+            </inst-items>
+          </arp-items>
+          <icmpv4-items>
+            <inst-items>
+              <dom-items>
+                <Dom-list tags="merge">
+                  <name>{$VPN_NAME}</name>
+                  <if-items>
+                    <If-list>
+                      <id>vlan{$VLANID}</id>
+                      <adminSt>enabled</adminSt>
+                      <ctrl>port-unreachable</ctrl>
+                    </If-list>
+                  </if-items>
+                </Dom-list>
+              </dom-items>
+            </inst-items>
+          </icmpv4-items>
+          <nd-items>
+            <inst-items>
+              <dom-items>
+                <Dom-list tags="merge">
+                  <name>{$VPN_NAME}</name>
+                  <if-items>
+                    <If-list>
+                      <id>vlan{$VLANID}</id>
+                      <macExtract>none</macExtract>
+                      <dnsSuppress>disabled</dnsSuppress>
+                      <dnsSearchListSuppress>disabled</dnsSearchListSuppress>
+                      <routeSuppress>disabled</routeSuppress>
+                      <routerPreference>unspecified</routerPreference>
+                      <ctrl/>
+                      <nsIntvl>1000</nsIntvl>
+                      <raIntvl>600</raIntvl>
+                      <raIntvlMin>200</raIntvlMin>
+                      <hopLimit>64</hopLimit>
+                      <mtu>1500</mtu>
+                      <raLifetime>1800</raLifetime>
+                      <reachableTime>0</reachableTime>
+                      <retransTimer>0</retransTimer>
+                      <dadAttempts>1</dadAttempts>
+                      <dadnsInterval>5000</dadnsInterval>
+                      <adminSt>enabled</adminSt>
+                    </If-list>
+                  </if-items>
+                </Dom-list>
+              </dom-items>
+            </inst-items>
+          </nd-items>
+        </System>
+        <!-- END HUAWEI NE9k -->
+
+
+
+        <!-- OTHER VENDOR -->
+
+      </config>
+    </device>
+  </devices>
+</config-template>

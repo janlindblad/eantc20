@@ -1,0 +1,2536 @@
+
+module ospfv2 {
+
+  namespace "http://metaswitch.com/yang/nbu/ospfv2/201511050000Z";
+
+  prefix ospfv2;
+
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix "interfaces"; }
+  import metaswitch-yang-types { prefix meta; }
+  import ospf-common { prefix ospf; }
+  import redist { prefix redist; }
+  import lfa { prefix lfa; }
+  import metaswitch-custom-yang-types { prefix "custom"; }
+  import metaswitch-features { prefix features; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Open Shortest Path First";
+
+  revision 2015-11-05 {
+    description "Initial revision.";
+  }
+
+  typedef ospf-area-ls-types {
+    type enumeration {
+      enum router-lsa                       { value 1; description "LSA router link"; }
+      enum network-lsa                      { value 2; description "LSA network link"; }
+      enum summary-lsa                      { value 3; description "LSA summary link"; }
+      enum as-summary-lsa                   { value 4; description "LSA as summary link"; }
+      enum multicast-lsa                    { value 6; description "LSA multicast link"; }
+      enum nssa-external-lsa                { value 7; description "LSA NSSA external link"; }
+      enum area-opaque-lsa                  { value 10; description "LSA area opaque link"; }
+    }
+    description
+      "OSPF area-scope LSA type";
+  }
+
+  typedef ospf-link-ls-types {
+    type enumeration {
+      enum opaque-link-lsa                  { value 9; description "LSA opaque link"; }
+    }
+    description
+      "OSPF link-local-scope LSA type";
+  }
+
+  typedef ospf-ext-ls-types {
+    type enumeration {
+      enum external-lsa                     { value 5; description "LSA external link"; }
+      enum opaque-external-lsa              { value 11; description "LSA external opaque link"; }
+    }
+    description
+      "OSPF external-scope LSA type";
+  }
+
+  typedef ospfv2-transmit-delay-t {
+    type uint32 {
+      range "0..3600";
+    }
+    description
+      "(0-3600)";
+  }
+
+  typedef ospfv2-vif-transmit-delay-t {
+    type uint32 {
+      range "0..3600";
+    }
+    description
+      "(0-3600)";
+  }
+
+  typedef ospfv2-retransmit-interval {
+    type uint32 {
+      range "0..3600";
+    }
+    description
+      "(0-3600)";
+  }
+
+  typedef ospfv2-vif-retransmit-interval {
+    type uint32 {
+      range "0..3600";
+    }
+    description
+      "(0-3600)";
+  }
+
+  typedef ospfv2-maximum-paths-t {
+    type uint32 {
+      range "1..64";
+    }
+    description
+      "(1-64)";
+  }
+
+
+  grouping v2-only-global-state {
+
+    // Low-level model info: Corresponds to read-only fields in AMB_OSPF_PM_ENT (ospfPmEntTable).
+
+    // Low-level model info: Corresponds to ospfPmEntExternLsaCount.
+    leaf external-lsa-count {
+      type uint32;
+      description
+        "The number of external (LS type 5) link-state
+        advertisements in the link-state database.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to ospfPmEntExternLsaCksumSum.
+    leaf external-lsa-checksum-sum {
+      type uint32;
+      description
+        "The 32-bit unsigned sum of the LS checksums of the
+        external link-state advertisements contained in the
+        link-state database.  This sum can be used to determine if
+        there has been a change in a router's link state
+        database, and to compare the link-state database of two
+        routers.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to ospfPmEntExtOpLsaCount.
+    leaf opaque-external-lsa-count {
+      type uint32;
+      description
+        "The number of type-11 LSAs in the external database.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to ospfPmEntExtOpLsaCksumSum.
+    leaf opaque-external-lsa-checksum-sum {
+      type uint32;
+      description
+        "The 32 bit sum of LS checksums of all type-11 LSAs in the
+        external Link State Database.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to ospfPmEntCurrentRouterId.
+    leaf current-router-id {
+      type meta:router-id;
+      description
+        "The currently in-use Router ID.
+
+        This field displays the Router ID in use by OSPF.  The
+        router-id is used to configure this value.";
+      config false;
+    }
+
+  }  // v2-only-global-state
+
+  grouping v2-only-global-config-state {
+
+    // Low-level model info: Corresponds to read-write fields in AMB_OSPF_PM_ENT (ospfPmEntTable)
+    //                       which are not configurable on the CLI but which are returned as state.
+
+    // Low-level model info: Corresponds to ospfPmEntTOSSupport.
+    leaf type-of-service-support {
+      type boolean;
+      description
+        "The router's support for type-of-service routing.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to ospfPmEntRFC1583Comp.
+    leaf rfc-1583-compatibility {
+      type boolean;
+      description
+        "Indicates metrics used to choose among multiple
+        AS-external-LSAs.  When rfc-1583-compatibility is set to
+        true, only cost will be used when choosing among multiple
+        AS-external-LSAs advertising the same destination.  When
+        rfc-1583-compatibility is set to false, preference will be
+        driven first by type of path using cost only to break
+        ties.
+
+        In order to minimize the chance of routing loops, all OSPF
+        routers in an OSPF routing domain should have
+        rfc-1583-compatibility set identically.  When there are
+        routers present that have not been updated with the
+        functionality specified in RFC2328 Section 16.4.1, all
+        routers should have rfc-1583-compatibility set to true.
+        Otherwise, all routers should have rfc-1583-compatibility
+        set to false, preventing all routing loops.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to ospfPmEntOpaqueLsaSupport.
+    leaf opaque-lsa-support {
+      type boolean;
+      description
+        "The router's support for Opaque LSA types.  This value
+        cannot be changed when OSPF is active and in oper state up.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to ospfPmEntSupportEnniRouting.
+    leaf support-enni {
+      type boolean;
+      description
+        "The router's support for the OIF E-NNI Routing 2.0
+        protocol.
+
+        When set to true, the router supports ONLY the OIF variant
+        of the OSPF protocol.  This value cannot be changed when
+        OSPF is active.";
+      config false;
+    }
+
+  } // v2-only-global-config-state
+
+  grouping v2-interface-stats {
+
+    // Low-level model info: Corresponds to common fields in AMB_OSPF_PM_IF_STATS (ospfPmIfStatsTable) and AMB_OSPF_PM_VIRT_IF_STATS (ospfPmVirtIfStatsTable).
+
+    description
+      "The OSPF Interface Statistics List, including per-OSPF interface
+      counters.  This table contains one row per address on an interface, so
+      there may exist more than one row for each logical interface.";
+
+    uses ospf:common-interface-stats;
+
+    leaf tx-failed {
+      type uint32;
+      description
+        "The number of packets that OSPF could not send on this
+        interface.
+
+        The count is reinitialized to zero when interface
+        statistics collection is reset.";
+      config false;
+    }
+
+    leaf tx-failed-byte {
+      type uint32;
+      description
+        "The number of bytes in packets that OSPF could not send on
+        this interface.
+
+        This count includes the IP header and any authentication
+        data.
+
+        The count is reinitialized to zero when interface
+        statistics collection is reset.";
+      config false;
+    }
+
+    leaf cksum {
+      type uint32;
+      description
+        "The number of OSPF packet header checksum errors detected
+        on this interface.
+
+        This count is incremented when authentication of a
+        received OSPF packet header checksum fails.
+
+        The count is reinitialized to zero when interface
+        statistics collection is reset.";
+      config false;
+    }
+
+    leaf wrong-proto {
+      type uint32;
+      description
+        "The number of OSPF packet header 'wrong protocol' errors
+        detected on this interface.
+
+        This count is incremented when the IP protocol field in a
+        received OSPF packet is not set to OSPF.
+
+        The count is reinitialized to zero when interface
+        statistics collection is reset.";
+      config false;
+    }
+
+    leaf virt-ma-if-clash {
+      type uint32;
+      description
+        "The number of OSPF packet header 'virtual interface clash
+        with multi-area interface' errors detected on this
+        interface.
+
+        This count is incremented when a received packet is
+        dropped  because local misconfiguration means that a
+        virtual interface  and a multi-area interface cannot be
+        distinguished.
+
+        The count is included here only for consistency with other
+        interface types and is always returned as zero.";
+      config false;
+    }
+
+    leaf netmask-mismatch {
+      type uint32;
+      description
+        "The number of Hello packets received on this interface
+        that were dropped because of a bad netmask.
+
+        This count is incremented when a received Hello packet is
+        dropped because its netmask does not match that configured
+        in the receiving interface.
+
+        When a packet is dropped for this reason, the count of hellos
+        is also incremented.
+
+        The count is reinitialized to zero when interface
+        statistics collection is reset.";
+      config false;
+    }
+
+  } // v2-interface-stats
+
+  grouping ospf-interface-config {
+
+    // Low-level model info: Corresponds to AMB_OSPF_PM_IF (ospfPmIfTable) configuration.
+
+    description
+      "The OSPF Interface Table describes the interfaces from the
+      viewpoint of OSPF.  This table contains
+      one row per address on an interface, so there may exist more
+      than one row for each logical interface.";
+
+    // Low-level model info: The interface needs to be mapped to either ospfPmIfIpAddress or ospfPmAddressLessIf.
+    //                       To do this, the Mapper needs to understand whether an interface is numbered or unnumbered.
+    //                       For a numbered interface, the Mapper should obtain an ipv4 address from the I3 stub.
+
+    uses ospf:common-if-parms;
+
+    leaf retransmit-interval {
+      type ospfv2-retransmit-interval;
+      units "seconds";
+      default "5";
+      description
+        "The number of seconds between link-state advertisement
+        retransmissions, for adjacencies belonging to this interface.
+        This value is also used when retransmitting database
+        description and link-state request packets.";
+
+      user-ext:CLI-comm-help "Set retransmission interval";
+      user-ext:CLI-no-comm-help "Set retransmission interval to default";
+      user-ext:CLI-param-help "Set retransmission interval";
+    }
+
+    leaf transmit-delay {
+      type ospfv2-transmit-delay-t;
+      units "seconds";
+      default "1";
+      description
+        "The estimated number of seconds it takes to transmit a
+        link state update packet over this interface.";
+
+      user-ext:CLI-comm-help "Set transmit delay";
+      user-ext:CLI-no-comm-help "Set transmit delay to default";
+      user-ext:CLI-param-help "Set transmit delay";
+    }
+
+    leaf authentication-key {
+      type ospf:ospf-authentication-key;
+      description
+        "The cleartext password used as an OSPF Authentication key
+        when simple-Password security is enabled.  This object does
+        not access any OSPF Cryptogaphic (for example MD5)
+        Authentication Key under any circumstance.
+
+        Unauthenticated interfaces need no authentication key, and
+        simple password authentication cannot use a key of more
+        than 8 characters
+
+        Note that the use of simple-password authentication is NOT
+        recommended when there is concern regarding attack upon
+        the OSPF system.  Simple Password authentication is only
+        sufficient to protect against accidental misconfigurations
+        because it re-uses cleartext passwords.  [RFC-1704]";
+
+      user-ext:CLI-comm-help "Set authentication key";
+      user-ext:CLI-no-comm-help "Set authentication key to default";
+      user-ext:CLI-param-help "Set authentication key";
+    }
+
+  } // ospf-interface-config
+
+  grouping ospf-interface-state {
+
+    // Low-level model info: Corresponds to read-only parts of AMB_OSPF_PM_IF (ospfPmIfTable).
+
+    description
+      "The OSPF Interface Table describes the interfaces from the
+      viewpoint of OSPF.  This table contains
+      one row per address on an interface, so there may exist more
+      than one row for each logical interface.";
+
+    // Low-level model info: The interface needs to be mapped to either ospfPmIfIpAddress or ospfPmAddressLessIf.
+    //                       To do this, the Mapper needs to understand whether an interface is numbered or unnumbered.
+    //                       For a numbered interface, the Mapper should obtain an ipv4 address from the I3 stub.
+
+    leaf if-base-name {
+      type interfaces:iface-base-name;
+      description
+        "The name of the interface.";
+      config false;
+    }
+
+    leaf if-ext-id {
+      type interfaces:iface-ext-id;
+      description
+        "The extended ID of the interface, if any.";
+      config false;
+    }
+
+    container config {
+
+      // Low-level model info: Corresponds to fields in AMB_OSPF_PM_IF (ospfPmIfTable).
+      //                       The leaves here just report configured values.
+
+      config false;
+
+      uses ospf:common-if-state-config;
+
+      leaf retransmit-interval {
+        type ospfv2-retransmit-interval;
+        units "seconds";
+        description
+          "The number of seconds between link-state advertisement
+          retransmissions, for adjacencies belonging to this interface.
+          This value is also used when retransmitting database
+          description and link-state request packets.";
+        config false;
+      }
+
+      leaf transmit-delay {
+        type ospfv2-transmit-delay-t;
+        units "seconds";
+        description
+          "The estimated number of seconds it takes to transmit a
+          link state update packet over this interface.";
+        config false;
+      }
+
+    } // config
+
+    container state {
+
+      // Low-level model info: Corresponds to read-only fields in AMB_OSPF_PM_IF (ospfPmIfTable).
+      // TBD: Separate out state fields from config fields for OSPF?  Applies to stats and neighbors as well?
+
+      config false;
+
+      uses ospf:common-if-state;
+
+      leaf net-mask {
+        type interfaces:iface-ipv4-address-allow-zero-t;
+        description
+          "The subnet mask associated with the IP address of this
+          entry.  The value of the mask is an IP address with all
+          the network bits set to 1 and all the hosts bits set to 0.";
+        config false;
+      }
+
+      leaf if-index {
+        type meta:ro-if-index-or-zero;
+        description
+          "A 32-bit index identifying this interface, or zero if no
+          index value is known.  For interfaces having no IP Address
+          this field is automatically set to the value of the
+          address-less interface index field.";
+        config false;
+      }
+
+      leaf if-ip-address {
+        type interfaces:iface-ipv4-address-t;
+        description
+          "The IPv4 address associated with this interface entry.";
+        config false;
+      }
+
+      leaf remote-if-index {
+        type meta:ro-if-index-or-zero;
+        description
+          "For a point to point interface, this specifies the
+          interface index assigned to this link by the remote peer.
+          If the remote interface ID is not known, this field is
+          set to zero.  It is not valid for non point to point
+          interfaces and is set to zero.";
+        config false;
+      }
+
+    } // state
+
+    container stats {
+
+      // Low-level model info: Corresponds to AMB_OSPF_PM_IF_STATS (ospfPmIfStatsTable).
+
+      description
+        "The OSPF Interface Statistics Table is a read-only table
+        including per-OSPF interface counters.  This table is
+        OSPF implementation specific.  This table contains one row per
+        address on an interface, so there may exist more than one row for
+        each logical interface.";
+
+      config false;
+
+      uses v2-interface-stats;
+
+      leaf if-standby {
+        type uint32;
+        description
+          "The number of OSPF packet header 'interface in standby
+          state' errors detected on this interface.
+
+          This count is incremented when a received OSPF packet is
+          dropped because the receiving interface is in standby
+          state (Reference RFC2328 Appendix F, method 2).
+
+          The count is reinitialized to zero when interface
+          statistics collection is reset.";
+        config false;
+      }
+
+    } // stats
+
+    container nbr-state-list {
+
+      description
+        "Container to hold Neighbor state information.";
+
+      config false;
+
+      list nbr-state {
+
+        // Low-level model info: Corresponds to AMB_OSPF_PM_NBR (ospfPmNbrTable).
+
+        description
+          "A table of neighbor information for neighbors on network
+          interfaces.  This does not apply to neighbors on virtual
+          interfaces, sham links or multi-area interfaces.";
+
+        config false;
+
+        leaf ip-address {
+          type interfaces:iface-ipv4-address-t;
+          description
+            "The IP address this neighbor is using in its IP Source
+            Address.  Note that, on addressless links, this will not
+            be 0.0.0.0, but the address of another of the neighbor's
+            interfaces.";
+          config false;
+        }
+
+        uses ospf:common-if-nbr-state;
+
+        leaf router-id {
+          type meta:router-id;
+          description
+            "A 32-bit integer (represented as an IP Address)
+            uniquely identifying the neighboring router in the
+            Autonomous System.";
+          config false;
+        }
+
+        leaf permanence {
+          type ospf:ospf-nbr-permanence;
+          description
+            "This variable displays the status of the entry.  'dynamic'
+            and 'permanent' refer to how the neighbor became known.";
+          config false;
+        }
+
+        leaf local-if-address {
+          type interfaces:iface-ipv4-address-allow-zero-t;
+          description
+            "The IP address of the local OSPF interface that the
+            adjacency to this neighbor is running over.  This will be
+            0.0.0.0 for an unnumbered interface.
+
+            Note that this field may be 0.0.0.0 for a configured
+            neighbor if it is not currently bound to any interface.";
+          config false;
+        }
+
+        leaf local-if-index {
+          type meta:ro-if-index-or-zero;
+          description
+            "The Interface Index of the local OSPF interface that the
+            adjacency to this neighbor is running over.  This is set
+            for both numbered and unnumbered interfaces.
+
+            Note that this field may be 0 for a configured neighbor if
+            it is not currently bound to any interface.";
+          config false;
+        }
+
+      } // nbr-state
+
+    } // nbr-state-list
+
+    container local-lsdb-state-list {
+
+      description
+        "Container to hold Link State Database information.";
+
+      config false;
+
+      list local-lsdb-state {
+
+        // Low-level model info: Corresponds to AMB_OSPF_PM_LOCAL_LSDB (ospfPmLocalLsdbTable).
+
+        description
+          "The OSPF Process's Link-Local Link State Database for
+          network interfaces.  This does not include link state for
+          virtual interfaces, sham links or multi-area interfaces.";
+
+        // Low-level model info: MIB indices are "lsa-type ls-id router-id".
+
+        config false;
+
+        leaf lsa-type {
+          type ospf-link-ls-types;
+          description
+            "The type of the link state advertisement.  Each link state
+            type has a separate advertisement format.  AS-Scope LSAs
+            not recognized by the router may be stored in the
+            database.";
+          config false;
+        }
+
+        uses ospf:common-lsdb-state;
+
+        leaf area-id {
+          type ospf:ospf-area-id;
+          description
+            "The OSPF area in which the link belongs.";
+          config false;
+        }
+
+      } // local-lsdb-state
+
+    } // local-lsdb-state-list
+
+  } // ospf-interface-state
+
+  augment "/ospfv2:router/ospfv2:ospfv2/ospfv2:global/ospfv2:interface-state-list/ospfv2:interface-state/ospfv2:state" {
+    uses ospf:common-if-te-state;
+  }
+
+  grouping v2-area-state {
+
+    // Low-level model info: Corresponds to read-only fields in AMB_OSPF_PM_AREA (ospfPmAreaTable).
+
+    uses ospf:common-area-state;
+
+    // Low-level model info: Corresponds to ospfPmAreaLsaCount.
+    leaf lsa-count {
+      type uint32;
+      description
+        "The total number of link-state advertisements in this
+        area's link-state database, excluding AS External LSA's.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to ospfPmAreaLsaCksumSum.
+    leaf lsa-checksum-sum {
+      type uint32;
+      description
+        "The 32-bit unsigned sum of the link-state advertisements'
+        LS checksums contained in this area's link-state database.
+        This sum excludes external (LS type 5) link-state
+        advertisements.  The sum can be used to determine if there
+        has been a change in a router's link state database, and
+        to compare the link-state database of two routers.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to ospfPmAreaSummLsaCount.
+    leaf type-3-summary-lsa-count {
+      type uint32;
+      description
+        "The number of LSAs with LS type-3 in this area's Link
+        State Database.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to ospfPmAreaSummLsaCksumSum.
+    leaf type-3-summary-lsa-checksum-sum {
+      type uint32;
+      description
+        "The 32 bit sum of LS checksums of all LSAs with LS type-3
+        in this area's Link State Database.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to ospfPmAreaSummAsLsaCount.
+    leaf type-4-summary-lsa-count {
+      type uint32;
+      description
+        "The number of LSAs with LS type-4 in this area's Link
+        State Database.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to ospfPmAreaSummAsLsaCksumSum.
+    leaf type-4-summary-lsa-checksum-sum {
+      type uint32;
+      description
+        "The 32 bit sum of LS checksums of all LSAs with LS type-4
+        in this area's Link State Database.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to ospfPmAreaOpLsaCount.
+    leaf opaque-lsa-count {
+      type uint32;
+      description
+        "The number of LSAs with LS type-10 in this area's Link
+        State Database.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to ospfPmAreaOpLsaCksumSum.
+    leaf opaque-lsa-checksum-sum {
+      type uint32;
+      description
+        "The 32 bit sum of LS checksums of all LSAs with LS type-10
+        in this area's Link State Database.";
+      config false;
+    }
+
+  } // v2-area-state
+
+  grouping ospfv2-instance {
+
+    // Low-level model info: Corresponds to AMB_OSPF_PM_ENT (ospfPmEntTable).
+
+    leaf router-id {
+      type meta:router-id;
+      description
+        "A 32-bit integer identifying the router in the
+        Autonomous System.  The Router ID of 0.0.0.0 is reserved.";
+
+      user-ext:CLI-comm-help "Set router id";
+      user-ext:CLI-no-comm-help "Remove router id";
+      user-ext:CLI-param-help "Set router id";
+    }
+
+    // Low-level model info: Corresponds to ospfPmEntTrafficEngSupport.
+    // Low-level model info: Note that the yang default is different to the MIB default.
+    leaf traffic-engineering-support {
+      type boolean;
+      default "false";
+      description
+        "Support for traffic engineering.";
+
+      user-ext:CLI-comm-help "Set traffic engineering support";
+      user-ext:CLI-no-comm-help "Remove traffic engineering support";
+      user-ext:CLI-param-help "Set traffic engineering support";
+    }
+
+    // Low-level model info: Corresponds to ospfPmEntRteMaxEqCostPaths.
+    leaf maximum-paths {
+      type ospfv2-maximum-paths-t;
+      default "5";
+      description
+        "The maximum number of equal cost paths that are stored for
+        each destination in the Routing Table.
+        Note that, when IGP shortcut interfaces are in use, this
+        maximum applies individually to IGP shortcut paths and
+        non-IGP shortcut paths.  That is, there may be a total of
+        2 * maximum-paths paths stored for a
+        single destination.";
+
+      user-ext:CLI-comm-help "Set the maximum number of equal cost paths";
+      user-ext:CLI-no-comm-help "Set the maximum number of equal cost paths to default";
+      user-ext:CLI-param-help "Set the maximum number of equal cost paths";
+    }
+
+    // Low-level model info: Corresponds to ospfPmEntRFC1583Comp.
+    leaf rfc-1583-compatibility {
+      type boolean;
+      default "false";
+      description
+        "Enable RFC 1583 compatibility mode";
+
+      user-ext:CLI-comm-help "Enable RFC 1583 compatibility mode";
+      user-ext:CLI-no-comm-help "Disable RFC 1583 compatibility mode";
+    }
+
+    uses ospf:common-global-parms;
+
+    container lfa {
+
+      if-feature features:ip-frr;
+
+      // Low-level model info: Corresponds to configuration fields in AMB_LFA_ENT (lfaEntTable).
+
+      description
+        "Each entry in this table represents an LFA entity.  It is
+        used for all entity-wide configuration in LFA.";
+
+      user-ext:CLI-comm-help "Configure LFA";
+      user-ext:CLI-no-comm-help "Remove LFA";
+
+      presence "Enable LFA";
+
+      uses lfa:lfa-global-config { if-feature features:ip-frr; }
+
+      // Low-level model info: Corresponds to AMB_CIPR_RTM_REDIST (rtmRedistTable) with
+      //                       rtmRedistInfoSrc = ospf and rtmRedistInfoDest = lfa.  All
+      //                       routes are redistributed to LFA by default.
+      list filter {
+
+        description
+          "LFA filter rule.";
+
+        user-ext:CLI-comm-help "Configure LFA filter rule";
+        user-ext:CLI-no-comm-help "Configure LFA filter rule";
+
+        key "name";
+
+        // Low-level model info: A unique rtmRedistEntryId will be generated for each entry
+        leaf name {
+          type redist:redist-name-string;
+
+          user-ext:CLI-param-help "Set LFA filter rule name";
+          description
+            "LFA filter rule name.";
+        }
+
+        uses redist:lfa-filter-redist-ipv4;
+
+        leaf path-type {
+          type redist:ospf-redist-path-types;
+          default "none";
+          description
+            "Value of OSPF path type filter, if in use.  If the filter is in
+            use then do not match the source routing information to
+            this entry if the path type in the source routing
+            information does not match this filter value.";
+
+          user-ext:CLI-comm-help "Set path type filter";
+          user-ext:CLI-no-comm-help "Set path type filter to default";
+          user-ext:CLI-param-help "Set path type filter";
+        }
+
+      } // filter
+
+    } // lfa
+
+    container state {
+
+      // Low-level model info: Corresponds to read-only fields in AMB_OSPF_PM_ENT (ospfPmEntTable).
+
+      config false;
+
+      uses ospf:common-global-state;
+      uses v2-only-global-state;
+      uses ospf:common-global-config-state;
+      uses v2-only-global-config-state;
+
+    } // state
+
+    container stats {
+
+      config false;
+
+      // Low-level model info: Corresponds to AMB_OSPF_NM_ENT_STATS (ospfNmEntStatsTable).
+
+      description
+        "The OSPF Statistics Table including per-OSPF counters.";
+
+      uses ospf:common-global-stats;
+
+      leaf instance-id {
+        type uint32;
+        description
+          "The number of OSPF packet header 'instance id' errors
+          detected in the case where OSPF cannot determine the
+          receiving interface.
+
+          The count is reinitialized to zero when entity statistics
+          collection is reset.";
+        config false;
+      }
+
+      leaf bad-ip-hdr-len {
+        type uint32;
+        description
+          "The number of OSPF packet header 'bad IP header length'
+          errors detected in the case where OSPF cannot determine
+          the receiving interface.
+
+          The count is reinitialized to zero when entity statistics
+          collection is reset.";
+        config false;
+      }
+
+    } // stats
+
+    // Global LFA statistics.
+    uses lfa:lfa-global-stats { if-feature features:ip-frr; }
+
+    list virtual-if {
+
+      // Low-level model info: Corresponds to AMB_OSPF_PM_VIRT_IF (ospfPmVirtIfTable).
+
+      description
+        "Information about this router's virtual interfaces.";
+
+      user-ext:CLI-comm-help "Configure virtual interface";
+      user-ext:CLI-no-comm-help "Remove virtual interface";
+
+      key "area-id router-id";
+
+      leaf area-id {
+        type ospf:ospf-area-id;
+        description
+          "The Transit Area that the Virtual Link traverses.  By
+          definition, this is not 0.0.0.0";
+
+        user-ext:CLI-param-help "Set area id";
+      }
+
+      // Low-level model info: Corresponds to ospfPmVirtIfNeighbor.
+      leaf router-id {
+        type meta:router-id;
+        description
+          "The Router ID of the Virtual Neighbor.";
+        user-ext:CLI-param-help "Set router id";
+      }
+
+      // Check that the user has not used the backbone area (id = 0.0.0.0).
+      must "(area-id != '0.0.0.0')" {
+        error-message "An OSPF virtual interface cannot go across the backbone area (id = 0.0.0.0)";
+      }
+
+      // Note that there is a potential wrinkle with the above test because OSPF can auto-create
+      // interfaces, and areas for those interfaces, due to information received over the I3
+      // interface.  However, an auto-created interface will not be activated, and have an area id
+      // assigned to it, until the user has activated the interface on the CLI via the
+      // AMB_OSPF_PM_IF MIB.  The interface on the CLI is created from within the context of an
+      // area.  Hence areas are never auto-created and so this test does not need to consider that
+      // possibility.
+
+      // Low-level model info: Corresponds to ospfPmEntRteMaxEqCostPaths.
+      leaf maximum-paths {
+        type ospfv2-maximum-paths-t;
+        default "5";
+        description
+          "The maximum number of equal cost paths that are stored for
+          each destination in the Routing Table.
+          Note that, when IGP shortcut interfaces are in use, this
+          maximum applies individually to IGP shortcut paths and
+          non-IGP shortcut paths.  That is, there may be a total of
+          2 * maximum-paths paths stored for a single destination.";
+
+        user-ext:CLI-comm-help "Set the maximum number of equal cost paths";
+        user-ext:CLI-no-comm-help "Set the maximum number of equal cost paths to default";
+        user-ext:CLI-param-help "Set the maximum number of equal cost paths";
+      }
+
+      uses ospf:common-vif-parms;
+
+      leaf retransmit-interval {
+        type ospfv2-vif-retransmit-interval;
+        units "seconds";
+        default "5";
+        description
+          "The number of seconds between link-state advertisement
+          retransmissions, for adjacencies belonging to this interface.
+          This value is also used when retransmitting database
+          description and link-state request packets.";
+
+        user-ext:CLI-comm-help "Set retransmission interval";
+        user-ext:CLI-no-comm-help "Set retransmission interval to default";
+        user-ext:CLI-param-help "Set retransmission interval";
+      }
+
+      leaf transmit-delay {
+        type ospfv2-vif-transmit-delay-t;
+        units "seconds";
+        default "1";
+        description
+          "The estimated number of seconds it takes to transmit a
+          link state update packet over this interface.";
+
+        user-ext:CLI-comm-help "Set transmit delay";
+        user-ext:CLI-no-comm-help "Set transmit delay to default";
+        user-ext:CLI-param-help "Set transmit delay";
+      }
+
+      leaf authentication-type {
+        type ospf:ospf-auth-types;
+        default "none";
+        description
+          "The authentication type specified for a virtual interface.
+          Additional authentication types may be assigned locally.
+
+          Note that this object can be used to engage in significant
+          attacks against an OSPF router.";
+
+        user-ext:CLI-comm-help "Set authentication type";
+        user-ext:CLI-no-comm-help "Set authentication type to default";
+        user-ext:CLI-param-help "Set authentication type";
+      }
+
+      leaf authentication-key {
+        type ospf:ospf-authentication-key;
+        description
+          "The cleartext password used as an OSPF Authentication key
+          when simple-password security is enabled.  This object does
+          not access any OSPF Cryptogaphic (e.g.  MD5)
+          Authentication Key under any circumstance.
+
+          If the key length is shorter than 8 octets, the agent will
+          left adjust and zero fill to 8 octets.
+
+          Unauthenticated interfaces need no authentication key, and
+          simple password authentication cannot use a key of more
+          than 8 octets.
+
+          Note that the use of simple-password authentication is NOT
+          recommended when there is concern regarding attack upon
+          the OSPF system.  Simple password authentication is only
+          sufficient to protect against accidental misconfigurations
+          because it re-uses cleartext passwords.  [RFC-1704]";
+
+        user-ext:CLI-comm-help "Set authentication key";
+        user-ext:CLI-no-comm-help "Set authentication key to default";
+        user-ext:CLI-param-help "Set authentication key";
+      }
+
+      leaf authentication-data {
+        type ospf:ospf-auth-data;
+        description
+          "Authentication user data for interface level
+          authentication.
+
+          This data is passed opaquely to the authentication interface
+          where it can be used to assist with authentication decisions.";
+
+        user-ext:CLI-comm-help "Set authentication data";
+        user-ext:CLI-no-comm-help "Set authentication data to default";
+        user-ext:CLI-param-help "Set authentication data";
+      }
+
+      // Check that authentication type and data are set correctly.
+      must "(
+        ((not(authentication-type)) or (authentication-type = 'none')) or
+        ((authentication-type) and
+         (authentication-type = 'simple-password') and
+         (authentication-key) and
+         (not(authentication-data))) or
+        ((authentication-type) and
+         (authentication-type != 'none') and
+         (authentication-type != 'simple-password') and
+         (not(authentication-key)) and
+         (authentication-data)))" {
+        error-message
+          "If authentication-type is set to 'simple-password', authentication-key " +
+          "must be set and authentication-data must not be set. " +
+          "If authentication-type is set to another authentication type " +
+          "(not 'none' or 'simple-password'), authentication-data must be set and " +
+          "authentication-key must not be set.";
+      }
+
+      container state {
+
+        // Low-level model info: Corresponds to read-only fields in AMB_OSPF_PM_VIRT_IF (ospfPmVirtIfTable).
+
+        description
+          "Displays state for interfaces on which OSPF is configured.";
+
+        config false;
+
+        uses ospf:common-interface-state;
+
+      } // state
+
+      container stats {
+
+        // Low-level model info: Corresponds to AMB_OSPF_PM_VIRT_IF_STATS (ospfPmVirtIfStatsTable).
+
+        description
+          "The OSPF Virtual Interface Statistics Table table including
+          per-OSPF interface counters.";
+
+        config false;
+
+        uses v2-interface-stats;
+
+      } // stats
+
+      container nbr-state {
+
+        // Low-level model info: Corresponds to AMB_OSPF_PM_VIRT_NBR (ospfPmVirtNbrTable).
+
+        description
+          "A table of virtual neighbor information.";
+
+        config false;
+
+        leaf ip-address {
+          type interfaces:iface-ipv4-address-t;
+          description
+            "The IP address this Virtual Neighbor is using.";
+          config false;
+        }
+
+        uses ospf:common-neighbor-state;
+
+      } // nbr-state
+
+      container local-lsdb-state-list {
+
+        description
+          "Container to hold Virtual Interface local LSDB state.";
+
+        config false;
+
+        list local-lsdb-state {
+
+          // Low-level model info: Corresponds to AMB_OSPF_PM_VIRT_LOCAL_LSDB (ospfPmVirtLocalLsdbTable).
+
+          description
+            "The OSPF Process's Link-Local Link State Database for
+            virtual links.";
+
+          // Low-level model info: MIB indices are "lsa-type ls-id router-id".
+
+          config false;
+
+          leaf lsa-type {
+            type ospf-link-ls-types;
+            description
+              "The type of the link state advertisement.  Each link state
+              type has a separate advertisement format.  AS-Scope LSAs
+              not recognized by the router may be stored in the
+              database.";
+            config false;
+          }
+
+          uses ospf:common-lsdb-state;
+
+        } // local-lsdb-state
+
+      } // local-lsdb-state-list
+
+    } // virtual-if
+
+    list area {
+
+      // Low-level model info: Corresponds to AMB_OSPF_PM_AREA (ospfPmAreaTable).
+
+      description
+        "Information describing the configured parameters and
+        cumulative statistics of the router's attached areas.";
+
+      user-ext:CLI-comm-help "Configure area";
+      user-ext:CLI-no-comm-help "Remove area";
+
+      key "area-id";
+
+      leaf area-id {
+        type ospf:ospf-area-id;
+        description
+          "A 32-bit integer uniquely identifying an area.  Area ID
+          0.0.0.0 is used for the OSPF backbone.";
+
+        user-ext:CLI-param-help "Set area id";
+      }
+
+      container stub {
+
+        // Low-level model info: Configures an area as a stub area.
+        // Low-level model info: For v2, corresponds to AMB_OSPF_PM_STUB_AREA, ospfPmImportAsExtern and ospfPmAreaSummary.
+        // Low-level model info: For v3, corresponds to ospfv3PmImportAsExtern, ospfv3PmAreaSummary, ospfv3PmStubMetric and ospfv3PmAreaStubMetricType.
+
+        must "not(../nssa)" {
+          error-message "stub and nssa cannot be configured at the same time for an OSPF area";
+        }
+
+        // Check that the area is not the backbone area (area-id = 0.0.0.0).
+        must "(../area-id != '0.0.0.0')" {
+          error-message "The OSPF backbone area (0.0.0.0) cannot be a stub area";
+        }
+
+        presence "Configure area as a stub area";
+
+        user-ext:CLI-comm-help "Configure stub area parameters";
+        user-ext:CLI-no-comm-help "Configure stub area parameters";
+
+        description
+          "Stub area configuration";
+
+        leaf no-summary {
+          type empty;
+          description
+            "Controls the import of summary LSAs into stub areas.  It has
+            no effect on other areas.
+
+            If configured, the router will neither originate nor propagate
+            summary LSAs into the stub area.  It will rely entirely on its
+            default route.
+
+            Otherwise, the router will both summarize and propagate summary
+            LSAs.";
+
+          user-ext:CLI-comm-help "Disable originating and propagating summary LSAs into stub area";
+          user-ext:CLI-no-comm-help "Enable summarizing and propagating summary LSAs into stub area";
+          user-ext:CLI-param-help "Configure originating and propagating summary LSAs into stub area";
+        }
+
+        leaf metric {
+          type ospf:ospf-stub-metric-value-t;
+          default "1";
+          description
+            "The metric value advertised for the default route into
+            Stub areas.";
+
+          user-ext:CLI-comm-help "Set advertised metric";
+          user-ext:CLI-no-comm-help "Set advertised metric to default";
+          user-ext:CLI-param-help "Set advertised metric";
+        }
+
+        leaf metric-type {
+          type ospf:ospf-metric-types;
+          default "standard";
+          description
+            "This variable displays the type of metric advertised as a
+            default route.";
+
+          user-ext:CLI-comm-help "Set advertised metric type";
+          user-ext:CLI-no-comm-help "Set advertised metric type to default";
+          user-ext:CLI-param-help "Set advertised metric type";
+        }
+
+      } // stub
+
+      container nssa {
+
+        // Low-level model info: Configures an area as an NSSA.
+        // Low-level model info: For v2, corresponds to ospfPmImportAsExtern, ospfPmAreaSummary, ospfPmAreaNssaTranslatorRole, ospfPmAreaNssaTranStabIntvl and ospfPmAreaNssaNoExtRedist.
+        // Low-level model info: For v3, corresponds to ospfv3PmImportAsExtern, ospfv3PmAreaSummary, ospfv3PmAreaNssaTranslatorRole, ospfv3PmAreaNssaTranStabIntvl and ospfv3PmAreaNssaNoExtRedist.
+
+        must "not(../stub)" {
+          error-message "stub and nssa cannot be configured at the same time for an OSPF area";
+        }
+
+        // Check that the area is not the backbone area (area-id = 0.0.0.0).
+        must "(../area-id != '0.0.0.0')" {
+          error-message "The OSPF backbone area (0.0.0.0) cannot be an NSSA area";
+        }
+
+        presence "Configure area as an NSSA";
+
+        user-ext:CLI-comm-help "Configure NSSA parameters";
+        user-ext:CLI-no-comm-help "Configure NSSA parameters";
+
+        description
+          "NSSA configuration";
+
+        leaf no-summary {
+          type empty;
+          description
+            "Controls the import of summary LSAs into stub areas.  It has
+            no effect on other areas.
+
+            If configured, the router will neither originate nor propagate
+            summary LSAs into the stub area.  It will rely entirely on its
+            default route.
+
+            Otherwise, the router will both summarize and propagate summary
+            LSAs.";
+
+          user-ext:CLI-comm-help "Disable originating and propagating summary LSAs into stub area";
+          user-ext:CLI-no-comm-help "Enable summarizing and propagating summary LSAs into stub area";
+          user-ext:CLI-param-help "Configure originating and propagating summary LSAs into stub area";
+        }
+
+        leaf translator-role {
+          type ospf:ospf-trans-roles;
+          default "candidate";
+          description
+            "Indicates an NSSA Border router's ability to perform NSSA
+            translation of type-7 LSAs into type-5 LSAs.";
+
+          user-ext:CLI-comm-help "Set NSSA translator role";
+          user-ext:CLI-no-comm-help "Set NSSA translator role to default";
+          user-ext:CLI-param-help "Set NSSA translator role";
+        }
+
+        leaf translator-resignation-delay {
+          type ospf:ospf-translator-resignation-delay-t;
+          units "seconds";
+          default "40";
+          description
+            "The number of seconds after an elected translator
+            determines its services are no longer required, that it
+            should continue to perform its translation duties.";
+
+          user-ext:CLI-comm-help "Set NSSA translator resignation delay in seconds";
+          user-ext:CLI-no-comm-help "Set NSSA translator resignation delay to default";
+          user-ext:CLI-param-help "Set NSSA translator resignation delay in seconds";
+        }
+
+        leaf no-redistribution {
+          type empty;
+          description
+            "This parameter indicates whether this router should
+            originate NSSA LSAs into this area for external routes: if
+            set to true, this router will suppress NSSA LSAs.";
+
+          user-ext:CLI-comm-help "Enable NSSA no external redistribution flag";
+          user-ext:CLI-no-comm-help "Disable NSSA no external redistribution flag";
+        }
+
+        leaf metric {
+          type ospf:ospf-metric;
+          default "1";
+          description
+            "The metric value advertised for the default route into
+            NSSA areas.";
+
+          user-ext:CLI-comm-help "Set advertised metric";
+          user-ext:CLI-no-comm-help "Set advertised metric to default";
+          user-ext:CLI-param-help "Set advertised metric";
+        }
+
+        leaf metric-type {
+          type ospf:ospf-metric-types;
+          default "standard";
+          description
+            "This variable displays the type of metric advertised as a
+            default route.";
+
+          user-ext:CLI-comm-help "Set advertised metric type";
+          user-ext:CLI-no-comm-help "Set advertised metric type to default";
+          user-ext:CLI-param-help "Set advertised metric type";
+        }
+
+        leaf default-information-originate {
+          type empty;
+          description
+            "Whether this router should originate a Type-7 LSA for the
+            default route into this area.
+            This value is only used if no-summary is set to false.";
+
+          user-ext:CLI-comm-help "Enable originating default route";
+          user-ext:CLI-no-comm-help "Disable originating default route";
+          user-ext:CLI-param-help "Configure originating default route";
+        }
+
+      } // nssa
+
+      container state {
+
+        // Low-level model info: Corresponds to read-only fields in AMB_OSPF_PM_AREA (ospfPmAreaTable).
+
+      description
+        "Container to hold area state.";
+
+        config false;
+
+        uses ospf:common-area-config-state;
+        uses v2-area-state;
+
+      } // state
+
+      container area-scope-lsdb-state-list {
+
+          description
+            "Container to hold area scope LSDB state.";
+
+        config false;
+
+        list area-scope-lsdb-state {
+
+          // Low-level model info: Corresponds to AMB_OSPF_PM_LSDB (ospfPmLsdbTable).
+
+          description
+            "The OSPF Process's Link State Database.";
+
+          // Low-level model info: MIB indices are "lsa-type ls-id router-id".
+
+          config false;
+
+          leaf lsa-type {
+            type ospf-area-ls-types;
+            description
+              "The type of the link state advertisement.  Each link state
+              type has a separate advertisement format.  AS-Scope LSAs
+              not recognized by the router may be stored in the
+              database.";
+            config false;
+          }
+
+          uses ospf:common-lsdb-state;
+
+        } // area-scope-lsdb-state
+
+      } // area-scope-lsdb-state-list
+
+      list area-aggregate {
+
+        // Low-level model info: Corresponds to AMB_OSPF_PM_AREA_AGGREGATE (ospfPmAreaAggregateTable).
+
+        description
+          "A range of IP addresses specified by an IP address/IP
+          network mask pair.  For example, class B address range of
+          X.X.X.X with a network mask of 255.255.0.0 includes all IP
+          addresses from X.X.0.0 to X.X.255.255.  Note that if ranges
+          are configured such that one range subsumes another range
+          (e.g., 10.0.0.0 mask 255.0.0.0 and 10.1.0.0 mask
+          255.255.0.0), the most specific match is the preferred one.";
+
+        user-ext:CLI-comm-help "Configure area aggregate";
+        user-ext:CLI-no-comm-help "Remove area aggregate";
+
+        key "lsdb-type subnet-prefix";
+
+        leaf lsdb-type {
+          type ospf:ospf-agg-ls-types;
+          description
+            "The type of the Address Aggregate.  This field specifies
+            the Lsdb type that this Address Aggregate applies to.";
+
+          user-ext:CLI-param-help "Set LSDB type";
+        }
+
+        leaf subnet-prefix {
+          type interfaces:iface-ipv4-prefix-t;
+          description
+            "The IP Address of the Net or Subnet indicated by the
+            range.";
+
+          user-ext:CLI-param-help "Set subnet prefix";
+
+          must "(substring-after(.,'/') < 32)" {
+            error-message "The prefix length of the OSPF area aggregate address must be less than 32";
+          }
+        }
+
+        leaf effect {
+          type ospf:ospf-aggregate-effects;
+          default "advertise-matching";
+          description
+            "Subnets subsumed by ranges either trigger the
+            advertisement of the indicated aggregate
+            (advertise-matching), or result in the subnet's not
+            being advertised at all outside the area.";
+
+          user-ext:CLI-comm-help "Set aggregate effect";
+          user-ext:CLI-no-comm-help "Set aggregate effect to default";
+          user-ext:CLI-param-help "Set aggregate effect";
+        }
+
+      } // area-aggregate
+
+      container interfaces {
+
+        if-feature interfaces:standard-interfaces;
+        user-ext:CLI-not-command;
+
+        list interface {
+
+          description "Per-interface OSPF configuration and state";
+          user-ext:CLI-comm-help "Configure OSPF on interface";
+          user-ext:CLI-no-comm-help "Configure OSPF on interface";
+
+          key "if-name";
+
+          leaf if-name {
+            type custom:iface-name;
+            description
+              "A unique identifier identifying the interface.";
+
+            user-ext:CLI-comm-help "Set interface name";
+            user-ext:CLI-param-help "Set interface name";
+          }
+
+          // Check that authentication type and data are set correctly.
+          must "(
+            ((not(authentication-type)) or (authentication-type = 'none')) or
+            ((authentication-type) and
+             (authentication-type = 'simple-password') and
+             (authentication-key) and
+             (not(authentication-data))) or
+            ((authentication-type) and
+             (authentication-type != 'none') and
+             (authentication-type != 'simple-password') and
+             (not(authentication-key)) and
+             (authentication-data)))" {
+            error-message
+              "If authentication-type is set to 'simple-password', authentication-key " +
+              "must be set and authentication-data must not be set. " +
+              "If authentication-type is set to another authentication type " +
+              "(not 'none' or 'simple-password'), authentication-data must be set and " +
+              "authentication-key must not be set.";
+          }
+
+          uses ospf-interface-config;
+          uses lfa:lfa-interface-config { if-feature features:ip-frr; }
+
+        } // interface
+
+      } // interfaces
+
+      container custom-interfaces {
+
+        if-feature interfaces:custom-interfaces;
+        user-ext:CLI-not-command;
+
+        container interface {
+
+          description "Per-interface OSPF configuration and state";
+          user-ext:CLI-comm-help "Configure OSPF on interface";
+          user-ext:CLI-no-comm-help "Configure OSPF on interface";
+
+          container oneGE {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "gigabitethernet/gigabitethernet-sub";
+
+            list gigabitethernet {
+
+              description "1G interface";
+
+              user-ext:CLI-comm-help "Add OSPF configuration to 1G interface";
+              user-ext:CLI-no-comm-help "Remove OSPF configuration from 1G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "1G interface name";
+              }
+
+              // Check that an interface is not configured in more than one area.
+              must "(count(../../../../../area/custom-interfaces/interface/oneGE/gigabitethernet[if-num = current()/if-num]) = 1)" {
+                error-message "An OSPF interface should not be configured in more than one area";
+              }
+
+              // Check that authentication type and data are set correctly.
+              must "(
+                ((not(authentication-type)) or (authentication-type = 'none')) or
+                ((authentication-type) and
+                 (authentication-type = 'simple-password') and
+                 (authentication-key) and
+                 (not(authentication-data))) or
+                ((authentication-type) and
+                 (authentication-type != 'none') and
+                 (authentication-type != 'simple-password') and
+                 (not(authentication-key)) and
+                 (authentication-data)))" {
+                error-message
+                  "If authentication-type is set to 'simple-password', authentication-key " +
+                  "must be set and authentication-data must not be set. " +
+                  "If authentication-type is set to another authentication type " +
+                  "(not 'none' or 'simple-password'), authentication-data must be set and " +
+                  "authentication-key must not be set.";
+              }
+
+              uses ospf-interface-config;
+              uses lfa:lfa-interface-config { if-feature features:ip-frr; }
+
+            } // gigabitethernet
+
+            list gigabitethernet-sub {
+
+              description "1G subinterface";
+
+              user-ext:CLI-comm-help "Add OSPF configuration to 1G sub-interface";
+              user-ext:CLI-no-comm-help "Remove OSPF configuration from 1G sub-interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-subiface-range-t;
+                description "<unit>/<dev>/<port>.<subid>";
+                user-ext:CLI-param-help "1G subinterface name";
+              }
+
+              // Check that an interface is not configured in more than one area.
+              must "(count(../../../../../area/custom-interfaces/interface/oneGE/gigabitethernet-sub[if-num = current()/if-num]) = 1)" {
+                error-message "An OSPF subinterface should not be configured in more than one area";
+              }
+
+              // Check that authentication type and data are set correctly.
+              must "(
+                ((not(authentication-type)) or (authentication-type = 'none')) or
+                ((authentication-type) and
+                 (authentication-type = 'simple-password') and
+                 (authentication-key) and
+                 (not(authentication-data))) or
+                ((authentication-type) and
+                 (authentication-type != 'none') and
+                 (authentication-type != 'simple-password') and
+                 (not(authentication-key)) and
+                 (authentication-data)))" {
+                error-message
+                  "If authentication-type is set to 'simple-password', authentication-key " +
+                  "must be set and authentication-data must not be set. " +
+                  "If authentication-type is set to another authentication type " +
+                  "(not 'none' or 'simple-password'), authentication-data must be set and " +
+                  "authentication-key must not be set.";
+              }
+
+              uses ospf-interface-config;
+              uses lfa:lfa-interface-config { if-feature features:ip-frr; }
+
+            } // gigabitethernet-sub
+
+          } // oneGE
+
+          container tenGE {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "tengigabitethernet/tengigabitethernet-sub";
+
+            list tengigabitethernet {
+
+              description "10G interface";
+
+              user-ext:CLI-comm-help "Add OSPF configuration to 10G interface";
+              user-ext:CLI-no-comm-help "Remove OSPF configuration from 10G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "10G interface name";
+              }
+
+              // Check that an interface is not configured in more than one area.
+              must "(count(../../../../../area/custom-interfaces/interface/tenGE/tengigabitethernet[if-num = current()/if-num]) = 1)" {
+                error-message "An OSPF interface should not be configured in more than one area";
+              }
+
+              // Check that authentication type and data are set correctly.
+              must "(
+                ((not(authentication-type)) or (authentication-type = 'none')) or
+                ((authentication-type) and
+                 (authentication-type = 'simple-password') and
+                 (authentication-key) and
+                 (not(authentication-data))) or
+                ((authentication-type) and
+                 (authentication-type != 'none') and
+                 (authentication-type != 'simple-password') and
+                 (not(authentication-key)) and
+                 (authentication-data)))" {
+                error-message
+                  "If authentication-type is set to 'simple-password', authentication-key " +
+                  "must be set and authentication-data must not be set. " +
+                  "If authentication-type is set to another authentication type " +
+                  "(not 'none' or 'simple-password'), authentication-data must be set and " +
+                  "authentication-key must not be set.";
+              }
+
+              uses ospf-interface-config;
+              uses lfa:lfa-interface-config { if-feature features:ip-frr; }
+
+            } // tengigabitethernet
+
+            list tengigabitethernet-sub {
+
+              description "10G subinterface";
+
+              user-ext:CLI-comm-help "Add OSPF configuration to 10G sub-interface";
+              user-ext:CLI-no-comm-help "Remove OSPF configuration from 10G sub-interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-subiface-range-t;
+                description "<unit>/<dev>/<port>.<subid>";
+                user-ext:CLI-param-help "10G subinterface name";
+              }
+
+              // Check that an interface is not configured in more than one area.
+              must "(count(../../../../../area/custom-interfaces/interface/tenGE/tengigabitethernet-sub[if-num = current()/if-num]) = 1)" {
+                error-message "An OSPF subinterface should not be configured in more than one area";
+              }
+
+              // Check that authentication type and data are set correctly.
+              must "(
+                ((not(authentication-type)) or (authentication-type = 'none')) or
+                ((authentication-type) and
+                 (authentication-type = 'simple-password') and
+                 (authentication-key) and
+                 (not(authentication-data))) or
+                ((authentication-type) and
+                 (authentication-type != 'none') and
+                 (authentication-type != 'simple-password') and
+                 (not(authentication-key)) and
+                 (authentication-data)))" {
+                error-message
+                  "If authentication-type is set to 'simple-password', authentication-key " +
+                  "must be set and authentication-data must not be set. " +
+                  "If authentication-type is set to another authentication type " +
+                  "(not 'none' or 'simple-password'), authentication-data must be set and " +
+                  "authentication-key must not be set.";
+              }
+
+              uses ospf-interface-config;
+              uses lfa:lfa-interface-config { if-feature features:ip-frr; }
+
+            } // tengigabitethernet-sub
+
+          } // tenGE
+
+          container fortyGE {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "fortygigabitethernet/fortygigabitethernet-sub";
+
+            list fortygigabitethernet {
+
+              description "40G interface";
+
+              user-ext:CLI-comm-help "Add OSPF configuration to 40G interface";
+              user-ext:CLI-no-comm-help "Remove OSPF configuration from 40G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "40G interface name";
+              }
+
+              // Check that an interface is not configured in more than one area.
+              must "(count(../../../../../area/custom-interfaces/interface/fortyGE/fortygigabitethernet[if-num = current()/if-num]) = 1)" {
+                error-message "An OSPF interface should not be configured in more than one area";
+              }
+
+              // Check that authentication type and data are set correctly.
+              must "(
+                ((not(authentication-type)) or (authentication-type = 'none')) or
+                ((authentication-type) and
+                 (authentication-type = 'simple-password') and
+                 (authentication-key) and
+                 (not(authentication-data))) or
+                ((authentication-type) and
+                 (authentication-type != 'none') and
+                 (authentication-type != 'simple-password') and
+                 (not(authentication-key)) and
+                 (authentication-data)))" {
+                error-message
+                  "If authentication-type is set to 'simple-password', authentication-key " +
+                  "must be set and authentication-data must not be set. " +
+                  "If authentication-type is set to another authentication type " +
+                  "(not 'none' or 'simple-password'), authentication-data must be set and " +
+                  "authentication-key must not be set.";
+              }
+
+              uses ospf-interface-config;
+              uses lfa:lfa-interface-config { if-feature features:ip-frr; }
+
+            } // fortygigabitethernet
+
+            list fortygigabitethernet-sub {
+
+              description "40G subinterface";
+
+              user-ext:CLI-comm-help "Add OSPF configuration to 40G sub-interface";
+              user-ext:CLI-no-comm-help "Remove OSPF configuration from 40G sub-interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-subiface-range-t;
+                description "<unit>/<dev>/<port>.<subid>";
+                user-ext:CLI-param-help "40G subinterface name";
+              }
+
+              // Check that an interface is not configured in more than one area.
+              must "(count(../../../../../area/custom-interfaces/interface/fortyGE/fortygigabitethernet-sub[if-num = current()/if-num]) = 1)" {
+                error-message "An OSPF subinterface should not be configured in more than one area";
+              }
+
+              // Check that authentication type and data are set correctly.
+              must "(
+                ((not(authentication-type)) or (authentication-type = 'none')) or
+                ((authentication-type) and
+                 (authentication-type = 'simple-password') and
+                 (authentication-key) and
+                 (not(authentication-data))) or
+                ((authentication-type) and
+                 (authentication-type != 'none') and
+                 (authentication-type != 'simple-password') and
+                 (not(authentication-key)) and
+                 (authentication-data)))" {
+                error-message
+                  "If authentication-type is set to 'simple-password', authentication-key " +
+                  "must be set and authentication-data must not be set. " +
+                  "If authentication-type is set to another authentication type " +
+                  "(not 'none' or 'simple-password'), authentication-data must be set and " +
+                  "authentication-key must not be set.";
+              }
+
+              uses ospf-interface-config;
+              uses lfa:lfa-interface-config { if-feature features:ip-frr; }
+
+            } // fortygigabitethernet-sub
+
+          } // fortyGE
+
+          container hundredGE {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "hundredgigabitethernet/hundredgigabitethernet-sub";
+
+            list hundredgigabitethernet {
+
+              description "100G interface";
+
+              user-ext:CLI-comm-help "Add OSPF configuration to 100G interface";
+              user-ext:CLI-no-comm-help "Remove OSPF configuration from 100G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "100G interface name";
+              }
+
+              // Check that an interface is not configured in more than one area.
+              must "(count(../../../../../area/custom-interfaces/interface/hundredGE/hundredgigabitethernet[if-num = current()/if-num]) = 1)" {
+                error-message "An OSPF interface should not be configured in more than one area";
+              }
+
+              // Check that authentication type and data are set correctly.
+              must "(
+                ((not(authentication-type)) or (authentication-type = 'none')) or
+                ((authentication-type) and
+                 (authentication-type = 'simple-password') and
+                 (authentication-key) and
+                 (not(authentication-data))) or
+                ((authentication-type) and
+                 (authentication-type != 'none') and
+                 (authentication-type != 'simple-password') and
+                 (not(authentication-key)) and
+                 (authentication-data)))" {
+                error-message
+                  "If authentication-type is set to 'simple-password', authentication-key " +
+                  "must be set and authentication-data must not be set. " +
+                  "If authentication-type is set to another authentication type " +
+                  "(not 'none' or 'simple-password'), authentication-data must be set and " +
+                  "authentication-key must not be set.";
+              }
+
+              uses ospf-interface-config;
+              uses lfa:lfa-interface-config { if-feature features:ip-frr; }
+
+            } // hundredgigabitethernet
+
+            list hundredgigabitethernet-sub {
+
+              description "100G subinterface";
+
+              user-ext:CLI-comm-help "Add OSPF configuration to 100G sub-interface";
+              user-ext:CLI-no-comm-help "Remove OSPF configuration from 100G sub-interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-subiface-range-t;
+                description "<unit>/<dev>/<port>.<subid>";
+                user-ext:CLI-param-help "100G subinterface name";
+              }
+
+              // Check that an interface is not configured in more than one area.
+              must "(count(../../../../../area/custom-interfaces/interface/hundredGE/hundredgigabitethernet-sub[if-num = current()/if-num]) = 1)" {
+                error-message "An OSPF subinterface should not be configured in more than one area";
+              }
+
+              // Check that authentication type and data are set correctly.
+              must "(
+                ((not(authentication-type)) or (authentication-type = 'none')) or
+                ((authentication-type) and
+                 (authentication-type = 'simple-password') and
+                 (authentication-key) and
+                 (not(authentication-data))) or
+                ((authentication-type) and
+                 (authentication-type != 'none') and
+                 (authentication-type != 'simple-password') and
+                 (not(authentication-key)) and
+                 (authentication-data)))" {
+                error-message
+                  "If authentication-type is set to 'simple-password', authentication-key " +
+                  "must be set and authentication-data must not be set. " +
+                  "If authentication-type is set to another authentication type " +
+                  "(not 'none' or 'simple-password'), authentication-data must be set and " +
+                  "authentication-key must not be set.";
+              }
+
+              uses ospf-interface-config;
+              uses lfa:lfa-interface-config { if-feature features:ip-frr; }
+
+            } // hundredgigabitethernet-sub
+
+          } // hundredGE
+
+          container bundle-ifaces {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "bundle-ether/bundle-ether-sub";
+
+            list bundle-ether {
+
+              description "Bundle interface";
+
+              user-ext:CLI-comm-help "Add OSPF configuration to bundle interface";
+              user-ext:CLI-no-comm-help "Remove OSPF configuration from bundle interface";
+
+              key "bundle-id";
+
+              leaf bundle-id {
+                type interfaces:bundle-id-t;
+                description "Bundle-ether id";
+                user-ext:CLI-param-help "Bundle interface name";
+              }
+
+              // Check that an interface is not configured in more than one area.
+              must "(count(../../../../../area/custom-interfaces/interface/bundle-ifaces/bundle-ether[bundle-id = current()/bundle-id]) = 1)" {
+                error-message "An OSPF interface should not be configured in more than one area";
+              }
+
+              // Check that authentication type and data are set correctly.
+              must "(
+                ((not(authentication-type)) or (authentication-type = 'none')) or
+                ((authentication-type) and
+                 (authentication-type = 'simple-password') and
+                 (authentication-key) and
+                 (not(authentication-data))) or
+                ((authentication-type) and
+                 (authentication-type != 'none') and
+                 (authentication-type != 'simple-password') and
+                 (not(authentication-key)) and
+                 (authentication-data)))" {
+                error-message
+                  "If authentication-type is set to 'simple-password', authentication-key " +
+                  "must be set and authentication-data must not be set. " +
+                  "If authentication-type is set to another authentication type " +
+                  "(not 'none' or 'simple-password'), authentication-data must be set and " +
+                  "authentication-key must not be set.";
+              }
+
+              uses ospf-interface-config;
+              uses lfa:lfa-interface-config { if-feature features:ip-frr; }
+
+            } // bundle-ether
+
+            list bundle-ether-sub {
+
+              description "Bundle subinterface";
+
+              user-ext:CLI-comm-help "Add OSPF configuration to bundle sub-interface";
+              user-ext:CLI-no-comm-help "Remove OSPF configuration from bundle sub-interface";
+
+              key "bundle-id";
+
+              leaf bundle-id {
+                type interfaces:bundle-sub-id-t;
+                description "Bundle-ether subinterface id";
+                user-ext:CLI-param-help "Bundle subinterface name";
+              }
+
+              // Check that an interface is not configured in more than one area.
+              must "(count(../../../../../area/custom-interfaces/interface/bundle-ifaces/bundle-ether-sub[bundle-id = current()/bundle-id]) = 1)" {
+                error-message "An OSPF subinterface should not be configured in more than one area";
+              }
+
+              // Check that authentication type and data are set correctly.
+              must "(
+                ((not(authentication-type)) or (authentication-type = 'none')) or
+                ((authentication-type) and
+                 (authentication-type = 'simple-password') and
+                 (authentication-key) and
+                 (not(authentication-data))) or
+                ((authentication-type) and
+                 (authentication-type != 'none') and
+                 (authentication-type != 'simple-password') and
+                 (not(authentication-key)) and
+                 (authentication-data)))" {
+                error-message
+                  "If authentication-type is set to 'simple-password', authentication-key " +
+                  "must be set and authentication-data must not be set. " +
+                  "If authentication-type is set to another authentication type " +
+                  "(not 'none' or 'simple-password'), authentication-data must be set and " +
+                  "authentication-key must not be set.";
+              }
+
+              uses ospf-interface-config;
+              uses lfa:lfa-interface-config { if-feature features:ip-frr; }
+
+            } // bundle-ether-sub
+
+          } // bundle-ifaces
+
+          container spec-ifaces {
+
+            user-ext:CLI-not-command;
+
+            list loopback {
+
+              description "Loopback interface";
+
+              user-ext:CLI-comm-help "Add OSPF configuration to loopback interface";
+              user-ext:CLI-no-comm-help "Remove OSPF configuration from loopback interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:loopback-id-t;
+                description "Loopback ID";
+                user-ext:CLI-param-help "Loopback ID";
+              }
+
+              // Check that an interface is not configured in more than one area.
+              must "(count(../../../../../area/custom-interfaces/interface/spec-ifaces/loopback[if-num = current()/if-num]) = 1)" {
+                error-message "An OSPF interface should not be configured in more than one area";
+              }
+
+              // Check that authentication type and data are set correctly.
+              must "(
+                ((not(authentication-type)) or (authentication-type = 'none')) or
+                ((authentication-type) and
+                 (authentication-type = 'simple-password') and
+                 (authentication-key) and
+                 (not(authentication-data))) or
+                ((authentication-type) and
+                 (authentication-type != 'none') and
+                 (authentication-type != 'simple-password') and
+                 (not(authentication-key)) and
+                 (authentication-data)))" {
+                error-message
+                  "If authentication-type is set to 'simple-password', authentication-key " +
+                  "must be set and authentication-data must not be set. " +
+                  "If authentication-type is set to another authentication type " +
+                  "(not 'none' or 'simple-password'), authentication-data must be set and " +
+                  "authentication-key must not be set.";
+              }
+
+              uses ospf-interface-config;
+
+            } // loopback
+
+          } // spec-ifaces
+
+        } // interface
+
+      } // custom-interfaces
+
+    } // area
+
+    list host {
+
+      // Low-level model info: Corresponds to AMB_OSPF_PM_HOST (ospfPmHostTable).
+
+      description
+        "The list of Hosts, and their metrics, that the router will
+        advertise as host routes.";
+
+      user-ext:CLI-comm-help "Configure host that will be advertised as host route";
+      user-ext:CLI-no-comm-help "Remove host";
+
+      key "ip-address";
+
+      must "(../area[(area-id = current()/area-id)]) or
+            (area-id = '0.0.0.0')" {
+        error-message "An OSPFv2 host route cannot be configured for an area that does not exist";
+      }
+
+      leaf ip-address {
+        type interfaces:iface-ipv4-address-t;
+        description
+          "The IP Address of the Host.";
+
+        user-ext:CLI-param-help "Set Host address";
+      }
+
+      uses ospf:common-host-parms;
+
+      container state {
+
+        // Low-level model info: Corresponds to read-only fields in AMB_OSPF_PM_HOST (ospfPmHostTable).
+
+        config false;
+
+        leaf oper-status {
+          type meta:oper-status;
+          description
+            "The current operational state of this host.";
+          config false;
+        }
+
+      } // state
+
+    } // host
+
+    container redistribution {
+
+      // Low-level model info: Corresponds to AMB_CIPR_RTM_REDIST (rtmRedistTable).
+
+      description
+        "Redistribution information entries.
+        This list is used to determine how routing information is
+        redistributed to routing protocol managers (RPMs).  The RPM to which
+        the information may be redistributed is called the
+        destination RPM.  Routing information is received from RPMs
+        and from configuration (for static routes); these are referred to
+        as the routing information source.";
+      user-ext:CLI-comm-help "Configure redistribution information";
+      user-ext:CLI-no-comm-help "Configure or remove redistribution information";
+
+      // Low-level model info: Corresponds to rtmRedistInfoSrc = bgp.
+      list bgp {
+
+        key "name";
+
+        // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+        leaf name {
+          type redist:redist-name-string;
+
+          user-ext:CLI-param-help "Set redistribution rule name";
+          description
+            "Session name";
+        }
+
+        user-ext:CLI-comm-help "Configure BGP redistribution rule";
+        user-ext:CLI-no-comm-help "Configure BGP redistribution rule";
+
+        uses redist:common-redist-ipv4;
+
+        leaf path-type-filter {
+          type redist:bgp-redist-path-types;
+          default "bgp-external";
+          description
+            "Value of BGP path type filter, if in use.  If the filter is in
+            use then do not match the source routing information to
+            this entry if the path type in the source routing
+            information does not match this filter value.";
+
+          user-ext:CLI-comm-help "Set path type filter";
+          user-ext:CLI-no-comm-help "Set path type filter to default";
+          user-ext:CLI-param-help "Set path type filter";
+        }
+
+        uses ospf:ospf-redist;
+      }
+
+      // Low-level model info: Corresponds to rtmRedistInfoSrc = isis.
+      list isis {
+
+        key "name";
+
+        // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+        leaf name {
+          type redist:redist-name-string;
+
+          user-ext:CLI-param-help "Rule name";
+          description
+            "Redistribution rule name";
+        }
+
+        user-ext:CLI-comm-help "Configure IS-IS redistribution rule";
+        user-ext:CLI-no-comm-help "Configure IS-IS redistribution rule";
+
+        uses redist:common-redist-ipv4;
+
+        leaf path-type-filter {
+          type redist:isis-redist-path-types;
+          default "none";
+          description
+            "Value of IS-IS path type filter, if in use.  If the filter is in
+            use then do not match the source routing information to
+            this entry if the path type in the source routing
+            information does not match this filter value.";
+
+          user-ext:CLI-comm-help "Set path type filter";
+          user-ext:CLI-no-comm-help "Set path type filter to default";
+          user-ext:CLI-param-help "Set path type filter";
+        }
+
+        uses ospf:ospf-redist;
+
+        // Low-level model info: Corresponds to rtmRedistIsisTag and rtmRedistIsisTagFlt
+        leaf admin-tag {
+          type redist:redist-admin-tag;
+          description
+            "Value of IS-IS tag filter.";
+
+          user-ext:CLI-comm-help "Set IS-IS tag filter";
+          user-ext:CLI-no-comm-help "Set IS-IS tag filter to default";
+          user-ext:CLI-param-help "Set IS-IS tag filter";
+        }
+      }
+
+      // Low-level model info: Corresponds to rtmRedistInfoSrc = rip.
+      list rip {
+
+        user-ext:CLI-comm-help "Configure RIP redistribution rule";
+        user-ext:CLI-no-comm-help "Configure RIP redistribution rule";
+
+        key "name";
+
+        // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+        leaf name {
+          type redist:redist-name-string;
+
+          user-ext:CLI-param-help "Rule name";
+          description
+            "Redistribution rule name";
+        }
+
+        uses redist:common-redist-ipv4;
+        uses ospf:ospf-redist;
+      }
+
+      // Low-level model info: Corresponds to rtmRedistInfoSrc = static.
+      list static {
+
+        user-ext:CLI-comm-help "Configure static redistribution rule";
+        user-ext:CLI-no-comm-help "Configure static redistribution rule";
+
+        key "name";
+
+        // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+        leaf name {
+          type redist:redist-name-string;
+
+          user-ext:CLI-param-help "Rule name";
+          description
+            "Redistribution rule name";
+        }
+
+        uses redist:common-redist-ipv4;
+        uses ospf:ospf-redist;
+      }
+
+      // Low-level model info: Corresponds to rtmRedistInfoSrc = i3-connected.
+      list connected {
+
+        key "name";
+
+        // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+        leaf name {
+          type redist:redist-name-string;
+
+          user-ext:CLI-param-help "Rule name";
+          description
+            "Redistribution rule name";
+        }
+
+        user-ext:CLI-comm-help "Configure connected redistribution rule";
+        user-ext:CLI-no-comm-help "Configure connected redistribution rule";
+
+        uses redist:common-redist-ipv4;
+        uses ospf:ospf-redist;
+      }
+
+      // Low-level model info: Corresponds to rtmRedistPathType  = i3-local.
+      list local {
+
+        user-ext:CLI-comm-help "Configure local redistribution rule";
+        user-ext:CLI-no-comm-help "Remove local redistribution rule";
+
+        key "name";
+
+        // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+        leaf name {
+          type redist:redist-name-string;
+
+          user-ext:CLI-param-help "Rule name";
+          description
+            "Redistribution rule name";
+        }
+
+        uses redist:common-redist-ipv4;
+        uses ospf:ospf-redist;
+
+        // Low-level model info: Corresponds to rtmRedistFullSpecFilter.
+        uses redist:fully-specified;
+      }
+
+    } // redistribution
+
+    container admin-distance {
+
+      description
+        "Configure administrative distances for OSPF routes";
+
+      user-ext:CLI-comm-help "Configure administrative distances for OSPF routes";
+      user-ext:CLI-no-comm-help "Configure administrative distances for OSPF routes";
+
+      // Low-level model info: Corresponds to rtmEntityDsOspfIntra
+      leaf ospf-intra-area {
+        type redist:rtm-admin-distance;
+        default "110";
+
+        user-ext:CLI-comm-help "Set administrative distance used for OSPF intra area routes";
+        user-ext:CLI-no-comm-help "Set administrative distance used for OSPF intra area routes to default";
+        user-ext:CLI-param-help "Set administrative distance used for OSPF intra area routes";
+        description
+          "The administrative distance to use for OSPF intra-area routes.  The lower
+          the administrative distance for a type of route, the more likely a route
+          of this type will be used as the active route for the given destination.";
+      }
+
+      // Low-level model info: Corresponds to rtmEntityDsOspfInter
+      leaf ospf-inter-area {
+        type redist:rtm-admin-distance;
+        default "110";
+
+        user-ext:CLI-comm-help "Set administrative distance used for OSPF inter area routes";
+        user-ext:CLI-no-comm-help "Set administrative distance used for OSPF inter area routes to default";
+        user-ext:CLI-param-help "Set administrative distance used for OSPF inter area routes";
+        description
+          "The administrative distance to use for OSPF inter-area routes.  The lower
+          the administrative distance for a type of route, the more likely a route
+          of this type will be used as the active route for the given destination.";
+      }
+
+      // Low-level model info: Corresponds to rtmEntityDsOspfExt
+      leaf ospf-external {
+        type redist:rtm-admin-distance;
+        default "110";
+
+        user-ext:CLI-comm-help "Set administrative distance used for OSPF external routes";
+        user-ext:CLI-no-comm-help "Set administrative distance used for OSPF external routes to default";
+        user-ext:CLI-param-help "Set administrative distance used for OSPF external routes";
+        description
+          "The administrative distance to use for OSPF external routes.  The lower
+          the administrative distance for a type of route, the more likely a route
+          of this type will be used as the active route for the given destination.";
+      }
+    }
+
+    container interface-state-list {
+
+      user-ext:CLI-not-command;
+
+      config false;
+
+      list interface-state {
+
+        description "Per-interface OSPF state";
+
+        config false;
+
+        // We do not support use of if-ext-id to specify a unique interface identifier when
+        // querying state.
+        key "if-base-name";
+
+        uses ospf-interface-state;
+
+      } // interface-state
+
+    } // interface-state-list
+
+    container ext-lsdb-state-list {
+
+      // Low-level model info: Corresponds to AMB_OSPF_PM_EXT_LSDB (ospfPmExtLsdbTable).
+
+      description
+        "Container to hold Link State Database information.";
+
+      config false;
+
+      list ext-lsdb-state {
+
+        description
+        "The OSPF Process's Links State Database.";
+
+        // Low-level model info: MIB indices are "lsa-type ls-id router-id".
+
+        config false;
+
+        leaf lsa-type {
+          type ospf-ext-ls-types;
+          description
+            "The type of the link state advertisement.  Each link state
+            type has a separate advertisement format.  AS-Scope LSAs
+            not recognized by the router may be stored in the
+            database.";
+          config false;
+        }
+
+        uses ospf:common-lsdb-state;
+
+      } // ext-lsdb-state
+
+    } // ext-lsdb-state-list
+
+    // Global LFA state.
+    uses lfa:lfa-global-state { if-feature features:ip-frr; }
+
+  } // ospfv2-instance
+
+  container router {
+
+    description
+      "The table of OSPF entities.";
+
+    user-ext:CLI-comm-help "Configure router";
+    user-ext:CLI-no-comm-help "Configure router";
+
+    list ospfv2 {
+
+      description "OSPFv2 protocol configuration and state";
+
+      user-ext:CLI-comm-help "Configure OSPFv2";
+      user-ext:CLI-no-comm-help "Configure or remove OSPFv2";
+      user-ext:CLI-max-elements-errmsg "maximum elements for 'router ospfv2' exceeded";
+
+      max-elements "1";
+
+      key "name";
+
+      leaf name {
+        type ospf:ospf-name-string;
+        description
+          "A unique identifier identifying the OSPF router.";
+
+        user-ext:CLI-comm-help "Set router OSPFv2 process name";
+        user-ext:CLI-param-help "Set router OSPFv2 process name";
+      }
+
+      container global {
+
+        user-ext:CLI-not-command;
+        uses ospfv2-instance;
+
+      } // global
+
+      list vrf {
+
+        description
+            "VRF OSPFv2 configuration";
+
+        user-ext:CLI-comm-help "Configure OSPFv2 in VRF";
+        user-ext:CLI-no-comm-help "Remove OSPFv2 in VRF";
+
+        key "vrf-name";
+
+        leaf vrf-name {
+          type meta:l3vpn-vrf-name;
+          description
+            "The name of this VRF.  This MAY be equivalent to the RFC2685 VPN-ID.";
+
+          user-ext:CLI-comm-help "Associate configuration with VRF";
+          user-ext:CLI-no-comm-help "Clear VRF association";
+        }
+
+        uses ospfv2-instance;
+
+      } // vrf
+
+    } // ospfv2
+
+  } // router
+
+  // -- start notifications --
+
+  // Low-level model info:  Corresponds to ospfIfStateChange
+  notification interface-state-change {
+    description
+      "The state of an OSPF interface has changed.";
+
+    uses ospf:nbr-if-notification-common;
+
+    leaf ip-address {
+      type interfaces:iface-ipv4-address-t;
+      description "The IP address of this OSPF interface.";
+    }
+
+    leaf interface-name {
+      type custom:iface-name;
+
+      description
+        "Name of this OSPF interface";
+    }
+
+    leaf interface-state {
+      type ospf:ospf-interface-states;
+      description "The new state of the interface.";
+    }
+  }
+
+  // Low-level model info:  Corresponds to ospfNbrStateChange
+  notification neighbor-state-change {
+    description
+      "The state of an OSPF neighbor has changed.";
+
+    uses ospf:nbr-if-notification-common;
+
+    leaf ip-address {
+      type interfaces:iface-ipv4-address-t;
+      description
+        "The IP address the neighbor is using as its IP Source Address.";
+    }
+
+    leaf neighbor-router-id {
+      type meta:router-id;
+      description
+        "The Router ID in use by the neighboring OSPF router.";
+    }
+
+    leaf state {
+      type ospf:ospf-neighbor-states;
+      description
+        "The new state of the relationship with this neighbor.";
+    }
+
+    leaf local-interface {
+      type custom:iface-name;
+
+      description
+        "Name of the local interface on which the neighbor is reachable";
+    }
+  }
+  // -- end notifications --
+
+} // ospfv2

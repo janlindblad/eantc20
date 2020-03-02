@@ -1,0 +1,20 @@
+module arcos-openconfig-acl-augments-deviations {
+  yang-version 1.1;
+  namespace "http://yang.arrcus.com/arcos/openconfig/acl/augments/deviations";
+  prefix arc-oc-acl-aug-dev;
+
+  import openconfig-acl {
+    prefix oc-acl;
+  }
+
+  import arcos-openconfig-acl-augments {
+    prefix arc-oc-acl-aug;
+  }
+
+  deviation "/oc-acl:acl/arc-oc-acl-aug:system-defined/arc-oc-acl-aug:acl-set" +
+            "/arc-oc-acl-aug:acl-entries/arc-oc-acl-aug:acl-entry" +
+            "/arc-oc-acl-aug:input-interface" {
+    deviate not-supported;
+    description "Do not support input-interface in this release";
+  }
+}

@@ -1,0 +1,723 @@
+module metaswitch-segment-routing {
+
+  namespace "http://metaswitch.com/yang/nbu/metaswitch-segment-routing/201811190000Z";
+  // if-feature as substatement of enum requires YANG version 1.1
+  // Start yang1.1-only
+  yang-version 1.1;
+  // End yang1.1-only
+
+  prefix sr;
+
+  import user-extensions { prefix "user-ext"; }
+  import ospfv2 { prefix ospfv2; }
+  import ietf-yang-types { prefix yang; }
+  import interfaces { prefix interfaces; }
+  import metaswitch-yang-types { prefix meta; }
+  import metaswitch-mpls { prefix mpls; }
+  import metaswitch-features { prefix features; }
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description "Segment Routing";
+
+  revision 2018-11-19 {
+    description "Initial revision.";
+  }
+
+  typedef segment-routing-transport-t {
+    type enumeration {
+      enum mpls {
+        // Start yang1.1-only
+        if-feature features:segment-routing-mpls;
+        // End yang1.1-only
+        description
+          "Use MPLS labels for transport";
+      }
+      // This section must remain commented-out until segment-routing-ipv6 is
+      // implemented.
+      //
+      // enum ipv6 {
+      //   // Start yang1.1-only
+      //   if-feature features:segment-routing-ipv6;
+      //   // End yang1.1-only
+      //   description
+      //     "Use IPv6 SRHs for transport";
+      // }
+    }
+    description "SR transport type";
+  }
+
+  typedef sid-value-t {
+    type uint32;
+  }
+
+  typedef segment-routing-node-t {
+    // Must match isis:isis-system-id or meta:router-id for remote routers, but defined
+    // as an opaque string for technical reasons.
+    // The literal string "local" if the entry represents this device.
+    type string;
+    description "Identity of a node in a SR network.";
+  }
+
+  typedef sr-node-status-t {
+    type enumeration {
+      enum up {
+        description "The node is operational and its SR bindings may be used";
+      }
+      enum invalid-srgb {
+        description
+          "The node's bindings are not usable because it has not advertised a valid SRGB";
+      }
+    }
+  }
+
+  typedef prefix-sid-algorithm-t {
+    type enumeration {
+      enum shortest-path {
+        description "Forward the packet according to the SPF, but allow transit " +
+          "nodes to change forwarding based on local policy.";
+      }
+      enum strict-spf {
+        // Start yang1.1-only
+        if-feature features:segment-routing-strict-spf;
+        // End yang1.1-only
+        description "This algorithm mandates that the packet is forwarded according " +
+          "to the ECMP-aware strict SPF algorithm.";
+      }
+    }
+  }
+
+  typedef sid-status-t {
+    type bits {
+      bit active {
+        description
+          "The SID binding has been programmed and is available for
+          active forwarding of traffic.";
+      }
+      bit forwarding-suppressed {
+        description
+          "This SID binding will not be programmed. Forwarding is disabled for it.";
+      }
+      bit sid-clash {
+        description "This binding's SID index clashes with another binding";
+      }
+      bit out-of-our-srgb {
+        // Start yang1.1-only
+        if-feature features:segment-routing-mpls;
+        // End yang1.1-only
+        description
+          "This binding's SID index falls outside our SRGB, so we cannot act as a " +
+          "transit node for it";
+      }
+      bit out-of-nh-srgb {
+        // Start yang1.1-only
+        if-feature features:segment-routing-mpls;
+        // End yang1.1-only
+        description
+          "This binding's SID index falls outside the SRGB of the next hop node, so we " +
+          "cannot forward traffic for it";
+      }
+      bit tie-break-lost {
+        description
+          "The SID of this binding clashes with the index of another " +
+          "binding, and this segment has lost the tie-break.";
+      }
+    }
+  }
+
+  typedef php-t {
+    type enumeration {
+      enum transit {
+        description
+          "Swap labels as if this were a conventional transit node.";
+      }
+      enum php {
+        description
+          "Use penultimate-hop-popping for label handling.";
+      }
+      enum explicit-null {
+        description
+          "Use explicit-null for label handling.";
+      }
+    }
+  }
+
+  grouping segment-routing-source-attrs {
+    description "Grouping defining an SR routing instance in the network.";
+    leaf source-id {
+      type segment-routing-node-t;
+      description "Identity of the router.";
+    }
+    leaf source-protocol {
+      type meta:route-protocols;
+      description "Routing protocol through which this router has been discovered, " +
+        "or 'local' if the entry refers to this device.";
+    }
+  }
+
+  grouping segment-routing-sid-attrs {
+    description "Grouping defining the state of an advertised SID in the network.";
+
+    leaf sid {
+      type sid-value-t;
+      description "Index associated with the SID.";
+    }
+    leaf status {
+      description "The operational status of this SID binding";
+      type sid-status-t;
+    }
+    choice binding-type {
+      description "What type of SID is represented by the binding.";
+
+      container prefix-sid-ipv4 {
+        leaf prefix {
+          type interfaces:iface-ipv4-prefix-t;
+          description "IPv4 prefix referenced by the SID.";
+        }
+        leaf algorithm {
+          type prefix-sid-algorithm-t;
+          description "Algorithm to be used for the prefix SID.";
+        }
+      }
+
+      container prefix-sid-ipv6 {
+        leaf prefix {
+          type interfaces:iface-ipv6-prefix-t;
+          description "IPv6 prefix referenced by the SID.";
+        }
+        leaf algorithm {
+          type prefix-sid-algorithm-t;
+          description "Algorithm to be used for the prefix SID.";
+        }
+      }
+    }
+    leaf last-updated {
+      type yang:timestamp;
+      description
+        "The time, in hundredths of a second, since the SID was last updated, " +
+        "either because of a configuration change or an advertisement from a peer.";
+    }
+  }
+
+  // Groupings for label blocks
+  grouping segment-routing-generic-label-range {
+    // This grouping is suitable for discontiguous label ranges.
+    description "Grouping for a generic SR Label Range.";
+    leaf lower-bound {
+      type uint32;
+      description "Lowest value included in the block.";
+    }
+    leaf length {
+      type int32;
+      description "The total number of labels included in the block.";
+    }
+  }
+
+  grouping segment-routing-simple-label-range {
+    // This grouping is suitable for single contiguous label ranges.
+    description "Grouping for a simple SR Label Range.";
+    leaf lower-bound {
+      type meta:mpls-label-integer-t;
+      description "Lowest value included in the block.";
+    }
+    leaf upper-bound {
+      type meta:mpls-label-integer-t;
+      description "Highest value included in the block.";
+    }
+  }
+
+  // Groupings for SID types and properties
+  grouping egress-label-type {
+    description "Defines last hop behavior";
+    leaf egress-label-type {
+      default "php";
+      type enumeration {
+        enum "explicit-null" {
+          description "Use explicit-null for the SID.";
+        }
+        enum "php" {
+          description "Use PHP for the SID.";
+        }
+      }
+      description "Configure last hop behavior.";
+    }
+  }
+
+  grouping ipv4-sid-cfg {
+    description "This grouping defines the configuration of a prefix SID.";
+    leaf prefix {
+      type interfaces:iface-ipv4-prefix-t;
+      description "Connected IPv4 prefix for the SID.";
+    }
+    uses prefix-sid-attributes;
+  }
+  grouping ipv6-sid-cfg {
+    description "This grouping defines the configuration of a prefix SID.";
+    leaf prefix {
+      type interfaces:iface-ipv6-prefix-t;
+      description "Connected IPv6 prefix for the SID.";
+    }
+    uses prefix-sid-attributes;
+  }
+
+  grouping prefix-sid-attributes {
+    description "Contains SR attributes for an IP prefix.";
+
+    leaf sid {
+      type sid-value-t;
+      mandatory true;
+      description
+        "SID value associated with prefix. For MPLS transport, this is expressed " +
+        "as an index into the SRGB.";
+    }
+
+    leaf algorithm {
+      // Defaults to "shortest-path", but defaults for key leaves
+      // cannot be specified in YANG 1.1.
+      type prefix-sid-algorithm-t;
+      description "Algorithm for prefix-SID forwarding.";
+    }
+  }
+
+  grouping sr-on {
+    leaf segment-routing {
+      type boolean;
+    }
+  }
+  grouping sr-on-area {
+    leaf segment-routing {
+      type boolean;
+      description
+        "Enable distribution of segment routing information in this area only";
+    }
+  }
+
+  grouping ti-lfa {
+    leaf topology-independent {
+      if-feature features:segment-routing-ti-lfa;
+      type empty;
+      description
+        "Whether the device should calculate and program recovery paths even for " +
+        "destinations that cannot be protected using a local loop-free alternate " +
+        "or a remote loop-free alternate." +
+        "" +
+        "These recovery paths require a complex routing path to be specified for " +
+        "the packet, but mean that FRR will function correctly for any " +
+        "destination unless the network has been separated into disjoint pieces.";
+
+      user-ext:CLI-comm-help "Enable calculation of general TI-LFA protection paths";
+      user-ext:CLI-no-comm-help "Disable calculation of general TI-LFA protection paths";
+    }
+  }
+
+  grouping segment-routing-instance {
+
+    leaf enabled {
+      type boolean;
+      default "false";
+      description "Enable Segment Routing extensions.";
+    }
+
+    leaf transport-type {
+      if-feature features:segment-routing-mpls;
+      type segment-routing-transport-t;
+      description
+        "Transport mechanism by which Segment Routing segment stacks should be " +
+        "transmitted.";
+      default "mpls";
+    }
+
+    container prefix-sid-map {
+      description "Prefix SID configuration.";
+      container ipv4 {
+        user-ext:CLI-not-command;
+        description "Parameters associated with IPv4 prefix SIDs";
+        list ipv4-prefix-sid {
+          key "prefix algorithm";
+          unique "sid";
+          description "List of prefix SIDs mapped to IPv4 prefixes (local or mapped).";
+          must "not (../../../transport-type) or " +
+            "../../../transport-type = 'ipv6' or " +
+            "(../../../sr-global-block/lower-bound + sid) <= " +
+            "../../../sr-global-block/upper-bound" {
+            error-message "Index of SID cannot be greater than SRGB size";
+          }
+          uses ipv4-sid-cfg;
+          uses egress-label-type;
+        }
+      }
+      container ipv6 {
+        user-ext:CLI-not-command;
+        if-feature features:segment-routing-sid-prefix-ipv6;
+        description "Parameters associated with IPv6 prefix SIDs";
+        list ipv6-prefix-sid {
+          key "prefix algorithm";
+          unique "sid";
+          description "List of prefix SIDs mapped to IPv6 prefixes (local or mapped).";
+          must "not (../../../transport-type) or " +
+            "../../../transport-type = 'ipv6' or " +
+            "(../../../sr-global-block/lower-bound + sid) <= " +
+            "../../../sr-global-block/upper-bound" {
+            error-message "Index of SID cannot be greater than SRGB size";
+          }
+          must "not(../../ipv4/ipv4-prefix-sid/sid = sid)" {
+            error-message "The SID must be unique across all locally-configured SIDs of global significance";
+          }
+          uses ipv6-sid-cfg;
+          uses egress-label-type;
+        }
+      }
+    } // prefix-sid-map
+
+    container sr-global-block {
+      description "Global SRGB configuration.";
+      if-feature features:segment-routing-mpls;
+      must "(number(lower-bound) <= number(upper-bound))" {
+        error-message "Lower-bound of label block must not be greater than upper-bound";
+      }
+      uses segment-routing-simple-label-range {
+        refine lower-bound { default 16000; }
+        refine upper-bound { default 23999; }
+      }
+
+      action retry-update {
+        user-ext:CLI-param-help "Retry an update to this label-space.";
+
+        description
+          "Retry an update to this label space.
+
+          If a previous update was not applied due to labels being in use,
+          then setting this will reattempt the modification.";
+      }
+    } // sr-global-block
+
+    // This section must remain commented out until segment-routing-sid-adj
+    // support is implemented.
+    //
+    // container sr-local-block {
+    //   description "Local label block configuration.";
+    //   if-feature features:segment-routing-mpls;
+    //   if-feature features:segment-routing-sid-adj;
+    //   must "(number(lower-bound) <= number(upper-bound))" {
+    //     error-message "Lower-bound of label block must not be greater than upper-bound";
+    //   }
+    //   must
+    //     "upper-bound < ../sr-global-block/lower-bound or " +
+    //     "lower-bound > ../sr-global-block/upper-bound" {
+    //     error-message "SRLB cannot overlap with SRGB.";
+    //   }
+    //   uses segment-routing-simple-label-range;
+    // } // sr-local-block
+
+  } // segment-routing-instance
+
+  container segment-routing-config {
+    description "Segment Routing instance configuration";
+
+    presence "Enable Segment Routing";
+
+    user-ext:CLI-comm-help "Configure Segment Routing";
+    user-ext:CLI-no-comm-help "Configure Segment Routing";
+
+    container global {
+      user-ext:CLI-not-command;
+      presence "Enable global Segment Routing instance";
+
+      must "not (transport-type) or
+             transport-type = 'ipv6' or
+             sr-global-block" {
+        error-message "SR using MPLS transport must have an SRGB defined";
+      }
+
+      uses segment-routing-instance;
+    } // global
+  }
+
+  container segment-routing-global-state {
+    config false;
+
+    container global-seg-list {
+      description "List of SID associations of global scope.";
+
+      list global-seg {
+        // Low-level model info: Corresponds to AMB_SRM_GLOBAL_SEG (srmGlobalSegTable).
+
+        uses segment-routing-sid-attrs;
+
+        uses segment-routing-source-attrs;
+
+      } // global-seg
+
+    } // global-seg-list
+
+    container node-list {
+
+      description "List of known SR nodes and their advertised SIDs.";
+
+      list node {
+
+        // Low-level model info: Corresponds to AMB_SRM_ROUTER (srmRouterTable).
+
+        key "source-protocol source-id";
+
+        uses segment-routing-source-attrs;
+
+        leaf status {
+          type sr-node-status-t;
+          description
+            "The operational status of this node as a source of SR information";
+        }
+
+        container srgb {
+          description "Advertised global label block of the node.";
+          if-feature features:segment-routing-mpls;
+          uses segment-routing-generic-label-range;
+        }
+      } // node
+    } // node-list
+
+    container sid-list {
+
+      description "SIDs advertised by this node.";
+
+      list sid {
+
+        description "SIDs advertised by this node.";
+
+        // Low-level model info: Corresponds to AMB_SRM_NODE_PREFIX_SID (srmNodePrefixSidTable).
+
+        uses segment-routing-source-attrs;
+        uses segment-routing-sid-attrs;
+
+        leaf penultimate-hop-behavior {
+          type php-t;
+          description "Penultimate hop labelling behavior.";
+        }
+
+      }
+    } // sid-list
+
+    container xc-list {
+
+      description "The cross-connects that are currently programmed for segment routing";
+
+      list xc {
+
+        description "The cross-connects that are currently programmed for segment routing";
+
+        key "dest-sid";
+
+        // Low-level model info: Corresponds to AMB_OID_SRM_IN_SEG_SID (srmInSegTable).
+        leaf dest-sid {
+          type sid-value-t;
+          description "The SID associated with the destination FEC of the LSP.";
+        }
+
+        // Low-level model info: Corresponds to srmInSegTable.
+        container in-seg {
+          description "Programmed in-segment information";
+
+          // Low-level model info: Corresponds to AMB_OID_SRM_IN_SEG_LABEL (srmInSegTable).
+          leaf label {
+            type uint32;
+            description "The corresponding in-segment label.";
+          }
+        } // in-seg
+
+        // Low-level model info: Corresponds to srmOutSegTable.
+        container out-seg-list {
+          list out-seg {
+            description "Programmed out-segment information";
+
+            // Low-level model info: Corresponds to AMB_OID_SRM_OUT_SEG_LABEL (srmOutSegTable).
+            leaf label {
+              type uint32;
+              description
+                "The corresponding out-segment label.";
+            }
+
+            // Low-level model info: Corresponds to AMB_OID_SRM_OUT_SEG_INTERFACE (srmOutSegTable).
+            leaf if-index {
+              type meta:ro-if-index-or-zero;
+              description "The onward interface name of the out-seg";
+            }
+
+            // Low-level model info: Corresponds to AMB_OID_SRM_OUT_SEG_IGP_PROTO (srmOutSegTable).
+            leaf protocol {
+              type meta:route-protocols;
+              description "The IGP protocol from which this device learnt
+              about the prefix's owning router.";
+            }
+
+            // Low-level model info: Corresponds to AMB_OID_SRM_OUT_SEG_RTR_ID (srmOutSegTable).
+            leaf nh-router-id {
+              type segment-routing-node-t;
+              description "Router identity of the next-hop.";
+            }
+
+            // Low-level model info: Corresponds to AMB_OID_SRM_OUT_SEG_IS_SEC (srmOutSegTable).
+            leaf is-secondary {
+              type boolean;
+              description
+               "Whether or not the out-segment in this cross-connect is a
+               secondary out-segment.";
+            }
+          } // out-seg
+        } // out-seg-list
+
+      } // xc
+    } // xc-list
+
+  } // segment-routing-global-state
+
+  augment "/ospfv2:router/ospfv2:ospfv2/ospfv2:global" {
+    when "/sr:segment-routing-config/global/enabled = 'true'";//JLINDBLA
+    uses sr-on {
+      refine segment-routing {
+        description
+          "Enable distribution of segment routing information by this " +
+          "instance of OSPF.";
+      }
+    }
+  }
+  augment "/ospfv2:router/ospfv2:ospfv2/ospfv2:global/ospfv2:lfa" {
+    if-feature features:segment-routing-ti-lfa;
+    when "/sr:segment-routing-config/global/enabled = 'true'";//JLINDBLA
+    uses ti-lfa;
+  }
+  augment "/ospfv2:router/ospfv2:ospfv2/ospfv2:global/ospfv2:area" {
+    if-feature features:segment-routing-multi-area;
+    when "/sr:segment-routing-config/global/enabled = 'true'";//JLINDBLA
+    uses sr-on-area;
+  }
+  augment "/ospfv2:router/ospfv2:ospfv2/ospfv2:vrf" {
+    if-feature features:segment-routing-vrf;
+    when "/sr:segment-routing-config/global/enabled = 'true'";//JLINDBLA
+    uses sr-on {
+      refine segment-routing {
+        description
+          "Enable distribution of segment routing information by the OSPF" +
+          "instance in this VRF.";
+      }
+    }
+  }
+  augment "/ospfv2:router/ospfv2:ospfv2/ospfv2:vrf/ospfv2:lfa" {
+    if-feature features:segment-routing-vrf;
+    if-feature features:segment-routing-ti-lfa;
+    when "/sr:segment-routing-config/global/enabled = 'true'";//JLINDBLA
+    uses ti-lfa;
+  }
+  augment "/ospfv2:router/ospfv2:ospfv2/ospfv2:vrf/ospfv2:area" {
+    if-feature features:segment-routing-vrf;
+    if-feature features:segment-routing-multi-area;
+    when "/sr:segment-routing-config/global/enabled = 'true'";//JLINDBLA
+    uses sr-on-area;
+  }
+
+  notification segment-routing-global-sid-collision {
+    description
+      "This notification is sent when a new mapping is learned containing a " +
+      "SID that is already in use.";
+    leaf winner-target {
+      type string;
+      description
+        "Target of binding received in the control plane that won the SID " +
+        "collision tie-break.";
+    }
+    leaf win-sid-rtr-id {
+      type segment-routing-node-t;
+      description
+        "Router ID that advertised the segment which won the collision " +
+        "tie-break.";
+    }
+    leaf win-routing-protocol {
+      type meta:route-protocols;
+      description
+        "Routing protocol that advertised the segment which won the " +
+        "collision tie-break.";
+    }
+    leaf loser-target {
+      type string;
+      description
+        "Target of binding received in the control plane that lost the SID " +
+        "collision tie-break.";
+    }
+    leaf lose-sid-rtr-id {
+      type segment-routing-node-t;
+      description
+        "Router ID that advertised the segment which lost the collision " +
+        "tie-break.";
+    }
+    leaf lose-routing-protocol {
+      type meta:route-protocols;
+      description
+        "Routing protocol that advertised the segment which lost the " +
+        "collision tie-break.";
+    }
+    leaf index {
+      type sid-value-t;
+      description
+        "Value of the conflicting SID used by two different binding.";
+    }
+  } // segment-routing-global-sid-collision
+
+  notification segment-routing-srgb-reservation-status {
+    description
+      "This notification is sent to inform the management agent of a change " +
+      "in the reservation status of the local router's SRGB.";
+    leaf reservation-status {
+      type mpls:label-subspace-reservation-status-t;
+      description
+        "The reservation status of the local router's SRGB.";
+    }
+    leaf reason {
+      type mpls:label-subspace-reservation-reason-t;
+      description
+        "The reason for this reservation status.";
+    }
+  } // segment-routing-srgb-reservation-status
+
+  notification segment-routing-sid-out-of-nh-srgb {
+    description
+      "This notification is sent when the SID for a prefix is detected as " +
+      "being outside the SRGB range of a next-hop for a route to that prefix.";
+
+    leaf srgb-min {
+      type meta:mpls-label-integer-t;
+      description "Minimum SRGB label for next-hop.";
+    }
+    leaf srgb-max {
+      type meta:mpls-label-integer-t;
+      description "Maximum SRGB label for next-hop.";
+    }
+    leaf index {
+      type sid-value-t;
+      description "SID that is out of range.";
+    }
+  } // segment-routing-sid-out-of-nh-srgb
+
+  notification segment-routing-sid-out-of-our-srgb {
+    description
+      "This notification is sent when the SID for a prefix is detected as " +
+      "being outside this router's SRGB range.";
+
+    leaf srgb-min {
+      type meta:mpls-label-integer-t;
+      description "This router's minimum SRGB label.";
+    }
+    leaf srgb-max {
+      type meta:mpls-label-integer-t;
+      description "This router's maximum SRGB label.";
+    }
+    leaf index {
+      type sid-value-t;
+      description "SID that is out of range.";
+    }
+  } // segment-routing-sid-out-of-our-srgb
+} // sr

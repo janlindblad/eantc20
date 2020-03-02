@@ -1,0 +1,19 @@
+submodule arcos-hardware-common {
+  yang-version 1.1;
+
+  belongs-to arcos-hardware {
+    prefix arc-hw;
+  }
+
+  include arcos-hardware-ecmp;
+
+  grouping hardware-common {
+    description
+      "Common hardware configuration";
+
+	  container ecmp {
+      uses hardware-ecmp;
+	    description "ECMP configuration";
+	  }
+  }
+}

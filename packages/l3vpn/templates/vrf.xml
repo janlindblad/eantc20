@@ -1,0 +1,156 @@
+<config-template xmlns="http://tail-f.com/ns/config/1.0">
+ <devices xmlns="http://tail-f.com/ns/ncs">
+  <device tags="nocreate">
+    <name>{$DEVICE}</name>
+      <config xmlns:eci="http://tail-f.com/ns/ned-id/eci5-nc-1.0">
+
+        <!-- ECI -->
+        <!--?ned-id eci5-nc-1.0:eci5-nc-1.0?>
+        <network-instances xmlns="urn:ietf:params:xml:ns:yang:ietf-network-instance">
+          <network-instance tags="merge">
+            <name>{$VPN_NAME}</name>
+            <l3vpn xmlns="urn:eci:params:xml:ns:yang:eci-bgp-l3vpn">
+              <route-targets>
+                <config>
+                  <both>
+                    <rts>
+                      <rt>0:300:{$VLANID}</rt>
+                    </rts>
+                  </both>
+                </config>
+              </route-targets>
+              <vrf-export-policy>
+                <export-policy>BGP_to_VRF</export-policy>
+              </vrf-export-policy>
+              <route-distinguisher>
+                <config>
+                  <rd>0:300:{$VLANID}</rd>
+                </config>
+              </route-distinguisher>
+            </l3vpn>
+          </network-instance>
+        </network-instances-->
+        <!-- END ECI -->
+
+        <!-- ERICSSON -->
+        <!--?ned-id eri0-nc-1.0:eri0-nc-1.0?>
+        <contexts xmlns="urn:rdns:com:ericsson:oammodel:ericsson-contexts-router6000">
+          <context xmlns="urn:rdns:com:ericsson:oammodel:ericsson-context-router6000" tags="merge">
+            <context-name>vpn{$VPN_NAME}</context-name>
+            <vpn-rd>300:69</vpn-rd>
+            <router>
+              <bgp xmlns="urn:rdns:com:ericsson:oammodel:ericsson-bgp-router6000">
+                <bgp>vpn</bgp>
+                <address-family>
+                  <ipv4>
+                    <unicast>
+                      <export>
+                        <route-target>
+                          <rt-community>300:300</rt-community>
+                        </route-target>
+                      </export>
+                      <import>
+                        <route-target>
+                          <rt-community>300:300</rt-community>
+                        </route-target>
+                      </import>
+                      <redistribute>
+                        <connected>
+                        </connected>
+                      </redistribute>
+                    </unicast>
+                  </ipv4>
+                </address-family>
+              </bgp>
+            </router>
+            <loggerrouter6000:logging xmlns:loggerrouter6000="urn:rdns:com:ericsson:oammodel:ericsson-logger-router6000">
+              <loggerrouter6000:console>false</loggerrouter6000:console>
+            </loggerrouter6000:logging>
+          </context>
+        </contexts-->
+        <!-- END ERICSSON -->
+
+        <!-- CISCO XR -->
+        <!--?ned-id xr-5500a-nc-1.0:xr-5500a-nc-1.0?>
+        <vrfs xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-infra-rsi-cfg" tags="merge">
+          <vrf>
+            <vrf-name>{$VPN_NAME}</vrf-name>
+            <create/>
+            <afs>
+              <af>
+                <af-name>ipv4</af-name>
+                <saf-name>unicast</saf-name>
+                <topology-name>default</topology-name>
+                <create/>
+                <bgp xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-ipv4-bgp-cfg">
+                  <import-route-targets>
+                    <route-targets>
+                      <route-target>
+                        <type>as</type>
+                        <as-or-four-byte-as>
+                          <as-xx>0</as-xx>
+                          <as>300</as>
+                          <as-index>300</as-index>
+                          <stitching-rt>0</stitching-rt>
+                        </as-or-four-byte-as>
+                      </route-target>
+                    </route-targets>
+                  </import-route-targets>
+                  <export-route-targets>
+                    <route-targets>
+                      <route-target>
+                        <type>as</type>
+                        <as-or-four-byte-as>
+                          <as-xx>0</as-xx>
+                          <as>300</as>
+                          <as-index>300</as-index>
+                          <stitching-rt>0</stitching-rt>
+                        </as-or-four-byte-as>
+                      </route-target>
+                    </route-targets>
+                  </export-route-targets>
+                </bgp>
+              </af>
+            </afs>
+          </vrf>
+        </vrfs>
+        <?ned-id xr-5500a-nc-1.0:xr-5500a-nc-1.0?>
+        <bgp xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-ipv4-bgp-cfg" tags="merge">
+          <instance>
+            <instance-name>default</instance-name>
+            <instance-as>
+              <as>0</as>
+              <four-byte-as>
+                <as>300</as>
+                <vrfs>
+                  <vrf>
+                    <vrf-name>{$VPN_NAME}</vrf-name>
+                    <vrf-global>
+                      <route-distinguisher>
+                        <type>ipv4-address</type>
+                        <address>{$ROUTER_ADDRESS}</address>
+                        <address-index>300</address-index>
+                      </route-distinguisher>
+                      <vrf-global-afs>
+                        <vrf-global-af>
+                          <af-name>ipv4-unicast</af-name>
+                          <enable/>
+                          <connected-routes/>
+                        </vrf-global-af>
+                      </vrf-global-afs>
+                      <exists/>
+                    </vrf-global>
+                  </vrf>
+                </vrfs>
+              </four-byte-as>
+            </instance-as>
+          </instance>
+        </bgp-->
+        <!-- END CISCO XR -->
+
+        <!-- OTHER VENDOR -->
+
+      </config>
+    </device>
+  </devices>
+</config-template>

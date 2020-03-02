@@ -1,0 +1,3012 @@
+
+module casa-ccap {
+    yang-version 1;
+
+    namespace "urn:casa:params:xml:ns:yang:casa-ccap";
+    prefix "casa-ccap";
+
+    import ietf-inet-types {
+        prefix inet;
+    }
+
+    import ietf-yang-types {
+        prefix yang;
+    }
+
+    import rphy {
+        prefix ccap;
+    }
+
+    organization 
+        "Casa Systems Inc";
+
+    contact 
+        "Casa Systems Inc.     
+         100 Old River Road, Suite 100             
+         Andover, MA 01810
+         USA       
+         TEL: +1 978 688 6706      
+         FAX: +1 978 688 6584		
+         E-mail: support@casa-systems.com";
+
+    description 
+        "Casa extend CCAP Configuration";
+
+    revision "2019-11-14" {
+        description "Add VRF at ip-bundle/cable-helper-config";
+    }
+
+    typedef Admin-State-Type {
+        type enumeration {
+            enum other {
+                value 1;
+                description "The value of other is used when a vendor-extension has been implemented for this attribute.";
+            }
+            enum up {
+                value 2;
+            }
+            enum down {
+                value 3;
+            }
+            enum testing {
+                value 4;
+            }
+        }
+        description 
+            "This data type defines the admin state. The value of 'other' is used when a vendor extension has been 
+             implemented for this attribute.";
+        reference "RFC 2863";
+    }
+
+    typedef Ofdm-Modulation-Type {
+        type enumeration {
+            enum other {
+                value 1;
+                description "The value of other is used when a vendor-extension has been implemented for this attribute.";
+            }
+            enum zero-bit-load {
+                value 2;
+            }
+            enum qpsk {
+                value 3;
+            }
+            enum qam16 {
+                value 4;
+            }
+            enum qam64 {
+                value 5;
+            }
+            enum qam128 {
+                value 6;
+            }
+            enum qam256 {
+                value 7;
+            }
+            enum qam512 {
+                value 8;
+            }
+            enum qam1024 {
+                value 9;
+            }
+            enum qam2048 {
+                value 10;
+            }
+            enum qam4096 {
+                value 11;
+            }
+            enum qam8192 {
+                value 12;
+            }
+            enum qam16384 {
+                value 13;
+            }
+        }
+        description "Defines the downstream OFDM modulation type.";
+    }
+
+    typedef Ofdm-Ncp-Modulation-Type {
+        type enumeration {
+            enum other {
+                value 1;
+                description "The value of other is used when a vendor-extension has been implemented for this attribute.";
+            }
+            enum qpsk {
+                value 3;
+            }
+            enum qam16 {
+                value 4;
+            }
+            enum qam64 {
+                value 5;
+            }
+        }
+        description "Defines the downstream OFDM NCP modulation type.";
+    }
+
+    typedef Ofdma-Modulation-Type {
+        type enumeration {
+            enum other {
+                value 1;
+                description "The value of other is used when a vendor-extension has been implemented for this attribute.";
+            }
+            enum zero-value {
+                value 2;
+            }
+            enum bpsk {
+                value 3;
+            }
+            enum qpsk {
+                value 4;
+            }
+            enum qam8 {
+                value 5;
+            }
+            enum qam16 {
+                value 6;
+            }
+            enum qam32 {
+                value 7;
+            }
+            enum qam64 {
+                value 8;
+            }
+            enum qam128 {
+                value 9;
+            }
+            enum qam256 {
+                value 10;
+            }
+            enum qam512 {
+                value 11;
+            }
+            enum qam1024 {
+                value 12;
+            }
+            enum qam2048 {
+                value 13;
+            }
+            enum qam4096 {
+                value 14;
+            }
+        }
+        description "Defines the upstream OFDMA modulation type.";
+    }
+
+    typedef Ofdma-Cyclic-Prefix-Type {
+        type uint16 {
+            range "96|128|160|192|224|256|288|320|384|512|640";
+        }
+        description 
+            "This data type is defined to specify the possible values for the length of cyclic prefix.  
+             The cyclic prefix is in Elementary Periods of 1/102.4 MHz. The possible values come from 
+             table 7-2 in the D3.1 PHY Spec.";
+    }
+
+    typedef Ofdma-Windowing-Type {
+        type uint16 {
+            range "0|32|64|96|128|160|192|224";
+        }
+        description 
+            "This data type is defined to specify the possible values for the windowing roll-off period. 
+             The Roll-Off Period is in Elementary Periods of 1/102.4 MHz.  The possible values come from 
+             table 7-2 in the D3.2 PHY Spec.";
+    }
+
+    typedef Subcarrier-Spacing-Type {
+        type enumeration {
+            enum other {
+                value 1;
+                description "The size in Hz of a subcarrier.";
+            }
+            enum 25khz {
+                value 2;
+            }
+            enum 50khz {
+                value 3;
+            }
+        }
+    }
+
+    typedef Attribute-Mask-Type {
+        type bits {
+            bit bonded {
+                position 0;
+            }
+            bit low-latency {
+                position 1;
+            }
+            bit high-availability {
+                position 2;
+            }
+            bit reserved-3 {
+                position 3;
+            }
+            bit reserved-4 {
+                position 4;
+            }
+            bit reserved-5 {
+                position 5;
+            }
+            bit reserved-6 {
+                position 6;
+            }
+            bit reserved-7 {
+                position 7;
+            }
+            bit reserved-8 {
+                position 8;
+            }
+            bit reserved-9 {
+                position 9;
+            }
+            bit reserved-10 {
+                position 10;
+            }
+            bit reserved-11 {
+                position 11;
+            }
+            bit reserved-12 {
+                position 12;
+            }
+            bit reserved-13 {
+                position 13;
+            }
+            bit reserved-14 {
+                position 14;
+            }
+            bit reserved-15 {
+                position 15;
+            }
+            bit operator-16 {
+                position 16;
+            }
+            bit operator-17 {
+                position 17;
+            }
+            bit operator-18 {
+                position 18;
+            }
+            bit operator-19 {
+                position 19;
+            }
+            bit operator-20 {
+                position 20;
+            }
+            bit operator-21 {
+                position 21;
+            }
+            bit operator-22 {
+                position 22;
+            }
+            bit operator-23 {
+                position 23;
+            }
+            bit operator-24 {
+                position 24;
+            }
+            bit operator-25 {
+                position 25;
+            }
+            bit operator-26 {
+                position 26;
+            }
+            bit operator-27 {
+                position 27;
+            }
+            bit operator-28 {
+                position 28;
+            }
+            bit operator-29 {
+                position 29;
+            }
+            bit operator-30 {
+                position 30;
+            }
+            bit operator-31 {
+                position 31;
+            }
+        }
+    }
+
+    typedef US-Ranging-Status-Type {
+        type enumeration {
+            enum other {
+                value 1;
+            }
+            enum success {
+                value 2;
+            }
+            enum abort {
+                value 3;
+            }
+            enum continue {
+                value 4;
+            }
+            enum impaired {
+                value 5;
+            }
+            enum unreachable {
+                value 6;
+            }
+            enum failure {
+                value 7;
+            }
+            enum timeout {
+                value 8;
+            }
+            enum unusable {
+                value 9;
+            }
+        }
+    } 
+
+    typedef Docsis-Version-Type {
+        type enumeration {
+            enum unknown {
+                value 1;
+               description "docsis version unknown";
+            }
+            enum DOCSIS10 {
+                value 2;
+                description "docsis version 1.0";
+            }
+            enum DOCSIS11 {
+                value 3;
+                description "docsis version 1.1";
+            }
+            enum DOCSIS20 {
+                value 4;
+                description "docsis version 2.0";
+            }
+            enum DOCSIS30 {
+                value 5;
+                description "docsis version 3.0";
+            }
+            enum DOCSIS31 {
+                value 6;
+                description "docsis version 3.1";
+            }
+        }
+    }
+
+    typedef Initial-Ranging-Message-Type {
+        type enumeration {
+            enum unknown {
+                value 1;
+            }
+            enum RNG-REQ {
+                value 2;
+            }
+            enum INIT-RNG-REQ {
+                value 3;
+            }
+            enum B-INIT-RNG-REQ {
+                value 4;
+            }
+            enum O-INIT-RNG-REQ {
+                value 5;
+            }
+        }
+    }
+
+    typedef Registration-Request-Message-Type {
+        type enumeration {
+            enum unknown {
+                value 1;
+            }
+            enum REG-REQ {
+                value 2;
+            }
+            enum REG-REQ-MP {
+                value 3;
+            }
+        }
+    }
+
+    typedef CM-Status-Type {
+        description "Cable Modem connectivity state";
+        type enumeration {
+            enum others {
+                value 1;
+                description "state that is not defined in CM-Status-Type";
+            }
+            enum initialRanging {
+                value 2;
+                description "CM sent initial ranging";
+            }
+            enum rangingAborted {
+                value 3;
+                description "Upstream channel ranging is aborted";
+            }
+            enum rangingInProcess {
+                value 4;
+                description "Upstream channel ranging is in processing.";
+            }
+            enum rangingComplete {
+                value 5;
+                description "Upstream channel ranging is completed.";
+            }
+            enum dhcpv4InProcess {
+                value 6;
+                description "CM try to IPv4 address.";
+            }
+            enum dhcpv6InProcess {
+                value 7;
+                description "CM try to IPv6 address.";
+            }
+            enum dhcpv4Complete {
+                value 8;
+                description "CM has got IPv4 address.";
+            }
+            enum dhcpv6Complete {
+                value 9;
+                description "CM has got IPv6 address.";
+            }
+            enum initEaeInProcess {
+                value 10;
+                description "EAE is in processing.";
+            }
+            enum cfgFileDownloadInProcess {
+                value 11;
+                description "Config file download is in processing.";
+            }
+            enum cfgFileDownloadComplete {
+                value 12;
+                description "Config file download process is complete.";
+            }
+            enum todComplete {
+                value 13;
+                description "ToD is complete.";
+            }
+            enum registrationInProcess {
+                value 14;
+                description "CM registration is in processing.";
+            }
+            enum bpiInProcess {
+                value 15;
+                description "CM attempt to process BPI certification and authorization.";
+            }
+            enum online {
+                value 16;
+                description "CM is online, BPI disabled.";
+            }
+            enum onlineNetAccessDisabled {
+                value 17;
+                description "CM is online, network access disabled.";
+            }
+            enum onlinePrivacy {
+                value 18;
+                description "CM is online, BPI enabled.";
+            }
+            enum onlinePrivacyNetAccessDisabled {
+                value 19;
+                description "CM is online, BPI enabled, network access disabled.";
+            }
+            enum onlineKekAssigned {
+                value 20;
+                description "CM is online, BPI enabled and KEK assigned.";
+            }
+            enum onlineTekAssigned {
+                value 21;
+                description "CM is online, BPI enabled and TEK assigned.";
+            }
+            enum onlineKekRejected {
+                value 22;
+                description "CM is online, BPI enabled and KEK assignment rejected.";
+            }
+            enum onlineTekRejected {
+                value 23;
+                description "CM is online, BPI enabled and TEK assignment rejected.";
+            }
+            enum onlineKekExpired {
+                value 24;
+                description "CM is online, BPI enabled and KEK assignment expired.";
+            }
+            enum onlineTekExpired {
+                value 25;
+                description "CM is online, BPI enabled and TEK assignment expired.";
+            }
+            enum rangingOverRide {
+                value 26;
+                description "CM over ride channel during upstream ranging.";
+            }
+            enum registerOverRide {
+                value 27;
+                description "CM over ride channel during registration.";
+            }
+            enum uccInProcess {
+                value 28;
+                description "CM is doing UCC.";
+            }
+            enum dccInProcess {
+                value 29;
+                description "CM is doing DCC.";
+            }
+            enum dbcInProcess {
+                value 30;
+                description "CM is doing DBC.";
+            }
+            enum offlineBadMic {
+                value 31;
+                description "CM is offline, due to bad MIC.";
+            }
+            enum offline {
+                value 32;
+                description "CM is offline";
+            }
+            enum rejectBadMic {
+                value 33;
+                description "CM attempt to register, but registration was refused due to bad MIC.";
+            }
+            enum rejectBadCos {
+                value 34;
+                description "CM attempt to register, but registration was refused due to bad CoS.";
+            }
+            enum rejectStaleCfg {
+                value 35;
+                description "CM attempt to register, but registration was refused due to stale config.";
+            }
+            enum rejectIpSpoof {
+                value 36;
+                description "CM attempt to register, but registration was refused due to IP Spoof.";
+            }
+            enum rejectClassFailure {
+                value 37;
+                description "CM attempt to register, but registration was refused due to Class failure.";
+            }
+            enum rejectNoAck {
+                value 38;
+                description "CM attempt to register, but no acknowledgement was recieved.";
+            }
+            enum shutdown {
+                value 39;
+                description "CM is in shutdown state.";
+            }
+        }
+    }
+
+    typedef Upstream-Modulation-Type {
+        description "DOCSIS Upstream Modulation Type.";
+        type enumeration {
+            enum other {
+                value 1;
+            }
+            enum tdma {
+                value 2;
+            }
+            enum atdma {
+                value 3;
+            }
+            enum scdma {
+                value 4;
+            }
+            enum ofdma {
+                value 5;
+            }
+        }
+    }
+
+    grouping casaSysConfig-group {
+        description "Save CASA device's running-config to startup-config for the next reboot. clone from SNMP CASA-SYSTEM-MIB";
+
+        leaf casaSysConfigLastChanged {
+            config false;
+            type yang:date-and-time;
+            description 
+                "Date and time when system running configuration was last changed.
+                 if the value of casaSysConfigLastChanged is greater than casaSysConfigLastSaved, 
+                 the configuration has been changed but not saved.";
+        }
+
+        leaf casaSysConfigLastSaved {
+            config false;
+            type yang:date-and-time;
+            description 
+                "Date and time the running configuration was last saved (saved to startup-config).
+                 if the value of casaSysConfigLastChanged is greater than casaSysConfigLastSaved, 
+                 the configuration has been changed but not saved.";
+        }
+
+        leaf casaSysCopyRuningToStartup {
+            type boolean;
+            description 
+                "If set to 'true', the device will save current running-config to startup-config.
+                 The Device will use startup-config when next rebooting.
+                 Reading this object always returns 'false'";
+        }
+    }
+ 
+    grouping rf-channel-index {
+        description "linecard downstream or upstream channel index, including slot number, port number and channel index";
+
+        leaf slot-number {
+            type uint32;
+            description "linecard downstream or upstream slot number";
+        }
+
+        leaf port-number {
+            type uint32;
+            description "linecard downstream or upstream port number";
+        }
+
+        leaf channel-index {
+            type uint32;
+            description "linecard downstream or upstream channel index";
+        }
+    }
+
+    grouping rphy-rf-channel-index {
+        description "rphy linecard downstream or upstream channel index, including slot number, group index and channel index";
+
+        leaf slot-number {
+            type uint32;
+            description "rphy linecard downstream or upstream slot number";
+        }
+
+        leaf grp-index {
+            type uint32;
+            description "rphy linecard downstream or upstream group index";
+        }
+
+        leaf channel-index {
+            type uint32;
+            description "rphy linecard downstream or upstream channel index";
+        }
+    }
+
+    grouping upstream-logical-channel-index {
+        description "linecard upstream logical channel index, including slot number, port number, physical channel index and logical channel index";
+
+        leaf slot-number {
+            type uint32;
+            description "linecard upstream slot number";
+        }
+
+        leaf port-number {
+            type uint32;
+            description "linecard upstream port number";
+        }
+
+        leaf physical-channel-index {
+            type uint32;
+            description "linecard upstream physical channel index";
+        }
+
+        leaf logical-channel-index {
+            type uint32;
+            description "linecard upstream logical channel index";
+        }
+    }
+
+    grouping rphy-upstream-logical-channel-index {
+        description "rphy linecard upstream logical channel index, including slot number, group index, physical channel index and logical channel index";
+
+        leaf slot-number {
+            type uint32;
+            description "linecard upstream slot number";
+        }
+
+        leaf grp-index {
+            type uint32;
+            description "linecard upstream group index";
+        }
+
+        leaf physical-channel-index {
+            type uint32;
+            description "linecard upstream physical channel index";
+        }
+
+        leaf logical-channel-index {
+            type uint32;
+            description "linecard upstream logical channel index";
+        }
+    }
+
+    grouping upstream-channel-list-group {
+        description "upstream channel list that may be assigned to CM";
+        list upstream-logical-channel {
+            key "slot-number port-number physical-channel-index logical-channel-index";
+            uses upstream-logical-channel-index;
+            description "logical upstream channel";
+        }
+        list ofdma-channel {
+            key "slot-number port-number channel-index";
+            uses rf-channel-index;
+            description "ofdma channel";
+        }
+        list rphy-upstream-logical-channel {
+            key "slot-number grp-index physical-channel-index logical-channel-index";
+            uses rphy-upstream-logical-channel-index;
+            description "rphy logical upstream channel";
+        }
+        list rphy-ofdma-channel {
+            key "slot-number grp-index channel-index";
+            uses rphy-rf-channel-index;
+            description "rphy ofdma channel";
+        }
+        list epon-us-channel {
+            key "slot-number port-number channel-index";
+            uses rf-channel-index;
+            description "epon upstream channel";
+        }
+    }
+
+    grouping downstream-channel-list-group {
+        description "downstream channel list that may be assigned to CM";
+        list ds-rf-channel {
+            key "slot-number port-number channel-index";
+            uses rf-channel-index;
+            description "downstream channel";
+        }
+        list ofdm-channel {
+            key "slot-number port-number channel-index";
+            uses rf-channel-index;
+            description "ofdm channel";
+        }
+        list rphy-ds-rf-channel {
+            key "slot-number grp-index channel-index";
+            uses rphy-rf-channel-index;
+            description "rphy downstream channel";
+        }
+        list rphy-ofdm-channel {
+            key "slot-number grp-index channel-index";
+            uses rphy-rf-channel-index;
+            description "rphy ofdm channel";
+        }
+        list epon-ds-channel {
+            key "slot-number port-number channel-index";
+            uses rf-channel-index;
+            description "epon downstream channel";
+        }
+    }
+
+    grouping service-group-config-group {
+        list service-group {
+            key name;
+            leaf name {
+                type string {
+                    length "1..16";
+                }
+                description "service group name";
+            }
+
+            list ds-rf-channel {
+                key "slot-number port-number channel-index";
+                uses rf-channel-index;
+                description "downstream channel list that configure to the service group";
+            }
+
+            list us-rf-channel {
+                key "slot-number port-number channel-index";
+                uses rf-channel-index;
+                description "upstream channel list that configure to the service group";
+            }
+
+            list ofdm-channel {
+                key "slot-number port-number channel-index";
+                uses rf-channel-index;
+                description "ofdm channel list that configure to the service group";
+            }
+
+            list ofdma-channel {
+                key "slot-number port-number channel-index";
+                uses rf-channel-index;
+                description "ofdma channel list that configure to the service group";
+            }
+
+            list rphy-ds-rf-channel {
+                key "slot-number grp-index channel-index";
+                uses rphy-rf-channel-index;
+                description "rphy downstream channel list that configure to the service group";
+            }
+
+            list rphy-us-rf-channel {
+                key "slot-number grp-index channel-index";
+                uses rphy-rf-channel-index;
+                description "rphy upstream channel list that configure to the service group";
+            }
+
+            list rphy-ofdm-channel {
+                key "slot-number grp-index channel-index";
+                uses rphy-rf-channel-index;
+                description "rphy ofdm channel list that configure to the service group";
+            }
+
+            list rphy-ofdma-channel {
+                key "slot-number grp-index channel-index";
+                uses rphy-rf-channel-index;
+                description "rphy ofdma channel list that configure to the service group";
+            }
+        }
+    }
+
+    grouping ip-bundle-config-group {
+        list ip-bundle {
+            key bundle-id;
+            leaf bundle-id {
+                type string {
+                    length "1..7";
+                }
+                description "ip bundle group id, format: <X> or <X.Y> where X=1~16 and Y=1~1023. Such as 1 or 1.1023";
+            }
+
+            container ip-config {
+                list ipv4 {
+                    key "ip-address application";
+                    leaf ip-address {
+                        type inet:ipv4-prefix;
+                        description "The IPv4 address and the prefix length, such as 192.168.100.1/24.";
+                    }
+                    leaf application {
+                        type string;
+                        description 
+                            "The user application that use the ip address pool, such as: secondary, vcm.
+                             If this instance is configured empty string, the ip address is used as the 
+                             primary pool for all applications.";
+                    }
+                }
+
+                list ipv6 {
+                    key "ip-address application";
+                    leaf ip-address {
+                        type inet:ipv6-prefix;
+                        description "The IPv6 address and the prefix length, such as 2001:0:141:1::1/64.";
+                    }
+                    leaf application {
+                        type string;
+                        description 
+                            "The user application that use the ip address pool, such as: secondary, vcm.
+                             If this instance is configured empty string, the ip address is used as the 
+                             primary pool for all applications.";
+                    }
+                    leaf ra-prefix-option {
+                        type bits {
+                            bit autoconfig {
+                                position 0;
+                                description "A-bit is set in the prefix option of RA if this option is chosen. Other wise, A-bit is clear.";
+                            }
+                            bit no-onlink {
+                                position 1;
+                                description "L-bit is clear in the prefix option of RA if this option is chosen. Other wise, L-bit is set.";
+                            }
+                        }
+                    }
+                    leaf preferred-lifetime {
+                        type uint32 {
+                            range "1..4294967295";
+                        }
+                        units seconds;
+                        description "The time that the specified IPv6 prefix is advertised as being preferred";
+                    }
+                    leaf valid-lifetime {
+                        type uint32 {
+                            range "1..4294967295";
+                        }
+                        units seconds;
+                        description "The time that the specified IPv6 prefix is advertised as being valid. Must be greater than or equal to preferred-lifetime.";
+                    }
+                }
+            }
+
+            container cable-helper-config {
+                list ipv4 {
+                    key "ip-address application vrf";
+                    leaf ip-address {
+                        type inet:ipv4-address;
+                        description "The IPv4 address without the prefix length, such as 192.168.3.131";
+                    }
+					
+                    leaf application {
+                        type string;
+                        description 
+                            "The UDP application broadcast that can be forwarded, such as: global, cable-modem, host, mta.
+                             If this instance is configured empty string, the UDP application broadcast is forwarded
+                             for all applications.";
+                    }
+                    leaf vrf{
+                        type string;
+                        description "vrf name";
+                    }					
+                }
+
+                list ipv6 {
+                    key "ip-address application vrf";
+                    leaf ip-address {
+                        type inet:ipv6-address;
+                        description "The IPv6 address without the prefix length, such as 2001:0:130::130.";
+                    }
+                    leaf application {
+                        type string;
+                        description 
+                            "The UDP application broadcast that can be forwarded, such as: global, cable-modem, host, mta.
+                             If this instance is configured empty string, the UDP application broadcast is forwarded
+                             for all applications.";
+                    }
+                    leaf vrf{
+                        type string;
+                        description "vrf name";
+                    }						
+                }
+            }
+
+            leaf ingress-acl {
+                type string;
+                description "acl name used for ingress filter";
+            }
+
+            leaf egress-acl {
+                type string;
+                description "acl name used for egress filter";
+            }
+
+            leaf vrf-forwarding {
+                type string;
+                description "vrf name";
+            }
+        }
+    }
+
+    grouping cin-mgmd-config-group {
+        leaf query-enable {
+            type boolean;
+        }
+        leaf version {
+            type uint8 {
+                range "2|3";
+            }
+            description "2 - IPv6 mld version 2; 3 - IPv4 igmp version 3.";
+        }
+        leaf query-interval {
+            type uint32 {
+                range "1..31744";
+            }
+            units seconds;
+        }
+        leaf max-query-response-time {
+            type uint32 {
+                range "0..31744";
+            }
+            units "tenths of seconds";
+        }
+        leaf last-member-query-interval {
+            type uint32 {
+                range "0..31744";
+            }
+            units "tenths of seconds";
+        }
+        leaf robustness {
+            type uint8 {
+                range "1..255";
+            }
+            description "robustness to packet loses, the number of lost packets.";
+        }
+    }
+
+    grouping cin-config-group {
+        description "CIN (Converged interconnect network) interface configuration.";
+        list cin {
+            key "cin-id cin-mode";
+            leaf cin-id {
+                type uint8 {
+                    range "1..4";
+                }
+                description "CIN interface id";
+            }
+            leaf cin-mode {
+                type enumeration {
+                    enum point-to-point {
+                        value 1;
+                        description "each link (xgige port) is point-to-point and unnumbered";
+                    }
+                    enum switched {
+                        value 2;
+                        description "all links (xgige port) on same L2 domain and same IP subnet";
+                    }
+                }
+                description "CIN interface mode";
+
+            }
+            leaf ip-prov-mode {
+                type enumeration {
+                    enum ipv4-only {
+                        value 1;
+                    }
+                    enum ipv6-only {
+                        value 2;
+                    }
+                }
+                description "IP provisioning mode";
+            }
+            leaf vrf-forwarding {
+                type string;
+                description "vrf name";
+            }
+            leaf mtu {
+                type uint32 {
+                    range "1500..9216";
+                }
+                description "MTU size";
+            }
+            leaf ipv4-address {
+                type inet:ipv4-prefix;
+                description "The IPv4 address and the prefix length, such as 192.168.100.1/24.";
+            }
+            leaf ipv6-address {
+                type inet:ipv6-prefix;
+                description "The IPv6 address and the prefix length, such as 2001:0:141:1::1/64.";
+            }
+            container port-address-range {
+                description "CIN port address range";
+                list ipv4 {
+                    key "start-ip-address end-ip-address";
+                    leaf start-ip-address {
+                        type inet:ipv4-address;
+                    }
+                    leaf end-ip-address {
+                        type inet:ipv4-address;
+                    }
+                }
+                list ipv6 {
+                    key "start-ip-address end-ip-address";
+                    leaf start-ip-address {
+                        type inet:ipv6-address;
+                    }
+                    leaf end-ip-address {
+                        type inet:ipv6-address;
+                    }
+                }
+            }
+            leaf helper-address-ipv4 {
+                type inet:ipv4-address;
+                description "DHCP helper address, the IPv4 address without the prefix length, such as 192.168.3.131";
+            }
+            leaf helper-address-ipv6 {
+                type inet:ipv6-address;
+                description "DHCP helper address, the IPv6 address without the prefix length, such as 2001:0:130::130.";
+            }
+            container ipv6-router-advertisement {
+                leaf enabled {
+                    type boolean;
+                    description "enable or dsiable ipv6 router advertisement.";
+                }
+                leaf max-advert-interval {
+                    type uint32 {
+                        range "4..1800";
+                    }
+                    description "max advert interval.";
+                }
+                leaf min-advert-interval {
+                    type uint32 {
+                        range "3..1350";
+                    }
+                    description "min advert interval.";
+                }
+                leaf managed-flag {
+                    type boolean;
+                    description "enable or dsiable managed address config flag";
+                }
+                leaf other-config-flag {
+                    type boolean;
+                    description "enable or dsiable other stateful config flag";
+                }
+                leaf link-mtu {
+                    type uint32 {
+                        range "512..1500";
+                    }
+                    description "link MTU size";
+                }
+                leaf reachable-time {
+                    type uint32 {
+                        range "0..3600000";
+                    }
+                    units milliseconds;
+                    description "router reachable time";
+                }
+                leaf retransmit-timer {
+                    type uint16;
+                    description "retransmit timer field in router advert";
+                }
+                leaf cur-hop-limit {
+                    type uint8;
+                    description "number of maximum hops permitted.";
+                }
+                leaf life-time {
+                    type uint32 {
+                        range "0..9000";
+                    }
+                    description "life time of the router";
+                }
+            }
+            container mgmd {
+                description "multicast group member discovery configuration";
+                container ipv4 {
+                    uses cin-mgmd-config-group;
+                }
+                container ipv6 {
+                    uses cin-mgmd-config-group;
+                }
+            }
+        }
+    }
+
+    grouping docsis-timing-config-group {
+        description "docsis timing interface configuration.";
+        list docsis-timing {
+            key "docsis-timing-id";
+            leaf docsis-timing-id {
+                type uint8 {
+                    range "1..4";
+                }
+                description "id of docsis timing interface";
+            }
+            leaf ds-domain {
+                type uint8 {
+                    range "44..63";
+                }
+                description "administrative domain number";
+            }
+            leaf ds-priority1 {
+                type uint8;
+                description "TODO";
+            }
+            leaf ds-priority2 {
+                type uint8;
+                description "TODO";
+            }
+            leaf def-local-priority {
+                type uint8 {
+                    range "1..255";
+                }
+                description "TODO";
+            }
+            leaf profile-identifier {
+                type yang:mac-address;
+                description "profile mac address, such as 00:17:10:14:3c:ee";
+            }
+            leaf profile-version {
+                type string;
+                description "profile version, such as 1.0";
+            }
+            leaf transport-type {
+                type enumeration {
+                    enum ipv4 {
+                        value 1;
+                    }
+                    enum ipv6 {
+                        value 2;
+                    }
+                }
+                description "ipv4/ipv6 unicast G.8275.2 profile";
+            }
+            leaf clock-source {
+                type inet:ip-address;
+                description "primary master clock ip address";
+            }
+            leaf alternate-clock-source {
+                type inet:ip-address;
+                description "alternate master clock ip address";
+            }
+            leaf select-alternate-clock-source-first {
+                type boolean;
+                description "true - select alternate master clock; false - select primary master clock.";
+            }
+            leaf transport-cos {
+                type uint8 {
+                    range "0..7";
+                }
+                description "TODO";
+            }
+            leaf transport-dscp {
+                type uint8 {
+                    range "0..63";
+                }
+                description "TODO";
+            }
+            leaf ds-local-priority {
+                type uint8 {
+                    range "1..255";
+                }
+                description "TODO";
+            }
+            leaf ds-sync-interval {
+                type int8 {
+                    range "-7..0";
+                }
+                description "TODO";
+            }
+            leaf ds-announce-interval {
+                type int8 {
+                    range "-3..0";
+                }
+                description "TODO";
+            }
+            leaf ds-delay-req-interval {
+                type int8 {
+                    range "-7..0";
+                }
+                description "TODO";
+            }
+            leaf ds-announce-receipt-timeout {
+                type uint8 {
+                    range "3..255";
+                }
+                description "TODO";
+            }
+            leaf unicast-contract-duration {
+                type uint16 {
+                    range "60..1000";
+                }
+                description "TODO";
+            }
+        }
+    }
+
+    grouping ptp-port-config-group {
+        description "ptp port on ethernet port configuration.";
+        list ptp-port {
+            key "node-id slot-number eport-number pport-number";
+            leaf node-id {
+                type uint8;
+                description "node id";
+            }
+            leaf slot-number {
+                type uint8;
+                description "slot number";
+            }
+            leaf eport-number {
+                type uint8;
+                description "ethernet port number";
+            }
+            leaf pport-number {
+                type uint8;
+                description "ptp port number";
+            }
+            container docsis-timing-config {
+                list docsis-timing {
+                    key "docsis-timing-id";
+                    leaf docsis-timing-id {
+                        type uint8 {
+                            range "1..4";
+                        }
+                        description "id of docsis timing interface";
+                    }
+                    leaf ptp-mode {
+                        type enumeration {
+                            enum ptp-master {
+                                value 1;
+                            }
+                            enum ptp-slave {
+                                value 2;
+                            }
+                        }
+                        description "ptp mode";
+                    }
+                }
+            }
+            leaf clock-source {
+                type inet:ip-address;
+                description "primary master clock ip address";
+            }
+            leaf alternate-clock-source {
+                type inet:ip-address;
+                description "alternate master clock ip address";
+            }
+            leaf admin-state {
+                type Admin-State-Type;
+                description "The administrative state of the ptp port interface.";
+            }
+        }
+    }
+
+    grouping ups-port-config-group {
+        description "rphy upstream port configuration.";
+        list ups-port {
+            key "node-id slot-number port-number";
+            leaf node-id {
+                type uint8;
+                description "node id";
+            }
+            leaf slot-number {
+                type uint8;
+                description "slot number";
+            }
+            leaf port-number {
+                type uint8;
+                description "port number";
+            }
+            container bw-req {
+                description "bandwidth request configuration";
+                leaf max-enq-timeout {
+                    type uint16 {
+                        range "0..500";
+                    }
+                    description "maximum time a bandwidth request can be held";
+                }
+                leaf max-enq-number {
+                    type uint16 {
+                        range "1..63";
+                    }
+                    description "maximum number of bandwidth requests";
+                }
+            }
+            leaf power {
+                type int16 {
+                    range "-200..400";
+                }
+                description "base target power";
+            }
+            leaf internal-spectrum-engine {
+                type uint8 {
+                    range "0..7";
+                }
+                description "internal SAC engine number";
+            }
+            leaf external-spectrum-engine {
+                type uint8 {
+                    range "0..7";
+                }
+                description "external SAC engine number";
+            }
+            container external-pnm-pw-config {
+                description "external pnm pseudowire configuration";
+                list pnm-pw {
+                    key "ip-address";
+                    leaf ip-address {
+                        type inet:ip-address;
+                        description "pseudowire destination ip address";
+                    }
+                    leaf session-id {
+                        type uint32;
+                        description "session id";
+                    }
+                    leaf mtu {
+                        type uint16 {
+                            range "1500..2000";
+                        }
+                        description "MTU size";
+                    }
+                }
+            }
+            leaf admin-state {
+                type Admin-State-Type;
+                description "The administrative state of the rphy upstream port.";
+            }
+        }
+    }
+
+    grouping interface-group {
+        container ip-bundle-config {
+            uses ip-bundle-config-group;
+            description "ip settings that configure to the ip-bundle";
+        }
+        container cin-config {
+            uses cin-config-group;
+            description "Converged interconnect network interface. It is used as the access network between CCAP Core and RPD";
+        }
+        container docsis-timing-config {
+            uses docsis-timing-config-group;
+            description "docsis timing interface.";
+        }
+        container ptp-port-config {
+            uses ptp-port-config-group;
+            description "ptp port interface.";
+        }
+        container ups-port-config {
+            uses ups-port-config-group;
+            description "rphy upstream port interface.";
+        }
+    }
+
+    grouping remote-phy-node-config-group {
+        description "remote phy node configuration";
+        list remote-phy-node {
+            key unique-id;
+            leaf unique-id {
+                type yang:mac-address;
+                description "This attribute configures the mac-address of the RemotePhyDevice";
+            }
+            leaf description {
+                type string;
+                description "Remote phy node description.";
+            }
+            container cin-interface {
+                description "Converged interconnect network (CIN) interface that bind with remote phy node.";
+                list cin {
+                    key cin-id;
+                    leaf cin-id {
+                        type uint8 {
+                            range "1..4";
+                        }
+                        description "CIN interface id.";
+                    }
+                    list ten-gb-ethernet-port {
+                        key "slot-number port-number";
+                        description "CIN Service port assignment for remote phy node. Only valid when cin-mode is switched.";
+                        leaf slot-number {
+                            type uint8;
+                        }
+                        leaf port-number {
+                            type uint32;
+                        }
+                    }
+                }
+            }
+            leaf type {
+                type string;
+                description "Remote phy node type.";
+            }
+            container reverse-port-config {
+                list reverse-port {
+                    key port-number;
+                    leaf port-number {
+                        type uint8 {
+                            range "1..4";
+                        }
+                    }
+                    leaf admin-state {
+                        type Admin-State-Type;
+                    }
+                    description "This attribute configures the administrative state of the remote phy node reverse port.";
+                }
+            }
+            container broadcast-qam-config {
+                list broadcast-qam {
+                    key qam-id;
+                    leaf qam-id {
+                        type uint8 {
+                            range "1";
+                        }
+                        description "Broadcast qam id, currently only support 1 record";
+                    }
+                    leaf start-channel {
+                        type uint8 {
+                            range "32..120";
+                        }
+                        description "Starting channel, must be multiple of 8 (Example: 32, 40, 48, ...)";
+                    }
+                }
+            }
+            container video-qam-config {
+                list video-qam {
+                    key qam-id;
+                    leaf qam-id {
+                        type uint8 {
+                            range "1..96";
+                        }
+                        description "Video qam id";
+                    }
+                    leaf start-channel {
+                        type uint8 {
+                            range "0..120";
+                        }
+                        description "Starting channel, must be multiple of 8 (Example: 32, 40, 48, ...)";
+                    }
+                }
+            }
+            container local-channel-interface {
+                leaf enable {
+                    type boolean;
+                    description "Set 'true' to enable local channel, set 'false' to disable local channel.";
+                }
+                leaf power {
+                    type uint16 {
+                        range "160..260";
+                    }
+                    units "tenth of dBmV";
+                    description "Channel power";
+                }
+            }
+            leaf frx-attenuation {
+                type uint8 {
+                    range "0..100";
+                }
+                units "tenth of dBmV";
+                description "frx attenuation";
+            }
+            leaf ofdma-enable {
+                type boolean;
+                description "Set 'true' to enbale ofdma support; set 'false' to disable ofdma support.";
+            }
+            leaf admin-state {
+                type Admin-State-Type;
+                description "This attribute configures the administrative state of the remote phy node.";
+            }
+        }
+    }
+
+    grouping casa-ofdma-channel-config-group {
+        description "CASA customized ofdma configuration. TODO: map-advance, power-adjustment, voice-bw-reserve.";
+        leaf cyclic-prefix {
+            type Ofdma-Cyclic-Prefix-Type;
+            description "ofdma cyclic prefix";
+        }
+        leaf rolloff-period {
+            type Ofdma-Windowing-Type;
+            description "ofdma rolloff period";
+        }
+        leaf subcarrier-spacing {
+            type Subcarrier-Spacing-Type;
+            description "ofdma subcarrier spacing";
+        }
+        leaf symbols-per-frame {
+            type uint8 {
+                range "6..36";
+            }
+            description "ofdma symbols per frame";
+        }
+        container multiple-iuc {
+            description "ofdma channel multiple iuc configuration.";
+            leaf enable {
+                type boolean;
+                description "Set 'true' to enable multiple iuc, set 'false' to disable multiple iuc";
+            }
+            leaf interval {
+                type uint8 {
+                    range "1..200";
+                }
+                description "multiple iuc switching interval";
+            }
+            leaf max-retry {
+                type uint8 {
+                    range "0|2..200";
+                }
+                description "max attempt number of switching between iuc. Value 0 means unlimited";
+            }
+            leaf err-threshold {
+                type uint16 {
+                    range "1..999";
+                }
+                description "uncorrectable packet rate threshold to switching iuc to lower modulation";
+            }
+        }
+        leaf exclusion-band {
+            type uint8 {
+                range "1..16";
+            }
+            description "ofdma channel exclusion band";
+        }
+        leaf pre-equalization-enable {
+            type boolean;
+            description "Set 'true' to enable pre-equalization, set 'false' to disable pre-equalization";
+        }
+    }
+
+    grouping casa-ofdm-channel-config-group {
+        description "CASA customized ofdm configuration.";
+        leaf description {
+            type string;
+            description "ofdm channel description";
+        }
+        leaf ncp-modulation {
+            type Ofdm-Ncp-Modulation-Type;
+            description "ofdm channel NCP modulation";
+        }
+        container power-attenuation {
+            list power-band {
+                key "power band";
+                leaf power {
+                    type uint8 {
+                        range "0..200";
+                    }
+                    units "tenth of dB";
+                    description "attenuation power value";
+                }
+                leaf band {
+                    type string;
+                    description "list of frequency bands (Example: 0,1,3,5-7)";
+                }
+            }
+        }
+        leaf provisioned-attribute-mask {
+            type Attribute-Mask-Type;
+            description "Provisioned Attribute Mask";
+        }
+        container profile-config {
+            description "ofdm channel profile configuration";
+            list profile {
+                key channel-profile-id;
+                leaf channel-profile-id {
+                    type uint8 {
+                        range "0..3";
+                    }
+                    description "ofdm channel local profile id";
+                }
+                leaf global-profile-id {
+                    type uint8 {
+                        range "1..64";
+                    }
+                    description "global ofdm profile id";
+                }
+            }
+        }
+    }
+
+    grouping ofdm-profile-config-group {
+        description "ofdm global profile configuration";
+        list ofdm-profile {
+            key profile-id;
+            leaf profile-id {
+                type uint8 {
+                    range "1..64";
+                }
+                description "ofdm global profile id";
+            }
+            leaf default-modulation {
+                type Ofdm-Modulation-Type;
+                description "ofdm global profile default modulation";
+            }
+            container subcarrier-group-config {
+                description "An exception to the default modulation for this profile.";
+                list subcarrier-group {
+                    key group-id;
+                    leaf group-id {
+                        type uint8 {
+                            range "1..128";
+                        }
+                        description "ofdm subcarrier group id";
+                    }
+                    leaf start-frequency {
+                        type uint32 {
+                            range "108000000..1218000000";
+                        }
+                    }
+                    leaf end-frequency {
+                        type uint32 {
+                            range "108000000..1218000000";
+                        }
+                    }
+                    leaf main-modulation {
+                        type Ofdm-Modulation-Type;
+                    }
+                    leaf skip-modulation {
+                        type Ofdm-Modulation-Type;
+                    }
+                }
+            }
+        }
+    }
+
+    grouping vrf-definition-config-group {
+        description "VRF definition configuration";
+        list vrf-definition {
+            key name;
+            leaf name {
+                type string {
+                    length "1..32";
+                }
+                description "VRF definition name";
+            }
+            leaf description {
+                type string;
+                description "VRF definition description";
+            }
+            leaf route-distinguisher {
+                type string;
+                description "VPN route distinguisher. The string format: <ipv4_addr>:<num=0:65535> | <as_num=1:4294967294>:<num=0:65535> | <as_num=1:65535>:<num=0:4294967294>";
+            }
+            container address-family-ipv4 {
+                description "VRF ipv4 address family configuration.";
+                leaf bgp-next-hop-loopback-interface {
+                    type uint8 {
+                        range "0..255";
+                    }
+                    description "BGP next-hop loopback interface index";
+                }
+                container route-target-config {
+                    list route-target-import {
+                        key route-distinguisher;
+                        leaf route-distinguisher {
+                            type string;
+                            description "route distinguisher (<as_num:num>)";
+                        }
+                    }
+                    list route-target-export {
+                        key route-distinguisher;
+                        leaf route-distinguisher {
+                            type string;
+                            description "route distinguisher (<as_num:num>)";
+                        }
+                    }
+                }
+                container import-unicast-route-map {
+                    description "import ipv4 unicast route map";
+                    leaf prefix-number {
+                        type uint32 {
+                            range "1..2147483647";
+                        }
+                    }
+                    leaf route-map {
+                        type string;
+                        description "route map name";
+                    }
+                }
+                container export-unicast-route-map {
+                    description "export ipv4 unicast route map";
+                    leaf prefix-number {
+                        type uint32 {
+                            range "1..2147483647";
+                        }
+                    }
+                    leaf route-map {
+                        type string;
+                        description "route map name";
+                    }
+                }
+            }
+            container address-family-ipv6 {
+                description "VRF ipv6 address family configuration";
+                leaf bgp-next-hop-loopback-interface {
+                    type uint8;
+                    description "BGP next-hop loopback interface index";
+                }
+                container route-target-config {
+                    list route-target-import {
+                        key route-distinguisher;
+                        leaf route-distinguisher {
+                            type string;
+                            description "route distinguisher (<as_num:num>)";
+                        }
+                    }
+                    list route-target-export {
+                        key route-distinguisher;
+                        leaf route-distinguisher {
+                            type string;
+                            description "route distinguisher (<as_num:num>)";
+                        }
+                    }
+                }
+            }
+            container multicast-routing {
+                container address-family-ipv4-mdt {
+                    leaf mdt-data-expiry-interval {
+                        type uint16 {
+                           range "30..360";
+                        }
+                        description "data mdt TLV join message expiry interval";
+                    }
+                    leaf mdt-default-provider-tunnel {
+                        type string;
+                        description 
+                            "default (intra-as) provider tunnel. The string format: 
+                             1) pim-ssm with gre encapsulation, provider tunnel group address: <A.B.C.D>, or 
+                             2) multicast-ldp encapsulation, p2mp-lsp tunnel: p2mp";
+                    }
+                    leaf mdt-default-join-enforce {
+                        type boolean;
+                        description "Set 'true' to join all default (intra-as) provider tunnels, otherwise set 'false'";
+                    }
+                    leaf mdt-hello-interval {
+                        type uint16 {
+                            range "0|30..3600";
+                        }
+                        description "hello interval in seconds. Set '0' to disable hello messages over default mdt tunnel";
+                    }
+                    leaf mdt-source-loopback-interface {
+                        type uint8;
+                        description "mdt source loopback interface index";
+                    }
+                }
+                container address-family-ipv4-mvpn {
+                    leaf mdt-customer-multicast-routing {
+                        type string;
+                        description "customer multicast routing protocol. The string format: bgp | pim";
+                    }
+                    leaf mdt-data-expiry-interval {
+                        type uint16 {
+                           range "30..360";
+                        }
+                        description "data mdt TLV join message expiry interval";
+                    }
+                    leaf mdt-default-provider-tunnel {
+                        type string;
+                        description 
+                            "default (intra-as) provider tunnel. The string format: 
+                             1) pim-ssm with gre encapsulation, provider tunnel group address: <A.B.C.D>, or 
+                             2) multicast-ldp encapsulation, p2mp-lsp tunnel: p2mp";
+                    }
+                    leaf mdt-default-join-enforce {
+                        type boolean;
+                        description "Set 'true' to join all default (intra-as) provider tunnels, otherwise set 'false'";
+                    }
+                    leaf mdt-hello-interval {
+                        type uint16 {
+                            range "0|30..3600";
+                        }
+                        description "hello interval in seconds. Set '0' to disable hello messages over default mdt tunnel";
+                    }
+                    leaf mdt-source-loopback-interface {
+                        type uint8;
+                        description "mdt source loopback interface index";
+                    }
+                }
+            }
+            container import-vrf-map {
+                description "import vrf map";
+                leaf vrf-map {
+                    type string;
+                    description "vrf map name";
+                }
+            }
+            container export-vrf-map {
+                description "export vrf map";
+                leaf vrf-map {
+                    type string;
+                    description "vrf map name";
+                }
+            }
+        }
+    }
+
+    grouping casa-ethernet-port-config-group {
+        description "CASA customized ethernet port configuration. TODO: should support other extend settings.";
+        leaf description {
+            type string;
+            description "ethernet port description";
+        }
+        leaf vrf-forwarding {
+            type string;
+            description "vrf name";
+        }
+        container ipv4-igmp {
+            description "ethernet port ipv4 internet group management protocol configuration";
+            leaf enable {
+                type boolean;
+                description "Set 'true' to enable IGMP, set 'false' to disable IGMP";
+            }
+            leaf version {
+                type uint8 {
+                    range "1|2|3";
+                }
+                description "IGMP version";
+            }
+            leaf priority {
+                type uint8 {
+                    range "1..255";
+                }
+                description "proxy-interface selection priority";
+            }
+            leaf access-list {
+                type string;
+                description "access-list for supported address prefix";
+            }
+        }
+        container ipv6-mld {
+            description "ethernet port ipv6 multicast listener discovery protocol configuration";
+            leaf enable {
+                type boolean;
+                description "Set 'true' to enable MLD, set 'false' to disable MLD";
+            }
+            leaf version {
+                type uint8 {
+                    range "1|2";
+                }
+                description "MLD version";
+            }
+            leaf priority {
+                type uint8 {
+                    range "1..255";
+                }
+                description "proxy-interface selection priority";
+            }
+            leaf access-list {
+                type string;
+                description "access-list for supported address prefix";
+            }
+        }
+        leaf ipv6-dad-enable {
+            type boolean;
+            description "Set 'true' to enable duplicate address detection, otherwise set 'false'";
+        }
+        
+    }
+
+    grouping casa-mac-domain-config-group {
+        description "CASA customized docsis mac domain configuration.";
+        leaf description {
+            type string;
+            description "docsis mac domain description.";
+        }
+        leaf ip-bundle {
+            type uint8 {
+                range "1..16";
+            }
+            description "ip bundle id.";
+        }
+        container channel-list {
+          description "channel list that bind to the docsis mac domain";
+          list upstream-logical-channel {
+              key "slot-number port-number physical-channel-index logical-channel-index";
+              uses upstream-logical-channel-index;
+              description "upstream channel list that bind to the docsis mac domain";
+          }
+          list rphy-upstream-logical-channel {
+              key "slot-number grp-index physical-channel-index logical-channel-index";
+              uses rphy-upstream-logical-channel-index;
+              description "rphy upstream channel list that bind to the docsis mac domain";
+          }
+          list epon-ds-channel {
+              key "slot-number port-number channel-index";
+              uses rf-channel-index;
+              description "epon downstream channel list that bind to the docsis mac domain";
+          }
+          list epon-us-channel {
+              key "slot-number port-number channel-index";
+              uses rf-channel-index;
+              description "epon upstream channel list that bind to the docsis mac domain";
+          }
+        }
+    }
+
+    grouping ofdma-minislot-config-group {
+        description "ofdma minislot profile configuration";
+        list minislot-cfg {
+            key "minislot-cfg-id";
+            leaf minislot-cfg-id {
+                type uint8 {
+                    range "1..64";
+                }
+                description "ofdma minislot profile id.";
+            }
+            list subcarrier-group-minislot {
+                key "subcarrier-group-id";
+                leaf subcarrier-group-id {
+                    type uint8 {
+                        range "1..32";
+                    }
+                    description "subcarrier group id";
+                }
+                leaf start-frequency {
+                    type uint32 {
+                        range "5000000..100600000";
+                    }
+                    units Hz;
+                    description "the start frequency where the minislots will use the pilot-pattern and modulation";
+                }
+                leaf end-frequency {
+                    type uint32 {
+                        range "5400000..101000000";
+                    }
+                    units Hz;
+                    description "the end frequency where the minislots will use the pilot-pattern and modulation";
+                }
+                leaf modulation {
+                    type Ofdma-Modulation-Type;
+                    description "All minislots in the frequency range have this modulation.";
+                }
+                leaf pilot-pattern {
+                    type uint8 {
+                        range "0..4|8..11";
+                    }
+                    description "All minislots in the frequency range have this pilot pattern.";
+                }
+            }
+        }
+    }
+
+    grouping ntp-server-config-group {
+        description "ntp server configuration";
+        leaf-list ntp-master {
+            type inet:ip-address;
+            description "The master ntp server ip address";
+        }
+        leaf-list ntp-backup {
+            type inet:ip-address;
+            description "A backup ntp server ip address";
+        }
+    }
+
+    grouping casa-ccap-group {
+        container casaSysConfig {
+            description "Save CASA system runtime configuration, clone from SNMP CASA-SYSTEM-MIB.";
+            uses casaSysConfig-group;
+        }
+
+        container vrf-definition-config {
+            description "VRF configuration";
+            uses vrf-definition-config-group;
+        }
+
+        container ofdm-profile-config {
+            description "ofdm global profile configuration";
+            uses ofdm-profile-config-group;
+        }
+
+        container service-group-config {
+            description "Service group configuration";
+            uses service-group-config-group;
+        }
+
+        container interface {
+            description "Interface related configuration.";
+            uses interface-group;
+        }
+
+        container remote-phy-node-config {
+            description "Remote PHY node configuration.";
+            uses remote-phy-node-config-group;
+        }
+
+        container ofdma-minislot-config {
+            description "ofdma minislot profile configuration.";
+            uses ofdma-minislot-config-group;
+        }
+
+        container ntp-server-config {
+            description "ntp server configuration.";
+            uses ntp-server-config-group;
+        } 
+    }
+
+    grouping cm-upstream-channel-rng-state-group {
+        description "cable modem upstream channel ranging state";
+        leaf ranging-status {
+            type US-Ranging-Status-Type;
+            description "upstream channel's ranging status";
+        }
+        leaf upstream-snr {
+            type int32;
+            units tenthdB;
+            description "upstream channel's SNR";
+        }
+        leaf received-power {
+            type int32;
+            units tenthdBmV;
+            description "upstream channel's received power";
+        }
+        leaf reported-transmit-power {
+            type int32;
+            units tenthdBmV;
+            description "upstream channel's reported transmit power";
+        }
+        leaf peak-transmit-power {
+            type int32;
+            units tenthdBmV;
+            description "upstream channel's peak transmit power";
+        }
+        leaf phy-max-power {
+            type int32;
+            units tenthdBmV;
+            description "upstream channel's Phy max power";
+        }
+        leaf minimum-transmit-power {
+            type int32;
+            units tenthdBmV;
+            description "upstream channel's minimum transmit power";
+        }
+    }
+
+    grouping cable-modem-verbose-state-group {
+        description "The cable modem detailed information.";
+        list cm {
+            key "mac-address";
+            leaf mac-address {
+                type yang:mac-address;
+                description "cable modem mac address, such as 00:17:10:14:3c:ee";
+            }
+            leaf ipv4-address {
+                type inet:ipv4-address;
+                description "CM IPv4 address without the prefix length, such as 192.168.3.131";
+            }
+            leaf ipv6-address {
+                type inet:ipv6-address;
+                description "CM IPv6 address without the prefix length, such as 2001:0:130::130";
+            }
+            leaf cm-status {
+                type CM-Status-Type;
+                description "CM register status";
+            }
+            leaf cm-id {
+                type uint32;
+                description "CM ID";
+            }
+            leaf primary-sid {
+                type uint32;
+                description "primary SID that CM uses";
+            }
+            leaf mac-domain {
+                type string;
+                description "mac domain name";
+            }
+            leaf service-group {
+                type string;
+                description "service group name";
+            }
+            container restricted-load-balancing {
+                leaf current-sg-id {
+                    type uint32;
+                    description "current service group id";
+                }
+                leaf cfg-file-sg-id {
+                    type uint32;
+                    description "service group id that assigned by config file";
+                }
+            }
+            container service-type {
+                leaf current-st-id {
+                    type string;
+                    description "current service type id";
+                }
+                leaf cfg-file-st-id {
+                    type string;
+                    description "service type id that assigned by config file";
+                }
+            }
+            container upstream-channel {
+                description "upstream channel list that CM uses";
+                uses upstream-channel-list-group;
+            }
+            container downstream-channel {
+                description "downstream channel list that CM uses";
+                uses downstream-channel-list-group;
+            }
+            container unusable-channel {
+                description 
+                    "The downstream and/or upstream channel list that are assigned to CM, 
+                     but CM is unable to use some of them, due to bad signal, SPEC compatibility,
+                     or channel assigment, and etc.";
+                uses upstream-channel-list-group;
+                uses downstream-channel-list-group;
+            }
+            container upstream-channel-state {
+                list upstream-logical-channel {
+                    key "slot-number port-number physical-channel-index logical-channel-index";
+                    uses upstream-logical-channel-index;
+                    uses cm-upstream-channel-rng-state-group;
+                    description "logical upstream channel";
+                }
+                list ofdma-channel {
+                    key "slot-number port-number channel-index";
+                    uses rf-channel-index;
+                    uses cm-upstream-channel-rng-state-group;
+                    description "ofdma channel";
+                }
+                list rphy-upstream-logical-channel {
+                    key "slot-number grp-index physical-channel-index logical-channel-index";
+                    uses rphy-upstream-logical-channel-index;
+                    uses cm-upstream-channel-rng-state-group;
+                    description "rphy logical upstream channel";
+                }
+                list rphy-ofdma-channel {
+                    key "slot-number grp-index channel-index";
+                    uses rphy-rf-channel-index;
+                    uses cm-upstream-channel-rng-state-group;
+                    description "rphy ofdma channel";
+                }
+            }
+            leaf reported-max-total-power-output {
+                type int32;
+                units tenthdBmV;
+                description "Reported Max Total Power Output";
+            }
+            leaf rcp-id {
+                type string;
+                description "RCP ID";
+            }
+            container l2vpns {
+                description "VLAN ID and VPN ID mapping settings";
+                list l2vpn {
+                    key "vlan-id";
+                    leaf vlan-id {
+                        type uint32;
+                    }
+                    leaf inner-vlan-id {
+                        type uint16;
+                    }
+                    leaf outer-vlan-id {
+                        type uint16;
+                    }
+                    leaf vpn-id {
+                        type string;
+                    }
+                }
+            }
+            leaf timing-offset {
+                type uint32;
+                description 
+                    "A measure of the current round trip time for this CM.
+                     Used for timing of CM upstream transmissions to ensure
+                     synchronized arrivals at the CMTS.  Units are in terms
+                     of (6.25 microseconds/64). Returns zero if the value
+                     is unknown.";
+            }
+            leaf initial-timing-offset {
+                type uint32;
+                description "The initial timing offset value";
+            }
+            leaf received-power {
+                type int32;
+                units tenthdBmV;
+                description "upstream channel's receive power";
+            }
+            leaf docsis-version {
+                type Docsis-Version-Type;
+                description "the max docsis version that the registered CM supports";
+            }
+            leaf qos-provisioned-mode {
+                type Docsis-Version-Type;
+                description "the docsis qos mode that the registered CM supports";
+            }
+            leaf enable-docsis20-mode {
+                type boolean;
+                description 
+                    "true - enable docsis 2.0 mode compatibility; 
+                     false - disable docsis 2.0 mode compatibility.";
+            }
+            leaf extended-upstream-transmit-power {
+                type uint8;
+                units "one-quarter dB";
+                description "Extended Upstream Transmit Power";
+            }
+            leaf diplexer-downstream-lower-band-edge {
+                type uint8;
+                description "Diplexer Downstream Lower Band Edge";
+            }
+            leaf diplexer-downstream-upper-band-edge {
+                type uint8;
+                description "Diplexer Downstream Upper Band Edge";
+            }
+            leaf diplexer-upstream-upper-band-edge {
+                type uint8;
+                description "Diplexer Upstream Upper Band Edge";
+            }
+            leaf initial-ranging-message {
+                type Initial-Ranging-Message-Type;
+                description "Initial ranging message type";
+            }
+            leaf registration-request-message {
+                type Registration-Request-Message-Type;
+                description "Registration request message type";
+            }
+            leaf initialization-reason {
+                type uint8;
+                description "Initialization Reason. Refer to CM-SP-MULPIv3.1-115-180509 C.1.3.6 CM Initialization Reason";
+            }
+            leaf upstream-modulation-type {
+                type Upstream-Modulation-Type;
+                description "Upstream modulation type currently used by the CM";
+            }
+            container capability {
+                leaf fragmentation {
+                    type boolean;
+                    description "true - support; false - not support";
+                }
+                leaf concatenation {
+                    type boolean;
+                    description "true - support; false - not support";
+                }
+                leaf phs {
+                    type boolean;
+                    description "Payload Header Suppression support. true - support; false - not support";
+                }
+                leaf privacy {
+                    type boolean;
+                    description "true - support; false - not support";
+                }
+                leaf privacy-version {
+                    type enumeration {
+                        enum bpi {
+                            value 1;
+                        }
+                        enum bpi-plus {
+                            value 2;
+                        }
+                    }
+                    description "only valid when privacy is true.";
+                }
+                leaf ofs-8021P {
+                    type boolean;
+                    description "Optional Filtering Support 802.1P. true - support; false - not support";
+                }
+                leaf ofs-8021Q {
+                    type boolean;
+                    description "Optional Filtering Support 802.1Q. true - support; false - not support";
+                }
+            }
+            leaf bpi-encrypt-algorithm {
+                type enumeration {
+                    enum unknown {
+                        value 1;
+                    }
+                    enum DES-56 {
+                        value 2;
+                    }
+                    enum DES-40 {
+                        value 3;
+                    }
+                    enum AES-128 {
+                        value 4;
+                    }
+                }
+                description "BPI encrypt algorithm";
+            }
+            container dsid-capability {
+                description "DSID Capability";
+                leaf total-dsid {
+                    type uint8;
+                    description "Total Downstream Service ID (DSID) Support. Refer to CM-SP-MULPIv3.1 TLV 5.30";
+                }
+                leaf reseq-dsid {
+                    type uint8;
+                    description "Resequencing Downstream Service ID (DSID) Support. Refer to CM-SP-MULPIv3.1 TLV 5.31";
+                }
+                leaf mcast-dsid {
+                    type uint8;
+                    description "Multicast Downstream Service ID (DSID) Support. Refer to CM-SP-MULPIv3.1 TLV 5.32";
+                }
+                leaf mdf {
+                    type uint8;
+                    description "Multicast DSID Forwarding (MDF) Support. Refer to CM-SP-MULPIv3.1 TLV 5.33";
+                }
+            }
+            container dsid-usage {
+                description "DSID Usage";
+                leaf total-dsid {
+                    type uint8;
+                    description "Total Downstream Service ID (DSID) Usage.";
+                }
+                leaf reseq-dsid {
+                    type uint8;
+                    description "Resequencing Downstream Service ID (DSID) Usage.";
+                }
+                leaf mcast-dsid {
+                    type uint8;
+                    description "Multicast Downstream Service ID (DSID) Usage.";
+                }
+                container used-dsid
+                {
+                    leaf-list dsid {
+                        type uint32;
+                        description "The used dsid list";
+                    }
+                }
+            }
+            leaf number-of-cpe {
+                type uint32;
+                description "The number of CPEs that connect to CM";
+            }
+            leaf cfg-max-ipv4-cpe {
+                type uint32;
+                description "The max number of ipv4 CPEs that allow to connect to CM";
+            }
+            leaf cfg-max-ipv6-cpe {
+                type uint32;
+                description "The max number of ipv6 CPEs that allow to connect to CM";
+            }
+            leaf cfg-max-ipv6-pd-cpe {
+                type uint32;
+                description "The max number of ipv6 IA PD CPEs that allow to connect to CM";
+            }
+            container submgt {
+                description "submgt filter control settings";
+                leaf active {
+                    type boolean;
+                    description "true - active; false - inactive";
+                }
+                leaf learnable {
+                    type boolean;
+                    description "true - enable; false - disable";
+                }
+                leaf cm-filter-downstream {
+                    type uint32;
+                    description 
+                        "The filter group applied to traffic destined for the referenced CM itself.";
+                }
+                leaf cm-filter-upstream {
+                    type uint32;
+                    description 
+                        "The filter group applied to traffic destined for the referenced CM itself.";
+                }
+                leaf cpe-filter-downstream {
+                    type uint32;
+                    description 
+                        "The filter group applied to traffic destined for CPEs 
+                         attached to the referenced CM.";
+                }
+                leaf cpe-filter-upstream {
+                    type uint32;
+                    description 
+                        "The filter group applied to traffic destined for CPEs 
+                         attached to the referenced CM.";
+                }
+                leaf ps-filter-downstream {
+                    type uint32;
+                    description 
+                        "The filter group applied to traffic destined for CableHome 
+                         portal servers attached to the referenced CM.";
+                }
+                leaf ps-filter-upstream {
+                    type uint32;
+                    description 
+                        "The filter group applied to traffic destined for CableHome 
+                         portal servers attached to the referenced CM.";
+                }
+                leaf mta-filter-downstream {
+                    type uint32;
+                    description 
+                        "The filter group applied to traffic destined for MTAs 
+                         attached to the referenced CM.";
+                }
+                leaf mta-filter-upstream {
+                    type uint32;
+                    description 
+                        "The filter group applied to traffic destined for MTAs 
+                         attached to the referenced CM.";
+                }
+                leaf stb-filter-downstream {
+                    type uint32;
+                    description 
+                        "The filter group applied to traffic destined for STBs 
+                         attached to the referenced CM.";
+                }
+                leaf stb-filter-upstream {
+                    type uint32;
+                    description 
+                        "The filter group applied to traffic destined for STBs 
+                         attached to the referenced CM.";
+                }
+            }
+            container statistics {
+                leaf crc-error {
+                    type uint32;
+                    description "CRC error packets counter";
+                }
+                leaf hcs-error {
+                    type uint32;
+                    description "HCS error packets counter";
+                }
+                leaf stn-mtn-failure-abort {
+                    type uint32;
+                    description 
+                        "The total number of abort retries when a cable modem is sending 
+                         a ranging-request message for station maintenance at the CMTS.
+                         A value of 0 indicates no failed retries during the cable modem 
+                         transmission; otherwise it may indicate modem-related issues or 
+                         a noisy cable plant.";
+                }
+                leaf stn-mtn-failure-exhaust {
+                    type uint32;
+                    description 
+                        "The total number of failed retries when a cable modem is sending 
+                         a ranging-request message for station maintenance at the CMTS.
+                         A value of 0 indicates no failed retries during the cable modem 
+                         transmission; otherwise it may indicate modem-related issues or 
+                         a noisy cable plant.";
+                }
+                leaf total-us-service-flow {
+                    type uint32;
+                    description "Upstream service flow counter";
+                }
+                leaf total-ds-service-flow {
+                    type uint32;
+                    description "Downstream service flow counter";
+                }
+                leaf total-us-ipv4-data-packets {
+                    type uint64;
+                    description "Upstream IPv4 data packets counter";
+                }
+                leaf total-us-ipv4-data-bytes {
+                    type uint64;
+                    description "Upstream IPv4 data bytes counter";
+                }
+                leaf total-us-ipv6-data-packets {
+                    type uint64;
+                    description "Upstream IPv6 data packets counter";
+                }
+                leaf total-us-ipv6-data-bytes {
+                    type uint64;
+                    description "Upstream IPv6 data bytes counter";
+                }
+                leaf total-us-throughput-bytes {
+                    type uint64;
+                    units "kbits/sec";
+                    description "Upstream throughput bytes counter";
+                }
+                leaf total-us-throughput-packets {
+                    type uint64;
+                    units "packets/sec";
+                    description "Upstream throughput packets counter";
+                }
+                leaf total-ds-ipv4-data-packets {
+                    type uint64;
+                    description "Downstream IPv4 data packets counter";
+                }
+                leaf total-ds-ipv4-data-bytes {
+                    type uint64;
+                    description "Downstream IPv6 data bytes counter";
+                }
+                leaf total-ds-ipv6-data-packets {
+                    type uint64;
+                    description "Downstream IPv6 data packets counter";
+                }
+                leaf total-ds-ipv6-data-bytes {
+                    type uint64;
+                    description "Downstream IPv6 data bytes counter";
+                }
+                leaf total-ds-throughput-bytes {
+                    type uint64;
+                    units "kbits/sec";
+                    description "Downstream throughput bytes counter";
+                }
+                leaf total-ds-throughput-packets {
+                    type uint64;
+                    units "packets/sec";
+                    description "Downstream throughput packets counter";
+                }
+                leaf us-dropped-packets {
+                    type uint32;
+                    description "Upstream dropped packets counter";
+                }
+                leaf active-classifiers {
+                    type uint32;
+                    description "active classifier counter";
+                }
+            }
+            leaf dsx-messages {
+                description "DSA/DSX messages control settings";
+                type enumeration {
+                    enum reject-all {
+                        value 1;
+                    }
+                    enum permit-all {
+                        value 2;
+                    }
+                }
+            }
+            leaf dut-cmim {
+                type string;
+                description "Downstream Unencrypted Traffic CM Interface Mask (DUT CMIM)";
+            }
+            leaf total-time-online {
+                type uint32;
+                units seconds;
+                description "The time duration that CM stay online for this registration.";
+            }
+            leaf config-file-name {
+                type string;
+                description "CM's configuration file name";
+            }
+            leaf description {
+                type string;
+                description "CM's system description, Refer to SNMPv2-MIB::sysDescr.";
+            }
+        }
+    }
+
+    grouping cable-modem-online-state-group {
+        description "The online cable modem brief information.";
+        list cm {
+            key "mac-address";
+            leaf mac-address {
+                type yang:mac-address;
+                description "cable modem mac address, such as 00:17:10:14:3c:ee";
+            }
+            leaf ipv4-address {
+                type inet:ipv4-address;
+                description "CM IPv4 address without the prefix length, such as 192.168.3.131";
+            }
+            leaf ipv6-address {
+                type inet:ipv6-address;
+                description "CM IPv6 address without the prefix length, such as 2001:0:130::130";
+            }
+            container upstream-channel {
+                description "primary upstream channel that CM uses";
+                uses upstream-channel-list-group;
+            }
+            container downstream-channel {
+                description "primary downstream channel that CM uses";
+                uses downstream-channel-list-group;
+            }
+            leaf cm-status {
+                type CM-Status-Type;
+                description "CM register status";
+            }
+            leaf primary-sid {
+                type uint32;
+                description "primary SID that CM uses";
+            }
+            leaf upstream-power {
+                type int32;
+                units tenthdBmV;
+                description "primary upstream channel's received power";
+            }
+            leaf timing-offset {
+                type uint32;
+                description 
+                    "A measure of the current round trip time for this CM.
+                     Used for timing of CM upstream transmissions to ensure
+                     synchronized arrivals at the CMTS.  Units are in terms
+                     of (6.25 microseconds/64). Returns zero if the value
+                     is unknown.";
+            }
+            leaf number-of-cpe {
+                type uint32;
+                description "The number of online CPEs that connect to CM";
+            }
+            leaf bpi-enabled {
+                type boolean;
+                description 
+                    "true - CM is online with BPI enabled; false - CM is oneline with BPI disabled";
+            } 
+        }
+    }
+
+    grouping cable-modem-offline-state-group {
+        description "The offline cable modem brief information.";
+        list cm {
+            key "mac-address";
+            leaf mac-address {
+                type yang:mac-address;
+                description "cable modem mac address, such as 00:17:10:14:3c:ee";
+            }
+            container upstream-channel {
+                description "primary upstream channel that CM used previously";
+                uses upstream-channel-list-group;
+            }
+            container downstream-channel {
+                description "primary downstream channel that CM used previously";
+                uses downstream-channel-list-group;
+            }
+            leaf primary-sid {
+                type uint32;
+                description "primary SID that CM used previously";
+            }
+            leaf cm-status {
+                type CM-Status-Type;
+                description "CM's previous register status";
+            }
+            leaf offline-time {
+                type yang:date-and-time;
+                description "The time that CM become online";
+            }
+            leaf upstream-power {
+                type int32;
+                units tenthdBmV;
+                description "primary upstream channel's previous received power";
+            }
+            leaf upstream-snr {
+                type int32;
+                units tenthdB;
+                description "primary upstream channel's previous SNR";
+            }
+            leaf rng-retry-count {
+                type uint32;
+                description "upstream ranging retry counter";
+            }
+        }
+    }
+
+    grouping cable-modem-state-group {
+        description "cable modem related state that observe at CCAP side.";
+        container cable-modem-verbose {
+            uses cable-modem-verbose-state-group;
+        }
+        container cable-modem-online {
+            uses cable-modem-online-state-group;
+        }
+        container cable-modem-offline {
+            uses cable-modem-offline-state-group;
+        }
+    }
+
+    grouping remote-phy-node-status-group {
+        description "remote phy node status";
+        list remote-phy-node {
+            key "unique-id";
+            leaf unique-id {
+                type yang:mac-address;
+                description "Remote phy node mac address, such as 00:17:10:14:3c:ee";
+            }
+            leaf node-id {
+                type uint32;
+                description "Remote phy node id";
+            }
+            leaf node-ip-address {
+                type inet:ip-address;
+                description "remote phy node ip address.";
+            }
+            leaf gcp-core-ip-address {
+                type inet:ip-address;
+                description "The ip address of ccap core CIN interface for GCP.";
+            }
+            leaf l2tp-port-ip-address {
+                type inet:ip-address;
+                description "The ip address of ccap core CIN service port for L2TP.";
+            }
+            leaf ptp-master-ip-address {
+                type inet:ip-address;
+                description "The ip address of master clock.";
+            }
+            container cin-port {
+                description "The CIN service port.";
+                leaf cin {
+                    type uint8 {
+                        range "1..4";
+                    }
+                    description "CIN interface id.";
+                }
+                list ten-gb-ethernet-port {
+                    description "The xgige interface that is associated with CIN interface.";
+                    key "slot-number port-number";
+                    leaf slot-number {
+                        type uint8;
+                    }
+                    leaf port-number {
+                        type uint32;
+                    }
+                }
+                list one-gb-ethernet-port {
+                    description "The gige interface that is associated with CIN interface.";
+                    key "slot-number port-number";
+                    leaf slot-number {
+                        type uint8;
+                    }
+                    leaf port-number {
+                        type uint32;
+                    }
+                }
+            }
+            leaf oper-status {
+                type string;
+                description "remote phy node operational status.";
+            }
+            leaf oper-status-change-time {
+                type string;
+                description "The last time that operational status is changed.";
+            }
+            leaf uptime {
+                type string;
+                description "remote phy node uptime.";
+            }
+            leaf flapping-count {
+                type uint32;
+            }
+            leaf last-flapping-time {
+                type string;
+            }
+            leaf last-flapping-reason {
+                type string;
+            }
+            leaf rphy-ptp-status {
+                type string;
+            }
+            leaf rphy-ofdma-status {
+                type string;
+            }
+            leaf number-of-ten-gb-ethernet-ports {
+                type uint32;
+                description "The number of xgige interface port.";
+            }
+            leaf number-of-ptp-ports {
+                description "The number of PTP port.";
+                type uint32;
+            }
+            leaf number-of-ds-ports {
+                type uint32;
+                description "The number of downstrean port.";
+            }
+            leaf number-of-ds-channels-per-port {
+                type uint32;
+                description "The number of downstream channels per port.";
+            }
+            leaf number-of-us-ports {
+                type uint32;
+                description "The number of upstream port.";
+            }
+            leaf number-of-us-phychans-per-port {
+                type uint32;
+                description "The number of upstream physical channels per port.";
+            }
+            leaf number-of-us-logchans-per-phychan {
+                type uint32;
+                description "The number of upstream logical channel per physical channel.";
+            }
+            leaf number-of-ofdm-channels-per-port {
+                type uint32;
+                description "The number of ofdm downstream channels per port.";
+            }
+            leaf number-of-ofdma-channels-per-port {
+                type uint32;
+                description "The number of ofdma upstream channels per port.";
+            }
+            leaf number-of-video-channels {
+                type uint32;
+            }
+            leaf number-of-bcast-channels {
+                type uint32;
+                description "The number of broadcast channels.";
+            }
+            leaf number-of-pnm-sac-engines {
+                type uint32;
+                description "The number of sac engines for pnm/spec-mgmt";
+            }
+            leaf number-of-dual-leakage-tones {
+                type uint32;
+            }
+            leaf number-of-single-leakage-tones {
+                type uint32;
+            }
+            leaf number-of-ndf-channels-per-port {
+                type uint32;
+            }
+            leaf number-of-ndr-channels-per-port {
+                type uint32;
+            }
+            leaf oob-ndr-aggregation {
+                type boolean;
+            }
+            leaf docsis-ds-channels {
+                type uint32;
+                description "The number of docsis downstream channels";
+            }
+            leaf docsis-us-channels {
+                type uint32;
+                description "The number of docsis upstream channels";
+            }
+            leaf video-channels {
+                type uint32;
+                description "The number of video channels";
+            }
+            leaf docsis-enabled {
+                type boolean;
+            }
+            container ds-resource-allocation {
+                leaf success {
+                    type uint32;
+                }
+                leaf failure {
+                    type uint32;
+                }
+            }
+            container ofdm-resource-allocation {
+                leaf success {
+                    type uint32;
+                }
+                leaf failure {
+                    type uint32;
+                }
+            }
+            container us-resource-allocation {
+                leaf success {
+                    type uint32;
+                }
+                leaf failure {
+                    type uint32;
+                }
+            }
+            container ofdma-resource-allocation {
+                leaf success {
+                    type uint32;
+                }
+                leaf failure {
+                    type uint32;
+                }
+            }
+        }
+    }
+
+    grouping rpd-state-group {
+        description "remote phy node related state that observe at CCAP side.";
+        container remote-phy-node-status {
+            uses remote-phy-node-status-group;
+        }
+    }
+
+    grouping casa-ccap-state-group {
+        container cable-modem {
+            uses cable-modem-state-group;
+        }
+        container rpd-state {
+            uses rpd-state-group;
+        }
+    }
+
+    container casa-ccap {
+        description "The CASA CCAP object serves as the root of the CCAP configuration data.";
+        uses casa-ccap-group;
+    }
+
+    container casa-ccap-state {
+        description "The CASA CCAP state object serves as the root of the CCAP runtime state or statistics data.";
+        config false;
+        uses casa-ccap-state-group;
+    }
+
+    augment '/ccap:ccap/ccap:docsis/ccap:docs-mac-domain/ccap:mac-domain' {
+        container casa-mac-domain-config {
+            uses casa-mac-domain-config-group;
+            description "CASA customized docsis mac domain configuration.";
+        }
+    }
+
+    augment '/ccap:ccap/ccap:chassis/ccap:slot/ccap:line-card-type/ccap:rf-line-card/ccap:ds-rf-port/ccap:ofdm-channel' {
+        container casa-ofdm-channel-config {
+            uses casa-ofdm-channel-config-group;
+            description "CASA customized ofdm configuration.";
+        }
+    }
+
+    augment '/ccap:ccap/ccap:chassis/ccap:slot/ccap:line-card-type/ccap:rphy-line-card/ccap:ds-rf-resource-grp/ccap:ofdm-channel' {
+        container casa-ofdm-channel-config {
+            uses casa-ofdm-channel-config-group;
+            description "CASA customized ofdm configuration.";
+        }
+    }
+
+    augment '/ccap:ccap/ccap:chassis/ccap:slot/ccap:line-card-type/ccap:rf-line-card/ccap:us-rf-port/ccap:ofdma-channel' {
+        container casa-ofdma-channel-config {
+            uses casa-ofdma-channel-config-group;
+            description "CASA customized ofdma configuration.";
+        }
+    }
+
+    augment '/ccap:ccap/ccap:chassis/ccap:slot/ccap:line-card-type/ccap:rphy-line-card/ccap:us-rf-resource-grp/ccap:ofdma-channel' {
+        container casa-ofdma-channel-config {
+            uses casa-ofdma-channel-config-group;
+            description "CASA customized RPHY ofdma configuration.";
+        }
+    }
+
+    augment '/ccap:ccap/ccap:chassis/ccap:slot/ccap:line-card-type/ccap:sre-line-card/ccap:one-gb-ethernet-port' {
+        container casa-ethernet-port-config {
+            uses casa-ethernet-port-config-group;
+            description "CASA customized ethernet port configuration.";
+        }
+    }
+
+    augment '/ccap:ccap/ccap:chassis/ccap:slot/ccap:line-card-type/ccap:sre-line-card/ccap:ten-gb-ethernet-port' {
+        container casa-ethernet-port-config {
+            description "CASA customized ethernet port configuration.";
+            uses casa-ethernet-port-config-group;
+            leaf cin {
+                type uint8 {
+                    range "1..4";
+                }
+                description "CIN interface id. Only valid when the ten-gb-ethernet-port is a CSC port.";
+            }
+        }
+    }
+
+    augment '/ccap:ccap/ccap:chassis/ccap:slot/ccap:line-card-type/ccap:sre-line-card/ccap:one-hundred-gb-ethernet-port' {
+        container casa-ethernet-port-config {
+            description "CASA customized ethernet port configuration.";
+            uses casa-ethernet-port-config-group;
+        }
+    }
+
+    augment '/ccap:ccap/ccap:docsis/ccap:ofdma-template/ccap:initial-ranging-iuc' {
+        container casa-config {
+            description "CASA customized ofdma initial ranging iuc configuration.";
+            leaf minislot-offset {
+                type uint8 {
+                    range "0..237";
+                }
+                description "number of minislots of offset beyond guardband";
+            }
+        }
+    }
+
+    augment '/ccap:ccap/ccap:docsis/ccap:ofdma-template/ccap:fine-ranging-iuc' {
+        container casa-config {
+            description "CASA customized ofdma fine ranging iuc configuration.";
+            leaf minislot-offset {
+                type uint8 {
+                    range "0..237";
+                }
+                description "number of minislots of offset beyond guardband";
+            }
+        }
+    }
+
+    augment '/ccap:ccap/ccap:docsis/ccap:ofdma-template/ccap:data-iuc' {
+        container casa-config {
+            description "CASA customized ofdma data-iuc configuration.";
+            leaf minislot-cfg-id {
+                type uint8 {
+                    range "1..64";
+                }
+                description "ofdma minislot profile id";
+            }
+        }
+    }
+
+}
