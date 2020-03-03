@@ -1,0 +1,13 @@
+module f5500-nc-1.0 {
+  yang-version 1.1;
+  namespace "http://tail-f.com/ns/ned-id/f5500-nc-1.0";
+  prefix f5500-nc-1.0;
+
+  import f5500-nc {
+    prefix family;
+  }
+
+  identity f5500-nc-1.0 {
+    base family:f5500-nc;
+  }
+}

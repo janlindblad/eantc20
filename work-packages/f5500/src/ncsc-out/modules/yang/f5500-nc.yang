@@ -1,0 +1,18 @@
+module f5500-nc {
+  yang-version 1.1;
+  namespace "http://tail-f.com/ns/ned-id/f5500-nc";
+  prefix f5500-nc;
+
+  import tailf-common {
+    prefix tailf;
+  }
+
+  import tailf-ncs-ned {
+    prefix ned;
+  }
+
+  identity f5500-nc {
+    tailf:abstract;
+    base ned:netconf-ned-id;
+  }
+}
