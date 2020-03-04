@@ -1,0 +1,84 @@
+module arcos-bgp-rnh {
+  yang-version 1.1;
+  namespace "http://yang.arrcus.com/arcos/bgp/rnh";
+  prefix arc-bgp-rnh;
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+
+  grouping rnh {
+    description
+      "Parameters related to a BGP group";
+    leaf rnh-addr {
+      type inet:ip-prefix;
+      description
+        "The next-hop that is tracked";
+    }
+    leaf rnh-type {
+      type string;
+      description
+        "The next-hop type";
+    }
+    leaf path-count {
+      type uint32;
+      description
+        "The path count";
+    }
+    leaf neighbor-count {
+      type uint32;
+      description
+        "The neighbor count";
+    }
+    leaf total-reference-count {
+      type uint32;
+      description
+        "The total reference count";
+    }
+    leaf metric {
+      type uint32;
+      description
+        "metric of IGP route";
+    }
+    leaf local-next-hop {
+      type boolean;
+      description
+        "local nexthop";
+    }
+    leaf interface-status {
+      type boolean;
+      description
+        "interface status";
+    }
+    leaf link-local {
+      type boolean;
+      description
+        "link-local";
+    }
+    leaf rfc5549-nexthop {
+      type boolean;
+      description
+        "rfc5549 nexthop";
+    }
+    leaf stale-nexthop {
+      type boolean;
+      description
+        "The nexthop is stale due to RIB restart";
+    }
+  }
+
+  grouping bgp-rnh-list {
+    description
+      "The list of BGP next hops";
+
+    container rnhs {
+      config false;
+      list rnh {
+        key "rnh-addr";
+        description
+          "List of BGP next-hops tracked with RIB";
+        uses rnh;
+      }
+    }
+  }
+}

@@ -1,0 +1,123 @@
+module arcos-if-qos-service-policy {
+  yang-version 1.1;
+  namespace "http://yang.arrcus.com/arcos/interface/qos/service-policy";
+  prefix arc-if-qos-svc-pol;
+
+  import arcos-policy {
+    prefix arc-pol;
+  }
+  import arcos-service-policy {
+    prefix arc-svc-pol;
+  }
+  import arcos-qos {
+    prefix arc-qos;
+  }
+  import arcos-qos-policy {
+    prefix arc-qos-pol;
+  }
+  import arcos-if-qos {
+    prefix arc-if-qos;
+  }
+  import iana-if-type {
+    prefix ianaift;
+  }
+  import openconfig-interfaces {
+    prefix oc-if;
+  }
+  import openconfig-if-ethernet {
+    prefix oc-eth;
+  }
+  import openconfig-if-aggregate {
+    prefix oc-lag;
+  }
+
+  organization
+    "Arrcus, Inc.";
+  contact
+    "Arrcus, Inc.
+     Customer Service
+     Postal: 2077 Gateway Place
+     San Jose, CA 95110
+     Tel: +1 1XXX XXX-XXXX
+     E-mail: xxx@arrcus.com";
+  description
+    "YANG data-model for qos specific policy instance on interfaces";
+
+  grouping queue-stats-top {
+    leaf queue-txcount {
+      type uint64;
+      description
+        "Number of packets successfully transmitted out of a queue";
+    }
+    leaf queue-txbytes {
+      type uint64;
+      description
+        "Number of bytes successfully transmitted out of a queue";
+    }
+    leaf queue-dropcount {
+      type uint64;
+      description
+        "Number of packets dropped from a queue.
+         Drops could be as a result of dropping descipline or
+         could be as a result of unavailabilty of buffers";
+    }
+    leaf queue-dropbytes {
+      type uint64;
+      description
+        "Number of bytes dropped from a queue.
+         Drops could be as a result of dropping descipline or
+         could be as a result of unavailabilty of buffers";
+    }
+  }
+
+  augment "/oc-if:interfaces/oc-if:interface/arc-if-qos:qos"
+        + "/service-policies/service-policy" {
+    uses arc-pol:policy-classifiers-state-top;
+  }
+
+  augment "/oc-if:interfaces/oc-if:interface/arc-if-qos:qos"
+        + "/service-policies/service-policy/classifiers/classifier"
+        + "/actions/action" {
+    uses arc-qos-pol:rate-min-top;
+  }
+
+  augment "/oc-if:interfaces/oc-if:interface/arc-if-qos:qos"
+        + "/service-policies/service-policy/classifiers/classifier"
+        + "/actions/action" {
+    uses arc-qos-pol:rate-max-top;
+  }
+
+  augment "/oc-if:interfaces/oc-if:interface/arc-if-qos:qos"
+        + "/service-policies/service-policy/classifiers/classifier"
+        + "/actions/action" {
+    uses arc-qos-pol:rate-excess-top;
+  }
+
+  augment "/oc-if:interfaces/oc-if:interface/arc-if-qos:qos"
+        + "/service-policies/service-policy/classifiers/classifier"
+        + "/actions/action" {
+    uses arc-qos-pol:priority-top;
+  }
+
+  augment "/oc-if:interfaces/oc-if:interface/arc-if-qos:qos"
+        + "/service-policies/service-policy/classifiers/classifier"
+        + "/state" {
+    uses queue-stats-top;
+  }
+
+  augment "/oc-if:interfaces/oc-if:interface/arc-if-qos:qos" {
+    uses arc-svc-pol:service-policies-top {
+      when "((current()/../oc-if:name != 'ma1') and "
+         + "((current()/../oc-if:config/oc-if:type = 'ianaift:ieee8023adLag') or "
+         + "((current()/../oc-if:config/oc-if:type = 'ianaift:ethernetCsmacd') and "
+         + "(boolean(current()/../oc-eth:ethernet/oc-eth:config/oc-lag:aggregate-id) != 'true'))))";
+      refine "service-policies/service-policy/direction" {
+        must "current() = 'EGRESS'" {
+          error-message "Ingress policies not supported for qos";
+        }
+      }
+    }
+    description
+      "Augmenting policy service instance list under an interface";
+  }
+}

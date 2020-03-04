@@ -1,0 +1,84 @@
+module arcos-version {
+  yang-version 1.1;
+  namespace "http://yang.arrcus.com/arcos/version";
+  prefix arc-version;
+
+  grouping platform-info {
+    leaf product-name {
+      type string;
+      description
+        "Product name";
+    }
+    leaf serial-num {
+      type string;
+      description
+        "Serial number";
+    }
+    leaf mac-addr {
+      type string;
+      description
+        "Device mac address";
+    }
+    leaf form-factor {
+      type string;
+      description
+        "Form factor of device";
+    }
+    leaf num-cpu-cores {
+      type uint8;
+      description
+        "Number of CPU cores";
+    }
+    leaf cpu-info {
+      type string;
+      description
+        "Device CPU information";
+    }
+    leaf total-memory {
+      type string;
+      description
+        "Total available CPU memory";
+    }
+  }
+
+  container version {
+    description
+      "ArcOS software version";
+    config false;
+
+    uses platform-info;
+
+    leaf sw-version {
+      type string;
+      description
+        "Version number";
+    }
+    container dependencies {
+      description
+        "Dependency information";
+
+      list dependency {
+        key "package";
+
+        description
+          "Package information";
+
+        leaf package {
+          type string {
+            length "1..31";
+          }
+          description
+            "Package name";
+        }
+
+        leaf version {
+          type string {
+            length "1..31";
+          }
+          description
+            "Package version";
+        }
+      }
+    }
+  }
+}

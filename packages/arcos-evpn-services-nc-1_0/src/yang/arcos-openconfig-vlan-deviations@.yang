@@ -1,0 +1,41 @@
+module arcos-openconfig-vlan-deviations {
+  yang-version 1.1;
+  namespace "http://yang.arrcus.com/arcos/openconfig/vlan/deviations";
+  prefix arc-oc-vlan-dev;
+
+  import openconfig-vlan {
+    prefix oc-vlan;
+  }
+
+  import openconfig-interfaces {
+    prefix oc-if;
+  }
+
+  import arcos-platform {
+    prefix arc-platform;
+  }
+
+  //deviation "/oc-vlan:vlans/oc-vlan:vlan" { //JLINDBLA
+    //deviate add {
+    //  must "/arc-platform:platform/arc-platform:family != 'arc-platform:BROADCOM_DNX'" {
+	  //    error-message "Vlan not supported on this platform";
+    //  }
+    //}
+  //}
+
+  deviation "/oc-vlan:vlans/oc-vlan:vlan/oc-vlan:config/" +
+            "oc-vlan:tpid" {
+    deviate not-supported;
+    description "Not supported in this release";
+  }
+  deviation "/oc-vlan:vlans/oc-vlan:vlan/oc-vlan:config/" +
+            "oc-vlan:status" {
+    deviate not-supported;
+    description "Not supported in this release";
+  }
+  deviation "/oc-vlan:vlans/oc-vlan:vlan/oc-vlan:state/" +
+            "oc-vlan:tpid" {
+    deviate not-supported;
+    description "Not supported in this release";
+  }
+}

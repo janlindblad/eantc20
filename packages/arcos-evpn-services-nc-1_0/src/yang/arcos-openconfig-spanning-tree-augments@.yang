@@ -1,0 +1,27 @@
+module arcos-openconfig-spanning-tree-augments {
+  yang-version 1.1;
+  namespace "http://yang.arrcus.com/arcos/openconfig/spanning-tree/augments";
+  prefix arc-oc-stp-aug;
+
+  import openconfig-spanning-tree {
+    prefix oc-stp;
+  }
+
+  augment "/oc-stp:stp/oc-stp:rapid-pvst/oc-stp:vlan/oc-stp:config" {
+    leaf edge-only {
+      type boolean;
+      default "false";
+      description
+        "Enables Arrcus edge-only mode, disabling full STP operation";
+    }
+  }
+
+  augment "/oc-stp:stp/oc-stp:rapid-pvst/oc-stp:state/oc-stp:vlan" {
+    leaf edge-only {
+      type boolean;
+      description
+        "Enables Arrcus edge-only mode, disabling full STP operation";
+    }
+  }
+
+}
