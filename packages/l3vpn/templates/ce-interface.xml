@@ -4,6 +4,36 @@
     <name>{$DEVICE}</name>
       <config>
 
+        <!-- NOKIA -->
+
+        <configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf">
+          <service>
+            <vprn>
+              <service-name>{$VPN_NAME}</service-name>
+              <interface>
+                <interface-name>local</interface-name>
+                <admin-state>enable</admin-state>
+                <sap>
+                  <sap-id>{$PHYS_INTERFACE}:{$VLANID}</sap-id>
+                </sap>
+                <ipv4>
+                  <primary>
+                    <address>{$NET}</address>
+                    <prefix-length>{$PREFIXLEN}</prefix-length>
+                  </primary>
+                </ipv4>
+                <ipv6>
+                  <address>
+                    <ipv6-address>{$NET6}</ipv6-address>
+                    <prefix-length>{$PREFIXLEN6}</prefix-length>
+                  </address>
+                </ipv6>
+              </interface>
+            </vprn>
+          </service>
+        </configure>
+        <!-- END NOKIA -->
+
         <!-- ECI -->
         <!--?ned-id eci6-nc-1.0:eci6-nc-1.0?>
         <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">

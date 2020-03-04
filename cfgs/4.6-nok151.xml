@@ -1,0 +1,43 @@
+<config xmlns="http://tail-f.com/ns/config/1.0">
+  <devices xmlns="http://tail-f.com/ns/ncs">
+  <device>
+    <name>nok151</name>
+      <config>
+      <configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf">
+      <service>
+      <vprn>
+        <service-name>netconf-test-4-6</service-name>
+        <service-id>4046</service-id>
+        <customer>1</customer>
+        <admin-state>enable</admin-state>
+        <route-distinguisher>auto-rd</route-distinguisher>
+        <vrf-target>
+          <community>target:65000:4046</community>
+        </vrf-target>
+        <auto-bind-tunnel>
+          <resolution>any</resolution>
+        </auto-bind-tunnel>
+        <interface>
+          <interface-name>local</interface-name>
+          <admin-state>enable</admin-state>
+          <loopback>true</loopback>
+          <ipv4>
+            <primary>
+              <address>10.1.2.2</address>
+              <prefix-length>32</prefix-length>
+            </primary>
+          </ipv4>
+          <ipv6>
+            <address>
+              <ipv6-address>fd00:aaaa:2::</ipv6-address>
+              <prefix-length>128</prefix-length>
+            </address>
+          </ipv6>
+        </interface>
+      </vprn>
+      </service>
+      </configure>
+      </config>
+  </device>
+  </devices>
+</config>

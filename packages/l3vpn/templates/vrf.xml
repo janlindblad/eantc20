@@ -4,6 +4,27 @@
     <name>{$DEVICE}</name>
       <config xmlns:eci="http://tail-f.com/ns/ned-id/eci5-nc-1.0">
 
+      <!-- NOKIA -->
+      <configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf">
+        <service>
+          <vprn>
+            <service-name>{$VPN_NAME}</service-name>
+            <service-id>{$VLANID}</service-id>
+            <customer>1</customer>
+            <admin-state>enable</admin-state>
+            <route-distinguisher>auto-rd</route-distinguisher>
+            <vrf-target>
+              <community>target:65000:{$VLANID}</community>
+            </vrf-target>
+            <auto-bind-tunnel>
+              <resolution>any</resolution>
+            </auto-bind-tunnel>
+          </vprn>
+        </service>
+      </configure>
+      </vprn>
+      <!-- END NOKIA -->
+
         <!-- ECI -->
         <!--?ned-id eci5-nc-1.0:eci5-nc-1.0?>
         <network-instances xmlns="urn:ietf:params:xml:ns:yang:ietf-network-instance">
