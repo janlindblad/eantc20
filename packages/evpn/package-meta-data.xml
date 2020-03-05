@@ -1,0 +1,16 @@
+<ncs-package xmlns="http://tail-f.com/ns/ncs-packages">
+  <name>evpn</name>
+  <package-version>1.0</package-version>
+  <description>EANTC20 Use Case 4.7</description>
+  <ncs-min-version>5.3</ncs-min-version>
+  <!--required-package>
+    <name>xr-5500a-nc-1.0</name>
+  </required-package-->
+
+  <component>
+    <name>main</name>
+    <application>
+      <python-class-name>evpn.main.Main</python-class-name>
+    </application>
+  </component>
+</ncs-package>

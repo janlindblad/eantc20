@@ -103,6 +103,8 @@ class ServiceCallbacks(Service):
                             vars.add('NET',                  net_addresses.provider_address)
                             vars.add('PREFIXLEN',            net_addresses.prefix_length)
                             vars.add('MASK',                 ip_size_to_mask[net_addresses.prefix_length])
+                            vars.add('NET6',                 "fd00:aaaa:1::")
+                            vars.add('PREFIXLEN6',           128)
                             vars.add('NEXT_HOP',             other_device.address)
 
                             template = ncs.template.Template(service)

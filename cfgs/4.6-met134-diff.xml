@@ -1,0 +1,51 @@
+<devices xmlns="http://tail-f.com/ns/ncs">
+  <device>
+    <name>met134</name>
+    <config>
+      <interfaces xmlns="http://metaswitch.com/yang/nbu/interface/201709270000Z">
+        <interface>
+          <name>xe9</name>
+          <description>Spirent 167 2/14</description>
+          <enabled>true</enabled>
+          <forwarding-mode>network-layer</forwarding-mode>
+          <ipv4>
+            <forwarding>true</forwarding>
+            <address>
+              <ip>20.134.167.134</ip>
+              <prefix-length>24</prefix-length>
+            </address>
+          </ipv4>
+          <ipv6>
+            <forwarding>true</forwarding>
+            <address>
+              <ip>2001:0:134:167::134</ip>
+              <prefix-length>64</prefix-length>
+            </address>
+          </ipv6>
+          <ethernet>
+            <auto-negotiate>false</auto-negotiate>
+            <duplex-mode>full</duplex-mode>
+            <port-speed>SPEED_10GB</port-speed>
+          </ethernet>
+          <bind-vrf-name xmlns="http://metaswitch.com/yang/nbu/routing/201512140000Z">netconf</bind-vrf-name>
+        </interface>
+      </interfaces>
+      <router xmlns="http://metaswitch.com/yang/nbu/routing/201512140000Z">
+        <vrf>
+          <vrf-name>netconf</vrf-name>
+          <import>
+            <route-target>
+              <rt>65000:20</rt>
+            </route-target>
+          </import>
+          <export>
+            <route-target>
+              <rt>65000:20</rt>
+            </route-target>
+          </export>
+          <rd xmlns="http://metaswitch.com/yang/nbu/l3vpn/201511130000Z">10:100</rd>
+        </vrf>
+      </router>
+    </config>
+  </device>
+</devices>

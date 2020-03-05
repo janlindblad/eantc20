@@ -25,6 +25,27 @@
       </vprn>
       <!-- END NOKIA -->
 
+      <!-- METASWITCH -->
+      <router xmlns="http://metaswitch.com/yang/nbu/routing/201512140000Z">
+        <vrf>
+          <vrf-name>ALLOC same as above: netconf</vrf-name>
+          <import>
+            <route-target>
+              <rt>65000:ALLOC match other side: 20</rt>
+            </route-target>
+          </import>
+          <export>
+            <route-target>
+              <rt>65000:ALLOC match above 20</rt>
+            </route-target>
+          </export>
+          <rd xmlns="http://metaswitch.com/yang/nbu/l3vpn/201511130000Z">ALLOC unique per vrf. 10:100</rd>
+        </vrf>
+      </router>
+      <!-- END METASWITCH -->
+
+
+
         <!-- ECI -->
         <!--?ned-id eci5-nc-1.0:eci5-nc-1.0?>
         <network-instances xmlns="urn:ietf:params:xml:ns:yang:ietf-network-instance">

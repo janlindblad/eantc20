@@ -5,11 +5,13 @@ Vendor      NED                                     Usecases 4.x   IP[:port]    
 Juniper     juniper-junos-18_4R1-ncs-2_0-nc-1.0        .5 .6 .7 .8     192.168.10.105         cisco:cisco124
 Nokia       nokia_sros_20_2_r1-nc-1.0                  .5 .6 .7        192.168.10.150         cisco:nso123
             nokia1910r3-nc-1.0                         .5 .6 .7        192.168.10.151         cisco:nso123
-Metaswitch  meta_130-nc-1.0                               .6 .7        192.168.10.133:60000   root:root12345
+Metaswitch  meta_130-nc-1.0                                  .7        192.168.10.133:60000   root:root12345
+            meta_130-nc-1.0                               .6           192.168.10.134:2022    root:root12345
 Arrcus      arcos-evpn-services-nc-1.0                    .6 .7        192.168.10.23          root:Arrcus123
-Arista      eos4230f_219-nc-1.0                     .4       .7 .8     192.168.10.19:22       arista:KEY eantc20-ari19
-            eos4230f_219-nc-1.0                              .7 .8     192.168.10.20:22       arista:KEY eantc20-ari19
+Arista      eos4230f_305-nc-1.0                     .4       .7 .8     192.168.10.19:22       arista:KEY eantc20-ari19
+            eos4230f_304-nc-1.0                              .7 .8     192.168.10.20:22       arista:KEY eantc20-ari19
 Delta                                                  .5 .6 .7 .8     192.168.10.47          admin:admin
 Adva                                                   .5 .6 .7 .8     192.168.10.7           admin:admin
 Lumina C                                                     .7        192.168.10.191:8181    admin:admin
+Lumina C                                                     .7        192.168.10.190:38181   admin:admin
 Huawei C

@@ -1,0 +1,34 @@
+<devices xmlns="http://tail-f.com/ns/ncs">
+  <device>
+    <name>met133</name>
+    <config>
+      <evpn xmlns="http://metaswitch.com/yang/nbu/evpn/201703150000Z">
+        <instance>
+          <evi-name>evi1</evi-name>
+          <evi>1</evi>
+          <vpn-target>
+            <route-target>40:1</route-target>
+            <route-target-type>both</route-target-type>
+          </vpn-target>
+          <mpls/>
+          <bridge-domain>
+            <interfaces>
+              <interface>
+                <if-name>eth4</if-name>
+              </interface>
+            </interfaces>
+          </bridge-domain>
+          <auto-rt-type>
+            <none/>
+          </auto-rt-type>
+        </instance>
+      </evpn>
+      <interfaces xmlns="http://metaswitch.com/yang/nbu/interface/201709270000Z">
+        <interface>
+          <name>eth4</name>
+          <forwarding-mode>layer-2-forwarding</forwarding-mode>
+        </interface>
+      </interfaces>
+    </config>
+  </device>
+</devices>

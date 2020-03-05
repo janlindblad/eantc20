@@ -5,7 +5,6 @@
       <config>
 
         <!-- NOKIA -->
-
         <configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf">
           <service>
             <vprn>
@@ -33,6 +32,37 @@
           </service>
         </configure>
         <!-- END NOKIA -->
+
+        <!-- METASWITCH -->
+        <interfaces xmlns="http://metaswitch.com/yang/nbu/interface/201709270000Z">
+          <interface>
+            <name>TOPO spirent CE xe9</name>
+            <description>Spirent 167 2/14</description>
+            <enabled>true</enabled>
+            <forwarding-mode>network-layer</forwarding-mode>
+            <ipv4>
+              <forwarding>true</forwarding>
+              <address>
+                <ip>TOPO local address towards spirent: 20.134.167.134</ip>
+                <prefix-length>TOPO 24</prefix-length>
+              </address>
+            </ipv4>
+            <ipv6>
+              <forwarding>true</forwarding>
+              <address>
+                <ip>TOPO local address towards spirent 2001:0:134:167::134</ip>
+                <prefix-length>64</prefix-length>
+              </address>
+            </ipv6>
+            <ethernet>
+              <auto-negotiate>false</auto-negotiate>
+              <duplex-mode>full</duplex-mode>
+              <port-speed>SPEED_10GB</port-speed>
+            </ethernet>
+            <bind-vrf-name xmlns="http://metaswitch.com/yang/nbu/routing/201512140000Z">ALLOC same as below: netconf</bind-vrf-name>
+          </interface>
+        </interfaces>
+        <!-- END METASWITCH -->
 
         <!-- ECI -->
         <!--?ned-id eci6-nc-1.0:eci6-nc-1.0?>
