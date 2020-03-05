@@ -1,0 +1,1482 @@
+module ldp {
+  namespace "http://metaswitch.com/yang/nbu/ldp/201512230000Z";
+  prefix ldp;
+
+  import user-extensions {
+    prefix user-ext;
+  }
+
+  import interfaces {
+    prefix interfaces;
+  }
+
+  import metaswitch-yang-types {
+    prefix meta;
+  }
+
+  import redist {
+    prefix redist;
+  }
+
+  import metaswitch-mpls {
+    prefix mpls;
+  }
+
+  import qos {
+    prefix qos;
+  }
+
+  import openconfig-interfaces {
+    prefix oc-if;
+  }
+
+  organization
+    "Metaswitch Networks";
+  contact
+    "Postal: Metaswitch Networks
+             100 Church Street
+             Enfield
+             EN2 6BQ
+             United Kingdom
+     Tel:    +44 20 8366 1177
+     E-mail: info@metaswitch.com";
+  description
+    "Label Distribution Protocol";
+
+  revision 2015-12-23 {
+    description
+      "Initial revision.";
+  }
+
+  feature ldp-lsps {
+    description
+      "This feature means that the device supports LDP LSPs";
+  }
+
+  typedef peer-ldp-id {
+    type string {
+      pattern "(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]):((6553[0-5])|(655[0-2][0-9])|(65[0-4][0-9]{2})|(6[0-4][0-9]{3})|([1-5][0-9]{4})|([0-9]{1,4}))";
+    }
+    description
+      "Peer LDP ID in ldp-ip:label-space format
+       (something like 192.168.10.23:65535).";
+  }
+
+  typedef ldp-ent-oper-status {
+    type enumeration {
+      enum "unknown" {
+        value 1;
+      }
+      enum "enabled" {
+        value 2;
+      }
+      enum "disabled" {
+        value 3;
+      }
+    }
+    description
+      "LDP Entity oper status.";
+  }
+
+  typedef ldp-lbl-dist-method {
+    type enumeration {
+      enum "downstream-on-demand" {
+        value 1;
+      }
+      enum "downstream-unsolicited" {
+        value 2;
+      }
+    }
+    description
+      "LDP label distribution method.";
+  }
+
+  typedef ldp-sess-state {
+    type enumeration {
+      enum "nonexistent" {
+        value 1;
+      }
+      enum "initialized" {
+        value 2;
+      }
+      enum "open-received" {
+        value 3;
+      }
+      enum "open-sent" {
+        value 4;
+      }
+      enum "operational" {
+        value 5;
+      }
+    }
+    description
+      "LDP session state.";
+  }
+
+  typedef ldp-sess-role {
+    type enumeration {
+      enum "unknown" {
+        value 1;
+      }
+      enum "active" {
+        value 2;
+      }
+      enum "passive" {
+        value 3;
+      }
+    }
+    description
+      "LDP session role.";
+  }
+
+  typedef ldp-fec-type {
+    type enumeration {
+      enum "prefix" {
+        value 1;
+        description
+          "Prefix";
+      }
+      enum "host-addr" {
+        value 2;
+        description
+          "Host address";
+      }
+    }
+    description
+      "LDP FEC type";
+  }
+
+  typedef ldp-fec-label-installed {
+    type enumeration {
+      enum "yes" {
+        value 0;
+      }
+      enum "no-policy" {
+        value 1;
+      }
+      enum "no-liberal" {
+        value 2;
+      }
+    }
+    description
+      "LDP FEC label installed state.";
+  }
+
+  typedef ldp-gr-reconnect {
+    type uint32 {
+      range "0..1800";
+    }
+    description
+      "(0-1800)";
+  }
+
+  typedef ldp-gr-holdtime {
+    type uint32 {
+      range "1..1800";
+    }
+    description
+      "(1-1800)";
+  }
+
+  typedef ldp-keep-alive-hold-timer {
+    type uint32 {
+      range "1..65535";
+    }
+    description
+      "SECS (1-65535)";
+  }
+
+  typedef ldp-hello-hold-timer {
+    type uint32 {
+      range "0..65535";
+    }
+    description
+      "SECS (0-65535)";
+  }
+
+  typedef ldp-upstream-fsm-state {
+    type enumeration {
+      enum "initial" {
+        value 0;
+      }
+      enum "querying-route" {
+        value 1;
+      }
+      enum "reserving-resources" {
+        value 2;
+      }
+      enum "ordered-wait" {
+        value 3;
+      }
+      enum "cross-connecting" {
+        value 4;
+      }
+      enum "sending-mapping-upstream" {
+        value 5;
+      }
+      enum "mapping-established" {
+        value 6;
+      }
+      enum "withdrawing-mapping" {
+        value 7;
+      }
+      enum "releasing-resources" {
+        value 8;
+      }
+      enum "sending-error" {
+        value 9;
+      }
+      enum "rerouting" {
+        value 10;
+      }
+      enum "stale-mapping" {
+        value 11;
+      }
+      enum "sending-wrong-c-bit" {
+        value 12;
+      }
+      enum "releasing-after-wrong-c-bit" {
+        value 13;
+      }
+    }
+    description
+      "The current state of an upstream label.";
+  }
+
+  typedef ldp-downstream-fsm-state {
+    type enumeration {
+      enum "initial" {
+        value 0;
+      }
+      enum "getting-label-req-buf" {
+        value 1;
+      }
+      enum "awaiting-label-map" {
+        value 2;
+      }
+      enum "out-seg-processing" {
+        value 3;
+      }
+      enum "mapping-established" {
+        value 4;
+      }
+      enum "mapping-liberally-retained" {
+        value 5;
+      }
+      enum "label-req-retry" {
+        value 6;
+      }
+      enum "getting-label-rel-buf" {
+        value 7;
+      }
+      enum "stale-mapping" {
+        value 8;
+      }
+      enum "sending-query-fec" {
+        value 9;
+      }
+    }
+    description
+      "The current state of a downstream label.";
+  }
+
+  typedef ldp-egress-label-t {
+    type enumeration {
+      enum "implicit-null" {
+        value 1;
+        description
+          "Use the implicit-NULL label for egress.";
+      }
+      enum "explicit-null" {
+        value 2;
+        description
+          "Use the explicit-NULL label for egress.";
+      }
+    }
+    description
+      "LDP egress label type";
+  }
+
+  grouping graceful-restart-config {
+    container graceful-restart {
+      user-ext:CLI-comm-help "Configure LDP graceful restart";
+      user-ext:CLI-no-comm-help "Configure LDP graceful restart";
+      description
+        "Configure LDP graceful restart";
+      leaf enable {
+        user-ext:CLI-comm-help "Enable LDP graceful restart";
+        user-ext:CLI-no-comm-help "Disable LDP graceful restart";
+        type empty;
+        description
+          "Enable LDP graceful restart";
+      }
+
+      leaf reconnect-timeout {
+        user-ext:CLI-comm-help "Set reconnection timeout in seconds";
+        user-ext:CLI-no-comm-help "Set reconnection timeout to default";
+        user-ext:CLI-param-help "Set reconnection timeout in seconds";
+        type ldp-gr-reconnect;
+        units "seconds";
+        default "240";
+        description
+          "Graceful restart reconnection timeout";
+      }
+
+      leaf forwarding-state-holdtime {
+        user-ext:CLI-comm-help "Set forwarding state holdtime in seconds";
+        user-ext:CLI-no-comm-help "Set forwarding state holdtime to default";
+        user-ext:CLI-param-help "Set forwarding state holdtime in seconds";
+        type ldp-gr-holdtime;
+        units "seconds";
+        default "240";
+        description
+          "Graceful restart forwarding state holdtime";
+      }
+    }
+  }
+
+  grouping global-config-for-ldp {
+    uses graceful-restart-config;
+
+    leaf dist-prefix-target-sess {
+      user-ext:CLI-param-help "Set whether label distribution for Prefix and Host FECs on targeted sessions is enabled";
+      user-ext:CLI-no-comm-help "Use default enable/disable setting";
+      user-ext:CLI-param-help "Set whether label distribution for Prefix and Host FECs on targeted sessions is enabled";
+      type boolean;
+      default "true";
+      description
+        "Configure label distribution for Prefix and Host FECs on
+         targeted sessions (that is sessions for which the only
+         underlying adjacency is a targeted adjacency)";
+    }
+
+    leaf session-auto-create {
+      user-ext:CLI-param-help "Enable LDP sessions auto create";
+      user-ext:CLI-no-comm-help "Disable LDP sessions auto create";
+      type empty;
+      description
+        "DC-LDP creates Entities automatically
+         based on known interfaces.  When set to 'false', Entities
+         are not automatically created.";
+    }
+
+    leaf pwe-labels-only {
+      user-ext:CLI-param-help "Restrict export/import of LDP labels for PWE FEC only";
+      user-ext:CLI-no-comm-help "Remove restriction for export/import of LDP labels";
+      type empty;
+      description
+        "DC-LDP will enforce policy decisions made by the user
+         through a number of user exits.";
+    }
+  }
+
+  grouping adjacency-config {
+    container bfd {
+      user-ext:CLI-comm-help "Configure BFD parameters";
+      user-ext:CLI-no-comm-help "Configure BFD parameters";
+      description
+        "BFD parameters.";
+      leaf fast-detect {
+        user-ext:CLI-comm-help "Enable BFD";
+        user-ext:CLI-no-comm-help "Disable BFD";
+        type empty;
+        description
+          "Indicates whether Bidirectional Forwarding Detection (BFD)
+           is desired.";
+      }
+    }
+
+    leaf holdtime-interval {
+      user-ext:CLI-comm-help "Set keep alive hold timer in seconds";
+      user-ext:CLI-no-comm-help "Set keep alive hold timer to default";
+      user-ext:CLI-param-help "Set keep alive hold timer in seconds";
+      type ldp-keep-alive-hold-timer;
+      units "seconds";
+      default "40";
+      description
+        "Keep alive hold timer";
+    }
+
+    leaf hello-interval {
+      user-ext:CLI-comm-help "Set hello interval in seconds";
+      user-ext:CLI-no-comm-help "Set hello interval to default";
+      user-ext:CLI-param-help "Set hello interval in seconds";
+      type ldp-hello-hold-timer;
+      units "seconds";
+      description
+        "Hello interval";
+    }
+  }
+
+  grouping adjacency-state {
+    leaf oper-status {
+      type ldp-ent-oper-status;
+      config false;
+      description
+        "The operational status of this LDP Entity.
+
+         The value of unknown indicates that the operational
+         status cannot be determined at this time.  The value of
+         unknown should be a transient condition before changing to
+         enabled or disabled.";
+    }
+
+    container bfd {
+      config false;
+      description
+        "BFD parameters.";
+      leaf fast-detect {
+        type boolean;
+        description
+          "Indicates whether Bidirectional Forwarding Detection (BFD)
+           is configured for this targeted peer.";
+      }
+    }
+  }
+
+  grouping adjacency-parameters {
+    uses adjacency-config;
+
+    container state {
+      config false;
+      uses adjacency-state;
+    }
+  }
+
+  grouping interface-parameters {
+    leaf disable {
+      user-ext:CLI-comm-help "Disable LDP on this interface";
+      user-ext:CLI-no-comm-help "Enable LDP on this interface";
+      type empty;
+      description
+        "Disable LDP on this interface";
+    }
+
+    leaf egress-label-type {
+      user-ext:CLI-param-help "Configure egress label type";
+      user-ext:CLI-comm-help "Configure egress label type";
+      user-ext:CLI-no-comm-help "Remove egress label type";
+      type ldp-egress-label-t;
+      default "implicit-null";
+      description
+        "Whether to use standard labels or Implicit-NULL or Explicit-NULL
+         egress labels";
+    }
+
+    leaf php-disable {
+      type empty;
+      description
+        "Indicates whether PHP is disabled on RSVP-TE interface.";
+    }
+
+    leaf max-pdu-length {
+      type uint32 {
+        range "1..65535";
+      }
+      units "octets";
+      description
+        "Maximum PDU length for the network interface.";
+    }
+
+    container igp-sync {
+      user-ext:CLI-comm-help "Config IGP-LDP synchronization";
+      user-ext:CLI-no-comm-help "Config IGP-LDP synchronization";
+      description
+        "Configure LDP-IGP sync mechanism";
+      leaf enable {
+        user-ext:CLI-comm-help "Enable IGP-LDP synchronization";
+        user-ext:CLI-no-comm-help "Disable IGP-LDP synchronization";
+        type empty;
+        description
+          "Enable IGP-LDP synchronization";
+      }
+
+      leaf holdtime {
+        user-ext:CLI-comm-help "IGP-LDP synchronization hold time in seconds";
+        user-ext:CLI-no-comm-help "IGP-LDP synchronization hold time to default";
+        user-ext:CLI-param-help "IGP-LDP synchronization hold time in seconds";
+        type uint32 {
+          range "0..3600";
+        }
+        units "seconds";
+        default "0";
+        description
+          "IGP-LDP synchronization hold time";
+      }
+    }
+
+    uses adjacency-config;
+  }
+
+  grouping neighbor-state {
+    leaf peer-ldp-id {
+      type meta:ldp-id;
+      config false;
+      description
+        "The peer address";
+    }
+
+    leaf label-distribution-method {
+      type ldp-lbl-dist-method;
+      config false;
+      description
+        "For any given LDP session, the method of label
+         distribution must be specified.";
+    }
+
+    leaf path-vector-limit {
+      type uint32 {
+        range "0..255";
+      }
+      config false;
+      description
+        "If the value of this object is 0 (zero) then Loop Dection
+         for Path Vectors for this Peer is disabled.
+
+         Otherwise, if this object has a value greater than  zero,
+         then Loop Dection for Path Vectors for this peer is
+         enabled and the Path Vector Limit is this value.";
+    }
+  }
+
+  grouping ipv4-neighbor-state {
+    uses neighbor-state;
+
+    leaf transport-addr {
+      type interfaces:iface-ipv4-address-t;
+      config false;
+      description
+        "The Internet address advertised by the peer in the Hello
+         Message or the Hello source address.";
+    }
+  }
+
+  grouping ipv6-neighbor-state {
+    uses neighbor-state;
+
+    leaf transport-addr {
+      type interfaces:iface-ipv6-address-t;
+      config false;
+      description
+        "The Internet address advertised by the peer in the Hello
+         Message or the Hello source address.";
+    }
+  }
+
+  grouping session-state {
+    leaf state-last-change {
+      type uint32;
+      config false;
+      description
+        "The value of sysUpTime at the time this Session entered
+         its current state as denoted by the mplsLdpSessionState
+         object.";
+    }
+
+    leaf state {
+      type ldp-sess-state;
+      config false;
+      description
+        "The current state of the session.  All of the states
+         are based on the state machine for session negotiation
+         behavior.";
+    }
+
+    leaf role {
+      type ldp-sess-role;
+      config false;
+      description
+        "During session establishment the LSR/LER takes either the
+         active role or the passive role based on address
+         comparisons.  This object indicates whether this LSR/LER
+         was behaving in an active role or passive role during this
+         session's establishment.
+
+         The value of unknown, indicates that the role is not
+         able to be determined at the present time.";
+    }
+
+    leaf protocol-version {
+      type uint32 {
+        range "1..65535";
+      }
+      config false;
+      description
+        "The version of the LDP Protocol which this session is
+         using.  This is the version of the LDP protocol which has
+         been negotiated during session initialization.";
+    }
+
+    leaf keep-alive-hold-time-remaining {
+      type uint32;
+      config false;
+      description
+        "The keep alive hold time remaining for this session in
+         units of hundredths of a second.";
+    }
+
+    leaf keep-alive-time {
+      type ldp-keep-alive-hold-timer;
+      units "seconds";
+      config false;
+      description
+        "The negotiated Keep Alive Time which represents the amount
+         of seconds between keep alive messages.";
+    }
+
+    leaf max-pdu-length {
+      type uint32 {
+        range "1..65535";
+      }
+      units "octets";
+      config false;
+      description
+        "The value of maximum allowable length for LDP PDUs for
+         this session.  This value may have been negotiated during
+         the Session Initialization.";
+    }
+
+    leaf discontinuity-time {
+      type uint32;
+      config false;
+      description
+        "The value of sysUpTime on the most recent occasion at
+         which any one or more of this session's counters suffered
+         a discontinuity.
+
+         If no counters have suffered a discontinuity, this is the value of
+         sysUpTime when the component was initialised.";
+    }
+
+    leaf configured-hold-time {
+      type uint32;
+      config false;
+      description
+        "The locally configured keepalive hold time for this
+         session, in seconds.  Note that the value of this field
+         reflects configuration at the time of session
+         initialization; this may differ from the configuration
+         that would apply to a new session, if configuration has
+         changed since this session was initialized.";
+    }
+
+    leaf peer-hold-time {
+      type uint32;
+      config false;
+      description
+        "The peer's advertised keepalive hold time for this session
+         in seconds.  Note that the value of this field reflects
+         the peer's configuration at the time of session
+         initialization; this may differ from the configuration
+         that would apply to a new session, if the peer's
+         configuration has changed since this session was
+         initialized.";
+    }
+
+    leaf hold-time-in-use {
+      type uint32;
+      config false;
+      description
+        "The keepalive hold time that is currently in use for this
+         session, in seconds.";
+    }
+
+    leaf peer-restart-supp {
+      type boolean;
+      config false;
+      description
+        "Whether the LDP peer has advertized support for Graceful
+         Restart on this session.  Derived from the peer's LDP
+         initialization message.";
+    }
+
+    leaf peer-reconnect-time {
+      type uint32;
+      config false;
+      description
+        "The Reconnect Timeout advertized by the LDP peer, or zero
+         if the peer has not advertised support for Graceful
+         Restart.";
+    }
+
+    leaf peer-recovery-time {
+      type uint32;
+      config false;
+      description
+        "The Recovery Time advertized by the LDP peer, or zero if
+         the peer has not advertised support for Graceful Restart.";
+    }
+
+    leaf local-restart-supp {
+      type boolean;
+      config false;
+      description
+        "Whether the local LDP router is using Graceful Restart
+         procedures on this session.";
+    }
+  }
+
+  grouping session-stats {
+    leaf unknown-message-count {
+      type uint32;
+      config false;
+      description
+        "This object counts the number of Unknown Message Type
+         Errors detected by this LSR/LER during this session.";
+    }
+
+    leaf unknown-tlv-count {
+      type uint32;
+      config false;
+      description
+        "This object counts the number of Unknown TLV Errors
+         detected by this LSR/LER during this session.";
+    }
+  }
+
+  grouping session-neighbor-addr-state {
+    leaf peer-addr-index {
+      type uint32 {
+        range "1..4294967295";
+      }
+      config false;
+      description
+        "An index which uniquely identifies this entry within a
+         given session.";
+    }
+
+    leaf next-hop-address {
+      type interfaces:iface-ip-address-t;
+      config false;
+      description
+        "The next hop address.";
+    }
+  }
+
+  grouping up-label-state {
+    leaf type {
+      type ldp-fec-type;
+      description
+        "The type of the FEC.  Only prefix and hostAddress FECs are
+         shown in this table.";
+    }
+
+    leaf peer-ldp-id {
+      type meta:ldp-id;
+      description
+        "The LDP ID of the peer the label was sent to.";
+    }
+
+    leaf label {
+      type uint32;
+      config false;
+      description
+        "The label value.  Includes 0 (explicit NULL) and 3
+         (implicit NULL) as well as real label values.";
+    }
+
+    leaf state {
+      type ldp-upstream-fsm-state;
+      config false;
+      description
+        "The internal LDP FSM state of this upstream label.";
+    }
+
+    uses interfaces:iface-id;
+  }
+
+  grouping ipv4-up-label-state {
+    uses up-label-state;
+
+    leaf label-prefix {
+      type interfaces:iface-ipv4-prefix-t;
+      description
+        "The FEC address prefix.  Always an IPv4 address (length
+         4) or IPv6 address (length 16).";
+    }
+  }
+
+  grouping ipv6-up-label-state {
+    uses up-label-state;
+
+    leaf label-prefix {
+      type interfaces:iface-ipv6-prefix-t;
+      description
+        "The FEC address prefix.  Always an IPv4 address (length
+         4) or IPv6 address (length 16).";
+    }
+  }
+
+  grouping down-label-state {
+    leaf type {
+      type ldp-fec-type;
+      description
+        "The type of the FEC.  Only prefix and hostAddress FECs are
+         shown in this table.";
+    }
+
+    leaf peer-ldp-id {
+      type meta:ldp-id;
+      description
+        "The LDP ID of the peer the label was received from.";
+    }
+
+    leaf label {
+      type uint32;
+      config false;
+      description
+        "The label value.  Thismay be 0 (explicit NULL), 3
+         (implicit NULL), or a real label values.";
+    }
+
+    leaf installed {
+      type ldp-fec-label-installed;
+      config false;
+      description
+        "Whether the label is installed in the mpls forwarding
+         table, or why it was not installed.";
+    }
+
+    leaf state {
+      type ldp-downstream-fsm-state;
+      config false;
+      description
+        "The internal LDP FSM state of this downstream label.";
+    }
+
+    leaf label-is-lfa {
+      type boolean;
+      config false;
+      description
+        "Indicates whether or not this downstream label is a
+         loop-free alternate label which is providing protection
+         for a primary path.";
+    }
+
+    uses interfaces:iface-id;
+  }
+
+  grouping ipv4-down-label-state {
+    uses down-label-state;
+
+    leaf label-prefix {
+      type interfaces:iface-ipv4-prefix-t;
+      description
+        "The FEC address prefix.  Always an IPv4 address (length
+         4) or IPv6 address (length 16).";
+    }
+
+    leaf next-hop-address {
+      type interfaces:iface-ipv4-address-t;
+      config false;
+      description
+        "For installed downstream labels, this indicates the
+         next-hop IP address.  Always an IPv4 address (length 4) or
+         IPv6 address (length 16).
+
+         For ECMP, if multiple out-segments have been programmed
+         corresponding to a single downstream mapping (which is
+         possible if there are multiple parallel interfaces between
+         two peers), this address corresponds to the first such
+         out-segment.";
+    }
+  }
+
+  grouping ipv6-down-label-state {
+    uses down-label-state;
+
+    leaf label-prefix {
+      type interfaces:iface-ipv6-prefix-t;
+      description
+        "The FEC address prefix.  Always an IPv4 address (length
+         4) or IPv6 address (length 16).";
+    }
+
+    leaf next-hop-address {
+      type interfaces:iface-ipv6-address-t;
+      config false;
+      description
+        "For installed downstream labels, this indicates the
+         next-hop IP address.  Always an IPv6 address (length 4) or
+         IPv6 address (length 16).
+
+         For ECMP, if multiple out-segments have been programmed
+         corresponding to a single downstream mapping (which is
+         possible if there are multiple parallel interfaces between
+         two peers), this address corresponds to the first such
+         out-segment.";
+    }
+  }
+
+  container mpls {
+    user-ext:CLI-comm-help "Configure MPLS";
+    user-ext:CLI-no-comm-help "Remove MPLS";
+    description
+      "MPLS configuration.";
+    container ldp {
+      user-ext:CLI-comm-help "Configure LDP";
+      user-ext:CLI-no-comm-help "Remove LDP";
+      must "(/mpls:mpls/mpls:router-id)" {
+        error-message
+          "If LDP is configured, an MPLS router-id must be defined";
+      }
+      presence "Enable LDP";
+      description
+        "LDP global configuration.";
+      uses global-config-for-ldp;
+
+      leaf dscp {
+        user-ext:CLI-comm-help "DSCP value to set on outgoing LDP protocol messages";
+        user-ext:CLI-no-comm-help "Set DSCP value on outgoing LDP protocol messages to default";
+        user-ext:CLI-param-help "DSCP value to set for outgoing LDP protocol messages";
+        type qos:dscp-t;
+        default "56";
+        description
+          "The DSCP value to set on outgoing LDP protocol messages.";
+      }
+
+      list neighbor {
+        user-ext:CLI-comm-help "Configure targeted peer";
+        user-ext:CLI-no-comm-help "Remove targeted peer";
+        must "(((substring-after(peer-address, ':') = '') and   ((not(/mpls:mpls/mpls:transport-address)) or    (substring-after(/mpls:mpls/mpls:transport-address, ':') = ''))) or  ((substring-after(peer-address, ':') != '') and   (substring-after(/mpls:mpls/mpls:transport-address, ':') != '')))" {
+          error-message
+            "The neighbor peer address and the global transport address must be of the same type";
+        }
+        key "peer-address";
+        description
+          "Table containing information about the MPLS Label
+           Distribution Protocol Entities which exist on this Label
+           Switching Router (LSR) or Label Edge Router (LER).";
+        leaf peer-address {
+          user-ext:CLI-param-help "Peer address";
+          type interfaces:iface-ip-address-t;
+          description
+            "The value of the internetwork layer address used for the
+             Extended Discovery.";
+        }
+
+        uses adjacency-parameters;
+      }
+
+      container ipv4-state {
+        config false;
+        container neighbor-state-list {
+          config false;
+          description
+            "Container to hold neighbor state list.";
+          list neighbor-state {
+            config false;
+            description
+              "Information about LDP peers.";
+            uses ipv4-neighbor-state;
+
+            container session-state {
+              config false;
+              description
+                "A read-only list of Sessions between the LDP Entities and
+                 LDP Peers.  Each entry in this list represents a single
+                 session.";
+              uses session-state;
+            }
+
+            container session-stats {
+              config false;
+              description
+                "A table of statistics for Sessions between LDP Entities and
+                 LDP Peers.";
+              uses session-stats;
+            }
+
+            container session-neighbor-addr-state-list {
+              config false;
+              description
+                "Container to hold session neighbor address state list.";
+              list session-neighbor-addr-state {
+                description
+                  "Label Address Information from Label Address Messages
+                   received by this LSR from Peers.";
+                uses session-neighbor-addr-state;
+              }
+            }
+          }
+        }
+      }
+
+      container ipv6-state {
+        config false;
+        container neighbor-state-list {
+          config false;
+          description
+            "Container to hold neighbor state list.";
+          list neighbor-state {
+            config false;
+            description
+              "Information about LDP peers.";
+            uses ipv6-neighbor-state;
+
+            container session-state {
+              config false;
+              description
+                "A read-only list of Sessions between the LDP Entities and
+                 LDP Peers.  Each entry in this list represents a single
+                 session.";
+              uses session-state;
+            }
+
+            container session-stats {
+              config false;
+              description
+                "A table of statistics for Sessions between LDP Entities and
+                 LDP Peers.";
+              uses session-stats;
+            }
+
+            container session-neighbor-addr-state-list {
+              config false;
+              description
+                "Container to hold session neighbor address state list.";
+              list session-neighbor-addr-state {
+                description
+                  "Label Address Information from Label Address Messages
+                   received by this LSR from Peers.";
+                uses session-neighbor-addr-state;
+              }
+            }
+          }
+        }
+      }
+
+      container discovery {
+        user-ext:CLI-comm-help "Configure LDP discovery parameters";
+        user-ext:CLI-no-comm-help "Configure LDP discovery parameters";
+        description
+          "Configure discovery parameters";
+        container interfaces {
+          user-ext:CLI-not-command;
+          list interface {
+            user-ext:CLI-comm-help "Configure LDP on interface";
+            user-ext:CLI-no-comm-help "Configure LDP on interface";
+            key "if-name";
+            description
+              "Per-interface LDP configuration.";
+            leaf if-name {
+              user-ext:CLI-comm-help "Set interface name";
+              user-ext:CLI-param-help "Set interface name";
+              type leafref {
+                path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+              }
+              description
+                "A unique identifier identifying the interface.";
+            }
+
+            uses interface-parameters;
+          }
+        }
+
+        container custom-interfaces {
+          user-ext:CLI-not-command;
+          if-feature "interfaces:custom-interfaces";
+          container interface {
+            user-ext:CLI-comm-help "Configure LDP on interface";
+            user-ext:CLI-no-comm-help "Configure LDP on interface";
+            description
+              "Per-interface LDP configuration.";
+            container oneGE {
+              user-ext:CLI-not-command;
+              user-ext:CLI-comm-switch "gigabitethernet/gigabitethernet-sub";
+              list gigabitethernet {
+                user-ext:CLI-comm-help "Add LDP configuration to 1G interface";
+                user-ext:CLI-no-comm-help "Remove LDP configuration from 1G interface";
+                key "if-num";
+                description
+                  "1G interface";
+                leaf if-num {
+                  user-ext:CLI-param-help "1G interface name";
+                  type interfaces:eth-iface-num-t;
+                  description
+                    "<unit>/<dev>/<port>";
+                }
+
+                uses interface-parameters;
+              }
+
+              list gigabitethernet-sub {
+                user-ext:CLI-comm-help "Add LDP configuration to 1G subinterface";
+                user-ext:CLI-no-comm-help "Remove LDP configuration from 1G subinterface";
+                key "if-num";
+                description
+                  "1G subinterface";
+                leaf if-num {
+                  user-ext:CLI-param-help "Set 1G subinterface name";
+                  type interfaces:eth-subiface-range-t;
+                  description
+                    "<unit>/<dev>/<port>.<subid>";
+                }
+
+                uses interface-parameters;
+              }
+            }
+
+            container tenGE {
+              user-ext:CLI-not-command;
+              user-ext:CLI-comm-switch "tengigabitethernet/tengigabitethernet-sub";
+              list tengigabitethernet {
+                user-ext:CLI-comm-help "Add LDP configuration to 10G interface";
+                user-ext:CLI-no-comm-help "Remove LDP configuration from 10G interface";
+                key "if-num";
+                description
+                  "10G interface";
+                leaf if-num {
+                  user-ext:CLI-param-help "10G interface name";
+                  type interfaces:eth-iface-num-t;
+                  description
+                    "<unit>/<dev>/<port>";
+                }
+
+                uses interface-parameters;
+              }
+
+              list tengigabitethernet-sub {
+                user-ext:CLI-comm-help "Add LDP configuration to 10G subinterface";
+                user-ext:CLI-no-comm-help "Remove LDP configuration from 10G subinterface";
+                key "if-num";
+                description
+                  "10G subinterface";
+                leaf if-num {
+                  user-ext:CLI-param-help "Set 10G subinterface name";
+                  type interfaces:eth-subiface-range-t;
+                  description
+                    "<unit>/<dev>/<port>.<subid>";
+                }
+
+                uses interface-parameters;
+              }
+            }
+
+            container fortyGE {
+              user-ext:CLI-not-command;
+              user-ext:CLI-comm-switch "fortygigabitethernet/fortygigabitethernet-sub";
+              list fortygigabitethernet {
+                user-ext:CLI-comm-help "Add LDP configuration to 40G interface";
+                user-ext:CLI-no-comm-help "Remove LDP configuration from 40G interface";
+                key "if-num";
+                description
+                  "40G interface";
+                leaf if-num {
+                  user-ext:CLI-param-help "40G interface name";
+                  type interfaces:eth-iface-num-t;
+                  description
+                    "<unit>/<dev>/<port>";
+                }
+
+                uses interface-parameters;
+              }
+
+              list fortygigabitethernet-sub {
+                user-ext:CLI-comm-help "Add LDP configuration to 40G subinterface";
+                user-ext:CLI-no-comm-help "Remove LDP configuration from 40G subinterface";
+                key "if-num";
+                description
+                  "40G subinterface";
+                leaf if-num {
+                  user-ext:CLI-param-help "Set 40G subinterface name";
+                  type interfaces:eth-subiface-range-t;
+                  description
+                    "<unit>/<dev>/<port>.<subid>";
+                }
+
+                uses interface-parameters;
+              }
+            }
+
+            container hundredGE {
+              user-ext:CLI-not-command;
+              user-ext:CLI-comm-switch "hundredgigabitethernet/hundredgigabitethernet-sub";
+              list hundredgigabitethernet {
+                user-ext:CLI-comm-help "Add LDP configuration to 100G interface";
+                user-ext:CLI-no-comm-help "Remove LDP configuration from 100G interface";
+                key "if-num";
+                description
+                  "100G interface";
+                leaf if-num {
+                  user-ext:CLI-param-help "100G interface name";
+                  type interfaces:eth-iface-num-t;
+                  description
+                    "<unit>/<dev>/<port>";
+                }
+
+                uses interface-parameters;
+              }
+
+              list hundredgigabitethernet-sub {
+                user-ext:CLI-comm-help "Add LDP configuration to 100G subinterface";
+                user-ext:CLI-no-comm-help "Remove LDP configuration from 100G subinterface";
+                key "if-num";
+                description
+                  "100G subinterface";
+                leaf if-num {
+                  user-ext:CLI-param-help "Set 100G subinterface name";
+                  type interfaces:eth-subiface-range-t;
+                  description
+                    "<unit>/<dev>/<port>.<subid>";
+                }
+
+                uses interface-parameters;
+              }
+            }
+
+            container bundle-ifaces {
+              user-ext:CLI-not-command;
+              user-ext:CLI-comm-switch "bundle-ether/bundle-ether-sub";
+              list bundle-ether {
+                user-ext:CLI-comm-help "Configure attachment bundle-ether interface";
+                user-ext:CLI-no-comm-help "Remove attachment bundle-ether interface";
+                key "bundle-id";
+                description
+                  "Specify the attachment bundle-ether interface";
+                leaf bundle-id {
+                  user-ext:CLI-param-help "Bundle-ether interface";
+                  type interfaces:bundle-id-t;
+                  description
+                    "Bundle-ether id";
+                }
+
+                uses interface-parameters;
+              }
+
+              list bundle-ether-sub {
+                user-ext:CLI-comm-help "Configure attachment bundle-ether sub-interface";
+                user-ext:CLI-no-comm-help "Remove attachment bundle-ether sub-interface";
+                key "bundle-id";
+                description
+                  "Specify the attachment bundle-ether sub-interface";
+                leaf bundle-id {
+                  user-ext:CLI-param-help "Attachment bundle-ether sub-interface";
+                  type interfaces:bundle-sub-id-t;
+                  description
+                    "Bundle-ether id";
+                }
+
+                uses interface-parameters;
+              }
+            }
+          }
+        }
+      }
+
+      container address-family {
+        user-ext:CLI-comm-help "Configure LDP for address-family";
+        user-ext:CLI-no-comm-help "Configure LDP for address-family";
+        description
+          "Configure LDP  for address-family";
+        container ipv4 {
+          user-ext:CLI-comm-help "Configure IPv4 LDP";
+          user-ext:CLI-no-comm-help "Configure IPv4 LDP";
+          description
+            "Configure IPv4 LDP";
+          container unicast {
+            user-ext:CLI-comm-help "Configure IPv4 unicast LDP";
+            user-ext:CLI-no-comm-help "Configure IPv4 unicast LDP";
+            description
+              "Configure IPv4 unicast LDP";
+            container redistribution {
+              user-ext:CLI-comm-help "Configure redistribution information";
+              user-ext:CLI-no-comm-help "Remove redistribution information";
+              description
+                "List of redistribution rules.  This list is used to determine
+                 how routing information is redistributed to routing protocols.";
+              list bgp {
+                user-ext:CLI-comm-help "Configure BGP redistribution rule";
+                user-ext:CLI-no-comm-help "Configure BGP redistribution rule";
+                key "name";
+                leaf name {
+                  user-ext:CLI-param-help "Redistribution rule name";
+                  type redist:redist-name-string;
+                  description
+                    "Session name";
+                }
+
+                uses redist:common-redist-ipv4;
+
+                leaf path-type-filter {
+                  user-ext:CLI-comm-help "Set path type filter";
+                  user-ext:CLI-no-comm-help "Set path type filter to default";
+                  user-ext:CLI-param-help "Set path type filter";
+                  type redist:bgp-redist-path-types;
+                  default "bgp-external";
+                  description
+                    "Value of BGP path type filter, if in use.  If the filter
+                     is in use then do not match the source routing information
+                     to this redistribution rule if the path type in the source
+                     routing information does not match this filter value.";
+                }
+              }
+
+              list connected {
+                user-ext:CLI-comm-help "Configure connected redistribution rule";
+                user-ext:CLI-no-comm-help "Remove connected redistribution rule";
+                key "name";
+                leaf name {
+                  user-ext:CLI-param-help "Rule name";
+                  type redist:redist-name-string;
+                  description
+                    "Redistribution rule name";
+                }
+
+                uses redist:common-redist-ipv4;
+              }
+
+              list local {
+                user-ext:CLI-comm-help "Configure local redistribution rule";
+                user-ext:CLI-no-comm-help "Remove local redistribution rule";
+                key "name";
+                leaf name {
+                  user-ext:CLI-param-help "Rule name";
+                  type redist:redist-name-string;
+                  description
+                    "Redistribution rule name";
+                }
+
+                uses redist:common-redist-ipv4;
+              }
+            }
+          }
+        }
+
+        container ipv6 {
+          user-ext:CLI-comm-help "Configure IPv6 LDP";
+          user-ext:CLI-no-comm-help "Configure IPv6 LDP";
+          description
+            "Configure IPv6 LDP";
+          container unicast {
+            user-ext:CLI-comm-help "Configure IPv6 unicast LDP";
+            user-ext:CLI-no-comm-help "Configure IPv6 unicast LDP";
+            description
+              "Configure IPv6 unicast LDP";
+            container redistribution {
+              user-ext:CLI-comm-help "Configure redistribution information";
+              user-ext:CLI-no-comm-help "Remove redistribution information";
+              description
+                "List of redistribution rules.  This list is used to determine
+                 how routing information is redistributed to routing protocols.";
+              list bgp {
+                user-ext:CLI-comm-help "Configure BGP redistribution rule";
+                user-ext:CLI-no-comm-help "Remove BGP redistribution rule";
+                key "name";
+                leaf name {
+                  user-ext:CLI-param-help "Redistribution rule name";
+                  type redist:redist-name-string;
+                  description
+                    "Session name";
+                }
+
+                uses redist:common-redist-ipv6;
+
+                leaf path-type-filter {
+                  user-ext:CLI-comm-help "Set path type filter";
+                  user-ext:CLI-no-comm-help "Set path type filter to default";
+                  user-ext:CLI-param-help "Set path type filter";
+                  type redist:bgp-redist-path-types;
+                  default "bgp-external";
+                  description
+                    "Value of BGP path type filter, if in use.  If the filter is in
+                     use then do not match the source routing information to
+                     this rule if the path type in the source routing
+                     information does not match this filter value.";
+                }
+              }
+
+              list connected {
+                user-ext:CLI-comm-help "Configure connected redistribution rule";
+                user-ext:CLI-no-comm-help "Remove connected redistribution rule";
+                key "name";
+                leaf name {
+                  user-ext:CLI-param-help "Rule name";
+                  type redist:redist-name-string;
+                  description
+                    "Redistribution rule name";
+                }
+
+                uses redist:common-redist-ipv6;
+              }
+
+              list local {
+                user-ext:CLI-comm-help "Configure local redistribution rule";
+                user-ext:CLI-no-comm-help "Remove local redistribution rule";
+                key "name";
+                leaf name {
+                  user-ext:CLI-param-help "Rule name";
+                  type redist:redist-name-string;
+                  description
+                    "Redistribution rule name";
+                }
+
+                uses redist:common-redist-ipv6;
+              }
+            }
+          }
+        }
+      }
+
+      container ipv4-label-state {
+        config false;
+        container up-label-state-list {
+          config false;
+          description
+            "Container to hold up label state list.";
+          list up-label-state {
+            config false;
+            description
+              "List of all upstream labels that have been
+               distributed for host and prefix FECs.";
+            uses ipv4-up-label-state;
+          }
+        }
+
+        container down-label-state-list {
+          config false;
+          description
+            "Container to hold down label state list.";
+          list down-label-state {
+            config false;
+            description
+              "A read-only table showing all downstream labels that have
+               been received and retained/installed for host and prefix
+               FECs.";
+            uses ipv4-down-label-state;
+          }
+        }
+      }
+
+      container ipv6-label-state {
+        config false;
+        container up-label-state-list {
+          config false;
+          description
+            "Container to hold up label state list.";
+          list up-label-state {
+            config false;
+            description
+              "A read-only table showing all upstream labels that have been
+               distributed for host and prefix FECs.";
+            uses ipv6-up-label-state;
+          }
+        }
+
+        container down-label-state-list {
+          config false;
+          description
+            "Container to hold down label state list.";
+          list down-label-state {
+            config false;
+            description
+              "A read-only table showing all downstream labels that have
+               been received and retained/installed for host and prefix
+               FECs.";
+            uses ipv6-down-label-state;
+          }
+        }
+      }
+    }
+  }
+}

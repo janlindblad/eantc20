@@ -1,0 +1,2765 @@
+module ospf-common {
+  namespace "http://metaswitch.com/yang/nbu/ospf-common/201511060000Z";
+  prefix ospf;
+
+  import user-extensions {
+    prefix user-ext;
+  }
+
+  import metaswitch-yang-types {
+    prefix meta;
+  }
+
+  import redist {
+    prefix redist;
+  }
+
+  organization
+    "Metaswitch Networks";
+  contact
+    "Postal: Metaswitch Networks
+             100 Church Street
+             Enfield
+             EN2 6BQ
+             United Kingdom
+     Tel:    +44 20 8366 1177
+     E-mail: info@metaswitch.com";
+  description
+    "Open Shortest Path First v2 and v3 common definitions";
+
+  revision 2015-11-06 {
+    description
+      "Initial revision.";
+  }
+
+  typedef ospf-name-string {
+    type string {
+      length "1..64";
+    }
+    description
+      "WORD (1-64)";
+  }
+
+  typedef ospf-area-id {
+    type string {
+      pattern "(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])";
+    }
+    description
+      "Area id (A.B.C.D)";
+  }
+
+  typedef ospf-link-state-id {
+    type string {
+      pattern "(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])";
+    }
+    description
+      "Link state id (A.B.C.D)";
+  }
+
+  typedef ospf-authentication-key {
+    type meta:ascii-string {
+      length "1..255";
+    }
+    description
+      "WORD (1-255)";
+  }
+
+  typedef ospf-auth-data {
+    type string {
+      length "1..22";
+    }
+    description
+      "WORD (1-22)";
+  }
+
+  typedef ospf-restart-reasons {
+    type enumeration {
+      enum "unknown" {
+        value 1;
+        description
+          "Reason unknown";
+      }
+      enum "software-restart" {
+        value 2;
+        description
+          "The router is performing a software restart";
+      }
+      enum "software-reload" {
+        value 3;
+        description
+          "The router is performing a software reload";
+      }
+      enum "switch-to-backup" {
+        value 4;
+        description
+          "The router is switching to a backup";
+      }
+    }
+    description
+      "Graceful restart reason";
+  }
+
+  typedef ospf-restart-status {
+    type enumeration {
+      enum "not-restarting" {
+        value 1;
+      }
+      enum "planned-restart" {
+        value 2;
+      }
+      enum "unplanned-restart" {
+        value 3;
+      }
+    }
+    description
+      "Current status of hitless restart.";
+  }
+
+  typedef ospf-restart-exit-reason {
+    type enumeration {
+      enum "none" {
+        value 1;
+      }
+      enum "in-progress" {
+        value 2;
+      }
+      enum "completed" {
+        value 3;
+      }
+      enum "timed-out" {
+        value 4;
+      }
+      enum "topology-changed" {
+        value 5;
+      }
+    }
+    description
+      "The reason for exiting an attempted graceful restart.";
+  }
+
+  typedef ospf-import-types {
+    type enumeration {
+      enum "external" {
+        value 1;
+        description
+          "Import external";
+      }
+      enum "no-external" {
+        value 2;
+        description
+          "Import no external";
+      }
+      enum "nssa" {
+        value 3;
+        description
+          "Import NSSA";
+      }
+    }
+    description
+      "OSPF import type";
+  }
+
+  typedef ospf-summary-types {
+    type enumeration {
+      enum "no-summary-lsas" {
+        value 1;
+        description
+          "No area summary";
+      }
+      enum "send-summary-lsas" {
+        value 2;
+        description
+          "Send area summary";
+      }
+    }
+    description
+      "OSPF summary type";
+  }
+
+  typedef ospf-trans-roles {
+    type enumeration {
+      enum "always" {
+        value 1;
+        description
+          "Always perform NSSA translation";
+      }
+      enum "candidate" {
+        value 2;
+        description
+          "Perform NSSA translation when elected";
+      }
+    }
+    description
+      "Translation role";
+  }
+
+  typedef ospf-trans-states {
+    type enumeration {
+      enum "enabled" {
+        value 1;
+      }
+      enum "elected" {
+        value 2;
+      }
+      enum "disabled" {
+        value 3;
+      }
+    }
+    description
+      "Determines whether this router is performing NSSA
+       translation.";
+  }
+
+  typedef ospf-metric-types {
+    type enumeration {
+      enum "standard" {
+        value 1;
+        description
+          "Standard OSPF metric  ";
+      }
+      enum "external-type-1" {
+        value 2;
+        description
+          "External type 1 metric";
+      }
+      enum "external-type-2" {
+        value 3;
+        description
+          "External type 2 metric";
+      }
+    }
+    description
+      "OSPF Metric type";
+  }
+
+  typedef ospf-network-types {
+    type enumeration {
+      enum "undefined" {
+        value 1;
+        description
+          "Undefined network";
+      }
+      enum "broadcast" {
+        value 2;
+        description
+          "Broadcast network";
+      }
+      enum "nbma" {
+        value 3;
+        description
+          "NBMA network";
+      }
+      enum "point-to-point" {
+        value 4;
+        description
+          "Point to point network";
+      }
+      enum "point-to-multipoint" {
+        value 5;
+        description
+          "Point to multipoint network";
+      }
+      enum "loopback" {
+        value 6;
+        description
+          "Loopback network";
+      }
+    }
+    description
+      "OSPF Network type";
+  }
+
+  typedef ospf-interface-states {
+    type enumeration {
+      enum "down" {
+        value 1;
+      }
+      enum "loopback" {
+        value 2;
+      }
+      enum "waiting" {
+        value 3;
+      }
+      enum "point-to-point" {
+        value 4;
+      }
+      enum "designated-router" {
+        value 5;
+      }
+      enum "backup-designated-router" {
+        value 6;
+      }
+      enum "other-designated-router" {
+        value 7;
+      }
+      enum "standby" {
+        value 8;
+      }
+    }
+    description
+      "OSPF Interface State.";
+  }
+
+  typedef ospf-auth-types {
+    type enumeration {
+      enum "none" {
+        value 1;
+        description
+          "No authentication, by default";
+      }
+      enum "simple-password" {
+        value 2;
+        description
+          "Authentication simple password";
+      }
+      enum "md5" {
+        value 3;
+        description
+          "Authentication md5";
+      }
+      enum "hmacsha1" {
+        value 4;
+        description
+          "Authentication HMAC-SHA1";
+      }
+      enum "hmacsha256" {
+        value 5;
+        description
+          "Authentication HMAC-SHA256";
+      }
+      enum "hmacsha384" {
+        value 6;
+        description
+          "Authentication HMAC-SHA384";
+      }
+      enum "hmacsha512" {
+        value 7;
+        description
+          "Authentication HMAC-SHA512";
+      }
+    }
+    description
+      "OSPF authentication type";
+  }
+
+  typedef ospf-neighbor-states {
+    type enumeration {
+      enum "down" {
+        value 1;
+      }
+      enum "attempt" {
+        value 2;
+      }
+      enum "init" {
+        value 3;
+      }
+      enum "two-way" {
+        value 4;
+      }
+      enum "exchange-start" {
+        value 5;
+      }
+      enum "exchange" {
+        value 6;
+      }
+      enum "loading" {
+        value 7;
+      }
+      enum "full" {
+        value 8;
+      }
+    }
+    description
+      "OSPF Neighbor State.";
+  }
+
+  typedef ospf-nbr-permanence {
+    type enumeration {
+      enum "dynamic" {
+        value 1;
+      }
+      enum "permanent" {
+        value 2;
+      }
+    }
+    description
+      "OSPF Neighbor Permanence.";
+  }
+
+  typedef ospf-rstrt-helper-status {
+    type enumeration {
+      enum "not-helping" {
+        value 1;
+      }
+      enum "helping" {
+        value 2;
+      }
+    }
+    description
+      "Indicates whether the router is acting as a hitless restart
+       helper for a neighbor.";
+  }
+
+  typedef ospf-desig-rtr-states {
+    type enumeration {
+      enum "other" {
+        value 0;
+      }
+      enum "designated-router" {
+        value 1;
+      }
+      enum "backup-designated-router" {
+        value 2;
+      }
+    }
+    description
+      "Designated router state.";
+  }
+
+  typedef ospf-agg-ls-types {
+    type enumeration {
+      enum "summary-lsa" {
+        value 3;
+        description
+          "LSA summary link";
+      }
+      enum "nssa-external-lsa" {
+        value 7;
+        description
+          "LSA NSSA external link";
+      }
+    }
+    description
+      "OSPF aggregate LSA type";
+  }
+
+  typedef ospf-aggregate-effects {
+    type enumeration {
+      enum "advertise-matching" {
+        value 1;
+        description
+          "Effect advertise matching";
+      }
+      enum "do-not-advertise-matching" {
+        value 2;
+        description
+          "Effect do not advertise matching";
+      }
+    }
+    description
+      "OSPF aggregate effect";
+  }
+
+  typedef ospf-graceful-restart-grace-period-t {
+    type uint32 {
+      range "1..1800";
+    }
+    description
+      "range (1-1800)";
+  }
+
+  typedef ospf-hello-interval-t {
+    type uint32 {
+      range "1..65535";
+    }
+    description
+      "(1-65535)";
+  }
+
+  typedef ospf-router-dead-interval-t {
+    type uint32 {
+      range "1..65535";
+    }
+    description
+      "(1-65535)";
+  }
+
+  typedef ospf-fast-hello-multiplier-t {
+    type uint32 {
+      range "3..20";
+    }
+    description
+      "(3-20)";
+  }
+
+  typedef ospf-router-priority-t {
+    type uint32 {
+      range "0..255";
+    }
+    description
+      "(0-255)";
+  }
+
+  typedef ospf-mtu-size-percentage-t {
+    type uint32 {
+      range "0..100";
+    }
+    description
+      "(0-100)";
+  }
+
+  typedef ospf-if-metric-value-t {
+    type uint32 {
+      range "0..65535";
+    }
+    description
+      "(0-65535)";
+  }
+
+  typedef ospf-ip-max-packet-size-config-t {
+    type uint32 {
+      range "1..65535";
+    }
+    description
+      "(1-65535)";
+  }
+
+  typedef ospf-ip-max-packet-size-state-t {
+    type uint32 {
+      range "0..65535";
+    }
+    description
+      "(0-65535)";
+  }
+
+  typedef ospf-metric {
+    type uint32 {
+      range "0..2147483647";
+    }
+    description
+      "(0-2147483647)";
+  }
+
+  typedef ospf-redist-metric-value-t {
+    type uint32 {
+      range "0..16777214";
+    }
+    description
+      "(0-16777214)";
+  }
+
+  typedef ospf-stub-metric-value-t {
+    type uint32 {
+      range "0..16777215";
+    }
+    description
+      "(0-16777215)";
+  }
+
+  typedef ospf-tag {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "(0-4294967295)";
+  }
+
+  typedef ospf-translator-resignation-delay-t {
+    type uint32 {
+      range "0..2147483";
+    }
+    description
+      "(0-2147483)";
+  }
+
+  typedef ospf-time-to-advertise-period-t {
+    type uint32 {
+      range "0..86400";
+    }
+    units "seconds";
+    description
+      "SECS (0..86400)";
+  }
+
+  typedef ospf-recalc-max-delay {
+    type uint32 {
+      range "0..2147483647";
+    }
+    units "milliseconds";
+    description
+      "milliseconds (0-2147483647)";
+  }
+
+  typedef ospf-microloop-avoidance-delay {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "range (0-4294967295)";
+  }
+
+  grouping ospf-redist {
+    user-ext:CLI-comm-help "Configure OSPFv2 redistribution parameters";
+    user-ext:CLI-no-comm-help "Configure OSPFv2 redistribution parameters";
+    leaf metric-conversion {
+      user-ext:CLI-comm-help "Set metric conversion action";
+      user-ext:CLI-no-comm-help "Set metric conversion action to default";
+      user-ext:CLI-param-help "Set metric conversion action";
+      type redist:rtm-metric-conversion;
+      default "constant";
+      description
+        "How to act on the value of the metric in the routing information received from the source.";
+    }
+
+    leaf metric-value {
+      user-ext:CLI-comm-help "Set metric value";
+      user-ext:CLI-no-comm-help "Set metric value to default";
+      user-ext:CLI-param-help "Set metric value";
+      type ospf-redist-metric-value-t;
+      default "1";
+      description
+        "Use when creating a value for the metric in the routing information sent to the destination.";
+    }
+
+    leaf new-path-type {
+      user-ext:CLI-comm-help "Set path type";
+      user-ext:CLI-no-comm-help "Set path type to default";
+      user-ext:CLI-param-help "Set path type tag";
+      type redist:ospf-redist-path-types;
+      description
+        "Type of path to set in routing information sent to destination.";
+    }
+
+    leaf new-ospf-tag {
+      user-ext:CLI-comm-help "Set OSPF tag";
+      user-ext:CLI-no-comm-help "Set OSPF tag to default";
+      user-ext:CLI-param-help "Set OSPF tag";
+      type ospf-tag;
+      description
+        "Value of OSPF tag to set in routing information sent to destination.";
+    }
+
+    container ospf-propagate {
+      user-ext:CLI-comm-help "Configure OSPF propagate tag";
+      user-ext:CLI-no-comm-help "Configure OSPF propagate tag";
+      leaf disable {
+        user-ext:CLI-comm-help "Disable OSPF propagate tag";
+        user-ext:CLI-no-comm-help "Enable OSPF propagate tag";
+        type empty;
+        description
+          "Value of OSPF propagate tag to set in routing information sent to destination.";
+      }
+    }
+  }
+
+  grouping helper-mode-policy-parms {
+    container helper-mode-policy {
+      user-ext:CLI-comm-help "Configure help router mode policy";
+      user-ext:CLI-no-comm-help "Configure help router mode policy";
+      description
+        "Indicates whether OSPF will help a neighbor undergoing
+         hitless restart on this interface for the specified
+         reason.  Each leaf indicates whether OSPF will help a router
+         restarting for the specified reason.  Otherwise grace LSAs received
+         containing this restart reason will be ignored.
+
+         By default OSPF does not help restarting routers for
+         any reason.";
+      leaf unknown {
+        user-ext:CLI-comm-help "Enable helping neighbor advertising an unknown restart reason";
+        user-ext:CLI-no-comm-help "Disable helping neighbor advertising an unknown restart reason";
+        type empty;
+        description
+          "Help routers advertising an unknown restart reason.";
+      }
+
+      leaf software {
+        user-ext:CLI-comm-help "Enable helping neighbor undergoing a software restart";
+        user-ext:CLI-no-comm-help "Disable helping neighbor undergoing a software restart";
+        type empty;
+        description
+          "Help routers performing a software restart.";
+      }
+
+      leaf reload {
+        user-ext:CLI-comm-help "Enable helping neighbor undergoing a software reload";
+        user-ext:CLI-no-comm-help "Disable helping neighbor undergoing a software reload";
+        type empty;
+        description
+          "Help routers performing a software reload.";
+      }
+
+      leaf switch {
+        user-ext:CLI-comm-help "Enable helping neighbor switching to backup instances";
+        user-ext:CLI-no-comm-help "Disable helping neighbor switching to backup instances";
+        type empty;
+        description
+          "Help routers switching to backup instances.";
+      }
+    }
+  }
+
+  grouping common-global-parms {
+    container as-br {
+      user-ext:CLI-comm-help "Configure Autonomous System border router status";
+      user-ext:CLI-no-comm-help "Configure Autonomous System border router status";
+      leaf disable {
+        user-ext:CLI-comm-help "Disable Autonomous System border router status";
+        user-ext:CLI-no-comm-help "Enable Autonomous System border router status";
+        type empty;
+        description
+          "A flag to note whether this router is configured as an
+           Autonomous System border router.";
+      }
+    }
+
+    container graceful-restart {
+      user-ext:CLI-comm-help "Enable graceful restart";
+      user-ext:CLI-no-comm-help "Disable graceful restart";
+      presence "Enable graceful restart";
+      description
+        "Indicates whether OSPF should perform hitless restart using grace
+         LSAs.  If OSPF is being deactivated, grace LSAs are sent out to
+         inform neighboring routers that we wish to undergo a hitless restart.
+         If OSPF is being activated, we will attempt to restart hitlessly.";
+      leaf unplanned {
+        user-ext:CLI-comm-help "Enable unplanned graceful restart";
+        user-ext:CLI-no-comm-help "Disable unplanned graceful restart";
+        type empty;
+        description
+          "Indicates whether OSPF should perform an unplanned
+           hitless restart using grace LSAs.";
+      }
+
+      leaf grace-period {
+        user-ext:CLI-comm-help "Set graceful restart grace period in seconds (1..1800)";
+        user-ext:CLI-no-comm-help "Set graceful restart grace period to default";
+        user-ext:CLI-param-help "Set graceful restart grace period in seconds";
+        type ospf-graceful-restart-grace-period-t;
+        units "seconds";
+        default "120";
+        description
+          "If OSPF is attempting to undergo a hitless restart,
+           this field specifies the length of grace period that
+           should be requested from adjacent routers in grace LSAs.
+           After this timer period has passed, the node will
+           delete routes from this OSPF instance from its routing
+           table, and so hitless restart will have failed.  The hitless
+           grace period must be greater than zero.";
+      }
+
+      leaf reason {
+        user-ext:CLI-comm-help "Set graceful restart reason";
+        user-ext:CLI-no-comm-help "Set graceful restart reason to default";
+        user-ext:CLI-param-help "Set graceful restart reason";
+        type ospf-restart-reasons;
+        default "unknown";
+        description
+          "If OSPF is attempting to undergo a planned hitless
+           restart, this field specifies the reason for the restart.
+           This reason is passed to adjacent neighbors in grace LSAs.
+           Note that if the router is undergoing an unplanned hitless
+           restart, this field is ignored and the reason for restart
+           will always be unknown.";
+      }
+    }
+
+    leaf ignore-lost-if {
+      user-ext:CLI-comm-help "Enable ignoring missing local interfaces on graceful restart";
+      user-ext:CLI-no-comm-help "Disable ignoring missing local interfaces on graceful restart";
+      type empty;
+      description
+        "Indicates whether OSPF should perform hitless restart
+         ignoring interfaces listed in its pre-restart Router LSAs that
+         are no longer present.";
+    }
+
+    leaf advertise-max-metric {
+      user-ext:CLI-comm-help "Enable OSPF to advertise non-stub links with max metric";
+      user-ext:CLI-no-comm-help "Disable OSPF to advertise non-stub links with max metric";
+      type empty;
+      description
+        "Set this flag to 'true' to configure OSPF to advertise all
+         the non-stub links in its router LSA with the maximum
+         valid value.
+
+         If time-to-advertise is non zero then this is only
+         done for that period after OSPF activates. Once this time
+         has passed, the non-stub links will be advertised with
+         their normal metrics.";
+    }
+
+    leaf time-to-advertise {
+      user-ext:CLI-comm-help "Set OSPF time to advertise period in seconds";
+      user-ext:CLI-no-comm-help "Set OSPF time to advertise period to default";
+      user-ext:CLI-param-help "Set OSPF time to advertise period in seconds";
+      type ospf-time-to-advertise-period-t;
+      default "600";
+      description
+        "The amount of time OSPF advertises all the non-stub links
+         in its router LSA with the maximum valid value after OSPF
+         activates, if advertise-max-metric is set.
+         Once this time has passed, the non-stub links will be
+         advertised with their normal metrics.  A value of zero
+         indicates that the non-stub links are always advertised
+         with the maximum valid value.
+
+         The value of this object can be changed at any time. If
+         it is changed to a non zero value while a previous time
+         to advertise period is in progress then the timer is
+         restarted with the updated value.";
+    }
+
+    leaf route-calculation-max-delay {
+      user-ext:CLI-comm-help "Set maximum wait interval in milliseconds";
+      user-ext:CLI-no-comm-help "Set maximum wait interval to default";
+      user-ext:CLI-param-help "Set interval in milliseconds";
+      type ospf-recalc-max-delay;
+      default "5000";
+      description
+        "The maximum delay before the Routing Table is recalculated
+         following a change to the Link State Database.
+         (Recalculation is delayed to reduce the frequency of
+         recalculations of the Routing Table).
+
+         This parameter has units of milliseconds. A value of 0
+         indicates that a routing calculation will immediately
+         follow an update to the database.";
+    }
+
+    container microloop-avoidance {
+      user-ext:CLI-comm-help "Enable microloop avoidance";
+      user-ext:CLI-no-comm-help "Disable microloop avoidance";
+      presence "Enable microloop avoidance";
+      description
+        "Enable microloop avoidance procedures in DC-OSPF.";
+      leaf rib-update-delay {
+        user-ext:CLI-comm-help "Set microloop avoidance delay in milliseconds";
+        user-ext:CLI-no-comm-help "Set microloop avoidance delay to default";
+        user-ext:CLI-param-help "Set microloop avoidance delay in milliseconds";
+        type ospf-microloop-avoidance-delay;
+        units "milliseconds";
+        default "5000";
+        description
+          "Set microloop avoidance delay";
+      }
+    }
+  }
+
+  grouping common-global-state {
+    leaf area-border-router-status {
+      type boolean;
+      config false;
+      description
+        "A flag to note whether this router is an area border
+         router.";
+    }
+
+    leaf originated-new-lsas {
+      type uint32;
+      config false;
+      description
+        "The number of new link-state advertisements that have been
+         originated.  This number is incremented each time the
+         router originates a new LSA.  It includes all originated
+         LSAs, including those which have merely been refreshed.";
+    }
+
+    leaf received-new-lsas {
+      type uint32;
+      config false;
+      description
+        "The number of link-state advertisements received
+         determined to be new instances.  This number does not
+         include newer instances of self-originated link-state
+         advertisements.  Nor does it include received LSAs with an
+         age of MaxAge.";
+    }
+
+    leaf number-updates-pending {
+      type uint32;
+      config false;
+      description
+        "The number of updates that are pending addition to the
+         Link State Database.";
+    }
+
+    leaf number-updates-merged {
+      type uint32;
+      config false;
+      description
+        "The number of updates that have been merged into the Link
+         State Database since the last routing calculation.";
+    }
+
+    leaf number-checksum-pending {
+      type uint32;
+      config false;
+      description
+        "The number of LSAs in the Link State Database which are
+         now due to have their checksum checked.";
+    }
+
+    leaf graceful-restart-status {
+      type ospf-restart-status;
+      config false;
+      description
+        "Current status of OSPF hitless restart.";
+    }
+
+    leaf graceful-restart-remaining-time {
+      type uint32 {
+        range "0..1800";
+      }
+      units "seconds";
+      config false;
+      description
+        "Remaining time in current OSPF hitless restart interval.
+         Set to zero if OSPF is not currently in hitless restart.";
+    }
+
+    leaf graceful-restart-exit-reason {
+      type ospf-restart-exit-reason;
+      config false;
+      description
+        "Describes the outcome of the last attempt at a hitless
+         restart.  If the value is 'none', no restart has yet been
+         attempted.  If the value is 'in-progress', a restart
+         attempt is currently underway.";
+    }
+  }
+
+  grouping common-global-config-state {
+    leaf traffic-engineering-support {
+      type boolean;
+      config false;
+      description
+        "The router's support for OSPF traffic engineering.";
+    }
+
+    leaf route-calculation-max-delay {
+      type uint32 {
+        range "0..2147483647";
+      }
+      units "milliseconds";
+      config false;
+      description
+        "The maximum delay before the Routing Table is recalculated
+         following a change to the Link State Database.
+         (Recalculation is delayed to reduce the frequency of
+         recalculations of the Routing Table).
+
+         This parameter has units of milliseconds.  A value of 0
+         indicates that a routing calculation will immediately
+         follow an update to the database.";
+    }
+
+    leaf route-max-equal-cost-paths {
+      type uint32 {
+        range "1..32";
+      }
+      config false;
+      description
+        "The maximum number of equal cost paths that are stored for
+         each destination in the Routing Table.
+
+         Note that, when IGP shortcut interfaces are in use, this
+         maximum applies individually to IGP shortcut paths and
+         non-IGP shortcut paths.  That is, there may be a total of
+         2 * route-max-equal-cost-paths paths stored for a single
+         destination.";
+    }
+
+    leaf external-lsa-refresh-interval {
+      type int32 {
+        range "1..3599";
+      }
+      units "seconds";
+      config false;
+      description
+        "Self-originated LSAs are periodically reflooded into the
+         routing domain, to add to the robustness of the OSPF
+         protocol.  This value determines the interval between
+         refreshes of AS-scope LSAs, for example, AS-external LSAs,
+         and is defaulted to the OSPF standard default of 1800
+         seconds (30 minutes).";
+    }
+
+    leaf min-ls-interval {
+      type int32 {
+        range "0..600000";
+      }
+      units "milliseconds";
+      config false;
+      description
+        "The minimum time, in milliseconds, between distinct
+         originations of any particular LSA.  A value of zero means
+         that there is no minimum time between distinct
+         reoriginations.
+
+         Note that if this value is changed while PM is active then
+         it may take up to the previous value of
+         min-ls-interval for the change to take effect.";
+    }
+
+    leaf min-ls-arrival {
+      type int32 {
+        range "0..600000";
+      }
+      units "milliseconds";
+      config false;
+      description
+        "For any particular LSA, the minimum time in milliseconds
+         that must elapse between reception of new LSA instances
+         during flooding.  LSA instances received at higher
+         frequencies are discarded.
+
+         The value of this field should be less than or equal to
+         the value of the min-ls-interval configured on
+         neighboring routers.";
+    }
+
+    leaf hold-ls-interval {
+      type int32 {
+        range "0..600000";
+      }
+      units "milliseconds";
+      config false;
+      description
+        "The time, in milliseconds, that the minimum time between
+         distinct originations of any particular LSA is increased
+         when the network is unstable.
+
+         A value of zero means that the minimum time between
+         distinct reoriginations is not increased.
+
+         If an event occurs within the minimum time for LSA
+         regeneration, the origination is delayed until the end of
+         the hold-ls-interval and the length of the interval
+         doubled.  Doubling of the hold interval contuinues until
+         the interval reaches max-ls-interval.
+
+         Note that if this value is changed while PM is active then
+         it may take up to the previous value of
+         max-ls-interval for the change to take effect.";
+    }
+
+    leaf max-ls-interval {
+      type int32 {
+        range "0..600000";
+      }
+      units "milliseconds";
+      config false;
+      description
+        "The maximum value, in milliseconds, that an origination of
+         any particular LSA is delayed.
+
+         A value of zero means that the minimum time between
+         distinct reoriginations is not increased.
+
+         Note that if this value is changed while PM is active then
+         it may take up to the previous value of
+         max-ls-interval for the change to take effect.";
+    }
+  }
+
+  grouping common-global-stats {
+    leaf length {
+      type uint32;
+      config false;
+      description
+        "The number of OSPF packet header length errors detected in
+         the case where OSPF cannot determine the receiving
+         interface.
+
+         This count is incremented when a received packet is too
+         small to be identified.
+
+         The count is reinitialized to zero when entity statistics
+         collection is reset.";
+    }
+
+    leaf no-if {
+      type uint32;
+      config false;
+      description
+        "The number of OSPF packet header errors detected of type
+         'OSPF cannot determine the receiving interface'.
+
+         This count is incremented when the receiving interface for
+         a packet cannot be identified.
+
+         The count is reinitialized to zero when entity statistics
+         collection is reset.";
+    }
+
+    leaf no-virt-link {
+      type uint32;
+      config false;
+      description
+        "The number of OSPF packet header 'no virtual link' errors.
+
+         This count is incremented when a received packet appears
+         to be for a virtual interface, but no receiving interface
+         can be identified.
+
+         The count is reinitialized to zero when entity statistics
+         collection is reset.";
+    }
+
+    leaf version {
+      type uint32;
+      config false;
+      description
+        "The number of OSPF packet header version errors detected
+         in the case where OSPF cannot determine the receiving
+         interface.
+
+         This count is incremented when a received OSPF packet
+         header Version field is invalid.
+
+         The count is reinitialized to zero when entity statistics
+         collection is reset.";
+    }
+
+    leaf bad-src {
+      type uint32;
+      config false;
+      description
+        "The number of OSPF packet header 'bad source' errors
+         detected in the case where OSPF cannot determine the
+         receiving interface.
+
+         This count is incremented when the source IP address of a
+         received OSPF packet is either invalid or not recognized.
+
+         The count is reinitialized to zero when entity statistics
+         collection is reset.";
+    }
+
+    leaf resource-err {
+      type uint32;
+      config false;
+      description
+        "The number of OSPF packet header resource errors detected
+         in the case where OSPF cannot determine the receiving
+         interface.
+
+         This count is incremented when a received OSPF packet is
+         dropped because of resource failure.
+
+         The count is reinitialized to zero when entity statistics
+         collection is reset.";
+    }
+
+    leaf bad-packet {
+      type uint32;
+      config false;
+      description
+        "The number of OSPF packets received that have been
+         dropped, for a reason which does not have a more specific
+         type defined.
+
+         This count is incremented when a received OSPF packet is
+         dropped for a reason that is not defined in the OSPF
+         user exit interface.
+
+         The count is reinitialized to zero when entity statistics
+         collection is reset.";
+    }
+  }
+
+  grouping common-lsdb-state {
+    leaf ls-id {
+      type ospf-link-state-id;
+      config false;
+      description
+        "The Link State ID is an LS Type Specific field containing
+         a 32 bit identifier in IP address format; it identifies
+         the piece of the routing domain that is being described by
+         the advertisement.";
+    }
+
+    leaf router-id {
+      type meta:router-id;
+      config false;
+      description
+        "The 32 bit number that uniquely identifies the originating
+         router in the Autonomous System.";
+    }
+
+    leaf sequence-number {
+      type int32;
+      config false;
+      description
+        "The sequence number field is a signed 32-bit integer.  It
+         is used to detect old and duplicate link state
+         advertisements.  The space of sequence numbers is linearly
+         ordered.  The larger the sequence number the more recent
+         the advertisement.";
+    }
+
+    leaf lsa-age {
+      type uint32;
+      units "seconds";
+      config false;
+      description
+        "This field is the age of the link state advertisement in
+         seconds.";
+    }
+
+    leaf checksum {
+      type uint32;
+      config false;
+      description
+        "This field is the checksum of the complete contents of the
+         advertisement, excepting the age field.  The age field is
+         excepted so that an advertisement's age can be incremented
+         without updating the checksum.  The checksum used is the
+         same that is used for ISO connectionless datagrams; it is
+         commonly referred to as the Fletcher checksum.";
+    }
+
+    leaf lsa {
+      type string;
+      config false;
+      description
+        "The entire Link State Advertisement, including its header.";
+    }
+  }
+
+  grouping common-interface-parms {
+    user-ext:CLI-comm-help "Configure interface parameters";
+    user-ext:CLI-no-comm-help "Configure interface parameters";
+    leaf hello-interval {
+      user-ext:CLI-comm-help "Set hello interval in seconds";
+      user-ext:CLI-no-comm-help "Set hello interval to default";
+      user-ext:CLI-param-help "Set hello interval in seconds";
+      type ospf-hello-interval-t;
+      units "seconds";
+      default "10";
+      description
+        "The length of time, in seconds, between the Hello packets
+         that the router sends on the interface.  This value must
+         be the same for all routers attached to a common network.
+
+         Note that this field is ignored when Fast Hellos
+         are used on this interface.  Fast Hellos are
+         configured using dead-interval.";
+    }
+
+    leaf dead-interval {
+      user-ext:CLI-comm-help "Set router dead interval in seconds";
+      user-ext:CLI-no-comm-help "Set router dead interval to default";
+      user-ext:CLI-param-help "Set router dead interval in seconds";
+      type ospf-router-dead-interval-t;
+      units "seconds";
+      default "40";
+      description
+        "The number of seconds that a router's Hello packets have
+         not been seen before its neighbors declare the router
+         down.  This should be some multiple of the Hello interval.
+         This value must be the same for all routers attached to a
+         common network.
+
+         A value of 1 second means that Fast Hello Timers are used
+         on this interface.  The fast-hello-multiplier
+         field is used to determine the Hello interval instead of
+         hello-interval.";
+    }
+
+    leaf passive {
+      user-ext:CLI-comm-help "Enable passive interface flag";
+      user-ext:CLI-no-comm-help "Disable passive interface flag";
+      type empty;
+      description
+        "Indicates whether this interface is a passive interface.
+         If set to true, we suppress HELLO packets sent on and
+         received from this interface.  We will therefore advertise
+         this interface in our LSAs but not run OSPF protocol over
+         it.";
+    }
+
+    uses ospf:helper-mode-policy-parms;
+
+    container graceful-restart {
+      user-ext:CLI-comm-help "Configure interface graceful restart parameters";
+      user-ext:CLI-no-comm-help "Configure interface graceful restart parameters";
+      leaf max-grace-period {
+        user-ext:CLI-comm-help "Set maximum graceful restart grace period in seconds";
+        user-ext:CLI-no-comm-help "Set maximum graceful restart grace period to default";
+        user-ext:CLI-param-help "Set maximum graceful restart grace period in seconds";
+        type ospf-graceful-restart-grace-period-t;
+        units "seconds";
+        default "140";
+        description
+          "If configured to help neighbors undergoing hitless restart
+           on this interface, this field indicates the maximum grace
+           period that will be allowed for a neighboring router
+           undergoing hitless restart.";
+      }
+    }
+
+    leaf fast-hello-multiplier {
+      user-ext:CLI-comm-help "Set fast hello multiplier";
+      user-ext:CLI-no-comm-help "Set fast hello multiplier to default";
+      user-ext:CLI-param-help "Set fast hello multiplier";
+      type ospf-fast-hello-multiplier-t;
+      default "5";
+      description
+        "The number of Hellos that should be sent within 1 second
+         when using Fast Hellos on this interface.  This value does
+         not have to be same for all routers attached to a common
+         network, but it is advisable.  Fast Hellos are configured
+         using dead-interval.";
+    }
+
+    leaf mtu-ignore {
+      user-ext:CLI-comm-help "Enable MTU ignore flag";
+      user-ext:CLI-no-comm-help "Disable MTU ignore flag";
+      type empty;
+      description
+        "This object controls whether OSPF checks the MTU size
+         on incoming Database Description packets.  By default, if
+         the received MTU size in a DB Description packet is higher
+         than the MTU size configured on the incoming interface,
+         the OSPF adjacency will not be established.  If the
+         interface is tunneled over, say, an MPLS network, then the
+         administrator may not know the maximum MTU size and so can
+         tell OSPF to ignore the MTU size on incoming DB
+         description packets.";
+    }
+
+    container bfd {
+      user-ext:CLI-comm-help "Configure BFD parameters for this interface";
+      user-ext:CLI-no-comm-help "Configure BFD parameters for this interface";
+      description
+        "BFD parameters.";
+      leaf fast-detect {
+        user-ext:CLI-comm-help "Enable BFD for this interface";
+        user-ext:CLI-no-comm-help "Disable BFD for this interface";
+        type empty;
+        description
+          "Indicates whether Bidirectional Forwarding Detection (BFD)
+           is desired on this interface.";
+      }
+    }
+
+    container restart-helper-strict-lsa-check {
+      user-ext:CLI-comm-help "Configure restart helper strict lsa check flag";
+      user-ext:CLI-no-comm-help "Configure restart helper strict lsa check flag";
+      leaf disable {
+        user-ext:CLI-comm-help "Disable restart helper strict lsa check flag";
+        user-ext:CLI-no-comm-help "Enable restart helper strict lsa check flag";
+        type empty;
+        description
+          "Whether to perform strict LSA checking when acting as a
+           restart helper for a restarting peer on this interface.
+
+           When enabled, OSPF will perform strict LSA checking as described
+           in RFC 3623 and RFC 5187.  In particular, OSPF will stop acting as
+           restart helper if it transmits an LSA to the restarting node
+           indicating a topology change.";
+      }
+    }
+  }
+
+  grouping common-if-parms {
+    uses ospf:common-interface-parms;
+
+    leaf network {
+      user-ext:CLI-comm-help "Set interface type";
+      user-ext:CLI-no-comm-help "Set interface type to default";
+      user-ext:CLI-param-help "Set interface type";
+      type ospf-network-types;
+      default "broadcast";
+      description
+        "The OSPF interface type.
+         Broadcast LANs, such as Ethernet and IEEE 802.5, take the
+         value 'broadcast', X.25 and similar technologies take the
+         value 'nbma', and links that are definitively point to
+         point take the value 'point-to-point'.";
+    }
+
+    leaf priority {
+      user-ext:CLI-comm-help "Set router priority";
+      user-ext:CLI-no-comm-help "Set router priority to default";
+      user-ext:CLI-param-help "Set router priority";
+      type ospf-router-priority-t;
+      default "1";
+      description
+        "The priority of this interface.  Used in multi-access
+         networks, this field is used in the designated router
+         election algorithm.  The value 0 signifies that the router
+         is not eligible to become the designated router on this
+         particular network.  In the event of a tie in this value,
+         routers will use their Router ID as a tie breaker.";
+    }
+
+    leaf mtu-size-percentage {
+      user-ext:CLI-comm-help "Set MTU size percentage";
+      user-ext:CLI-no-comm-help "Set MTU size percentage to default";
+      user-ext:CLI-param-help "Set MTU size percentage";
+      type ospf-mtu-size-percentage-t;
+      default "0";
+      description
+        "The Maximum Transmission Unit size for the various
+         switching descriptors on this interface is updated in
+         real-time by the External IF Config Stub.  In order to
+         increase performance and reduce network traffic, this
+         parameter determines the minimal percentage change of the
+         Maximum Transmission Unit that causes a new Opaque LSA to
+         be originated.";
+    }
+
+    leaf metric {
+      user-ext:CLI-comm-help "Set metric value";
+      user-ext:CLI-no-comm-help "Remove metric value";
+      user-ext:CLI-param-help "Set metric value";
+      type ospf-if-metric-value-t;
+      default "1";
+      description
+        "The metric of using this type of service on this
+         interface.  The default value of the TOS 0 Metric is 10^8
+         / ifSpeed.";
+    }
+
+    leaf authentication-type {
+      user-ext:CLI-comm-help "Set authentication type";
+      user-ext:CLI-no-comm-help "Set authentication type to default";
+      user-ext:CLI-param-help "Set authentication type";
+      type ospf-auth-types;
+      default "none";
+      description
+        "The authentication type specified for an interface.
+         Additional authentication types may be assigned locally.
+
+         Note that this object can be used to engage in significant
+         attacks against an OSPF router.";
+    }
+
+    leaf authentication-data {
+      user-ext:CLI-comm-help "Set authentication data";
+      user-ext:CLI-no-comm-help "Set authentication data to default";
+      user-ext:CLI-param-help "Set authentication data";
+      type ospf-auth-data;
+      description
+        "Authentication user data for interface level
+         authentication.
+
+         This data is passed opaquely to the authentication interface where
+         it can be used to assist with authentication decisions.";
+    }
+  }
+
+  grouping common-vif-parms {
+    uses ospf:common-interface-parms;
+
+    leaf ip-max-packet-size {
+      user-ext:CLI-comm-help "Set IP maximum packet size";
+      user-ext:CLI-no-comm-help "Remove IP maximum packet size";
+      user-ext:CLI-param-help "Set IP maximum packet size";
+      type ospf-ip-max-packet-size-config-t;
+      description
+        "Maximum transfer unit (MTU) for the network interface.
+
+         This is the maximum packet size in bytes for packets sent
+         over the network interface.  This size excludes link layer
+         headers but includes IP headers and higher-level headers.
+
+         Normally, OSPF will limit sent PDUs (protocol data
+         units) to less than or equal to this size.  However, if
+         OSPF cannot construct a valid OSPF PDU smaller than or
+         equal to this size then it will send the smallest valid
+         PDU and assume that the IP stack will fragment the packet.";
+    }
+  }
+
+  grouping common-interface-state {
+    leaf state {
+      type ospf-interface-states;
+      config false;
+      description
+        "The OSPF Interface State.";
+    }
+
+    leaf events {
+      type uint32;
+      config false;
+      description
+        "The number of times this OSPF interface has changed its
+         state, or an error has occurred.";
+    }
+
+    leaf lsa-count {
+      type uint32;
+      config false;
+      description
+        "The total number of link-local link state advertisements
+         in this interface's link-local link state database.";
+    }
+
+    leaf lsa-checksum-sum {
+      type uint32;
+      config false;
+      description
+        "The 32-bit unsigned sum of the link-state advertisements'
+         LS checksums contained in this interface's link-local link
+         state database.  The sum can be used to determine if there
+         has been a change in the interface's link state database,
+         and to compare the interface link-state database of
+         routers attached to the same subnet.";
+    }
+
+    leaf oper-status {
+      type meta:oper-status;
+      config false;
+      description
+        "The current operational state of this interface.";
+    }
+
+    leaf resource-class {
+      type uint32;
+      config false;
+      description
+        "This field specifies administrative group membership for
+         this interface, in terms of a bit mask.  An interface that
+         is a member of multiple groups will have multiple bits
+         set.  There can be at most 32 independent administrative
+         groups.  These groups are used by OSPF in CSPF
+         calculations, which may restrict routes to a subset of
+         these groups.  Note that each OSPF interface
+         (address/if_index pair) may be assigned to different
+         Resource Classes.";
+    }
+  }
+
+  grouping common-if-state {
+    uses common-interface-state;
+
+    leaf area-id {
+      type ospf-area-id;
+      config false;
+      description
+        "The OSPF area in which the interface belongs.";
+    }
+
+    leaf designated-router {
+      type meta:router-id;
+      config false;
+      description
+        "The IP Address of the Designated Router.";
+    }
+
+    leaf backup-designated-router {
+      type meta:router-id;
+      config false;
+      description
+        "The IP Address of the Backup Designated Router.";
+    }
+
+    leaf ip-max-packet-size {
+      type ospf-ip-max-packet-size-state-t;
+      config false;
+      description
+        "Maximum transfer unit (MTU) for the network interface.
+
+         This is the maximum packet size in bytes for packets sent
+         over the network interface.  This size excludes link layer
+         headers but includes IP headers and higher-level headers.
+
+         Normally, OSPF will limit sent PDUs (protocol data
+         units) to less than or equal to this size.  However, if
+         OSPF cannot construct a valid OSPF PDU smaller than or
+         equal to this size then it will send the smallest valid
+         PDU and assume that the IP stack will fragment the packet.
+
+         Set to zero if unknown.";
+    }
+  }
+
+  grouping common-if-te-state {
+    leaf te-metric {
+      type uint32;
+      config false;
+      description
+        "The Traffic Engineering metric for this interface, used by
+         CSPF to calculate constrained routes.  This is advertised
+         through the routing domain in Opaque LSAs.";
+    }
+
+    leaf max-bandwidth {
+      type uint32;
+      units "bytes per second";
+      config false;
+      description
+        "The maximum bandwidth on this interface, in IEEE floating
+         point format, used by CSPF to calculate constrained
+         routes.  This is the true link capacity.  This is advertised
+         through the routing domain in Opaque LSAs.";
+    }
+
+    leaf max-reservable-bandwidth {
+      type uint32;
+      units "bytes per second";
+      config false;
+      description
+        "The maximum reservable bandwidth on this interface, in
+         IEEE floating point format, used by CSPF to calculate
+         constrained routes.  This is the true link capacity, and
+         may be greater than max-bandwidth (in which case the link
+         may be oversubscribed).  This is advertised through the
+         routing domain in Opaque LSAs.";
+    }
+
+    leaf unreserved-bandwidth-0 {
+      type uint32;
+      units "bytes per second";
+      config false;
+      description
+        "The unreserved bandwidth on this interface, at the first
+         priority level or TE-class, in IEEE floating point format,
+         used by CSPF to calculate constrained routes.  Each value
+         will be less than or equal to max-reservable-bandwidth.
+         This is advertised through the routing domain in Opaque LSAs.";
+    }
+
+    leaf unreserved-bandwidth-1 {
+      type uint32;
+      units "bytes per second";
+      config false;
+      description
+        "The unreserved bandwidth on this interface, at the second
+         priority level or TE-class, in IEEE floating point format,
+         used by CSPF to calculate constrained routes.  Each value
+         will be less than or equal to max-reservable-bandwidth.
+         This is advertised through the routing domain in Opaque LSAs.";
+    }
+
+    leaf unreserved-bandwidth-2 {
+      type uint32;
+      units "bytes per second";
+      config false;
+      description
+        "The unreserved bandwidth on this interface, at the third
+         priority level or TE-class, in IEEE floating point format,
+         used by CSPF to calculate constrained routes.  Each value
+         will be less than or equal to max-reservable-bandwidth.
+         This is advertised through the routing domain in Opaque LSAs.";
+    }
+
+    leaf unreserved-bandwidth-3 {
+      type uint32;
+      units "bytes per second";
+      config false;
+      description
+        "The unreserved bandwidth on this interface, at the fourth
+         priority level or TE-class, in IEEE floating point format,
+         used by CSPF to calculate constrained routes.  Each value
+         will be less than or equal to max-reservable-bandwidth.
+         This is advertised through the routing domain in Opaque LSAs.";
+    }
+
+    leaf unreserved-bandwidth-4 {
+      type uint32;
+      units "bytes per second";
+      config false;
+      description
+        "The unreserved bandwidth on this interface, at the fifth
+         priority level or TE-class, in IEEE floating point format,
+         used by CSPF to calculate constrained routes.  Each value
+         will be less than or equal to max-reservable-bandwidth.
+         This is advertised through the routing domain in Opaque LSAs.";
+    }
+
+    leaf unreserved-bandwidth-5 {
+      type uint32;
+      units "bytes per second";
+      config false;
+      description
+        "The unreserved bandwidth on this interface, at the sixth
+         priority level or TE-class, in IEEE floating point format,
+         used by CSPF to calculate constrained routes.  Each value
+         will be less than or equal to max-reservable-bandwidth.
+         This is advertised through the routing domain in Opaque LSAs.";
+    }
+
+    leaf unreserved-bandwidth-6 {
+      type uint32;
+      units "bytes per second";
+      config false;
+      description
+        "The unreserved bandwidth on this interface, at the seventh
+         priority level or TE-class, in IEEE floating point format,
+         used by CSPF to calculate constrained routes.  Each value
+         will be less than or equal to max-reservable-bandwidth.
+         This is advertised through the routing domain in Opaque LSAs.";
+    }
+
+    leaf unreserved-bandwidth-7 {
+      type uint32;
+      units "bytes per second";
+      config false;
+      description
+        "The unreserved bandwidth on this interface, at the eighth
+         priority level or TE-class, in IEEE floating point format,
+         used by CSPF to calculate constrained routes.  Each value
+         will be less than or equal to max-reservable-bandwidth.
+         This is advertised through the routing domain in Opaque LSAs.";
+    }
+  }
+
+  grouping common-if-state-config {
+    leaf hello-interval {
+      type ospf-hello-interval-t;
+      units "seconds";
+      config false;
+      description
+        "The length of time, in seconds, between the Hello packets
+         that the router sends on the interface.  This value must
+         be the same for all routers attached to a common network.
+
+         Note that this field is ignored when Fast Hellos
+         are used on this interface.  Fast Hellos are
+         configured using dead-interval.";
+    }
+
+    leaf dead-interval {
+      type ospf-router-dead-interval-t;
+      units "seconds";
+      config false;
+      description
+        "The number of seconds that a router's Hello packets have
+         not been seen before its neighbors declare the router
+         down.  This should be some multiple of the Hello interval.
+         This value must be the same for all routers attached to a
+         common network.
+
+         A value of 1 second means that Fast Hello Timers are used
+         on this interface.  The fast-hello-multiplier
+         field is used to determine the Hello interval instead of
+         hello-interval.";
+    }
+
+    leaf passive {
+      type empty;
+      config false;
+      description
+        "Indicates whether this interface is a passive interface.
+         If set to true, we suppress HELLO packets sent on and
+         received from this interface.  We will therefore advertise
+         this interface in our LSAs but not run OSPF protocol over
+         it.";
+    }
+
+    leaf network {
+      type ospf-network-types;
+      config false;
+      description
+        "The OSPF interface type.";
+    }
+  }
+
+  grouping common-interface-stats {
+    leaf rx-invalid {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 packets with an invalid type field
+         received on this interface.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf rx-invalid-byte {
+      type uint32;
+      config false;
+      description
+        "The number of bytes received in OSPFv3 packets with an
+         invalid type field received on this interface.
+
+         This count does NOT include IP headers.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf rx-hello {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 Hello packets received on this
+         interface.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf rx-hello-byte {
+      type uint32;
+      config false;
+      description
+        "The number of bytes received in OSPFv3 Hello packets on
+         this interface.
+
+         This count does NOT include IP headers.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf rx-db-des {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 Database Description packets received
+         on this interface.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf rx-db-des-byte {
+      type uint32;
+      config false;
+      description
+        "The number of bytes received in OSPFv3 Database
+         Description packets on this interface.
+
+         This count does NOT include IP headers.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf rx-ls-req {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 LS Request packets received on this
+         interface.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf rx-ls-req-byte {
+      type uint32;
+      config false;
+      description
+        "The number of bytes received in OSPFv3 LS Request packets
+         on this interface.
+
+         This count does NOT include IP headers.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf rx-ls-upd {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 LS Update packets received on this
+         interface.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf rx-ls-upd-byte {
+      type uint32;
+      config false;
+      description
+        "The number of bytes received in OSPFv3 LS Update packets
+         on this interface.
+
+         This count does NOT include IP headers.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf rx-ls-ack {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 LS Acknowledgement packets received
+         on this interface.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf rx-ls-ack-byte {
+      type uint32;
+      config false;
+      description
+        "The number of bytes received in OSPFv3 LS Acknowledgement
+         packets on this interface.
+
+         This count does NOT include IP headers.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf tx-hello {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 Hello packets sent on this interface.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf tx-hello-byte {
+      type uint32;
+      config false;
+      description
+        "The number of bytes in OSPFv3 Hello packets sent on this
+         interface.
+
+         This count does NOT include IP headers.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf tx-db-des {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 Database Description packets sent on
+         this interface.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf tx-db-des-byte {
+      type uint32;
+      config false;
+      description
+        "The number of bytes in OSPFv3 Database Description packets
+         sent on this interface.
+
+         This count does NOT include IP headers.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf tx-ls-req {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 LS Request packets sent on this
+         interface.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf tx-ls-req-byte {
+      type uint32;
+      config false;
+      description
+        "The number of bytes in OSPFv3 LS Request packets sent on
+         this interface.
+
+         This count does NOT include IP headers.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf tx-ls-upd {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 LS Update packets sent on this
+         interface.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf tx-ls-upd-byte {
+      type uint32;
+      config false;
+      description
+        "The number of bytes in OSPFv3 LS Update packets sent on
+         this interface.
+
+         This count does NOT include IP headers.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf tx-ls-ack {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 LS Acknowledgement packets sent on
+         this interface.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf tx-ls-ack-byte {
+      type uint32;
+      config false;
+      description
+        "The number of bytes in OSPFv3 LS Acknowledgement packets
+         sent on this interface.
+
+         This count does NOT include IP headers.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf length {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 packet header length errors detected
+         on this interface.
+
+         This count is incremented when either a received packet is
+         too small to be identified or an OSPF packet header length
+         field is invalid.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf version {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 packet header version errors detected
+         on this interface.
+
+         This count is incremented when a received OSPF packet
+         header Version field is invalid.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf bad-src {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 packet header 'bad source' errors
+         detected on this interface.
+
+         This count is incremented when the source IP address of a
+         received OSPF packet is either invalid or not recognized.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf area-mismatch {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 packet header area mismatch errors
+         detected on this interface.
+
+         This count is incremented when the area id in a received
+         OSPF packet header does not match that of the receiving
+         OSPF interface.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf self-orig {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 packet header self-originated errors
+         detected on this interface.
+
+         This count is incremented when the source IP address of a
+         received OSPF packet is a local IP address.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf dupe-id {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 packet header duplicate id errors
+         detected on this interface.
+
+         This count is incremented when the route id in a received
+         OSPF packet header matches the local router id.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf hello {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 packet header Hello errors detected
+         on this interface.
+
+         This count is incremented when a received OSPF Hello
+         packet fails verification.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf mtu-mismatch {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 packet header 'MTU mismatch' errors
+         detected on this interface.
+
+         This count is incremented when a received OSPF Database
+         Description packet has an MTU field that does not match
+         local configuration.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf nbr-ignored {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 packet header 'neighbor ignored'
+         errors detected on this interface.
+
+         This count is incremented when a received OSPF Hello
+         packet is ignored based on the identity of the sending
+         neighbor.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf resource-err {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 packet header resource errors
+         detected on this interface.
+
+         This count is incremented when a received OSPF packet is
+         dropped because of resource failure.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf bad-lsa-len {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 LS Update packets received on this
+         interface that were discarded because of a bad LSA length.
+
+         This count is incremented when a received OSPF packet is
+         dropped because it cannot be parsed because it contains an
+         LSA with a bad length field.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf lsa-bad-type {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 LSAs received on this interface that
+         were ignored because of a bad LSA type.
+
+         This count is incremented when a received LSA is ignored
+         because it has an invalid LSA type field.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf lsa-bad-len {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 LSAs received on this interface that
+         were ignored because of a bad LSA length.
+
+         This count is incremented when a received LSA is ignored
+         because it has an invalid LSA length field.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf lsa-bad-data {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 LSAs received on this interface that
+         were ignored because of bad LSA data.
+
+         This count is incremented when a received LSA is ignored
+         because it contains invalid data.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf lsa-bad-cksum {
+      type uint32;
+      config false;
+      description
+        "The number of OSPFv3 LSAs received on this interface that
+         were ignored because of a bad LSA checksum value.
+
+         This count is incremented when a received LSA is ignored
+         because the LSA header checksum fails validation.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf unknown-nbma-neighbor {
+      type uint32;
+      config false;
+      description
+        "The number of Hello packets received on this interface
+         that were dropped because they came from an unknown NBMA
+         neighbor.
+
+         This count is incremented when a received Hello packet is
+         dropped because it comes from an unknown neighbor on an
+         NBMA network.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf unknown-virtual-neighbor {
+      type uint32;
+      config false;
+      description
+        "The number of Hello packets received on this interface
+         that were dropped because they came from an unknown
+         virtual neighbor.
+
+         This count is incremented when a received Hello packet is
+         dropped because it comes from an unknown virtual neighbor.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf hello-timer-mismatch {
+      type uint32;
+      config false;
+      description
+        "The number of Hello packets received on this interface
+         that were dropped because of a bad Hello Interval.
+
+         This count is incremented when a received Hello packet is
+         dropped because its Hello Interval does not match that
+         configured in the receiving interface.
+
+         When a packet is dropped for this reason, the count of
+         hello packets is also incremented.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf dead-interval-mismatch {
+      type uint32;
+      config false;
+      description
+        "The number of Hello packets received on this interface
+         that were dropped because of a bad Router Dead Interval.
+
+         This count is incremented when a received Hello packet is
+         dropped because its Router Dead Interval does not match
+         that configured in the receiving interface.
+
+         When a packet is dropped for this reason, the count of
+         hello packets is also incremented.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf options-mismatch {
+      type uint32;
+      config false;
+      description
+        "The number of Hello packets received on this interface
+         that were dropped because of bad Optional Capabilities.
+
+         This count is incremented when a received Hello packet is
+         dropped because its Optional Capaibilities does not match
+         the capabilities configured in the receiving interface.
+
+         When a packet is dropped for this reason, the count of
+         hello packets is also incremented.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf neighbor-admin-down {
+      type uint32;
+      config false;
+      description
+        "The number of Hello packets received on this interface
+         that were dropped because the sending neighbor is Oper
+         State Down.
+
+         This count is incremented when a received Hello packet is
+         dropped because the sending neighbor is Oper State Down.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf pkt-from-local-addr {
+      type uint32;
+      config false;
+      description
+        "The number of Hello packets received on this interface
+         that were dropped because they appear to come from the
+         local router.
+
+         This count is incremented when a received Hello packet is
+         dropped because it comes from the local router, or from
+         someone pretending to be the local router.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf ma-if-not-p2p {
+      type uint32;
+      config false;
+      description
+        "The number of Hello packets received on this interface
+         that were dropped because they were received on a
+         multi-area interface that is not point-to-point.
+
+         This count is incremented when a received Hello packet is
+         dropped because this interface is a multi-area interface
+         that is not point-to-point.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.
+
+         This field always returns zero, because this table is used
+         to return statistics information for interfaces that are
+         not multi-area interfaces.  It is included for consistency
+         with other lists.";
+    }
+
+    leaf bad-packet {
+      type uint32;
+      config false;
+      description
+        "The number of OSPF packets received that have been
+         dropped, for a reason which does not have a more specific
+         type defined in the OSPF user exit interface.
+
+         This count is incremented when a received OSPF packet is
+         dropped for a reason that is not defined in the OSPF
+         user exit interface.
+
+         When this count is incremented, another count in this row
+         will also be incremented depending on the reason why the
+         packet was dropped.  The count in this field should not be
+         included when determining the total number of OSPF packets
+         that have been dropped.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf auth {
+      type uint32;
+      config false;
+      description
+        "The number of OSPF packet header authentication errors
+         detected on this interface.
+
+         This count is incremented when a received OSPF packet
+         fails authentication checks.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf auth-type-mismatch {
+      type uint32;
+      config false;
+      description
+        "The number of OSPF packets received on this interface that
+         were dropped because of a bad authentication type.
+
+         This count is incremented when a received OSPF packet is
+         dropped because its authentication type does not match
+         that configured in the receiving interface.
+
+         When a packet is dropped for this reason, the auth counter is also
+         incremented.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+
+    leaf auth-failure {
+      type uint32;
+      config false;
+      description
+        "The number of OSPF packets received on this interface that
+         were dropped because packet authentication failed.
+
+         This count is incremented when a received OSPF packet is
+         dropped because authentication failed.
+
+         When a packet is dropped for this reason, the auth counter is also
+         incremented.
+
+         The count is reinitialized to zero when interface
+         statistics collection is reset.";
+    }
+  }
+
+  grouping common-neighbor-state {
+    leaf options {
+      type int32;
+      config false;
+      description
+        "A Bit Mask corresponding to the neighbor's options field.
+
+         Bit 0, if set, indicates that the system will operate on
+         Type of Service metrics other than TOS 0.  If zero, the
+         neighbor will ignore all metrics except the TOS 0 metric.
+
+         Bit 1, if set, indicates that the associated area accepts
+         and operates on external information; if zero, it is a
+         stub area.
+
+         Bit 2, if set, indicates that the system is capable of
+         routing IP Multicast datagrams; i.e., that it implements
+         the Multicast Extensions to OSPF.
+
+         Bit 3, if set, indicates that the associated area is an
+         NSSA.  These areas are capable of carrying type 7 external
+         advertisements, which are translated into type 5 external
+         advertisements at NSSA borders.
+
+         Bit 4, if set, indicates the router's willingness to
+         receive and forward External-Attributes-LSAs.
+
+         Bit 5, describes the router's handling of demand circuits,
+         as specified in RFC 1793.
+
+         Bit 6, if set, indicates the router's willingness to
+         receive and forward Opaque-LSAs as specified in RFC 2370.";
+    }
+
+    leaf state {
+      type ospf-neighbor-states;
+      config false;
+      description
+        "The State of the relationship with this Neighbor.";
+    }
+
+    leaf events {
+      type uint32;
+      config false;
+      description
+        "The number of times this neighbor relationship has changed
+         state, or an error has occurred.";
+    }
+
+    leaf lsa-retransmission-queue-length {
+      type uint32;
+      config false;
+      description
+        "The current length of the retransmission queue.";
+    }
+
+    leaf hello-suppressed {
+      type boolean;
+      config false;
+      description
+        "Indicates whether Hellos are being suppressed to the
+         neighbor.";
+    }
+
+    leaf number-outstanding-lsa-requests {
+      type uint32;
+      config false;
+      description
+        "The number of LSAs we have requested from this neighbor
+         for which we are still awaiting a response.  This field is
+         incremented when an LSA is requested by sending a LS
+         request packet and is decremented when the LSA arrives in
+         an LS update packet.";
+    }
+
+    leaf dead-time {
+      type uint32;
+      config false;
+      description
+        "The time remaining in seconds within which we need to
+         receive a hello packet from the neighbor or we declare the
+         adjacency down.  If Fast Hellos are in use, this value is
+         always set to 1.  If the oper_status is down or
+         ospfPmNbrState is DOWN, then the value is set to zero and
+         the field is not valid.";
+    }
+
+    leaf restart-helper-status {
+      type ospf-rstrt-helper-status;
+      config false;
+      description
+        "Indicates whether the router is acting as a hitless
+         restart helper for the neighbor.";
+    }
+
+    leaf restart-helper-time-remaining {
+      type uint32 {
+        range "0..1800";
+      }
+      units "seconds";
+      config false;
+      description
+        "Remaining time in current OSPF hitless restart interval,
+         if the router is acting as a restart helper for the
+         neighbor.  Set to zero if OSPF is not currently acting as
+         a restart helper for the neighbor.";
+    }
+
+    leaf restart-helper-exit-reason {
+      type ospf-restart-exit-reason;
+      config false;
+      description
+        "Describes the outcome of the last attempt at acting as a
+         hitless restart helper for the neighbor.";
+    }
+
+    leaf bfd-status {
+      type meta:bfd-sess-states;
+      config false;
+      description
+        "BFD session state for the neighbor.";
+    }
+
+    leaf time-since-last-change {
+      type uint32;
+      units "seconds";
+      config false;
+      description
+        "The time since the state of the relationship with this neighbor last
+         changed, in seconds.";
+    }
+  }
+
+  grouping common-if-nbr-state {
+    uses common-neighbor-state;
+
+    leaf priority {
+      type uint32 {
+        range "0..255";
+      }
+      config false;
+      description
+        "The priority of this neighbor as signalled in the last
+         received OSPF Hello packet.  A value of 0 signifies that
+         the neighbor is not eligible to become the designated
+         router on this particular network.";
+    }
+
+    leaf area-id {
+      type ospf-area-id;
+      config false;
+      description
+        "The area to which the neighbor belongs.  If the
+         oper_status is down, then this value is set to zero and
+         the field is not valid.";
+    }
+
+    leaf oper-status {
+      type meta:oper-status;
+      config false;
+      description
+        "The current operational state of this neighbor.";
+    }
+
+    leaf designated-router-state {
+      type ospf-desig-rtr-states;
+      config false;
+      description
+        "The designated router state of this neighbor.  This field
+         indicates whether the router is the designated router or
+         backup designated router or neither.";
+    }
+  }
+
+  grouping common-host-parms {
+    leaf metric {
+      user-ext:CLI-comm-help "Set advertise metric";
+      user-ext:CLI-no-comm-help "Set advertise metric to default";
+      user-ext:CLI-param-help "Set advertise metric";
+      type ospf-if-metric-value-t;
+      default "1";
+      description
+        "The Metric to be advertised.";
+    }
+
+    leaf area-id {
+      user-ext:CLI-comm-help "Set area id";
+      user-ext:CLI-param-help "Set area id";
+      type ospf-area-id;
+      default "0.0.0.0";
+      description
+        "The Area the Host Entry is to be found within.";
+    }
+  }
+
+  grouping common-area-state {
+    leaf spf-runs {
+      type uint32;
+      config false;
+      description
+        "The number of times that the intra-area route table has
+         been calculated using this area's link-state database.
+         This is typically done using Dijkstra's algorithm.";
+    }
+
+    leaf border-router-count {
+      type uint32;
+      config false;
+      description
+        "The total number of area border routers reachable within
+         this area.  This is initially zero, and is calculated in
+         each SPF Pass.";
+    }
+
+    leaf as-border-router-count {
+      type uint32;
+      config false;
+      description
+        "The total number of Autonomous System border routers
+         reachable within this area.  This is initially zero, and
+         is calculated in each SPF Pass.";
+    }
+
+    leaf nssa-translator-state {
+      type ospf-trans-states;
+      config false;
+      description
+        "Indicates if and how an NSSA Border router is performing
+         NSSA translation of type-7 LSAs into type-5 LSAs.  When
+         this object set to enabled, the NSSA Border router's
+         OspfPmAreaNssaTranslatorRole has been set to always.  When
+         this object is set to elected, a candidate NSSA Border
+         router is Translating type-7 LSAs into type-5.  When this
+         object is set to disabled, a candidate NSSA Border router
+         is NOT translating type-7 LSAs into type-5.";
+    }
+
+    leaf nssa-translator-events {
+      type uint32;
+      config false;
+      description
+        "Indicates the number of Translator State changes that have
+         occurred since the last boot-up.";
+    }
+
+    leaf oper-status {
+      type meta:oper-status;
+      config false;
+      description
+        "The current operational state of this OSPF area.";
+    }
+
+    leaf transit-area {
+      type boolean;
+      config false;
+      description
+        "This parameter indicates whether the area can carry data
+         traffic that neither originates nor terminates in the area
+         itself.  This parameter is calculated when the area's
+         shortest-path tree is built.";
+    }
+
+    leaf router-lsa-count {
+      type uint32;
+      config false;
+      description
+        "The number of LSAs with LS type-1 in this area's Link
+         State Database.";
+    }
+
+    leaf router-lsa-checksum-sum {
+      type uint32;
+      config false;
+      description
+        "The 32 bit sum of LS checksums of all LSAs with LS type-1
+         in this area's Link State Database.";
+    }
+
+    leaf network-lsa-count {
+      type uint32;
+      config false;
+      description
+        "The number of LSAs with LS type-2 in this area's Link
+         State Database.";
+    }
+
+    leaf network-lsa-checksum-sum {
+      type uint32;
+      config false;
+      description
+        "The 32 bit sum of LS checksums of all LSAs with LS type-2
+         in this area's Link State Database.";
+    }
+
+    leaf nssa-lsa-count {
+      type uint32;
+      config false;
+      description
+        "The number of LSAs with LS type-7 in this area's Link
+         State Database.";
+    }
+
+    leaf nssa-lsa-checksum-sum {
+      type uint32;
+      config false;
+      description
+        "The 32 bit sum of LS checksums of all LSAs with LS type-7
+         in this area's Link State Database.";
+    }
+  }
+
+  grouping common-area-config-state {
+    leaf import-as-external {
+      type ospf-import-types;
+      config false;
+      description
+        "Indicates whether an area is a Stub area, NSSA, or
+         standard area.  Type-5 AS-External LSAs and Type-11 Opaque
+         LSAs are not imported into Stub Areas or NSSAs.  NSSAs
+         import AS-External data as Type-7 LSAs.  This value cannot
+         be changed when the area MIB is active and has oper_state
+         up.";
+    }
+  }
+}

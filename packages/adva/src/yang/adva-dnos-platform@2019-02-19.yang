@@ -1,0 +1,324 @@
+module adva-dnos-platform {
+  yang-version 1;
+  namespace "http://www.advaoptical.com/cim/adva-dnos-platform";
+  prefix adva-dnos-platform;
+
+  import openconfig-platform {
+    prefix oc-platform;
+  }
+
+  import openconfig-extensions {
+    prefix oc-ext;
+  }
+
+  import openconfig-platform-cpu {
+    prefix oc-cpu;
+  }
+
+  import openconfig-platform-psu {
+    prefix oc-psu;
+  }
+
+  organization
+    "ADVA Optical Networking";
+  contact
+    "ADVA Optical Networking
+     www.advaoptical.com";
+  description
+    "This module defines data related to ADVA platform components in the
+     OpenConfig platform model.";
+
+  revision 2019-02-19 {
+    description
+      "Initial revision.";
+    reference
+      "0.1.0";
+  }
+
+  oc-ext:openconfig-version "0.1.1";
+
+  grouping adva-chassis {
+    description
+      "Data for ADVA chassis";
+    leaf company {
+      type string;
+      description
+        "ADVA company name";
+    }
+
+    leaf device {
+      type string;
+      description
+        "ADVA device name";
+    }
+
+    leaf base-mac {
+      type string;
+      description
+        "Device base MAC address";
+    }
+
+    leaf mos-version {
+      type string;
+      description
+        "Master OS version";
+    }
+
+    leaf sdk-version {
+      type string;
+      description
+        "SDK/PP version";
+    }
+
+    leaf uptime {
+      type string;
+      description
+        "System uptime in format DD:HH:MM";
+    }
+
+    leaf last_boot_cause {
+      type string;
+      description
+        "Last system boot cause";
+    }
+
+    leaf users {
+      type string;
+      description
+        "Number of active users";
+    }
+  }
+
+  grouping adva-backplane {
+    description
+      "Data for ADVA backplane";
+    leaf board-serial-no {
+      type string;
+      description
+        "Backplane board serial number";
+    }
+  }
+
+  grouping adva-kernel {
+    description
+      "Data for ADVA kernel";
+    leaf kernel-release {
+      type string;
+      description
+        "Kernel release data";
+    }
+
+    leaf kernel-sysname {
+      type string;
+      description
+        "Kernel sysname";
+    }
+  }
+
+  grouping adva-cpu {
+    description
+      "Data for ADVA CPU";
+    leaf processor-type {
+      type string;
+      description
+        "CPU processor type";
+    }
+
+    leaf model {
+      type string;
+      description
+        "CPU model";
+    }
+  }
+
+  grouping adva-integrated-circuit {
+    description
+      "Data for ADVA chip components";
+    list integrated {
+      key "name";
+      description
+        "List of ADVA chip components";
+      leaf name {
+        type string;
+        description
+          "Chip component name.";
+      }
+
+      leaf value {
+        type string;
+        description
+          "Chip component data";
+      }
+    }
+  }
+
+  grouping adva-power-supply {
+    description
+      "Data for ADVA power supply unit";
+    leaf fan-1-speed {
+      type string;
+      description
+        "Speed of fan 1 on PSU";
+    }
+
+    leaf fan-2-speed {
+      type string;
+      description
+        "Speed of fan 2 on PSU";
+    }
+  }
+
+  grouping adva-fan {
+    description
+      "Data for ADVA fan";
+    leaf front-speed {
+      type string;
+      description
+        "Fan front speed";
+    }
+
+    leaf back-speed {
+      type string;
+      description
+        "Fan back speed";
+    }
+  }
+
+  augment "/oc-platform:components/oc-platform:component/oc-platform:chassis/oc-platform:state" {
+    description
+      "Adding ADVA chassis data to component model";
+    uses adva-chassis;
+  }
+
+  augment "/oc-platform:components/oc-platform:component/oc-platform:backplane/oc-platform:state" {
+    description
+      "Adding ADVA backplane data to component model";
+    uses adva-backplane;
+  }
+
+  augment "/oc-platform:components/oc-platform:component/oc-platform:state" {
+    description
+      "Adding ADVA kernel data to component model";
+    uses adva-kernel;
+  }
+
+  augment "/oc-platform:components/oc-platform:component/oc-platform:cpu/oc-platform:state" {
+    description
+      "Adding ADVA CPU data to component model";
+    uses adva-cpu;
+  }
+
+  augment "/oc-platform:components/oc-platform:component/oc-platform:integrated-circuit/oc-platform:state" {
+    description
+      "Adding ADVA chip component to model";
+    uses adva-integrated-circuit;
+  }
+
+  augment "/oc-platform:components/oc-platform:component/oc-platform:power-supply/oc-platform:state" {
+    description
+      "Adding ADVA power supply data to component model";
+    uses adva-power-supply;
+  }
+
+  augment "/oc-platform:components/oc-platform:component/oc-platform:fan/oc-platform:state" {
+    description
+      "Adding ADVA fan data to component model";
+    uses adva-fan;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:state/oc-platform:id" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:state/oc-platform:temperature/oc-platform:avg" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:state/oc-platform:temperature/oc-platform:min" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:state/oc-platform:temperature/oc-platform:max" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:state/oc-platform:temperature/oc-platform:interval" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:state/oc-platform:temperature/oc-platform:min-time" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:state/oc-platform:temperature/oc-platform:max-time" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:state/oc-platform:temperature/oc-platform:alarm-status" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:state/oc-platform:temperature/oc-platform:alarm-threshold" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:state/oc-platform:temperature/oc-platform:alarm-severity" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:state/oc-platform:memory" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:state/oc-platform:allocated-power" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:state/oc-platform:used-power" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:subcomponents" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:fabric" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:port" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:storage" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:cpu/oc-cpu:utilization" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:power-supply/oc-platform:state/oc-psu:capacity" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:power-supply/oc-platform:state/oc-psu:input-current" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:power-supply/oc-platform:state/oc-psu:input-voltage" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:power-supply/oc-platform:state/oc-psu:output-current" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:power-supply/oc-platform:state/oc-psu:output-voltage" {
+    deviate not-supported;
+  }
+
+  deviation "/oc-platform:components/oc-platform:component/oc-platform:power-supply/oc-platform:state/oc-psu:output-power" {
+    deviate not-supported;
+  }
+}

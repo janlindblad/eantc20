@@ -1,0 +1,252 @@
+module adva-dnos-ac-oam {
+  namespace "http://www.advaoptical.com/cim/adva-dnos-ac-oam";
+  prefix ac-oam;
+
+  import adva-dnos-types {
+    prefix adva-types;
+  }
+
+  import adva-dnos-extensions {
+    prefix adva-ext;
+  }
+
+  import openconfig-interfaces {
+    prefix oc-if;
+  }
+
+  organization
+    "Adva Optical Networking";
+  contact
+    "For technical support, please contact your service channel";
+  description
+    "Definitions for AC OAM configuration.";
+
+  revision 2019-09-05 {
+    description
+      "Integrating to ADVA YANG models.";
+  }
+  revision 2015-10-13 {
+    description
+      "First draft version.";
+  }
+
+  grouping oam-test {
+    leaf name {
+      type string {
+        length "1 .. 20";
+      }
+      description
+        "Test name";
+    }
+
+    leaf test-type {
+      type adva-types:oam-measurement-type;
+      description
+        "Test type";
+    }
+
+    leaf profile-name {
+      type string {
+        length "1 .. 20";
+      }
+      description
+        "Test profile name (not in use for linktrace test)";
+    }
+
+    uses adva-types:test-destination;
+
+    leaf lt-ttl {
+      type adva-types:ttl;
+      default "255";
+      description
+        "Time to live (use for linktrace test only)";
+    }
+
+    leaf test-mode-interval {
+      type adva-types:oam-timeout-type;
+      default "1SEC";
+      description
+        "Test running mode and interval between transmitted packets in msec
+         (use for LM and SLM tests only)";
+    }
+
+    leaf in-hw {
+      type boolean;
+      config false;
+    }
+
+    leaf test-started {
+      type boolean;
+      config false;
+    }
+
+    leaf enable {
+      adva-ext:agema-default "false";
+      type boolean;
+      default "false";
+      description
+        "Enable test (not in use for linktrace test)";
+    }
+  }
+
+  container ac_oam_objects {
+    container config-ac-oam {
+      list ac-oam {
+        key "ac-name md-name md-level ma";
+        description
+          "AC OAM configuration.";
+        leaf ac-name {
+          type leafref {
+            path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+          }
+          description
+            "AC interface name";
+        }
+
+        leaf md-name {
+          type adva-types:oam-ma-name;
+          description
+            "Maintenance Domain";
+        }
+
+        leaf md-level {
+          type adva-types:oam-md-level;
+          description
+            "Level value";
+        }
+
+        leaf ma {
+          type adva-types:oam-ma-name;
+          description
+            "Maintenance Association";
+        }
+
+        leaf in-hw {
+          type boolean;
+          config false;
+        }
+
+        choice point-type {
+          case mep {
+            container mep-element {
+              leaf mep-id {
+                type adva-types:oam-mep-id;
+                description
+                  "Maintenance association End Point";
+              }
+
+              leaf direction-down {
+                adva-ext:agema-default "false";
+                type boolean;
+                default "false";
+                description
+                  "MEP direction";
+              }
+
+              leaf ccm-priority {
+                type adva-types:pcp;
+                description
+                  "Continuity Check Message L2 priority";
+              }
+
+              leaf ccm-outer-tag {
+                type adva-types:vlan-tag-optional;
+                description
+                  "Continuity Check Message L2 outer tag";
+              }
+
+              leaf ccm-inner-tag {
+                type adva-types:vlan-tag-optional;
+                description
+                  "Continuity Check Message L2 inner tag";
+              }
+
+              leaf send-interface-tlv {
+                adva-ext:agema-default "true";
+                type boolean;
+                default "true";
+                description
+                  "Add interface Type, Length, and Value to the CCM";
+              }
+
+              leaf ltr-port-id-subtype {
+                type enumeration {
+                  enum "ALIAS" {
+                    value 1;
+                    description
+                      "ifAlias (IETF RFC 2863)";
+                  }
+                  enum "MAC" {
+                    value 3;
+                    description
+                      "MAC address (IEEE Std 802-2001) - default";
+                  }
+                  enum "NAME" {
+                    value 5;
+                    description
+                      "ifName (IETF RFC 2863)";
+                  }
+                }
+                default "MAC";
+                description
+                  "Port ID Subtype";
+              }
+
+              leaf send-port-tlv {
+                adva-ext:agema-default "true";
+                type boolean;
+                default "true";
+                description
+                  "Add port Type, Length, and Value to the CCM";
+              }
+
+              leaf ccm-activate {
+                type boolean;
+                default "false";
+                description
+                  "Transmit CCM";
+              }
+
+              leaf pm {
+                type boolean;
+                default "false";
+                description
+                  "Performance Monitoring";
+              }
+
+              leaf link-loss-forwarding {
+                type adva-types:oam-mep-id;
+                description
+                  "Start link-loss rmep monitoring (use only if direction-down is false).";
+              }
+
+              list oam-tests {
+                key "name test-type";
+                description
+                  "OAM tests";
+                uses oam-test;
+              }
+
+              leaf mep-enable {
+                adva-ext:agema-default "false";
+                type boolean;
+                default "false";
+                description
+                  "Enable OAM mep";
+              }
+            }
+          }
+
+          case mip {
+            leaf mip-enable {
+              type boolean;
+              default "false";
+              description
+                "Enable Maintenance association Intermediate Point";
+            }
+          }
+        }
+      }
+    }
+  }
+}

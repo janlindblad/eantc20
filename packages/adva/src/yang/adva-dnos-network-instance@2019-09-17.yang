@@ -1,0 +1,87 @@
+module adva-dnos-network-instance {
+  yang-version 1;
+  namespace "http://www.advaoptical.com/cim/adva-dnos-network-instance";
+  prefix adva-ni;
+
+  import openconfig-network-instance-types {
+    prefix oc-ni-types;
+  }
+
+  import openconfig-network-instance {
+    prefix oc-ni;
+  }
+
+  import openconfig-extensions {
+    prefix oc-ext;
+  }
+
+  import adva-dnos-types {
+    prefix adva-types;
+  }
+
+  organization
+    "ADVA Optical Networking";
+  contact
+    "ADVA Optical Networking
+     www.advaoptical.com";
+  description
+    "This module defines data related to ADVA components in
+     the openconfig-network-instance model for Agema family.";
+
+  revision 2019-09-17 {
+    description
+      "Initial revision.";
+    reference
+      "0.1.0";
+  }
+
+  oc-ext:openconfig-version "0.1.1";
+
+  grouping adva-ni-l2-config {
+    description
+      "Data for ADVA L2 network instance";
+    leaf service-id {
+      type adva-types:eservice-id;
+      description
+        "Service ID";
+    }
+  }
+
+  grouping adva-ni-l2vsi-ac-config {
+    description
+      "Data for ADVA L2 network instance AC";
+    leaf split-horizon-group {
+      type uint32 {
+        range "0..255";
+      }
+      description
+        "AC split horizon group ID";
+    }
+  }
+
+  augment "/oc-ni:network-instances/oc-ni:network-instance/oc-ni:config" {
+    when "oc-ni:type = 'oc-ni-types:L2VSI' or oc-ni:type = 'oc-ni-types:L2P2P'";
+    description
+      "Adds ADVA L2 network instance data";
+    uses adva-ni-l2-config;
+  }
+
+  augment "/oc-ni:network-instances/oc-ni:network-instance/oc-ni:interfaces/oc-ni:interface/oc-ni:config" {
+    when "../../../oc-ni:config/oc-ni:type = 'oc-ni-types:L2VSI'";
+    description
+      "Adds ADVA L2 network instance AC data";
+    uses adva-ni-l2vsi-ac-config;
+  }
+
+  deviation "/oc-ni:network-instances/oc-ni:network-instance/oc-ni:config/oc-ni:enabled" {
+    deviate add {
+      default "false";
+    }
+  }
+
+  deviation "/oc-ni:network-instances/oc-ni:network-instance" {
+    deviate add {
+      unique "config/route-distinguisher";
+    }
+  }
+}

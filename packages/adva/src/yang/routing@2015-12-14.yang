@@ -1,0 +1,1532 @@
+module routing {
+  namespace "http://metaswitch.com/yang/nbu/routing/201512140000Z";
+  prefix routing;
+
+  import user-extensions {
+    prefix user-ext;
+  }
+
+  import interfaces {
+    prefix interfaces;
+  }
+
+  import interface {
+    prefix interface;
+  }
+
+  import metaswitch-yang-types {
+    prefix meta;
+  }
+
+  import metaswitch-custom-yang-types {
+    prefix custom;
+  }
+
+  organization
+    "Metaswitch Networks";
+  contact
+    "Postal: Metaswitch Networks
+             100 Church Street
+             Enfield
+             EN2 6BQ
+             United Kingdom
+     Tel:    +44 20 8366 1177
+     E-mail: info@metaswitch.com";
+  description
+    "Routing Configuration and State";
+
+  revision 2015-12-14 {
+    description
+      "Initial revision.";
+  }
+
+  typedef routing-route-actions {
+    type enumeration {
+      enum "local" {
+        value 1;
+        description
+          "Handle locally packets sent to this destination";
+      }
+      enum "forward" {
+        value 2;
+        description
+          "Forward packet to address specified as next-hop address";
+      }
+      enum "reject" {
+        value 3;
+        description
+          "Reject packets (drop and return packet to sender)";
+      }
+      enum "discard" {
+        value 4;
+        description
+          "Discard packets (drop but do not return packet to sender)";
+      }
+    }
+    description
+      "Route action";
+  }
+
+  typedef routing-route-type {
+    type enumeration {
+      enum "other" {
+        value 1;
+      }
+      enum "reject" {
+        value 2;
+      }
+      enum "local" {
+        value 3;
+      }
+      enum "remote" {
+        value 4;
+      }
+    }
+    description
+      "Route type";
+  }
+
+  typedef routing-route-info {
+    type enumeration {
+      enum "none" {
+        value 0;
+      }
+      enum "ospf-intra-area" {
+        value 1;
+      }
+      enum "ospf-inter-area" {
+        value 2;
+      }
+      enum "ospf-external-type1" {
+        value 3;
+      }
+      enum "ospf-external-type2" {
+        value 4;
+      }
+      enum "isis-l1-internal" {
+        value 5;
+      }
+      enum "isis-l2-internal" {
+        value 6;
+      }
+      enum "isis-l1-internal-down" {
+        value 7;
+      }
+      enum "isis-l1-external" {
+        value 8;
+      }
+      enum "isis-l2-external" {
+        value 9;
+      }
+      enum "isis-l1-external-down" {
+        value 10;
+      }
+    }
+    description
+      "Route protocol";
+  }
+
+  typedef routing-metric-t {
+    type uint32 {
+      range "1..254";
+    }
+    description
+      "(1-254)";
+  }
+
+  typedef routing-next-hop-protect-t {
+    type enumeration {
+      enum "none" {
+        value 1;
+      }
+      enum "local-lfa" {
+        value 2;
+      }
+      enum "ecmp" {
+        value 3;
+      }
+      enum "remote-lfa" {
+        value 4;
+      }
+    }
+    description
+      "Primary next hop protection type";
+  }
+
+  grouping routing-administrative-distance {
+    leaf metric {
+      user-ext:CLI-comm-help "Set metric";
+      user-ext:CLI-no-comm-help "Set default metric";
+      user-ext:CLI-param-help "Set metric";
+      type routing-metric-t;
+      description
+        "Administrative distance for static route.
+         The lower the administrative distance for a given route, the
+         more likely that route is to be used as the active
+         route for the given destination.";
+    }
+  }
+
+  grouping routing-route-entry-parameters {
+    uses routing-administrative-distance;
+
+    leaf action {
+      user-ext:CLI-comm-help "Set routing action";
+      user-ext:CLI-no-comm-help "Set default routing action";
+      user-ext:CLI-param-help "Set routing action";
+      type routing-route-actions;
+      default "forward";
+      description
+        "The action to perform on receipt of a packet to the
+         specified destination.
+
+         The action type cannot be set to 'tunnel' for a static
+         route.";
+    }
+
+    leaf path-type {
+      user-ext:CLI-comm-help "Set path type";
+      user-ext:CLI-no-comm-help "Set default path type";
+      user-ext:CLI-param-help "Set path type";
+      type meta:route-path-types-cfg;
+      default "static";
+      description
+        "Type of path associated with this route.";
+    }
+
+    container bfd {
+      user-ext:CLI-comm-help "Configure BFD parameters for route";
+      user-ext:CLI-no-comm-help "Configure BFD parameters for route";
+      description
+        "BFD parameters";
+      leaf fast-detect {
+        user-ext:CLI-comm-help "Enable BFD for this static route";
+        user-ext:CLI-no-comm-help "Disable BFD for this static route";
+        type empty;
+        description
+          "This object indicates whether RTM should use BFD to
+           check IP reachability to the static route's next hop.
+
+           RTM will only attempt to use BFD if the static route has
+           action set to 'forward' and nexthop set to a non-null IP
+           address.";
+      }
+    }
+
+    container state {
+      config false;
+      leaf loose-next-hop {
+        type boolean;
+        config false;
+        description
+          "This object indicates whether this static route contains a
+           loose next hop.";
+      }
+
+      leaf bfd-status {
+        type meta:bfd-sess-state;
+        config false;
+        description
+          "The current BFD session state for this static route.";
+      }
+    }
+  }
+
+  grouping ifaces-to-use-in-routing {
+    container interfaces {
+      user-ext:CLI-not-command;
+      if-feature "interfaces:standard-interfaces";
+      list interface {
+        user-ext:CLI-comm-help "Configure attachment interface";
+        user-ext:CLI-no-comm-help "Remove attachment interface";
+        key "if-name";
+        description
+          "Specify the attachment interface";
+        leaf if-name {
+          user-ext:CLI-param-help "Set interface name";
+          type custom:iface-name;
+          description
+            "A unique identifier identifying the interface.";
+        }
+
+        uses routing-route-entry-parameters;
+      }
+    }
+
+    container custom-interfaces {
+      user-ext:CLI-not-command;
+      if-feature "interfaces:custom-interfaces";
+      container interface {
+        user-ext:CLI-comm-help "Configure attachment interface";
+        user-ext:CLI-no-comm-help "Remove attachment interface";
+        description
+          "Specify the attachment interface";
+        container oneGE {
+          user-ext:CLI-not-command;
+          user-ext:CLI-comm-switch "gigabitethernet/gigabitethernet-sub";
+          list gigabitethernet {
+            user-ext:CLI-comm-help "Configure attachment 1G interface";
+            user-ext:CLI-no-comm-help "Remove attachment 1G interface";
+            key "if-num";
+            description
+              "Specify the attachment 1G interface";
+            leaf if-num {
+              user-ext:CLI-param-help "1G interface";
+              type interfaces:eth-iface-num-t;
+              description
+                "<unit>/<dev>/<port>";
+            }
+
+            uses routing-route-entry-parameters;
+          }
+
+          list gigabitethernet-sub {
+            user-ext:CLI-comm-help "Configure attachment 1G sub-interface";
+            user-ext:CLI-no-comm-help "Remove attachment 1G sub-interface";
+            key "if-num";
+            description
+              "Specify the attachment 1G sub-interface";
+            leaf if-num {
+              user-ext:CLI-param-help "1G sub-interface";
+              type interfaces:eth-subiface-range-t;
+              description
+                "<unit>/<dev>/<port>.<subid>";
+            }
+
+            uses routing-route-entry-parameters;
+          }
+        }
+
+        container tenGE {
+          user-ext:CLI-not-command;
+          user-ext:CLI-comm-switch "tengigabitethernet/tengigabitethernet-sub";
+          list tengigabitethernet {
+            user-ext:CLI-comm-help "Configure attachment 10G interface";
+            user-ext:CLI-no-comm-help "Remove attachment 10G interface";
+            key "if-num";
+            description
+              "Specify the attachment 10G interface";
+            leaf if-num {
+              user-ext:CLI-param-help "10G interface";
+              type interfaces:eth-iface-num-t;
+              description
+                "<unit>/<dev>/<port>";
+            }
+
+            uses routing-route-entry-parameters;
+          }
+
+          list tengigabitethernet-sub {
+            user-ext:CLI-comm-help "Configure attachment 10G sub-interface";
+            user-ext:CLI-no-comm-help "Remove attachment 10G sub-interface";
+            key "if-num";
+            description
+              "Specify the attachment 10G sub-interface";
+            leaf if-num {
+              user-ext:CLI-param-help "10G sub-interface";
+              type interfaces:eth-subiface-range-t;
+              description
+                "<unit>/<dev>/<port>.<subid>";
+            }
+
+            uses routing-route-entry-parameters;
+          }
+        }
+
+        container fortyGE {
+          user-ext:CLI-not-command;
+          user-ext:CLI-comm-switch "fortygigabitethernet/fortygigabitethernet-sub";
+          list fortygigabitethernet {
+            user-ext:CLI-comm-help "Configure attachment 40G interface";
+            user-ext:CLI-no-comm-help "Remove attachment 40G interface";
+            key "if-num";
+            description
+              "Specify the attachment 40G interface";
+            leaf if-num {
+              user-ext:CLI-param-help "40G interface";
+              type interfaces:eth-iface-num-t;
+              description
+                "<unit>/<dev>/<port>";
+            }
+
+            uses routing-route-entry-parameters;
+          }
+
+          list fortygigabitethernet-sub {
+            user-ext:CLI-comm-help "Configure attachment 40G sub-interface";
+            user-ext:CLI-no-comm-help "Remove attachment 40G sub-interface";
+            key "if-num";
+            description
+              "Specify the attachment 40G sub-interface";
+            leaf if-num {
+              user-ext:CLI-param-help "40G sub-interface";
+              type interfaces:eth-subiface-range-t;
+              description
+                "<unit>/<dev>/<port>.<subid>";
+            }
+
+            uses routing-route-entry-parameters;
+          }
+        }
+
+        container hundredGE {
+          user-ext:CLI-not-command;
+          user-ext:CLI-comm-switch "hundredgigabitethernet/hundredgigabitethernet-sub";
+          list hundredgigabitethernet {
+            user-ext:CLI-comm-help "Configure attachment 100G interface";
+            user-ext:CLI-no-comm-help "Remove attachment 100G interface";
+            key "if-num";
+            description
+              "Specify the attachment 100G interface";
+            leaf if-num {
+              user-ext:CLI-param-help "100G interface";
+              type interfaces:eth-iface-num-t;
+              description
+                "<unit>/<dev>/<port>";
+            }
+
+            uses routing-route-entry-parameters;
+          }
+
+          list hundredgigabitethernet-sub {
+            user-ext:CLI-comm-help "Configure attachment 100G sub-interface";
+            user-ext:CLI-no-comm-help "Remove attachment 100G sub-interface";
+            key "if-num";
+            description
+              "Specify the attachment 100G sub-interface";
+            leaf if-num {
+              user-ext:CLI-param-help "100G sub-interface";
+              type interfaces:eth-subiface-range-t;
+              description
+                "<unit>/<dev>/<port>.<subid>";
+            }
+
+            uses routing-route-entry-parameters;
+          }
+        }
+
+        container bundle-ifaces {
+          user-ext:CLI-not-command;
+          user-ext:CLI-comm-switch "bundle-ether/bundle-ether-sub";
+          list bundle-ether {
+            user-ext:CLI-comm-help "Configure attachment bundle-ether interface";
+            user-ext:CLI-no-comm-help "Remove attachment bundle-ether interface";
+            key "bundle-id";
+            description
+              "Specify the attachment bundle-ether interface";
+            leaf bundle-id {
+              user-ext:CLI-param-help "Bundle-ether interface";
+              type interfaces:bundle-id-t;
+              description
+                "Bundle-ether id";
+            }
+
+            uses routing-route-entry-parameters;
+          }
+
+          list bundle-ether-sub {
+            user-ext:CLI-comm-help "Configure attachment bundle-ether sub-interface";
+            user-ext:CLI-no-comm-help "Remove attachment bundle-ether sub-interface";
+            key "bundle-id";
+            description
+              "Specify the attachment bundle-ether sub-interface";
+            leaf bundle-id {
+              user-ext:CLI-param-help "Attachment bundle-ether sub-interface";
+              type interfaces:bundle-sub-id-t;
+              description
+                "Bundle-ether id";
+            }
+
+            uses routing-route-entry-parameters;
+          }
+        }
+
+        container ipip-ifaces {
+          user-ext:CLI-not-command;
+          list tunnel-gre {
+            user-ext:CLI-comm-help "Configure attachment GRE tunnel";
+            user-ext:CLI-no-comm-help "Remove attachment GRE tunnel";
+            key "gre-id";
+            description
+              "Specify the attachment GRE tunnel";
+            leaf gre-id {
+              user-ext:CLI-param-help "GRE tunnel id";
+              type interfaces:tunnel-gre-id-t;
+              description
+                "GRE id";
+            }
+
+            uses routing-route-entry-parameters;
+          }
+        }
+      }
+    }
+  }
+
+  grouping route-common-state {
+    uses interfaces:iface-id;
+
+    leaf next-hop-label {
+      type meta:mpls-label-state-integer-t;
+      config false;
+      description
+        "The next hop (outer) MPLS label to be used for this route,
+         if required for packets sent to the next hop.  If there is
+         no next hop label for this route, then this field is empty.";
+    }
+
+    leaf protocol {
+      type meta:route-protocols;
+      config false;
+      description
+        "The routing mechanism via which this route was learned.
+         Inclusion of values for gateway routing protocols is not
+         intended to imply that hosts should support those
+         protocols.";
+    }
+
+    leaf metric {
+      type int32;
+      config false;
+      description
+        "The primary routing metric for this route.  The
+         semantics of this metric are determined by the
+         protocol specified.  If this metric is not used, its value should be
+         set to -1.";
+    }
+
+    leaf admin-tag {
+      type uint32;
+      config false;
+      description
+        "Protocol specific admin tag.  If this route was learned
+         from OSPF or IS-IS, this is the admin tag assigned to the
+         route.  Otherwise it is set to zero.";
+    }
+
+    leaf route-type {
+      type routing-route-type;
+      config false;
+      description
+        "The type of route.
+
+         local refers to a route for which the destination is a
+         local IP address or for which the next hop is the final
+         destination.  This includes routes to local IP addresses
+         and routes to directly connected IP addresses or subnets.
+
+         remote refers to a route for which the next hop is not
+         the final destination.
+
+         reject refers to a route which, if matched, discards
+         the message as unreachable.  This is used in some
+         protocols as a means of correctly aggregating routes.";
+    }
+
+    leaf age {
+      type uint32 {
+        range "0..2147483647";
+      }
+      config false;
+      description
+        "The number of seconds since this route was last updated or
+         otherwise determined to be correct.  Note that no
+         semantics of 'too old' can be implied except through
+         knowledge of the routing protocol by which the route was
+         learned.  This age is only accurate for entries which are
+         less that 49 days old.";
+    }
+
+    leaf connected {
+      type boolean;
+      config false;
+      description
+        "Indicates whether the route destination is directly
+         connected.
+
+         A directly connected route can be reached without going
+         through any IP routers.
+
+         Route destinations that are local IP addresses
+         are not considered to be directly connected.
+
+         This field can only be true if route-type is set to 'local'.";
+    }
+
+    leaf admin-distance {
+      type int32;
+      config false;
+      description
+        "Administrative distance for this route.
+
+         The lower the administrative distance for a given route,
+         the more likely that route is to be used by RTM as the
+         active route for the route destination, and hence the more
+         likely the route is to appear in this table.";
+    }
+
+    leaf path-type {
+      type meta:route-path-types-all;
+      config false;
+      description
+        "Protocol specific path type.  This field only has meaning
+         if route-type is set to 'remote'.  Otherwise it is set
+         to 'none'.";
+    }
+
+    leaf protection {
+      type routing-next-hop-protect-t;
+      config false;
+      description
+        "This field indicates whether the next hop for this route
+         is protected from failure, and if so, how it is protected.
+
+         If this field is set to local-lfa or remote-lfa then the
+         loop-free alternate can be located in the route table
+         with the following index.
+         -  destination equal to this route entry.
+         -  nexthop equal to lfa/nexthop.
+         -  interfacex equal to lfa/if-base-name.";
+    }
+  }
+
+  grouping route-only-state {
+    leaf info {
+      type routing-route-info;
+      config false;
+      description
+        "A reference to definitions specific to the particular
+         routing protocol which is responsible for this route, as
+         determined by the value specified in the route's
+         protocol leaf.
+
+         This returns the following.
+
+         -  For OSPF, an integer representation of the OID which is
+         required by RFC 2096.
+
+         -  For IS-IS, an integer representation of the types of
+         route to IP reachable addresses.";
+    }
+
+    leaf next-hop-as {
+      type uint32;
+      config false;
+      description
+        "The Autonomous System Number of the Next Hop.  The
+         semantics of this object are determined by the
+         routing protocol specified in the route's protocol leaf.
+         When this object is unknown or not relevant its
+         value is set to zero.";
+    }
+  }
+
+  grouping rib-only-state {
+    leaf loose-next-hop {
+      type boolean;
+      config false;
+      description
+        "This flag indicates whether RTM considers that the
+         next-hop address for this route is a loose next hop.
+
+         If RTM sets this object to 'true' then
+
+         -  it must also have set route-type to 'remote'
+         -  the next-hop address (nexthop) may not be on a
+         directly connected device
+         -  if RTM cannot find a route to the next-hop address,
+         it does not return the route, it
+         does not redistribute the route to routing protocol
+         managers, and it does not program the route to a
+         forwarding table (unless the forwarding table has
+         registered to receive loose next hops) or to a partner
+         that is querying route information (such as BGP or
+         PIM).";
+    }
+
+    leaf fib-route {
+      type boolean;
+      config false;
+      description
+        "Flag indicating whether or not this route has been
+         programmed either to a forwarding table, or to a partner
+         that queries route information (such as BGP or PIM).
+
+         If there is no forwarding table and no partners are
+         querying route information then this object is set to
+         'false' for every route.
+
+         If this route has loose-next=hop set to 'true', it is
+         possible that RTM knows of more than one explicit next hop
+         to the loose next hop address.  If so, RTM programs these
+         explicit next hops separately to a forwarding table
+         (unless the forwarding table registers to receive loose
+         next hops) and to a partner that queries route
+         information; in this case the fib-route flag is set
+         to 'true' if and only if one or more of these explicit
+         next hops has been programmed.";
+    }
+  }
+
+  grouping route-common-lfa-state {
+    leaf if-index {
+      type meta:ro-if-index-or-zero;
+      config false;
+      description
+        "If the next hop for this route has a loop-free alternate
+         (protection is local-lfa or remote-lfa)
+         then this field contains the value of the local interface
+         index through which the loop-free alternate can be
+         reached.
+
+         If the next hop for this route is a loop-free alternate
+         then this field contains the local interface index
+         through which the primary next hop can be reached.
+
+         Otherwise, this field is not used and is set to zero.";
+    }
+
+    leaf if-base-name {
+      type interfaces:iface-base-name;
+      config false;
+      description
+        "If the next hop for this route has a loop-free alternate
+         (protection is local-lfa or remote-lfa)
+         then this field contains the value of the local interface
+         base name through which the loop-free alternate can be
+         reached.
+
+         If the next hop for this route is a loop-free alternate
+         then this field contains the local interface name through which
+         the primary next hop can be reached.
+
+         Otherwise, this field is not used and is set to zero.";
+    }
+
+    leaf if-ext-id {
+      type interfaces:iface-ext-id;
+      config false;
+      description
+        "If the next hop for this route has a loop-free alternate
+         (protection is local-lfa or remote-lfa)
+         then this field contains the value of the local interface
+         extended id through which the loop-free alternate can be
+         reached.
+
+         If the next hop for this route is a loop-free alternate
+         then this field contains the local interface extended id through which
+         the primary next hop can be reached.
+
+         Otherwise, this field is not used and is set to zero.";
+    }
+  }
+
+  grouping route-ipv4-lfa-state {
+    container lfa {
+      leaf nexthop {
+        type interfaces:iface-ipv4-address-allow-zero-t;
+        config false;
+        description
+          "If the next hop for this route has a loop-free alternate
+           (protection is local-lfa or remote-lfa)
+           then this field contains the loop-free alternate's
+           address.
+
+           If the next hop for this route is a loop-free alternate
+           then this field contains the corresponding primary next hop's address.
+
+           Otherwise, this field is not used and is set to zero.";
+      }
+
+      uses route-common-lfa-state;
+    }
+  }
+
+  grouping route-ipv6-lfa-state {
+    container lfa {
+      leaf nexthop {
+        type interfaces:iface-ipv6-address-t;
+        config false;
+        description
+          "If the next hop for this route has a loop-free alternate
+           (protection is local-lfa or remote-lfa)
+           then this field contains the loop-free alternate's
+           address.
+
+           If the next hop for this route is a loop-free alternate
+           then this field contains the corresponding primary next hop's address.
+
+           Otherwise, this field is not used and is set to zero.";
+      }
+
+      uses route-common-lfa-state;
+    }
+  }
+
+  grouping route-state {
+    uses route-common-state;
+
+    uses route-only-state;
+  }
+
+  grouping rib-state {
+    uses route-common-state;
+
+    uses rib-only-state;
+  }
+
+  grouping route-type-info {
+    leaf route-count {
+      type uint32;
+      config false;
+      description
+        "The number of routes of the given protocol type to which RTM
+         currently has a route.";
+    }
+  }
+
+  grouping route-target-list {
+    list route-target {
+      user-ext:CLI-comm-help "Configure route target";
+      user-ext:CLI-no-comm-help "Remove route target";
+      key "rt";
+      description
+        "Route target configuration for the VRF.";
+      leaf rt {
+        user-ext:CLI-param-help "Route target extended community value";
+        type meta:vpn-rt-value-t;
+        description
+          "BGP extended community route target value.";
+      }
+    }
+  }
+
+  grouping route-count-state {
+    container state {
+      config false;
+      leaf route-count {
+        type uint32;
+        config false;
+        description
+          "The number of destination prefixes to which RTM
+           currently has a route.  This is the same as the number of
+           rows in the route list if the following are both true.
+
+           -  RTM knows of at most one route to each destination prefix.  This
+           means that there is at most one route in the route list for
+           each destination prefix included in route-count.
+           -  None of the routes which RTM has learned about are loose
+           next hops that cannot be resolved.  This means that there
+           is at least one route in the route list per destination
+           prefix included in route-count.";
+      }
+
+      container connected-route-info {
+        config false;
+        description
+          "Container to hold connected route information.";
+        uses route-type-info;
+      }
+
+      container local-route-info {
+        config false;
+        description
+          "Container to hold local route information.";
+        uses route-type-info;
+      }
+
+      container static-route-info {
+        config false;
+        description
+          "Container to hold static route information.";
+        uses route-type-info;
+      }
+
+      container rip-route-info {
+        config false;
+        description
+          "Container to hold RIP route information.";
+        uses route-type-info;
+      }
+
+      container isis-route-info {
+        config false;
+        description
+          "Container to hold ISIS route information.";
+        uses route-type-info;
+      }
+
+      container ospf-route-info {
+        config false;
+        description
+          "Container to hold OSPF route information.";
+        uses route-type-info;
+      }
+
+      container bgp-route-info {
+        config false;
+        description
+          "Container to hold BGP route information.";
+        uses route-type-info;
+      }
+
+      container lfa-route-info {
+        config false;
+        description
+          "Container to hold LFA route information.";
+        uses route-type-info;
+      }
+
+      container summ-addr-route-info {
+        config false;
+        description
+          "Container to hold summary address route information.";
+        uses route-type-info;
+      }
+
+      container default-route-info {
+        config false;
+        description
+          "Container to hold default route information.";
+        uses route-type-info;
+      }
+    }
+  }
+
+  grouping routing-loose-next-hop-config {
+    container loose-next-hop {
+      user-ext:CLI-comm-help "Configure loose next hop static routing";
+      user-ext:CLI-no-comm-help "Configure loose next hop static routing";
+      description
+        "Configure static routing for loose next hop";
+      uses routing-administrative-distance;
+    }
+  }
+
+  grouping router-config {
+    user-ext:CLI-comm-help "Configure router";
+    user-ext:CLI-no-comm-help "Configure router";
+    description
+      "Configure router";
+    leaf equal-cost {
+      user-ext:CLI-comm-help "Enable ECMP";
+      user-ext:CLI-no-comm-help "Disable ECMP";
+      type empty;
+      description
+        "How to select which equal cost routes to give to an active
+         routing information consumer, if there is more than one
+         route to a given destination with the lowest
+         administrative distance.
+
+         If you want to use IGP shortcuts for any routes then this
+         leaf must be defined.";
+    }
+
+    container static {
+      user-ext:CLI-comm-help "Configure static routing";
+      user-ext:CLI-no-comm-help "Configure static routing";
+      description
+        "Configuration for static routing";
+      container address-family {
+        user-ext:CLI-comm-help "Configure static routing for address-family";
+        user-ext:CLI-no-comm-help "Configure static routing for address-family";
+        description
+          "Configuration static routing for address-family";
+        container ipv4 {
+          user-ext:CLI-comm-help "Configure IPv4 static routing";
+          user-ext:CLI-no-comm-help "Configure IPv4 static routing";
+          description
+            "IPv4 static routing";
+          container unicast {
+            user-ext:CLI-comm-help "Configure IPv4 unicast static routing";
+            user-ext:CLI-no-comm-help "Configure IPv4 unicast static routing";
+            description
+              "Configure IPv4 unicast static routing";
+            list destination {
+              user-ext:CLI-comm-help "Configure destination prefix";
+              user-ext:CLI-no-comm-help "Remove destination prefix";
+              must "(not(loose-next-hop/metric) or  not(interfaces/interface))" {
+                error-message
+                  "A loose-next-hop cannot be associated with an interface";
+              }
+              must "(not(loose-next-hop/metric) or  (not(custom-interfaces/interface/oneGE/gigabitethernet) and  not(custom-interfaces/interface/oneGE/gigabitethernet-sub) and  not(custom-interfaces/interface/tenGE/tengigabitethernet) and  not(custom-interfaces/interface/tenGE/tengigabitethernet-sub) and  not(custom-interfaces/interface/fortyGE/fortygigabitethernet) and  not(custom-interfaces/interface/fortyGE/fortygigabitethernet-sub) and  not(custom-interfaces/interface/hundredGE/hundredgigabitethernet) and  not(custom-interfaces/interface/hundredGE/hundredgigabitethernet-sub) and  not(custom-interfaces/interface/bundle-ifaces/bundle-ether) and  not(custom-interfaces/interface/bundle-ifaces/bundle-ether-sub) and  not(custom-interfaces/interface/ipip-ifaces/tunnel-gre)))" {
+                error-message
+                  "A loose-next-hop cannot be associated with an interface";
+              }
+              key "prefix nexthop";
+              description
+                "Static route";
+              leaf prefix {
+                user-ext:CLI-param-help "IPv4 network prefix";
+                type interfaces:iface-ipv4-prefix-allow-zero-t;
+                description
+                  "Destination internetwork prefix or subnet prefix.";
+              }
+
+              leaf nexthop {
+                user-ext:CLI-comm-help "Set nexthop IPv4 address";
+                user-ext:CLI-no-comm-help "Set nexthop IPv4 address";
+                user-ext:CLI-param-help "Set IPv4 nexthop address";
+                type interfaces:iface-ipv4-address-allow-zero-t;
+                description
+                  "The next-hop IP address, if any.
+
+                   If action is 'forward', there may or may not be
+                   a next-hop IP address.
+
+                   A next-hop IP address is not required if an output
+                   interface is specified.
+
+                   It is possible to supply a next-hop IP address, but to set
+                   the output interface to zero.
+                   In this case
+
+                   -  the next hop is referred to as a loose next hop
+                   -  the next-hop address does not need to be on a directly
+                   connected device
+                   -  if RTM cannot find a route to the specified next-hop
+                   address, it does not return the static route in the
+                   route list, it does not redistribute the static
+                   route to routing protocol managers, and it does not
+                   program the static route to a forwarding table (unless
+                   the forwarding table has registered to receive loose
+                   next hops) or to a partner that is querying route
+                   information (such as BGP or PIM).
+
+                   If action is not 'forward', there is no next-hop IP address.
+
+                   If there is no next-hop IP address, nexthop
+                   is set to all zeroes.";
+              }
+
+              uses ifaces-to-use-in-routing;
+
+              uses routing-loose-next-hop-config;
+            }
+          }
+
+          container multicast {
+            user-ext:CLI-comm-help "Configure IPv4 multicast static routing";
+            user-ext:CLI-no-comm-help "Configure IPv4 multicast static routing";
+            description
+              "Configure IPv4 multicast static routing";
+            list destination {
+              user-ext:CLI-comm-help "Configure destination prefix";
+              user-ext:CLI-no-comm-help "Remove destination prefix";
+              must "(not(loose-next-hop/metric) or  not(interfaces/interface))" {
+                error-message
+                  "A loose-next-hop metric cannot be associated with an interface";
+              }
+              must "(not(loose-next-hop/metric) or  (not(custom-interfaces/interface/oneGE/gigabitethernet) and  not(custom-interfaces/interface/oneGE/gigabitethernet-sub) and  not(custom-interfaces/interface/tenGE/tengigabitethernet) and  not(custom-interfaces/interface/tenGE/tengigabitethernet-sub) and  not(custom-interfaces/interface/fortyGE/fortygigabitethernet) and  not(custom-interfaces/interface/fortyGE/fortygigabitethernet-sub) and  not(custom-interfaces/interface/hundredGE/hundredgigabitethernet) and  not(custom-interfaces/interface/hundredGE/hundredgigabitethernet-sub) and  not(custom-interfaces/interface/bundle-ifaces/bundle-ether) and  not(custom-interfaces/interface/bundle-ifaces/bundle-ether-sub) and  not(custom-interfaces/interface/ipip-ifaces/tunnel-gre)))" {
+                error-message
+                  "A loose-next-hop metric cannot be associated with an interface";
+              }
+              key "prefix nexthop";
+              description
+                "Static route";
+              leaf prefix {
+                user-ext:CLI-param-help "IPv4 network prefix";
+                type interfaces:iface-ipv4-prefix-allow-zero-t;
+                description
+                  "Destination internetwork prefix or subnet prefix.";
+              }
+
+              leaf nexthop {
+                user-ext:CLI-param-help "Set IPv4 nexthop address";
+                type interfaces:iface-ipv4-address-allow-zero-t;
+                description
+                  "The next-hop IP address, if any.
+
+                   If action is 'forward', there may or may not be
+                   a next-hop IP address.
+
+                   A next-hop IP address is not required if an output
+                   interface is specified.
+
+                   It is possible to supply a next-hop IP address, but to set
+                   the output interface to zero.
+                   In this case
+
+                   -  the next hop is referred to as a loose next hop
+                   -  the next-hop address does not need to be on a directly
+                   connected device
+                   -  if RTM cannot find a route to the specified next-hop
+                   address, it does not return the static route in the
+                   route list, it does not redistribute the static
+                   route to routing protocol managers, and it does not
+                   program the static route to a forwarding table (unless
+                   the forwarding table has registered to receive loose
+                   next hops) or to a partner that is querying route
+                   information (such as BGP or PIM).
+
+                   If action is not 'forward', there is no next-hop IP address.
+
+                   If there is no next-hop IP address, nexthop
+                   is set to all zeroes.";
+              }
+
+              uses ifaces-to-use-in-routing;
+
+              uses routing-loose-next-hop-config;
+            }
+          }
+        }
+
+        container ipv6 {
+          user-ext:CLI-comm-help "Configure IPv6 static routing";
+          user-ext:CLI-no-comm-help "Configure IPv6 static routing";
+          description
+            "IPv6 static routing";
+          container unicast {
+            user-ext:CLI-comm-help "Configure IPv6 unicast static routing";
+            user-ext:CLI-no-comm-help "Configure IPv6 unicast static routing";
+            description
+              "Configure IPv6 unicast static routing";
+            list destination {
+              user-ext:CLI-comm-help "Configure destination prefix";
+              user-ext:CLI-no-comm-help "Remove destination prefix";
+              must "(not(loose-next-hop/metric) or  not(interfaces/interface))" {
+                error-message
+                  "A loose-next-hop cannot be associated with an interface";
+              }
+              must "(not(loose-next-hop/metric) or  (not(custom-interfaces/interface/oneGE/gigabitethernet) and  not(custom-interfaces/interface/oneGE/gigabitethernet-sub) and  not(custom-interfaces/interface/tenGE/tengigabitethernet) and  not(custom-interfaces/interface/tenGE/tengigabitethernet-sub) and  not(custom-interfaces/interface/fortyGE/fortygigabitethernet) and  not(custom-interfaces/interface/fortyGE/fortygigabitethernet-sub) and  not(custom-interfaces/interface/hundredGE/hundredgigabitethernet) and  not(custom-interfaces/interface/hundredGE/hundredgigabitethernet-sub) and  not(custom-interfaces/interface/bundle-ifaces/bundle-ether) and  not(custom-interfaces/interface/bundle-ifaces/bundle-ether-sub) and  not(custom-interfaces/interface/ipip-ifaces/tunnel-gre)))" {
+                error-message
+                  "A loose-next-hop cannot be associated with an interface";
+              }
+              key "prefix nexthop";
+              description
+                "Static route";
+              leaf prefix {
+                user-ext:CLI-param-help "IPv6 network prefix";
+                type interfaces:iface-ipv6-prefix-allow-zero-t;
+                description
+                  "Destination internetwork prefix or subnet prefix.";
+              }
+
+              leaf nexthop {
+                user-ext:CLI-param-help "Set IPv6 nexthop address";
+                type interfaces:iface-ipv6-address-t;
+                description
+                  "The next-hop IP address, if any.
+
+                   If action is 'forward', there may or may not be
+                   a next-hop IP address.
+
+                   A next-hop IP address is not required if an output
+                   interface is specified.
+
+                   It is possible to supply a next-hop IP address, but to set
+                   the output interface to zero.
+                   In this case
+
+                   -  the next hop is referred to as a loose next hop
+                   -  the next-hop address does not need to be on a directly
+                   connected device
+                   -  if RTM cannot find a route to the specified next-hop
+                   address, it does not return the static route in the
+                   route list, it does not redistribute the static
+                   route to routing protocol managers, and it does not
+                   program the static route to a forwarding table (unless
+                   the forwarding table has registered to receive loose
+                   next hops) or to a partner that is querying route
+                   information (such as BGP or PIM).
+
+                   If action is not 'forward', there is no next-hop IP address.
+
+                   If there is no next-hop IP address, nexthop
+                   is set to all zeroes.";
+              }
+
+              uses ifaces-to-use-in-routing;
+
+              uses routing-loose-next-hop-config;
+            }
+          }
+
+          container multicast {
+            user-ext:CLI-comm-help "Configure IPv6 multicast static routing";
+            user-ext:CLI-no-comm-help "Configure IPv6 multicast static routing";
+            description
+              "Configure IPv6 multicast static routing";
+            list destination {
+              user-ext:CLI-comm-help "Configure destination prefix";
+              user-ext:CLI-no-comm-help "Remove destination prefix";
+              must "(not(loose-next-hop/metric) or  not(interfaces/interface))" {
+                error-message
+                  "A loose-next-hop cannot be associated with an interface";
+              }
+              must "(not(loose-next-hop/metric) or  (not(custom-interfaces/interface/oneGE/gigabitethernet) and  not(custom-interfaces/interface/oneGE/gigabitethernet-sub) and  not(custom-interfaces/interface/tenGE/tengigabitethernet) and  not(custom-interfaces/interface/tenGE/tengigabitethernet-sub) and  not(custom-interfaces/interface/fortyGE/fortygigabitethernet) and  not(custom-interfaces/interface/fortyGE/fortygigabitethernet-sub) and  not(custom-interfaces/interface/hundredGE/hundredgigabitethernet) and  not(custom-interfaces/interface/hundredGE/hundredgigabitethernet-sub) and  not(custom-interfaces/interface/bundle-ifaces/bundle-ether) and  not(custom-interfaces/interface/bundle-ifaces/bundle-ether-sub) and  not(custom-interfaces/interface/ipip-ifaces/tunnel-gre)))" {
+                error-message
+                  "A loose-next-hop cannot be associated with an interface";
+              }
+              key "prefix nexthop";
+              description
+                "Static route";
+              leaf prefix {
+                user-ext:CLI-param-help "IPv6 network prefix";
+                type interfaces:iface-ipv6-prefix-allow-zero-t;
+                description
+                  "Destination internetwork prefix or subnet prefix.";
+              }
+
+              leaf nexthop {
+                user-ext:CLI-comm-help "Set nexthop IPv6 address";
+                user-ext:CLI-no-comm-help "Set nexthop IPv6 address";
+                user-ext:CLI-param-help "Set IPv6 nexthop address";
+                type interfaces:iface-ipv6-address-t;
+                description
+                  "The next-hop IP address, if any.
+
+                   If action is 'forward', there may or may not be
+                   a next-hop IP address.
+
+                   A next-hop IP address is not required if an output
+                   interface is specified.
+
+                   It is possible to supply a next-hop IP address, but to set
+                   the output interface to zero.
+                   In this case
+
+                   -  the next hop is referred to as a loose next hop
+                   -  the next-hop address does not need to be on a directly
+                   connected device
+                   -  if RTM cannot find a route to the specified next-hop
+                   address, it does not return the static route in the
+                   route list, it does not redistribute the static
+                   route to routing protocol managers, and it does not
+                   program the static route to a forwarding table (unless
+                   the forwarding table has registered to receive loose
+                   next hops) or to a partner that is querying route
+                   information (such as BGP or PIM).
+
+                   If action is not 'forward', there is no next-hop IP address.
+
+                   If there is no next-hop IP address, nexthop
+                   is set to all zeroes.";
+              }
+
+              uses ifaces-to-use-in-routing;
+
+              uses routing-loose-next-hop-config;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  grouping ipv4-route-state-list {
+    container route-state-list {
+      config false;
+      description
+        "Container to hold Route state.";
+      list route-state {
+        config false;
+        description
+          "This entity's IP Routing table.
+
+           A route is present in this table if and only if it has been
+           programmed to an Active Routes Interface consumer.  This may
+           be a consumer that asks for all route updates (such as a
+           forwarding table), or it may be a consumer that queries
+           information about specific routes (such as BGP or PIM).";
+        leaf prefix {
+          type interfaces:iface-ipv4-prefix-allow-zero-t;
+          config false;
+          description
+            "Destination internetwork prefix or subnet prefix.  The
+             destination prefix length is applied to this value, and to
+             a particular destination address, to determine whether the
+             route applies to the particular address.
+
+             If the prefix length is L, then applying the length to an
+             address means taking the first L bits of the address.";
+        }
+
+        leaf nexthop {
+          type interfaces:iface-ipv4-address-allow-zero-t;
+          config false;
+          description
+            "On remote routes, the address of the next system en
+             route; Otherwise, zero.";
+        }
+
+        uses route-state;
+
+        uses route-ipv4-lfa-state;
+      }
+    }
+  }
+
+  grouping ipv4-rib-state-list {
+    container rib-state-list {
+      config false;
+      description
+        "Container to hold RIB state.";
+      list rib-state {
+        config false;
+        description
+          "Read-only copy of this entity's Routing Information Base.
+           This is the complete set of routes known by RTM and is a
+           superset of the routes accessible through the route list
+           (which accesses only the active routes from the Forwarding
+           Information Base).";
+        leaf prefix {
+          type interfaces:iface-ipv4-prefix-allow-zero-t;
+          config false;
+          description
+            "Destination internetwork prefix or subnet prefix.  The
+             destination prefix length is applied to this value, and to
+             a particular destination address, to determine whether the
+             route applies to the particular address.
+
+             If the prefix length is L, then applying the length to an
+             address means taking the first L bits of the address.";
+        }
+
+        leaf nexthop {
+          type interfaces:iface-ipv4-address-allow-zero-t;
+          config false;
+          description
+            "On remote routes, the address of the next system en
+             route; Otherwise, zero.";
+        }
+
+        uses rib-state;
+
+        uses route-ipv4-lfa-state;
+      }
+    }
+  }
+
+  grouping ipv6-route-state-list {
+    container route-state-list {
+      config false;
+      description
+        "Container to hold Route state.";
+      list route-state {
+        config false;
+        description
+          "This entity's IP Routing table.
+
+           A route is present in this table if and only if it has been
+           programmed to an Active Routes Interface consumer.  This may
+           be a consumer that asks for all route updates (such as a
+           forwarding table), or it may be a consumer that queries
+           information about specific routes (such as BGP or PIM).";
+        leaf prefix {
+          type interfaces:iface-ipv6-prefix-allow-zero-t;
+          description
+            "Destination internetwork prefix or subnet prefix.  The
+             destination prefix length is applied to this value, and to
+             a particular destination address, to determine whether the
+             route applies to the particular address.
+
+             If the prefix length is L, then applying the length to an
+             address means taking the first L bits of the address.";
+        }
+
+        leaf nexthop {
+          type interfaces:iface-ipv6-address-t;
+          description
+            "On remote routes, the address of the next system en
+             route; Otherwise, zero.";
+        }
+
+        uses route-state;
+
+        uses route-ipv6-lfa-state;
+      }
+    }
+  }
+
+  grouping ipv6-rib-state-list {
+    container rib-state-list {
+      config false;
+      description
+        "Container to hold RIB state.";
+      list rib-state {
+        config false;
+        description
+          "Read-only copy of this entity's Routing Information Base.
+           This is the complete set of routes known by RTM and is a
+           superset of the routes accessible through the route list
+           (which accesses only the active routes from the Forwarding
+           Information Base).";
+        leaf prefix {
+          type interfaces:iface-ipv6-prefix-allow-zero-t;
+          description
+            "Destination internetwork prefix or subnet prefix.  The
+             destination prefix length is applied to this value, and to
+             a particular destination address, to determine whether the
+             route applies to the particular address.
+
+             If the prefix length is L, then applying the length to an
+             address means taking the first L bits of the address.";
+        }
+
+        leaf nexthop {
+          type interfaces:iface-ipv6-address-t;
+          description
+            "On remote routes, the address of the next system en
+             route; Otherwise, zero.";
+        }
+
+        uses rib-state;
+
+        uses route-ipv6-lfa-state;
+      }
+    }
+  }
+
+  grouping route-rib-state {
+    container ipv4-state {
+      config false;
+      description
+        "IPv4 Route / RIB state.";
+      uses route-count-state;
+
+      uses ipv4-route-state-list;
+
+      uses ipv4-rib-state-list;
+    }
+
+    container ipv6-state {
+      config false;
+      description
+        "IPv6 Route / RIB state.";
+      uses route-count-state;
+
+      uses ipv6-route-state-list;
+
+      uses ipv6-rib-state-list;
+    }
+  }
+
+  grouping vrf-bind-config {
+    leaf bind-vrf-name {
+      user-ext:CLI-comm-help "Set L3VPN VRF to which an interface is bound";
+      user-ext:CLI-no-comm-help "Remove L3VPN VRF to which an interface is bound";
+      user-ext:CLI-param-help "Set L3VPN VRF to which an interface is bound";
+      type leafref {
+        path "/routing:router/routing:vrf/routing:vrf-name";
+      }
+      description
+        "L3VPN VRF to which an interface is bound.";
+    }
+  }
+
+  container router {
+    uses router-config;
+
+    uses route-rib-state;
+
+    list vrf {
+      user-ext:CLI-comm-help "Configure routing in VRF";
+      user-ext:CLI-no-comm-help "Configure or remove routing in VRF";
+      key "vrf-name";
+      description
+        "VRF routing configuration";
+      leaf vrf-name {
+        user-ext:CLI-comm-help "Associate configuration with VRF";
+        user-ext:CLI-no-comm-help "Clear VRF association";
+        type meta:l3vpn-vrf-name;
+        description
+          "The name of this VRF.  This MAY be equivalent to the RFC2685 VPN-ID.";
+      }
+
+      leaf description {
+        user-ext:CLI-comm-help "Set VRF description";
+        user-ext:CLI-no-comm-help "Remove VRF description";
+        user-ext:CLI-param-help "Set VRF description";
+        type meta:l3vpn-vrf-description;
+        description
+          "The human-readable description of this VRF.";
+      }
+
+      container import {
+        user-ext:CLI-comm-help "Configure import route targets";
+        user-ext:CLI-no-comm-help "Configure or remove import route targets";
+        description
+          "Import route target configuration for the VRF.";
+        uses route-target-list;
+      }
+
+      container export {
+        user-ext:CLI-comm-help "Configure export route targets";
+        user-ext:CLI-no-comm-help "Configure or remove export route targets";
+        description
+          "Export route target configuration for the VRF.";
+        uses route-target-list;
+      }
+
+      leaf import-vrf-default {
+        user-ext:CLI-comm-help "Import routes from the default VRF";
+        user-ext:CLI-no-comm-help "Disable importing of routes from the default VRF";
+        type empty;
+        description
+          "Enables importing of routes from the default or global VRF.";
+      }
+
+      leaf export-vrf-default {
+        user-ext:CLI-comm-help "Export routes to the default VRF";
+        user-ext:CLI-no-comm-help "Disable exporting of routes to the default VRF";
+        type empty;
+        description
+          "Enables exporting of routes to the default or global VRF.";
+      }
+
+      container advertise-l2vpn-evpn {
+        user-ext:CLI-comm-help "Advertise routes into EVPN";
+        user-ext:CLI-no-comm-help "Disable advertisement of routes into EVPN";
+        presence "Advertise routes into EVPN";
+        description
+          "Enables the advertisement of routes within a tenant VRF into
+           EVPN.";
+        list summary-address {
+          user-ext:CLI-comm-help "Configure summary address";
+          user-ext:CLI-no-comm-help "Remove summary address";
+          key "prefix";
+          description
+            "Summary address";
+          leaf prefix {
+            user-ext:CLI-param-help "Summary prefix";
+            type interfaces:iface-ip-prefix-t;
+            description
+              "Summary prefix.";
+          }
+
+          leaf advertise {
+            user-ext:CLI-param-help "Configure whether to advertise summary address into EVPN";
+            user-ext:CLI-comm-help "Configure whether to advertise summary address into EVPN";
+            user-ext:CLI-no-comm-help "Advertise summary address into EVPN";
+            type boolean;
+            default "true";
+            description
+              "Determines whether the summary address is advertised
+               into EVPN.
+
+               If set to true,the summary address is advertised and any
+               routes matching the summary address are not advetised.
+
+               If set to false, neither the summary address not any
+               routes matching the summary address are advertised into
+               EVPN.";
+          }
+        }
+      }
+
+      uses router-config;
+
+      uses route-rib-state;
+    }
+  }
+
+  augment "/interface:interfaces/interface:interface" {
+    if-feature "interface:l3vpn-vrf-bind";
+    description
+      "Add a node for the identification of the VRF associated
+       with the information configured on a interface.";
+    uses vrf-bind-config;
+  }
+}

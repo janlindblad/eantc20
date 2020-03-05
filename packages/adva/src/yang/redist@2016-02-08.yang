@@ -1,0 +1,516 @@
+module redist {
+  namespace "http://metaswitch.com/yang/nbu/redist/201602080000Z";
+  prefix redist;
+
+  import user-extensions {
+    prefix user-ext;
+  }
+
+  import interfaces {
+    prefix interfaces;
+  }
+
+  import metaswitch-yang-types {
+    prefix meta;
+  }
+
+  organization
+    "Metaswitch Networks";
+  contact
+    "Postal: Metaswitch Networks
+             100 Church Street
+             Enfield
+             EN2 6BQ
+             United Kingdom
+     Tel:    +44 20 8366 1177
+     E-mail: info@metaswitch.com";
+  description
+    "Redistribution Configuration";
+
+  revision 2016-02-08 {
+    description
+      "Initial revision.";
+  }
+
+  typedef redist-name-string {
+    type string {
+      length "1..128";
+    }
+    description
+      "WORD (1-128)";
+  }
+
+  typedef redist-priority {
+    type uint32 {
+      range "0..2147483647";
+    }
+    description
+      "INT (0-2147483647)";
+  }
+
+  typedef redist-lfa-priority {
+    type uint32 {
+      range "0..2147483646";
+    }
+    description
+      "INT (0-2147483646)";
+  }
+
+  typedef redist-admin-tag {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "INT (0-4294967295)";
+  }
+
+  typedef rtm-admin-distance {
+    type uint8 {
+      range "0..255";
+    }
+    description
+      "INT (0-255)";
+  }
+
+  typedef rtm-metric-conversion {
+    type enumeration {
+      enum "same" {
+        value 1;
+        description
+          "Use supplied metric value";
+      }
+      enum "constant" {
+        value 2;
+        description
+          "Ignore supplied metric and use metric parameter";
+      }
+      enum "inverse" {
+        value 3;
+        description
+          "Map high values onto low ones and vice-versa";
+      }
+      enum "scale-up" {
+        value 4;
+        description
+          "Use supplied metric multiplied by metric parameter";
+      }
+      enum "scale-down" {
+        value 5;
+        description
+          "Use supplied metric divided by metric parameter";
+      }
+      enum "truncate" {
+        value 6;
+        description
+          "Use smaller of supplied metric and metric parameter";
+      }
+    }
+    description
+      "Metric conversion type";
+  }
+
+  typedef redist-prot-type {
+    type enumeration {
+      enum "all" {
+        value 0;
+      }
+      enum "connected" {
+        value 1;
+      }
+      enum "static" {
+        value 2;
+      }
+      enum "rip" {
+        value 3;
+      }
+      enum "isis" {
+        value 4;
+      }
+      enum "ospf" {
+        value 5;
+      }
+      enum "bgp" {
+        value 6;
+      }
+      enum "ldp" {
+        value 7;
+      }
+    }
+    description
+      "Routing protocol type";
+  }
+
+  typedef isis-redist-path-types {
+    type enumeration {
+      enum "isis-level1-internal" {
+        value 6;
+        description
+          "Level 1 route to dest internal to ISIS";
+      }
+      enum "isis-level2-internal" {
+        value 7;
+        description
+          "Level 2 route to dest internal to ISIS";
+      }
+      enum "isis-level1-external" {
+        value 8;
+        description
+          "Level 1 route to dest external to ISIS";
+      }
+      enum "isis-level2-external" {
+        value 9;
+        description
+          "Level 2 route to dest external to ISIS";
+      }
+      enum "none" {
+        value 100;
+        description
+          "No path type associated with this route";
+      }
+    }
+    description
+      "Redistribution path type";
+  }
+
+  typedef ospf-redist-path-types {
+    type enumeration {
+      enum "ospf-intra-area" {
+        value 10;
+        description
+          "Path to dest in attached OSPF area";
+      }
+      enum "ospf-inter-area" {
+        value 11;
+        description
+          "Path to dest in another OSPF area ";
+      }
+      enum "ospf-type1-external" {
+        value 12;
+        description
+          "Path to dest external to OSPF with metric in same units";
+      }
+      enum "ospf-type2-external" {
+        value 13;
+        description
+          "Path to dest external to OSPF with a much larger metric";
+      }
+      enum "ospf-type1-nssa" {
+        value 14;
+        description
+          "Path to dest external to OSPF through NSSA with metric in same units";
+      }
+      enum "ospf-type2-nssa" {
+        value 15;
+        description
+          "Path to dest external to OSPF through NSSA with a much larger metric";
+      }
+      enum "none" {
+        value 100;
+        description
+          "No path type associated with this route";
+      }
+    }
+    description
+      "Redistribution path type";
+  }
+
+  typedef bgp-redist-path-types {
+    type enumeration {
+      enum "bgp-internal" {
+        value 16;
+        description
+          "Path learned from iBGP peer";
+      }
+      enum "bgp-external" {
+        value 17;
+        description
+          "Path learned from eBGP peer";
+      }
+      enum "none" {
+        value 100;
+        description
+          "No path type associated with this route";
+      }
+    }
+    description
+      "Redistribution path type";
+  }
+
+  grouping common-redist-ipv4 {
+    leaf priority {
+      user-ext:CLI-comm-help "Set priority for this redistribution rule";
+      user-ext:CLI-no-comm-help "Set priority to default for this redistribution rule";
+      user-ext:CLI-param-help "Set priority for this redistribution rule";
+      type redist-priority;
+      default "2147483647";
+      description
+        "The priority assigned to this table entry.  The lower this
+         value takes, the higher the priority of the entry.
+
+         The priority takes effect when there is more than one
+         entry in the table whose filters match a pairing of
+         routing information and destination RPM.";
+    }
+
+    leaf address-prefix-filter {
+      user-ext:CLI-comm-help "Configure destination prefix filter";
+      user-ext:CLI-no-comm-help "Remove destination prefix filter";
+      user-ext:CLI-param-help "Configure destination prefix filter";
+      type interfaces:iface-ipv4-prefix-t;
+      description
+        "Destination IP address prefix filter.  Do not match the source
+         routing information to this entry if one of these fails:
+
+         -  the destination IP address in the source routing
+         information, with the IP address filter prefix length
+         applied, matches the IP address filter with the IP address
+         filter prefix length applied
+
+         -  the destination IP address prefix length is greater
+         than or equal to the IP address filter prefix length.";
+    }
+
+    leaf next-hop-prefix-filter {
+      user-ext:CLI-comm-help "Configure nexthop prefix filter";
+      user-ext:CLI-no-comm-help "Remove nexthop prefix filter";
+      user-ext:CLI-param-help "Configure nexthop prefix filter";
+      type interfaces:iface-ipv4-prefix-t;
+      description
+        "Value of next hop filter prefix.  Do not match the source routing
+         information to this entry if none of the next hop values
+         in the source routing information, with the next hop
+         filter prefix length applied, matches the next hop filter
+         value with the next hop filter prefix length applied.";
+    }
+
+    leaf route-map {
+      user-ext:CLI-comm-help "Apply route map to route redistribution";
+      user-ext:CLI-no-comm-help "Remove route redistribution route map";
+      user-ext:CLI-param-help "Apply route map to route redistribution";
+      type meta:route-map-name;
+      description
+        "The name of the route map to use for route redistribution.";
+    }
+
+    container redistribute {
+      user-ext:CLI-comm-help "Configure redistribution of routing information";
+      user-ext:CLI-no-comm-help "Configure redistribution of routing information";
+      leaf disable {
+        user-ext:CLI-comm-help "Disable redistribution of routing information";
+        user-ext:CLI-no-comm-help "Enable redistribution of routing information";
+        type empty;
+        description
+          "Flag determining whether or not DC-RTM redistributes
+           routing information from the given source to the given
+           destination.";
+      }
+    }
+  }
+
+  grouping common-redist-ipv6 {
+    leaf priority {
+      user-ext:CLI-comm-help "Set priority";
+      user-ext:CLI-no-comm-help "Set priority to default";
+      user-ext:CLI-param-help "Set priority";
+      type redist-priority;
+      default "2147483647";
+      description
+        "The priority assigned to this table entry.  The lower this
+         value takes, the higher the priority of the entry.
+
+         The priority takes effect when there is more than one
+         entry in the table whose filters match a pairing of
+         routing information and destination RPM.";
+    }
+
+    leaf address-prefix-filter {
+      user-ext:CLI-comm-help "Configure destination prefix filter";
+      user-ext:CLI-no-comm-help "Configure destination prefix filter";
+      user-ext:CLI-param-help "Configure destination prefix filter";
+      type interfaces:iface-ipv6-prefix-t;
+      description
+        "Destination IP address prefix filter.  Do not match the source
+         routing information to this entry if one of these fails:
+
+         -  the destination IP address in the source routing
+         information, with the IP address filter prefix length
+         applied, matches the IP address filter with the IP address
+         filter prefix length applied
+
+         -  the destination IP address prefix length is greater
+         than or equal to the IP address filter prefix length.";
+    }
+
+    leaf next-hop-prefix-filter {
+      user-ext:CLI-comm-help "Configure nexthop prefix filter";
+      user-ext:CLI-no-comm-help "Configure nexthop prefix filter";
+      user-ext:CLI-param-help "Configure nexthop prefix filter";
+      type interfaces:iface-ipv6-prefix-t;
+      description
+        "Value of next hop filter prefix.  Do not match the source routing
+         information to this entry if none of the next hop values
+         in the source routing information, with the next hop
+         filter prefix length applied, matches the next hop filter
+         value with the next hop filter prefix length applied.";
+    }
+
+    leaf route-map {
+      user-ext:CLI-comm-help "Apply route map to route redistribution";
+      user-ext:CLI-no-comm-help "Remove route redistribution route map";
+      user-ext:CLI-param-help "Apply route map to route redistribution";
+      type meta:route-map-name;
+      description
+        "The name of the route map to use for route redistribution.";
+    }
+
+    container redistribute {
+      user-ext:CLI-comm-help "Configure redistribution of routing information";
+      user-ext:CLI-no-comm-help "Configure redistribution of routing information";
+      leaf disable {
+        user-ext:CLI-comm-help "Disable redistribution of routing information";
+        user-ext:CLI-no-comm-help "Enable redistribution of routing information";
+        type empty;
+        description
+          "Flag determining whether or not DC-RTM redistributes
+           routing information from the given source to the given
+           destination.";
+      }
+    }
+  }
+
+  grouping fully-specified {
+    leaf fully-specified {
+      user-ext:CLI-comm-help "Enable redistribution of fully specified routes";
+      user-ext:CLI-no-comm-help "Disable redistribution of fully specified routes";
+      type empty;
+      description
+        "Redistribute fully specified routes";
+    }
+  }
+
+  grouping lfa-filter-redist-ipv4 {
+    leaf priority {
+      user-ext:CLI-comm-help "Set priority for this redistribution rule";
+      user-ext:CLI-no-comm-help "Set priority to default for this redistribution rule";
+      user-ext:CLI-param-help "Set priority for this redistribution rule";
+      type redist-lfa-priority;
+      default "2147483646";
+      description
+        "The priority assigned to this table entry.  The lower this
+         value takes, the higher the priority of the entry.
+
+         The priority takes effect when there is more than one
+         entry in the table whose filters match a pairing of
+         routing information and destination RPM.
+
+         The value 2147483647 is restricted for the use of the auto-created
+         rule which allows all routes to be redistributed by default.";
+    }
+
+    leaf address-prefix {
+      user-ext:CLI-comm-help "Configure destination prefix filter";
+      user-ext:CLI-no-comm-help "Remove destination prefix filter";
+      user-ext:CLI-param-help "Configure destination prefix filter";
+      type interfaces:iface-ipv4-prefix-t;
+      description
+        "Destination IP address prefix filter.  Do not match the source
+         routing information to this entry if one of these fails:
+
+         -  the destination IP address in the source routing
+         information, with the IP address filter prefix length
+         applied, matches the IP address filter with the IP address
+         filter prefix length applied
+
+         -  the destination IP address prefix length is greater
+         than or equal to the IP address filter prefix length.";
+    }
+
+    leaf nexthop-prefix {
+      user-ext:CLI-comm-help "Configure nexthop prefix filter";
+      user-ext:CLI-no-comm-help "Remove nexthop prefix filter";
+      user-ext:CLI-param-help "Configure nexthop prefix filter";
+      type interfaces:iface-ipv4-prefix-t;
+      description
+        "Value of next hop filter prefix.  Do not match the source routing
+         information to this entry if none of the next hop values
+         in the source routing information, with the next hop
+         filter prefix length applied, matches the next hop filter
+         value with the next hop filter prefix length applied.";
+    }
+
+    leaf disable {
+      user-ext:CLI-comm-help "Disable redistribution of routing information";
+      user-ext:CLI-no-comm-help "Enable redistribution of routing information";
+      type empty;
+      description
+        "Flag determining whether or not DC-RTM redistributes
+         routing information from the given source to the given
+         destination.";
+    }
+
+    uses fully-specified;
+  }
+
+  grouping lfa-filter-redist-ipv6 {
+    leaf priority {
+      user-ext:CLI-comm-help "Set priority for this redistribution rule";
+      user-ext:CLI-no-comm-help "Set priority to default for this redistribution rule";
+      user-ext:CLI-param-help "Set priority for this redistribution rule";
+      type redist-lfa-priority;
+      default "2147483646";
+      description
+        "The priority assigned to this table entry.  The lower this
+         value takes, the higher the priority of the entry.
+
+         The priority takes effect when there is more than one
+         entry in the table whose filters match a pairing of
+         routing information and destination RPM.
+
+         The value 2147483647 is restricted for the use of the auto-created
+         rule which allows all routes to be redistributed by default.";
+    }
+
+    leaf address-prefix {
+      user-ext:CLI-comm-help "Configure destination prefix filter";
+      user-ext:CLI-no-comm-help "Remove destination prefix filter";
+      user-ext:CLI-param-help "Configure destination prefix filter";
+      type interfaces:iface-ipv6-prefix-t;
+      description
+        "Destination IP address prefix filter.  Do not match the source
+         routing information to this entry if one of these fails:
+
+         -  the destination IP address in the source routing
+         information, with the IP address filter prefix length
+         applied, matches the IP address filter with the IP address
+         filter prefix length applied
+
+         -  the destination IP address prefix length is greater
+         than or equal to the IP address filter prefix length.";
+    }
+
+    leaf nexthop-prefix {
+      user-ext:CLI-comm-help "Configure nexthop prefix filter";
+      user-ext:CLI-no-comm-help "Remove nexthop prefix filter";
+      user-ext:CLI-param-help "Configure nexthop prefix filter";
+      type interfaces:iface-ipv6-prefix-t;
+      description
+        "Value of next hop filter prefix.  Do not match the source routing
+         information to this entry if none of the next hop values
+         in the source routing information, with the next hop
+         filter prefix length applied, matches the next hop filter
+         value with the next hop filter prefix length applied.";
+    }
+
+    leaf disable {
+      user-ext:CLI-comm-help "Disable redistribution of routing information";
+      user-ext:CLI-no-comm-help "Enable redistribution of routing information";
+      type empty;
+      description
+        "Flag determining whether or not DC-RTM redistributes
+         routing information from the given source to the given
+         destination.";
+    }
+
+    uses fully-specified;
+  }
+}

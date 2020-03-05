@@ -1,0 +1,215 @@
+module adva-dnos-sys {
+  namespace "http://www.advaoptical.com/cim/adva-dnos-sys";
+  prefix dnos-sys;
+
+  organization
+    "Adva Optical Networking";
+  contact
+    "For technical support, please contact your service channel";
+  description
+    "Definitions for Agema system commands.";
+
+  revision 2019-07-25 {
+    description
+      "Integrating to ADVA YANG models.";
+  }
+  revision 2015-11-04 {
+    description
+      "Version 0.5";
+  }
+
+  rpc write-file {
+    description
+      "Save startup configuration.
+       write memory invokes if called without arguments (configuration save to default file)
+       write file [FILENAME] invokes otherwise";
+    input {
+      leaf file-name {
+        type string {
+          length "1 .. max";
+        }
+      }
+
+      leaf status {
+        type empty;
+      }
+    }
+
+    output {
+      leaf status {
+        type string;
+      }
+    }
+  }
+
+  rpc upload-startup-config {
+    description
+      "Copy startup configuration to server";
+    input {
+      leaf server {
+        type string {
+          length "1 .. max";
+        }
+      }
+
+      leaf remote-dir {
+        type string {
+          length "1 .. max";
+        }
+      }
+
+      leaf remote-file {
+        type string {
+          length "1 .. max";
+        }
+      }
+
+      leaf username {
+        type string {
+          length "1 .. max";
+        }
+      }
+
+      leaf password {
+        type string {
+          length "1 .. max";
+        }
+      }
+
+      leaf status {
+        type empty;
+      }
+    }
+
+    output {
+      leaf status {
+        type string;
+      }
+    }
+  }
+
+  rpc download-startup-config {
+    description
+      "Copy startup configuration from server";
+    input {
+      leaf server {
+        type string {
+          length "1 .. max";
+        }
+      }
+
+      leaf remote-dir {
+        type string {
+          length "1 .. max";
+        }
+      }
+
+      leaf remote-file {
+        type string {
+          length "1 .. max";
+        }
+      }
+
+      leaf username {
+        type string {
+          length "1 .. max";
+        }
+      }
+
+      leaf password {
+        type string {
+          length "1 .. max";
+        }
+      }
+
+      leaf status {
+        type empty;
+      }
+    }
+
+    output {
+      leaf status {
+        type string;
+      }
+    }
+  }
+
+  rpc download-bundle {
+    description
+      "Copy bundle";
+    input {
+      leaf server {
+        type string {
+          length "1 .. max";
+        }
+      }
+
+      leaf remote-dir {
+        type string {
+          length "1 .. max";
+        }
+      }
+
+      leaf remote-file {
+        type string {
+          length "1 .. max";
+        }
+      }
+
+      leaf username {
+        type string {
+          length "1 .. max";
+        }
+      }
+
+      leaf password {
+        type string {
+          length "1 .. max";
+        }
+      }
+
+      leaf status {
+        type empty;
+      }
+    }
+
+    output {
+      leaf status {
+        type string;
+      }
+    }
+  }
+
+  rpc upgrade-bundle {
+    description
+      "Upgrade bundle";
+    input {
+      leaf bundle-name {
+        type string {
+          length "1 .. max";
+        }
+      }
+
+      leaf status {
+        type empty;
+      }
+    }
+
+    output {
+      leaf status {
+        type string;
+      }
+    }
+  }
+
+  rpc reboot {
+    description
+      "Invokes reboot-force";
+
+    output {
+      leaf status {
+        type string;
+      }
+    }
+  }
+}

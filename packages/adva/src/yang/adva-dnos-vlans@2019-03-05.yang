@@ -1,0 +1,80 @@
+module adva-dnos-vlans {
+  yang-version 1;
+  namespace "http://www.advaoptical.com/cim/adva-dnos-vlans";
+  prefix adva-dnos-vlans;
+
+  import iana-if-type {
+    prefix ift;
+  }
+
+  import openconfig-interfaces {
+    prefix oc-if;
+  }
+
+  import openconfig-extensions {
+    prefix oc-ext;
+  }
+
+  import openconfig-vlan {
+    prefix oc-vlan;
+  }
+
+  organization
+    "ADVA Optical Networking";
+  contact
+    "ADVA Optical Networking
+     www.advaoptical.com";
+  description
+    "This module defines data related to ADVA VLAN components in the
+     OpenConfig VLAN model for Agema family.";
+
+  revision 2019-03-05 {
+    description
+      "Initial revision.";
+    reference
+      "0.1.0";
+  }
+
+  oc-ext:openconfig-version "0.1.1";
+
+  grouping adva-vlan-config {
+    description
+      "Data for ADVA VLAN.";
+    leaf-list tagged-member {
+      type oc-if:base-interface-ref;
+      description
+        "List of tagged member interfaces for the VLAN,
+         expressed as references to existing interfaces.";
+    }
+
+    leaf-list untagged-member {
+      type oc-if:base-interface-ref;
+      description
+        "List of untagged member interfaces for the VLAN,
+         expressed as references to existing interfaces.";
+    }
+
+    leaf lt-limit {
+      type uint32 {
+        range "1..250000";
+      }
+      default "1000";
+      description
+        "The maximum number of MAC address entries that could be learned";
+    }
+  }
+
+  augment "/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinterface/oc-if:state" {
+    when "../../../oc-if:config/oc-if:type = 'ift:bridge'";
+    description
+      "Addid ADVA VLAN data";
+    uses adva-vlan-config;
+  }
+
+  augment "/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinterface/oc-if:config" {
+    when "../../../oc-if:config/oc-if:type = 'ift:bridge'";
+    description
+      "Addid ADVA VLAN data";
+    uses adva-vlan-config;
+  }
+}

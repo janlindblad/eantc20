@@ -1,0 +1,21 @@
+module adva-dnos-extensions {
+  namespace "http://www.advaoptical.com/cim/adva-dnos-extensions";
+  prefix adva-ext;
+
+  organization
+    "Adva Optical Networking";
+  description
+    "This module outlines the definitions of the
+     various ADVA YOK Extensions.";
+
+  revision 2019-02-25 {
+    description
+      "Initial revision.";
+  }
+
+  extension agema-default {
+    argument def-val;
+    description
+      "Default value for Agema platform.";
+  }
+}

@@ -1,0 +1,72 @@
+module metaswitch-features {
+  namespace "http://metaswitch.com/yang/nbu/metaswitch-features/201904010000Z";
+  prefix features;
+
+  contact
+    "Postal: Metaswitch Networks
+             100 Church Street
+             Enfield
+             EN2 6BQ
+             United Kingdom
+     Tel:    +44 20 8366 1177
+     E-mail: info@metaswitch.com";
+  description
+    "General feature definitions, to be used in multiple YANG modules";
+
+  revision 2019-04-01 {
+    description
+      "Initial revision.";
+  }
+
+  feature ip-frr {
+    description
+      "This feature means that the device supports IP Fast Reroute
+       calculations";
+  }
+
+  feature segment-routing-mpls {
+    description
+      "This feature means that the device supports MPLS transport of segment routing stacks.";
+  }
+
+  feature segment-routing-ipv6 {
+    description
+      "This feature means that the device supports transport of segment routing stacks via IPv6 Segment Routing Headers.";
+  }
+
+  feature segment-routing-sid-prefix-ipv6 {
+    description
+      "This feature means that the device supports Prefix-SID mappings corresponding to IPv6 prefixes.";
+  }
+
+  feature segment-routing-sid-adj {
+    description
+      "This feature means that the device supports advertising Adj-SID mappings.";
+  }
+
+  feature segment-routing-strict-spf {
+    description
+      "This feature indicates that the device supports advertising and forwarding prefix-SIDs based on strict-SPF forwarding behavior.";
+  }
+
+  feature segment-routing-multi-area {
+    description
+      "This feature indicates that the device supports advertising segment routing information across multiple IGP areas.";
+  }
+
+  feature segment-routing-multi-topology {
+    description
+      "This feature indicates that the device supports advertising segment routing information across multiple IGP topologies.";
+  }
+
+  feature segment-routing-vrf {
+    description
+      "This feature indicates that the device is capable of running segment routing independently in multiple VRFs.";
+  }
+
+  feature segment-routing-ti-lfa {
+    if-feature "ip-frr";
+    description
+      "This feature indicates that the device can protect IP destinations for Fast Re-Route even when no local or remote loop-free alternate exists";
+  }
+}

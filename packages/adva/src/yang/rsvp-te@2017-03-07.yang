@@ -1,0 +1,3263 @@
+module rsvp-te {
+  yang-version 1.1;
+  namespace "http://metaswitch.com/yang/nbu/rsvp-te/201512110000Z";
+  prefix rsvp-te;
+
+  import user-extensions {
+    prefix user-ext;
+  }
+
+  import interfaces {
+    prefix interfaces;
+  }
+
+  import interface {
+    prefix interface;
+  }
+
+  import metaswitch-yang-types {
+    prefix meta;
+  }
+
+  import ietf-yang-types {
+    prefix yang;
+  }
+
+  import metaswitch-custom-yang-types {
+    prefix custom;
+  }
+
+  import metaswitch-mpls {
+    prefix mpls;
+  }
+
+  import openconfig-interfaces {
+    prefix oc-if;
+  }
+
+  organization
+    "Metaswitch Networks";
+  contact
+    "Postal: Metaswitch Networks
+             100 Church Street
+             Enfield
+             EN2 6BQ
+             United Kingdom
+     Tel:    +44 20 8366 1177
+     E-mail: info@metaswitch.com";
+  description
+    "MPLS RSVP-TE LSPs";
+
+  revision 2017-03-07 {
+    description
+      "Initial revision.";
+    reference
+      "Metaswitch RSVP-TE YANG data model";
+  }
+
+  feature rsvp-te-lsps {
+    description
+      "This feature means that the device supports RSVP TE LSPs";
+  }
+
+  typedef rsvp-restart-time {
+    type uint32 {
+      range "0..2147483647";
+    }
+    units "milliseconds";
+    description
+      "milliseconds (1..2147483647)";
+  }
+
+  typedef rsvp-recovery-time {
+    type uint32 {
+      range "0..2147483647";
+    }
+    units "milliseconds";
+    description
+      "milliseconds (0..2147483647)";
+  }
+
+  typedef te-metric-t {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "Traffic Engineering metric (0-4294967295)";
+  }
+
+  typedef rsvp-auth-type {
+    type enumeration {
+      enum "md5" {
+        value 1;
+        description
+          "MD5 authentication";
+      }
+      enum "sha1" {
+        value 2;
+        description
+          "SHA1 authentication";
+      }
+      enum "sha256" {
+        value 3;
+        description
+          "SHA256 authentication";
+      }
+      enum "sha384" {
+        value 4;
+        description
+          "SHA384 authentication";
+      }
+      enum "sha512" {
+        value 5;
+        description
+          "SHA512 authentication";
+      }
+    }
+    description
+      "Authentication type";
+  }
+
+  typedef diversity-type {
+    type enumeration {
+      enum "strict" {
+        value 0;
+        description
+          "Full diversity - No link/node sharing";
+      }
+      enum "maximal" {
+        value 1;
+        description
+          "Maximal diversity - allow sharing but
+           minimize shared Nodes+links+SRLGs ";
+      }
+    }
+    description
+      "Diversity type";
+  }
+
+  typedef mpls-label-type {
+    type enumeration {
+      enum "mpls-label" {
+        value 1;
+        description
+          "MPLS label";
+      }
+      enum "generalized-label" {
+        value 2;
+        description
+          "Generalized label";
+      }
+      enum "waveband-label" {
+        value 3;
+        description
+          "Waveband label";
+      }
+      enum "label-ctype-4" {
+        value 4;
+        description
+          "Label ctype 4";
+      }
+    }
+    description
+      "Label type";
+  }
+
+  typedef admin-group-bit-position {
+    type uint32 {
+      range "0..32";
+    }
+    description
+      "Bit-position value for mpls admin-group.";
+  }
+
+  typedef tunnel-lsp-id {
+    type uint16 {
+      range "0..65535";
+    }
+    description
+      "Tunnel and lsp ID field.";
+  }
+
+  typedef rsvp-lsp-role {
+    type enumeration {
+      enum "head" {
+        description
+          "Active initiater of LSP setup";
+      }
+      enum "tail" {
+        description
+          "Passive accepter of LSP setup request";
+      }
+      enum "transit" {
+        description
+          "LSP at transit node";
+      }
+    }
+    description
+      "The role that an LSP represents at the local node.";
+  }
+
+  typedef rsvp-protection-type {
+    type enumeration {
+      enum "none" {
+        value 1;
+        description
+          "No protection";
+      }
+      enum "detour" {
+        value 2;
+        description
+          "Protection using the one-to-one backup method";
+      }
+      enum "facility" {
+        value 3;
+        description
+          "Protection using the facility backup method";
+      }
+    }
+    description
+      "The fast reroute mechanism used to protect a tunnel.";
+  }
+
+  typedef rsvp-path-type {
+    type enumeration {
+      enum "dynamic" {
+        value 1;
+        description
+          "Calculate the full path from the source to the destination.
+           LSP setup will only succeed if a route can be successfully
+           computed at this node from the source to the destination.";
+      }
+      enum "dynamic-partial" {
+        value 2;
+        description
+          "Calculate a full or partial path from the source to the destination.
+           LSP setup will be attempted even if a full route cannot be computed
+           at this node from the source to the destination.";
+      }
+      enum "explicit" {
+        value 3;
+        description
+          "Use any explicit path configured.";
+      }
+    }
+    description
+      "Path computation method";
+  }
+
+  typedef as-number-t {
+    type uint32 {
+      range "0..65535";
+    }
+    description
+      "(0-65535)";
+  }
+
+  typedef interface-id-t {
+    type uint32;
+    description
+      "(0-2147483647)";
+  }
+
+  typedef hello-interval-t {
+    type uint32;
+    description
+      "(0-2147483647)";
+  }
+
+  typedef holding-priority-t {
+    type uint32 {
+      range "0..7";
+    }
+    description
+      "(0-7)";
+  }
+
+  typedef retry-timer-t {
+    type uint32 {
+      range "0..65535";
+    }
+    description
+      "(0-65535)";
+  }
+
+  typedef revert-time-t {
+    type uint32 {
+      range "1..86400";
+    }
+    description
+      "(1-86400)";
+  }
+
+  typedef setup-priority-t {
+    type uint32 {
+      range "0..7";
+    }
+    description
+      "(0-7)";
+  }
+
+  typedef lsp-encoding-t {
+    type enumeration {
+      enum "packet" {
+        value 1;
+      }
+      enum "g709-oduk" {
+        value 12;
+      }
+      enum "g709-och" {
+        value 13;
+      }
+    }
+    description
+      "LSP encoding";
+  }
+
+  typedef g709-odu-signal-t {
+    type enumeration {
+      enum "odu1" {
+        value 1;
+      }
+      enum "odu2" {
+        value 2;
+      }
+      enum "odu3" {
+        value 3;
+      }
+      enum "odu4" {
+        value 4;
+      }
+      enum "odu0" {
+        value 10;
+      }
+      enum "odu2e" {
+        value 11;
+      }
+      enum "odu-flex-cbr" {
+        value 20;
+      }
+      enum "odu-flex-gfpr" {
+        value 21;
+      }
+      enum "odu-flex-gfpn" {
+        value 22;
+      }
+    }
+    description
+      "G.709 ODU signal type";
+  }
+
+  typedef g709-och-signal-t {
+    type enumeration {
+      enum "och1" {
+        value 6;
+      }
+      enum "och2" {
+        value 7;
+      }
+      enum "och3" {
+        value 8;
+      }
+      enum "och4" {
+        value 9;
+      }
+    }
+    description
+      "G.709 OCh signal type";
+  }
+
+  typedef mpls-gpid-t {
+    type enumeration {
+      enum "unknown" {
+        value 0;
+      }
+      enum "ds1-sf" {
+        value 1;
+      }
+      enum "ds1-esf" {
+        value 2;
+      }
+      enum "ds3-m23" {
+        value 3;
+      }
+      enum "ds3-cbit" {
+        value 4;
+      }
+      enum "asynch-e4" {
+        value 5;
+      }
+      enum "asynch-ds3" {
+        value 6;
+      }
+      enum "asynch-e3" {
+        value 7;
+      }
+      enum "bitsynch-e3" {
+        value 8;
+      }
+      enum "bytesynch-e3" {
+        value 9;
+      }
+      enum "asynch-ds2-t2" {
+        value 10;
+      }
+      enum "bitsynch-ds2-t2" {
+        value 11;
+      }
+      enum "bytesynch-ds2-t2" {
+        value 12;
+      }
+      enum "asynch-e1" {
+        value 13;
+      }
+      enum "bytesynch-e1" {
+        value 14;
+      }
+      enum "bytesynch-31-by-ds0" {
+        value 15;
+      }
+      enum "asynch-ds1-t1" {
+        value 16;
+      }
+      enum "bitsynch-ds1-t1" {
+        value 17;
+      }
+      enum "bytesynch-ds1-t1" {
+        value 18;
+      }
+      enum "vc1-vc12" {
+        value 19;
+      }
+      enum "vca-synch-e1" {
+        value 20;
+      }
+      enum "vc-by-synch-e1" {
+        value 21;
+      }
+      enum "ds1-sf-asynch" {
+        value 22;
+      }
+      enum "ds1-esf-asynch" {
+        value 23;
+      }
+      enum "ds3-m23-asynch" {
+        value 24;
+      }
+      enum "ds3-cbit-parity-asynch" {
+        value 25;
+      }
+      enum "vt-lovc" {
+        value 26;
+      }
+      enum "sts-spe-hovc" {
+        value 27;
+      }
+      enum "pos-no-scramble-16-bit-crc" {
+        value 28;
+      }
+      enum "pos-no-scramble-32-bit-crc" {
+        value 29;
+      }
+      enum "pos-scramble-16-bit-crc" {
+        value 30;
+      }
+      enum "pos-scramble-32-bit-crc" {
+        value 31;
+      }
+      enum "atm" {
+        value 32;
+      }
+      enum "ethernet" {
+        value 33;
+      }
+      enum "sdh" {
+        value 34;
+      }
+      enum "sonet" {
+        value 35;
+      }
+      enum "digital-wrapper" {
+        value 36;
+      }
+      enum "lambda" {
+        value 37;
+      }
+      enum "etsi-pdh" {
+        value 38;
+      }
+      enum "ansi-pdh" {
+        value 39;
+      }
+      enum "laps-sdh" {
+        value 40;
+      }
+      enum "fddi" {
+        value 41;
+      }
+      enum "dqdb" {
+        value 42;
+      }
+      enum "fiber-channel-3" {
+        value 43;
+      }
+      enum "hdlc" {
+        value 44;
+      }
+      enum "ethernet-v2-dix-only" {
+        value 45;
+      }
+      enum "ethernet-802-dot-3-only" {
+        value 46;
+      }
+      enum "g709-oduj" {
+        value 47;
+      }
+      enum "g709-otuk" {
+        value 48;
+      }
+      enum "g709-cbr-or-cbra" {
+        value 49;
+      }
+      enum "g709-cbrb" {
+        value 50;
+      }
+      enum "g709-bsot" {
+        value 51;
+      }
+      enum "g709-bsnt" {
+        value 52;
+      }
+      enum "gfp-ip-or-ppp" {
+        value 53;
+      }
+      enum "gfp-ethernet-mac" {
+        value 54;
+      }
+      enum "gfp-ethernet-phy" {
+        value 55;
+      }
+      enum "ethernet-gfp-snt" {
+        value 56;
+      }
+      enum "g709-ficon" {
+        value 57;
+      }
+      enum "g709-fiber-channel" {
+        value 58;
+      }
+    }
+    description
+      "MPLS GPID";
+  }
+
+  typedef mpls-deletion-mode-t {
+    type enumeration {
+      enum "forced" {
+        value 1;
+      }
+      enum "graceful" {
+        value 2;
+      }
+    }
+    description
+      "GMPLS deletion mode";
+  }
+
+  typedef rsvp-lsp-protection-type {
+    type enumeration {
+      enum "none" {
+        value 1;
+        description
+          "No protection";
+      }
+      enum "1-to-1" {
+        value 2;
+        description
+          "1 to 1";
+      }
+    }
+    description
+      "LSP Protection type";
+  }
+
+  typedef lsp-role-type {
+    type enumeration {
+      enum "working" {
+        value 1;
+        description
+          "Working LSP";
+      }
+      enum "protecting" {
+        value 2;
+        description
+          "Protecting LSP";
+      }
+    }
+    description
+      "LSP role";
+  }
+
+  typedef rsvp-egress-label-t {
+    type enumeration {
+      enum "implicit-null" {
+        value 1;
+        description
+          "Use the implicit-NULL label for egress.";
+      }
+      enum "explicit-null" {
+        value 2;
+        description
+          "Use the explicit-NULL label for egress.";
+      }
+      enum "standard-label" {
+        value 3;
+        description
+          "Use standard label.";
+      }
+    }
+    description
+      "RSVP egress label type";
+  }
+
+  typedef egress-control-interface-t {
+    type uint32;
+    description
+      "The index of the interface to use for egress control";
+  }
+
+  typedef e2e-lsp-data-t {
+    type enumeration {
+      enum "working" {
+        value 1;
+        description
+          "Data being carried by the working LSP.";
+      }
+      enum "protecting" {
+        value 2;
+        description
+          "Data being carried by the protecting LSP.";
+      }
+      enum "both" {
+        value 3;
+        description
+          "Data being carried by both working and protecting LSPs.";
+      }
+    }
+    description
+      "For end to end protection (e2e) which LSP is carrying data";
+  }
+
+  grouping packets-state {
+    description
+      "Packet statistics grouping";
+    container packets {
+      description
+        "Packet statistics container";
+      leaf sent {
+        type yang:counter64;
+        description
+          "Packet sent count";
+      }
+
+      leaf received {
+        type yang:counter64;
+        description
+          "Packet received count";
+      }
+
+      leaf in-dropped {
+        type yang:counter64;
+        description
+          "In packet drop count";
+      }
+
+      leaf in-error {
+        type yang:counter64;
+        description
+          "In packet rx error count";
+      }
+    }
+  }
+
+  grouping protocol-state {
+    description
+      "RSVP protocol statistics grouping";
+    leaf ack-sent {
+      type yang:counter64;
+      description
+        "Ack sent count";
+    }
+
+    leaf ack-received {
+      type yang:counter64;
+      description
+        "Ack received count";
+    }
+
+    leaf bundle-sent {
+      type yang:counter64;
+      description
+        "Bundle sent count";
+    }
+
+    leaf bundle-received {
+      type yang:counter64;
+      description
+        "Bundle received count";
+    }
+
+    leaf hello-sent {
+      type yang:counter64;
+      description
+        "Hello sent count";
+    }
+
+    leaf hello-received {
+      type yang:counter64;
+      description
+        "Hello received count";
+    }
+
+    leaf notify-sent {
+      type yang:counter64;
+      description
+        "Notify sent count";
+    }
+
+    leaf notify-received {
+      type yang:counter64;
+      description
+        "Notify received count";
+    }
+
+    leaf path-sent {
+      type yang:counter64;
+      description
+        "Path sent count";
+    }
+
+    leaf path-received {
+      type yang:counter64;
+      description
+        "Path received count";
+    }
+
+    leaf path-err-sent {
+      type yang:counter64;
+      description
+        "Path error sent count";
+    }
+
+    leaf path-err-received {
+      type yang:counter64;
+      description
+        "Path error received count";
+    }
+
+    leaf path-tear-sent {
+      type yang:counter64;
+      description
+        "Path tear sent count";
+    }
+
+    leaf path-tear-received {
+      type yang:counter64;
+      description
+        "Path tear received count";
+    }
+
+    leaf resv-sent {
+      type yang:counter64;
+      description
+        "Resv sent count";
+    }
+
+    leaf resv-received {
+      type yang:counter64;
+      description
+        "Resv received count";
+    }
+
+    leaf resv-confirm-sent {
+      type yang:counter64;
+      description
+        "Confirm sent count";
+    }
+
+    leaf resv-confirm-received {
+      type yang:counter64;
+      description
+        "Confirm received count";
+    }
+
+    leaf resv-err-sent {
+      type yang:counter64;
+      description
+        "Resv error sent count";
+    }
+
+    leaf resv-err-received {
+      type yang:counter64;
+      description
+        "Resv error received count";
+    }
+
+    leaf resv-tear-sent {
+      type yang:counter64;
+      description
+        "Resv tear sent count";
+    }
+
+    leaf resv-tear-received {
+      type yang:counter64;
+      description
+        "Resv tear received count";
+    }
+
+    leaf summary-refresh-sent {
+      type yang:counter64;
+      description
+        "Summary refresh sent count";
+    }
+
+    leaf summary-refresh-received {
+      type yang:counter64;
+      description
+        "Summary refresh received count";
+    }
+
+    leaf unknown-messages-received {
+      type yang:counter64;
+      description
+        "Unknown packet received count";
+    }
+  }
+
+  grouping errors-state {
+    description
+      "Error statistics state grouping";
+    container errors {
+      description
+        "Error statistics state container";
+      leaf authenticate {
+        type yang:counter64;
+        description
+          "The total number of packets received with an
+           authentication failure.";
+      }
+
+      leaf checksum {
+        type yang:counter64;
+        description
+          "The total number of packets received with an invalid
+           checksum value.";
+      }
+
+      leaf packet-len {
+        type yang:counter64;
+        description
+          "The total number of packets received with an invalid
+           packet length.";
+      }
+    }
+  }
+
+  grouping if-statistics-state {
+    description
+      "RSVP interface statistic attributes.";
+    container statistics {
+      config false;
+      description
+        "RSVP interface statistics container";
+      container messages {
+        description
+          "RSVP protocol statistics container";
+        uses protocol-state;
+      }
+
+      uses packets-state;
+
+      uses errors-state;
+    }
+  }
+
+  grouping global-statistics-state {
+    description
+      "RSVP global statistic attributes.";
+    container statistics {
+      config false;
+      description
+        "RSVP global statistics container.";
+      container messages {
+        description
+          "RSVP protocol statistics container";
+        uses protocol-state;
+
+        uses global-protocol-state;
+      }
+
+      uses packets-state;
+
+      uses errors-state;
+    }
+  }
+
+  grouping global-protocol-state {
+    description
+      "RSVP protocol statistics which may not apply
+       on an interface, but are significant globally.";
+    leaf path-timeouts {
+      type yang:counter64;
+      config false;
+      description
+        "The number of path state timeouts that have occurred";
+    }
+
+    leaf reservation-timeouts {
+      type yang:counter64;
+      config false;
+      description
+        "The number of resv state timeouts that have occurred";
+    }
+  }
+
+  grouping explicit-route-hop-list {
+    list explicit-route-hop {
+      key "index";
+      description
+        "List of RSVP Path explicit-route objects";
+      leaf index {
+        type uint32;
+        description
+          "Index identifying a particular hop.";
+      }
+
+      uses explicit-route-hop;
+    }
+  }
+
+  grouping explicit-route-hop {
+    uses explicit-route-hop-common;
+
+    container labels {
+      must "(((explicit-label-type) and (explicit-label)) or ((not(explicit-label-type)) and (not(explicit-label))))" {
+        error-message
+          "Both or neither of the explicit label and the label type must be set";
+      }
+      must "(((explicit-reverse-label-type) and (explicit-reverse-label)) or ((not(explicit-reverse-label-type)) and (not(explicit-reverse-label))))" {
+        error-message
+          "Both or neither of the explicit reverse label and the reverse label type must be set";
+      }
+      description
+        "Labels for explicit hop";
+      leaf explicit-label-type {
+        user-ext:CLI-param-help "Set explicit route hop label type";
+        user-ext:CLI-comm-help "Set explicit route hop label type";
+        user-ext:CLI-no-comm-help "Remove explicit route hop label type";
+        type mpls-label-type;
+        description
+          "The type of label configured.";
+      }
+
+      leaf explicit-label {
+        user-ext:CLI-param-help "Set explicit route hop label";
+        user-ext:CLI-comm-help "Set explicit route hop label";
+        user-ext:CLI-no-comm-help "Remove explicit route hop label";
+        type binary {
+          length "0..16";
+        }
+        description
+          "The label to use for this hop.
+
+           This label is signaled to the next downstream node to indicate the
+           label that the downstream node must use to signal data to this
+           node.";
+      }
+
+      leaf explicit-reverse-label-type {
+        user-ext:CLI-param-help "Set explicit route hop reverse label type";
+        user-ext:CLI-comm-help "Set explicit route hop reverse label type";
+        user-ext:CLI-no-comm-help "Remove explicit route hop reverse label type";
+        type mpls-label-type;
+        description
+          "The type of the label configured for the reverse direction.";
+      }
+
+      leaf explicit-reverse-label {
+        user-ext:CLI-param-help "Set explicit route hop reverse label";
+        user-ext:CLI-comm-help "Set explicit route hop reverse label";
+        user-ext:CLI-no-comm-help "Remove explicit route hop reverse label";
+        type binary {
+          length "0..16";
+        }
+        description
+          "The label to use in the reverse direction.
+
+           The node uses this label to signal data in the reverse direction
+           to the next downstream node.";
+      }
+    }
+  }
+
+  grouping explicit-route-hop-common {
+    leaf exclude {
+      user-ext:CLI-comm-help "Hop is excluded from tunnel path";
+      user-ext:CLI-no-comm-help "Hop is included in tunnel path";
+      type empty;
+      description
+        "If this field is set then this hop must be avoided
+         when calculating the path for the tunnel.  Otherwise
+         this hop must be included in the tunnel's path.";
+    }
+
+    choice type {
+      description
+        "The explicit route subobject type";
+      case ip-prefix {
+        description
+          "IP prefix explicit route subobject";
+        container ip-prefix {
+          user-ext:CLI-not-command;
+          must "(ip-prefix)" {
+            error-message
+              "An IP prefix hop must have the IP prefix set";
+          }
+          description
+            "IP prefix explicit route subobject";
+          leaf ip-prefix {
+            user-ext:CLI-param-help "Set explicit route hop prefix";
+            user-ext:CLI-comm-help "Set explicit route hop prefix";
+            user-ext:CLI-no-comm-help "Remove explicit route hop prefix";
+            type interfaces:iface-ip-prefix-t;
+            description
+              "The prefix for this explicit route hop.";
+          }
+
+          leaf loose {
+            user-ext:CLI-comm-help "Set explicit hop as loosely routed";
+            user-ext:CLI-no-comm-help "Set explicit hop as strictly routed";
+            type empty;
+            description
+              "Denotes that this hop is routed in a loose fashion
+               instead of a strict fashion.  This object has no meaning
+               if exclude is set.";
+          }
+        }
+      }
+
+      case as-number {
+        description
+          "Autonomous System explicit route subobject";
+        leaf as-number {
+          user-ext:CLI-param-help "Set explicit route hop AS number";
+          user-ext:CLI-comm-help "Set explicit route hop AS number";
+          user-ext:CLI-no-comm-help "Remove explicit route hop AS number";
+          type as-number-t;
+          description
+            "Autonomous System number of the explicit route subobject.";
+        }
+      }
+
+      case unnumbered-link {
+        description
+          "Unnumbered link explicit route subobject";
+        container unnumbered-link {
+          user-ext:CLI-not-command;
+          must "((router-id) and (interface-id))" {
+            error-message
+              "An unnumbered link hop must have the router ID and interface ID set";
+          }
+          description
+            "Unnumbered link explicit route subobject";
+          leaf router-id {
+            user-ext:CLI-param-help "Set explicit route hop LSR router ID";
+            user-ext:CLI-comm-help "Set explicit route hop LSR router ID";
+            user-ext:CLI-no-comm-help "Remove explicit route hop LSR router ID";
+            type interfaces:iface-ipv4-address-t;
+            description
+              "The LSR Router ID for this hop";
+          }
+
+          leaf interface-id {
+            user-ext:CLI-param-help "Set explicit route hop unnumbered interface ID";
+            user-ext:CLI-comm-help "Set explicit route hop unnumbered interface ID";
+            user-ext:CLI-no-comm-help "Remove explicit route hop unnumbered interface ID";
+            type interface-id-t;
+            description
+              "The interface identifier of the unnumbered interface
+               for this hop.";
+          }
+        }
+      }
+    }
+  }
+
+  grouping record-route-subobject-list {
+    list record-route-subobject {
+      key "index";
+      description
+        "List of RSVP Path record-route objects";
+      leaf index {
+        type uint32;
+        description
+          "Index identifying a particular hop.";
+      }
+
+      uses record-route-subobject;
+    }
+  }
+
+  grouping lsp-record-route-information-state {
+    description
+      "Recorded route information grouping";
+    container incoming-record-route-subobjects {
+      description
+        "RSVP incoming recorded route object information";
+      uses record-route-subobject-list;
+    }
+
+    container outgoing-record-route-subobjects {
+      description
+        "RSVP outgoing recorded route object information";
+      uses record-route-subobject-list;
+    }
+  }
+
+  grouping rsvp-interface-fields {
+    description
+      "The RSVP Interface Table adds per-interface configuration required
+       for RSVP.";
+    container hellos {
+      description
+        "Configuration of Hello messages on the interface.";
+      leaf hello-interval {
+        user-ext:CLI-param-help "Define hello interval";
+        user-ext:CLI-comm-help "Configure hello interval";
+        user-ext:CLI-no-comm-help "Unconfigure hello interval";
+        type uint32;
+        units "milliseconds";
+        default "10000";
+        description
+          "Default period in milliseconds between sending Hello
+           messages to all neighbors on this interface.  If this is
+           set to 0, no Hello messages are sent by this interface.";
+      }
+
+      leaf refresh-reduction-disable {
+        user-ext:CLI-comm-help "Enable refresh reduction";
+        user-ext:CLI-no-comm-help "Disable refresh reduction";
+        type empty;
+        description
+          "Disable refresh reduction support.";
+      }
+    }
+
+    container authentication {
+      description
+        "Configuration of cryptographic authentication on the interface.";
+      leaf enable {
+        user-ext:CLI-comm-help "Enable authentication";
+        user-ext:CLI-no-comm-help "Disable authentication";
+        type empty;
+        description
+          "Indicates that cryptographic authentication should be used
+           for packets sent to and received from the neighbor reached
+           through this interface.
+
+           Note the following.
+           -  If non-associated signaling is used then the configuration
+           setting is taken from the data interface(s).
+           -  If non-associated signaling is in use or if multiple
+           un-numbered links to the same neighbor are in use then
+           all interfaces must have the same cryptographic
+           authentication configuration.";
+      }
+
+      leaf algorithm {
+        user-ext:CLI-param-help "Configure authentication algorithm";
+        user-ext:CLI-comm-help "Configure authentication algorithm";
+        user-ext:CLI-no-comm-help "Unconfigure authentication algorithm";
+        type rsvp-auth-type;
+        default "md5";
+        description
+          "Indicates the type of authentication to be used for
+           packets sent to and received from the neighbor(s) reached
+           through this interface.
+
+           Note the following.
+           -  If non-associated signaling is used then the
+           configuration setting is taken from the data
+           interface(s).
+           -  If non-associated signaling is in use or if multiple
+           un-numbered links to the same neighbor are in use then
+           all interfaces must have the same cryptographic
+           authentication configuration.";
+      }
+    }
+
+    leaf egress-label-type {
+      user-ext:CLI-param-help "Configure egress label type";
+      user-ext:CLI-comm-help "Configure egress label type";
+      user-ext:CLI-no-comm-help "Remove egress label type";
+      type rsvp-egress-label-t;
+      default "standard-label";
+      description
+        "Whether to use standard labels or Implicit-NULL or Explicit-NULL
+         egress labels";
+    }
+
+    container bfd {
+      user-ext:CLI-comm-help "Configure BFD parameters";
+      user-ext:CLI-no-comm-help "Configure BFD parameters";
+      description
+        "BFD parameters.";
+      leaf fast-detect {
+        user-ext:CLI-comm-help "Enable BFD";
+        user-ext:CLI-no-comm-help "Disable BFD";
+        type empty;
+        description
+          "Indicates whether Bidirectional Forwarding Detection (BFD)
+           is desired.";
+      }
+    }
+
+    leaf php-disable {
+      type empty;
+      description
+        "Indicates whether PHP is disabled on RSVP-TE interface.";
+    }
+
+    uses if-statistics-state;
+  }
+
+  grouping label-display-type {
+    choice label-display-type {
+      default "gmpls-label";
+      description
+        "The type of the downstream label";
+      case mpls-label {
+        description
+          "MPLS hop label";
+        leaf label {
+          type meta:mpls-label-state-integer-t;
+          description
+            "The label used by this LSP upstream or downstream of this node.";
+        }
+      }
+
+      case gmpls-label {
+        description
+          "GMPLS hop label";
+        leaf gmpls-label {
+          type binary {
+            length "0..16";
+          }
+          description
+            "The label used by this LSP upstream or downstream of this node.";
+        }
+      }
+    }
+  }
+
+  grouping lsp-upstream-downstream-state {
+    container lsp-state-present {
+      description
+        "The state that is present for this LSP at this node.  For a tunnel
+         protected by a fast reroute mechanism, or a tunnel providing such
+         protection, some or all state may not be present.";
+      leaf protection-type-desired {
+        type rsvp-protection-type;
+        default "none";
+        description
+          "Indicates whether or not this tunnel should be protected
+           by a fast reroute mechanism, and if so which method should
+           be used.";
+      }
+
+      leaf upstream-present {
+        type boolean;
+        description
+          "Upstream state is present for this LSP";
+      }
+
+      leaf downstream-present {
+        type boolean;
+        description
+          "Downstream state is present for this LSP";
+      }
+    }
+
+    leaf downstream-repaired {
+      type boolean;
+      description
+        "Indicates that downstream traffic on this LSP has been repaired
+         using a fast reroute repair mechanism at this node.
+         The information in the downstream-info container for this LSP refers
+         to the new downstream path used by data traffic for this LSP.";
+    }
+
+    container downstream-info {
+      description
+        "downstream information";
+      leaf nhop {
+        type interfaces:iface-ip-address-t;
+        description
+          "The address of the next hop for this LSP.";
+      }
+
+      container outgoing-interface {
+        description
+          "Signaling interface used to reach this neighbor.";
+        uses interfaces:iface-id;
+      }
+
+      leaf neighbor {
+        type interfaces:iface-ip-address-t;
+        description
+          "The address of the downstream neighbor for this LSP.";
+      }
+
+      leaf label-type {
+        type mpls-label-type;
+        description
+          "The type of the following downstream label.";
+      }
+
+      uses label-display-type;
+    }
+
+    container upstream-info {
+      description
+        "upstream information";
+      leaf phop {
+        type interfaces:iface-ip-address-t;
+        description
+          "The address of the previous hop for this LSP.";
+      }
+
+      leaf neighbor {
+        type interfaces:iface-ip-address-t;
+        description
+          "The address of the upstream neighbor for this LSP.";
+      }
+
+      leaf label-type {
+        type mpls-label-type;
+        description
+          "The type of the following upstream label.";
+      }
+
+      uses label-display-type;
+    }
+
+    container explicit-route-objects {
+      description
+        "
+         Explicit route object information";
+      container incoming-explicit-route-hops {
+        description
+          "Incoming explicit route hops";
+        uses explicit-route-hop-list;
+      }
+
+      container outgoing-explicit-route-hops {
+        description
+          "Outgoing explicit route hops";
+        uses explicit-route-hop-list;
+      }
+    }
+
+    container record-route-object {
+      uses lsp-record-route-information-state;
+    }
+  }
+
+  grouping record-route-subobject {
+    description
+      "The record route subobject grouping";
+    choice type {
+      description
+        "The record route subobject type";
+      case ip-prefix {
+        description
+          "IP Prefix RRO subobject";
+        leaf address {
+          type interfaces:iface-ip-address-t;
+          description
+            "The address of this recorded route hop.";
+        }
+
+        leaf ip-prefix-flags {
+          type string {
+            length "0..70";
+          }
+          description
+            "IP address sub-object flags";
+        }
+      }
+
+      case unnumbered-link {
+        description
+          "Unnumbered link record route subobject";
+        leaf router-id {
+          type interfaces:iface-ip-address-t;
+          description
+            "A router-id address";
+        }
+
+        leaf interface-id {
+          type interface-id-t;
+          description
+            "The interface identifier";
+        }
+
+        leaf unnumbered-link-flags {
+          type string {
+            length "0..70";
+          }
+          description
+            "Unnumbered link sub-object flags";
+        }
+      }
+
+      case label {
+        description
+          "The Label RRO subobject";
+        container label {
+          description
+            "The Label RRO subobject";
+          leaf label-type {
+            type mpls-label-type;
+            description
+              "The type of the following hop label.";
+          }
+
+          uses label-display-type;
+
+          leaf reverse {
+            type boolean;
+            config false;
+            description
+              "Whether this label is a reverse direction label";
+          }
+
+          leaf label-flags {
+            type string {
+              length "0..10";
+            }
+            description
+              "Label sub-object flags";
+          }
+        }
+      }
+    }
+  }
+
+  grouping te-metric {
+    leaf te-metric {
+      type te-metric-t;
+      default "1";
+      description
+        "Set the Traffic Engineering Metric of an interface";
+    }
+  }
+
+  container mpls {
+    user-ext:CLI-comm-help "Configure RSVP-TE";
+    user-ext:CLI-no-comm-help "Remove RSVP-TE";
+    description
+      "RSVP-TE configuration.";
+    container rsvp-te {
+      user-ext:CLI-comm-help "Add global configuration";
+      user-ext:CLI-no-comm-help "Remove global configuration";
+      must "(/mpls:mpls/mpls:router-id != '')" {
+        error-message
+          "If RSVP is configured, an MPLS router-id must be defined";
+      }
+      presence "Enable RSVP-TE";
+      description
+        "RSVP-TE global configuration.";
+      container auto-reversion {
+        user-ext:CLI-comm-help "Enable automatic reversion";
+        user-ext:CLI-no-comm-help "Disable automatic reversion";
+        presence "Enable Auto-reversion";
+        description
+          "Automatic reversion configuration.";
+        leaf reversion-time {
+          user-ext:CLI-param-help "Configure automatic reversion time";
+          user-ext:CLI-comm-help "Configure automatic reversion time";
+          user-ext:CLI-no-comm-help "Remove automatic reversion time";
+          type revert-time-t;
+          must "((../units) and\n (((../units = 'seconds' and ../reversion-time <= 86400 and ../reversion-time >= 180 ) or\n   (../units = 'minutes' and ../reversion-time <= 1440 and ../reversion-time >= 3 ) or\n   (../units = 'hours' and ../reversion-time <= 24 and ../reversion-time >= 1 ))) and\n  (../../auto-reversion) and\n  (../../auto-reversion/reversion-time))" {
+            error-message
+              "The configured auto-reversion time must be in the range 3 minutes - 24 hours.";
+          }
+          default "180";
+          description
+            "The period of time that the local node waits for a working LSP
+             to be up and stable before triggering reversion";
+        }
+
+        leaf units {
+          user-ext:CLI-param-help "Configure automatic reversion time units";
+          user-ext:CLI-comm-help "Configure automatic reversion time units";
+          user-ext:CLI-no-comm-help "Remove automatic reversion time units";
+          type meta:timer-units-t;
+          default "seconds";
+          description
+            "The units used for entering the reversion-time.";
+        }
+      }
+
+      container graceful-restart {
+        description
+          "Graceful restart configuration.";
+        leaf enable {
+          user-ext:CLI-comm-help "Enable graceful restart support";
+          user-ext:CLI-no-comm-help "Disable graceful restart support";
+          type empty;
+          description
+            "A flag to indicate that the local node should advertise
+             itself as restart capable.  This should be set if
+             fault-tolerance is enabled in DC-MPLS or if the node
+             supports recovery procedures.";
+        }
+
+        leaf restart-time {
+          user-ext:CLI-param-help "Configure graceful restart restart time";
+          user-ext:CLI-comm-help "Configure graceful restart restart time";
+          user-ext:CLI-no-comm-help "Remove graceful restart restart time";
+          type rsvp-restart-time;
+          default "180000";
+          description
+            "The period of time in milliseconds that the local node takes
+             to restart RSVP-TE and the communication channel used for
+             RSVP communication.  This is advertised to neighbors in
+             the Restart_Cap object in Hello messages.
+
+             The value chosen should be large enough for RSVP to be
+             terminated and restarted.  If fault-tolerance is enabled
+             in DC-MPLS, then sufficient time should be allowed for
+             RSVP to fail over, which should include the time taken for
+             the audit phase to complete.
+
+             Only used if 'enable' is set to true.";
+        }
+
+        leaf recovery-time {
+          user-ext:CLI-param-help "Configure graceful restart recovery time";
+          user-ext:CLI-comm-help "Configure graceful restart recovery time";
+          user-ext:CLI-no-comm-help "Remove graceful restart recovery time";
+          type rsvp-recovery-time;
+          default "120000";
+          description
+            "The period of time in milliseconds that the local node
+             would like neighbors to take to resynchronize RSVP and MPLS
+             forwarding information after the re-establishment of Hello
+             connectivity.  This is advertised to neighbors in the
+             Restart_Cap object in Hello messages.
+
+             A value of zero indicates that the node does not support
+             resynchronization following failure of the local node.
+
+             Note that if fault-tolerance is not enabled and
+             the node is acting as an ingress for tunnels, then any
+             ingress tunnels that need to be recovered should be
+             configured during this recovery period.  These tunnels
+             should be configured with the admin-status set
+             to UP, otherwise they will be lost from the switch
+             controller.
+
+             Only used if 'enable' is set to true.";
+        }
+      }
+
+      leaf backup-lsp-diversity {
+        user-ext:CLI-param-help "Configure diversity type";
+        user-ext:CLI-comm-help "Configure diversity type";
+        user-ext:CLI-no-comm-help "Remove diversity type";
+        type diversity-type;
+        default "strict";
+        description
+          "The level of LSP diversity enforced for End-to-End protected LSP
+           backup paths.  Changes affect only new LSPs, not existing LSPs";
+      }
+
+      uses global-statistics-state;
+
+      list explicit-path {
+        user-ext:CLI-comm-help "Configure explicit path";
+        user-ext:CLI-no-comm-help "Remove explicit path";
+        key "name";
+        description
+          "Per-explicit path configuration";
+        leaf name {
+          user-ext:CLI-comm-help "Set explicit path name";
+          user-ext:CLI-param-help "Set explicit path name";
+          type meta:name-string;
+          description
+            "A unique identifier identifying the explicit path.";
+        }
+
+        list explicit-route-object {
+          user-ext:CLI-param-help "Configure explicit path hop";
+          user-ext:CLI-comm-help "Configure explicit path hop";
+          user-ext:CLI-no-comm-help "Remove explicit path hop";
+          key "index";
+          description
+            "A hop on an explicit path";
+          leaf index {
+            user-ext:CLI-comm-help "Set explicit route object index";
+            user-ext:CLI-param-help "Set explicit route object index";
+            type uint32;
+            must "((../ip-prefix) or (../as-number) or (../unnumbered-link))" {
+              error-message
+                "A hop identifier must be specified for an explicit route hop";
+            }
+            description
+              "Index identifying a particular hop.";
+          }
+
+          uses explicit-route-hop;
+        }
+      }
+
+      list admin-group {
+        user-ext:CLI-comm-help "Set admin group configuration";
+        user-ext:CLI-no-comm-help "Remove admin group configuration";
+        key "admin-group-name";
+        description
+          "Admin group configuration";
+        leaf admin-group-name {
+          user-ext:CLI-comm-help "Set admin group name";
+          user-ext:CLI-param-help "Set admin group name";
+          type meta:name-string;
+          description
+            "A unique identifier identifying the admin group.";
+        }
+
+        leaf bit-position {
+          user-ext:CLI-comm-help "Set bit-position value for mpls admin-group";
+          user-ext:CLI-param-help "Set bit-position value for mpls admin-group";
+          type admin-group-bit-position;
+          description
+            "Bit-position value for mpls admin-group. The value
+             for the admin group is an integer that represents one
+             of the bit positions in the admin-group bitmask. Values
+             between 0 and 31 are interpreted as the original limit
+             of 32 admin groups. Values >=32 are interpreted as
+             extended admin group values as per RFC7308.";
+        }
+      }
+
+      container interfaces {
+        user-ext:CLI-not-command;
+        description
+          "Standard interface configuration";
+        list interface {
+          user-ext:CLI-comm-help "RSVP interface configuration";
+          user-ext:CLI-no-comm-help "Remove RSVP interface configuration";
+          key "if-name";
+          description
+            "Per-interface RSVP configuration";
+          leaf if-name {
+            user-ext:CLI-comm-help "Set interface name";
+            user-ext:CLI-param-help "Set interface name";
+            type leafref {
+              path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+            }
+            description
+              "A unique identifier identifying the interface.";
+          }
+
+          uses rsvp-interface-fields;
+        }
+      }
+
+      container custom-interfaces {
+        user-ext:CLI-not-command;
+        if-feature "interfaces:custom-interfaces";
+        description
+          "Custom interface configuration";
+        container interface {
+          user-ext:CLI-comm-help "RSVP interface configuration";
+          user-ext:CLI-no-comm-help "Remove RSVP interface configuration";
+          description
+            "Per-interface RSVP configuration";
+          container oneGE {
+            user-ext:CLI-not-command;
+            description
+              "One GE interface";
+            list gigabitethernet {
+              user-ext:CLI-comm-help "Add RSVP configuration to 1G interface";
+              user-ext:CLI-no-comm-help "Remove RSVP configuration from 1G interface";
+              key "if-num";
+              description
+                "1G interface";
+              leaf if-num {
+                user-ext:CLI-param-help "1G interface name";
+                type interfaces:eth-iface-num-t;
+                description
+                  "<unit>/<dev>/<port>";
+              }
+
+              uses rsvp-interface-fields;
+            }
+          }
+
+          container tenGE {
+            user-ext:CLI-not-command;
+            description
+              "Ten GE interface";
+            list tengigabitethernet {
+              user-ext:CLI-comm-help "Add RSVP configuration to 10G interface";
+              user-ext:CLI-no-comm-help "Remove RSVP configuration from 10G interface";
+              key "if-num";
+              description
+                "10G interface";
+              leaf if-num {
+                user-ext:CLI-param-help "10G interface name";
+                type interfaces:eth-iface-num-t;
+                description
+                  "<unit>/<dev>/<port>";
+              }
+
+              uses rsvp-interface-fields;
+            }
+          }
+
+          container fortyGE {
+            user-ext:CLI-not-command;
+            description
+              "Forty GE interface";
+            list fortygigabitethernet {
+              user-ext:CLI-comm-help "Add RSVP configuration to 40G interface";
+              user-ext:CLI-no-comm-help "Remove RSVP configuration from 40G interface";
+              key "if-num";
+              description
+                "40G interface";
+              leaf if-num {
+                user-ext:CLI-param-help "40G interface name";
+                type interfaces:eth-iface-num-t;
+                description
+                  "<unit>/<dev>/<port>";
+              }
+
+              uses rsvp-interface-fields;
+            }
+          }
+
+          container hundredGE {
+            user-ext:CLI-not-command;
+            description
+              "Hundred GE interface";
+            list hundredgigabitethernet {
+              user-ext:CLI-comm-help "Add RSVP configuration to 100G interface";
+              user-ext:CLI-no-comm-help "Remove RSVP configuration from 100G interface";
+              key "if-num";
+              description
+                "100G interface";
+              leaf if-num {
+                user-ext:CLI-param-help "100G interface name";
+                type interfaces:eth-iface-num-t;
+                description
+                  "<unit>/<dev>/<port>";
+              }
+
+              uses rsvp-interface-fields;
+            }
+          }
+
+          container bundle-ifaces {
+            user-ext:CLI-not-command;
+            description
+              "Bundle interface";
+            list bundle-ether {
+              user-ext:CLI-comm-help "Add RSVP configuration to bundle interface";
+              user-ext:CLI-no-comm-help "Remove RSVP configuration from bundle interface";
+              key "bundle-id";
+              description
+                "Bundle interface";
+              leaf bundle-id {
+                user-ext:CLI-param-help "Bundle interface name";
+                type interfaces:bundle-id-t;
+                description
+                  "Bundle-ether id";
+              }
+
+              uses rsvp-interface-fields;
+            }
+          }
+
+          container spec-ifaces {
+            user-ext:CLI-not-command;
+            description
+              "Special interface";
+            list loopback {
+              user-ext:CLI-comm-help "Add RSVP configuration to loopback interface";
+              user-ext:CLI-no-comm-help "Remove RSVP configuration from loopback interface";
+              key "if-num";
+              description
+                "Loopback interface";
+              leaf if-num {
+                user-ext:CLI-param-help "Loopback ID";
+                type interfaces:loopback-id-t;
+                description
+                  "Loopback ID";
+              }
+
+              uses rsvp-interface-fields;
+            }
+          }
+        }
+      }
+
+      container neighbor-state-list {
+        config false;
+        description
+          "RSVP neighbor state.";
+        list neighbor-state {
+          description
+            "The RSVP neighbor's state";
+          leaf address {
+            type interfaces:iface-ip-address-t;
+            description
+              "The address of the neighboring node.";
+          }
+
+          container interface {
+            description
+              "Signaling interface used to reach this neighbor.";
+            uses interfaces:iface-id;
+          }
+
+          leaf refresh-reduction {
+            type boolean;
+            config false;
+            description
+              "Whether this neighbor supports Refresh Reduction.";
+          }
+        }
+      }
+
+      list tunnel {
+        user-ext:CLI-comm-help "Configure RSVP tunnel";
+        user-ext:CLI-no-comm-help "Remove RSVP tunnel";
+        must "(./tunnel-lsp)" {
+          error-message
+            "One or more LSPs must be configured for a tunnel";
+        }
+        must "(((substring-after(source, ':') = '') and   (substring-after(destination, ':') = '')) or  ((substring-after(source, ':') != '') and   (substring-after(destination, ':') != '')))" {
+          error-message
+            "RSVP tunnel source and destination address must have the same IP address type";
+        }
+        must "(not((substring-after(source, ':') = '') and\n     (source = destination)))" {
+          error-message
+            "IPv4 tunnels cannot have the same source and destination address";
+        }
+        key "name";
+        description
+          "RSVP tunnel configuration";
+        leaf name {
+          user-ext:CLI-comm-help "Set RSVP tunnel name";
+          user-ext:CLI-param-help "Set RSVP tunnel name";
+          type meta:name-string;
+          description
+            "A unique identifier identifying the RSVP tunnel.";
+        }
+
+        leaf source {
+          user-ext:CLI-param-help "Set RSVP tunnel source address";
+          user-ext:CLI-comm-help "Set RSVP tunnel source address";
+          user-ext:CLI-no-comm-help "Remove RSVP tunnel source address";
+          type interfaces:iface-ip-address-t;
+          mandatory true;
+          description
+            "The source address of this tunnel.";
+        }
+
+        leaf destination {
+          user-ext:CLI-param-help "Set RSVP tunnel destination address";
+          user-ext:CLI-comm-help "Set RSVP tunnel destination address";
+          user-ext:CLI-no-comm-help "Remove RSVP tunnel destination address";
+          type interfaces:iface-ip-address-t;
+          mandatory true;
+          description
+            "The destination address of this tunnel.";
+        }
+
+        leaf description {
+          user-ext:CLI-param-help "Set RSVP tunnel description";
+          user-ext:CLI-comm-help "Set RSVP tunnel description";
+          user-ext:CLI-no-comm-help "Remove RSVP tunnel description";
+          type string {
+            length "0..255";
+          }
+          description
+            "A textual string containing information about the tunnel.";
+        }
+
+        leaf admin-status {
+          user-ext:CLI-param-help "Set RSVP tunnel admin status";
+          user-ext:CLI-comm-help "Set RSVP tunnel admin status";
+          user-ext:CLI-no-comm-help "Set RSVP tunnel admin status down";
+          type meta:admin-status;
+          default "down";
+          description
+            "Indicates the desired operational status of this tunnel.";
+        }
+
+        leaf setup-priority {
+          user-ext:CLI-param-help "Configure RSVP tunnel setup priority";
+          user-ext:CLI-comm-help "Configure RSVP tunnel setup priority";
+          user-ext:CLI-no-comm-help "Set RSVP tunnel setup priority to default (0)";
+          type setup-priority-t;
+          default "0";
+          description
+            "Indicates the setup priority of this tunnel.";
+        }
+
+        leaf holding-priority {
+          user-ext:CLI-param-help "Configure RSVP tunnel holding priority";
+          user-ext:CLI-comm-help "Configure RSVP tunnel holding priority";
+          user-ext:CLI-no-comm-help "Set RSVP tunnel holding priority to default (0)";
+          type holding-priority-t;
+          default "0";
+          description
+            "Indicates the holding priority of this tunnel.";
+        }
+
+        leaf bidirectional {
+          user-ext:CLI-param-help "Configure tunnel as bidirectional";
+          user-ext:CLI-comm-help "Configure tunnel as bidirectional";
+          user-ext:CLI-no-comm-help "Configure tunnel as unidirectional";
+          type empty;
+          description
+            "Indicates whether this tunnel carries forward and reverse
+             data; that is, it is bidirectional.";
+        }
+
+        leaf forwarding-adjacency {
+          user-ext:CLI-comm-help "Configure tunnel as MPLS forwarding adjacency";
+          user-ext:CLI-no-comm-help "Configure tunnel as not MPLS forwarding adjacency";
+          type empty;
+          description
+            "When set, the tunnel provides an interface that may be
+             used to forward MPLS labeled packets.";
+        }
+
+        leaf lsp-encoding {
+          user-ext:CLI-param-help "Configure tunnel encoding";
+          user-ext:CLI-comm-help "Configure tunnel encoding";
+          user-ext:CLI-no-comm-help "Configure tunnel encoding as packet";
+          type lsp-encoding-t;
+          default "packet";
+          description
+            "The encoding of the LSP.";
+        }
+
+        container igp-shortcut {
+          user-ext:CLI-param-help "Configure tunnel as IGP shortcut";
+          user-ext:CLI-comm-help "Configure tunnel as IGP shortcut";
+          user-ext:CLI-no-comm-help "Configure tunnel as not IGP shortcut";
+          must "((metric-type = 'relative') or\n (metric-value > 0))" {
+            error-message
+              "A positive metric value must be specified for an absolute metric";
+          }
+          presence "Tunnel is an IGP shortcut.";
+          description
+            "When enabled, the tunnel provides an interface for use
+             as an IGP shortcut.  That is, IGP routing protocols may specify
+             the interface corresponding to this tunnel as the outgoing
+             interface for next hops to destinations.";
+          leaf metric-type {
+            user-ext:CLI-param-help "Configure IGP shortcut metric type";
+            user-ext:CLI-comm-help "Configure IGP shortcut metric type";
+            user-ext:CLI-no-comm-help "Remove IGP shortcut metric type";
+            type meta:igp-shortcut-metric-type;
+            default "relative";
+            description
+              "The type of metric value assigned to this IGP shortcut.
+
+               The type of metric value can be one of the following.
+               -  'absolute'; the metric defined by metric-value
+               is used as the cost of the IGP shortcut.
+               -  'relative'; the metric value defined by metric-value
+               is added to the IGP-calculated cost of reaching the
+               egress of the shortcut to determine the cost of the IGP
+               shortcut.  Note that, in this case, the metric value may
+               be zero, positive or negative.  Note also that a minimum
+               value of 1 is defined for the result of the sum of the
+               IGP-calculated cost and a relative metric value.";
+          }
+
+          leaf metric-value {
+            user-ext:CLI-param-help "Configure IGP shortcut metric value";
+            user-ext:CLI-comm-help "Configure IGP shortcut metric value";
+            user-ext:CLI-no-comm-help "Remove IGP shortcut metric value";
+            type int32 {
+              range "-16777214..16777215";
+            }
+            default "0";
+            description
+              "The metric assigned to this IGP shortcut.
+
+               If metric-type is set to 'absolute' then the value range
+               is 1 to 16777215.";
+          }
+        }
+
+        container frr-facility-interface {
+          user-ext:CLI-param-help "Configure tunnel as FRR facility protecting tunnel";
+          user-ext:CLI-comm-help "Configure tunnel as FRR facility protecting tunnel";
+          user-ext:CLI-no-comm-help "Configure tunnel as not FRR facility protecting tunnel";
+          description
+            "When enabled, the tunnel provides an interface to provide FRR
+             facility bypass protection for one or more LSPs.";
+          container protected-interface {
+            user-ext:CLI-param-help "Set protected interface name";
+            user-ext:CLI-comm-help "Set protected interface name";
+            user-ext:CLI-no-comm-help "Remove protected interface name";
+            description
+              "The name of the interface protected by the FRR facility
+               protecting tunnel.";
+            container interface {
+              user-ext:CLI-not-command;
+              if-feature "interfaces:standard-interfaces";
+              description
+                "Standard interface configuration";
+              leaf interface {
+                type custom:iface-name;
+                must "(../../../../forwarding-adjacency)" {
+                  error-message
+                    "A tunnel providing FRR bypass protection must be configured as a forwarding adjacency";
+                }
+                description
+                  "The name of the interface protected by the FRR facility
+                   protecting tunnel.";
+              }
+            }
+
+            container custom-interface {
+              user-ext:CLI-not-command;
+              if-feature "interfaces:custom-interfaces";
+              description
+                "Custom interface configuration";
+              container interface {
+                user-ext:CLI-not-command;
+                description
+                  "Custom interface configuration";
+                container oneGE {
+                  user-ext:CLI-not-command;
+                  description
+                    "1G interface";
+                  leaf gigabitethernet {
+                    user-ext:CLI-param-help "1G interface name";
+                    type interfaces:eth-iface-num-t;
+                    must "(../../../../../../forwarding-adjacency)" {
+                      error-message
+                        "A tunnel providing FRR bypass protection must be configured as a forwarding adjacency";
+                    }
+                    description
+                      "<unit>/<dev>/<port>";
+                  }
+                }
+
+                container tenGE {
+                  user-ext:CLI-not-command;
+                  description
+                    "10G interface";
+                  leaf tengigabitethernet {
+                    user-ext:CLI-param-help "10G interface name";
+                    type interfaces:eth-iface-num-t;
+                    must "(../../../../../../forwarding-adjacency)" {
+                      error-message
+                        "A tunnel providing FRR bypass protection must be configured as a forwarding adjacency";
+                    }
+                    description
+                      "<unit>/<dev>/<port>";
+                  }
+                }
+
+                container fortyGE {
+                  user-ext:CLI-not-command;
+                  description
+                    "40G interface";
+                  leaf fortygigabitethernet {
+                    user-ext:CLI-param-help "40G interface name";
+                    type interfaces:eth-iface-num-t;
+                    must "(../../../../../../forwarding-adjacency)" {
+                      error-message
+                        "A tunnel providing FRR bypass protection must be configured as a forwarding adjacency";
+                    }
+                    description
+                      "<unit>/<dev>/<port>";
+                  }
+                }
+
+                container hundredGE {
+                  user-ext:CLI-not-command;
+                  description
+                    "100G interface";
+                  leaf hundredgigabitethernet {
+                    user-ext:CLI-param-help "100G interface name";
+                    type interfaces:eth-iface-num-t;
+                    must "(../../../../../../forwarding-adjacency)" {
+                      error-message
+                        "A tunnel providing FRR bypass protection must be configured as a forwarding adjacency";
+                    }
+                    description
+                      "<unit>/<dev>/<port>";
+                  }
+                }
+
+                container bundle-ifaces {
+                  user-ext:CLI-not-command;
+                  description
+                    "Bundle interface";
+                  leaf bundle-ether {
+                    user-ext:CLI-param-help "Bundle interface name";
+                    type interfaces:bundle-id-t;
+                    must "(../../../../../../forwarding-adjacency)" {
+                      error-message
+                        "A tunnel providing FRR bypass protection must be configured as a forwarding adjacency";
+                    }
+                    description
+                      "Bundle-ether id";
+                  }
+                }
+
+                container spec-ifaces {
+                  user-ext:CLI-not-command;
+                  description
+                    "Special interface";
+                  leaf loopback {
+                    user-ext:CLI-param-help "Loopback ID";
+                    type interfaces:loopback-id-t;
+                    must "(../../../../../../forwarding-adjacency)" {
+                      error-message
+                        "A tunnel providing FRR bypass protection must be configured as a forwarding adjacency";
+                    }
+                    description
+                      "Loopback ID";
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        leaf routing-adjacency {
+          user-ext:CLI-comm-help "Configure tunnel as routing adjacency";
+          user-ext:CLI-no-comm-help "Configure tunnel as not routing adjacency";
+          type empty;
+          description
+            "When set, the tunnel provides an interface for use as a
+             routing adjacency.  That is, all routing protocols may specify
+             the interface corresponding to this tunnel as the outgoing
+             interface for next hops to destinations.";
+        }
+
+        leaf protection-type-desired {
+          user-ext:CLI-param-help "Configure tunnel protection type";
+          user-ext:CLI-comm-help "Configure tunnel protection type";
+          user-ext:CLI-no-comm-help "Do not use protection";
+          type rsvp-protection-type;
+          default "none";
+          description
+            "Indicates whether or not this tunnel should be protected
+             by a fast reroute mechanism, and if so which method should
+             be used.";
+        }
+
+        leaf lsp-protection-type-desired {
+          user-ext:CLI-param-help "Configure LSP protection type";
+          user-ext:CLI-comm-help "Configure LSP protection type";
+          user-ext:CLI-no-comm-help "Do not use protection";
+          type rsvp-lsp-protection-type;
+          default "none";
+          description
+            "The level of end-to-end protection for this LSP.";
+        }
+
+        leaf bandwidth-protection-desired {
+          user-ext:CLI-param-help "Specify bandwidth protection requirement";
+          user-ext:CLI-comm-help "Bandwidth protection required";
+          user-ext:CLI-no-comm-help "Bandwidth protection not required";
+          type empty;
+          description
+            "If protection-type-desired is set to a value other than 'none',
+             then backup paths with a bandwidth guarantee are desired.
+             The bandwidth to be guaranteed is indicated by
+             backup-bandwidth, or if that is set to zero, the bandwidth
+             of the LSP.";
+        }
+
+        leaf node-protect {
+          user-ext:CLI-param-help "Specify node protection requirement";
+          user-ext:CLI-comm-help "Node protection required";
+          user-ext:CLI-no-comm-help "Node protection not required";
+          type empty;
+          description
+            "If protection-type-desired is set to a value other than 'none',
+             then backup paths that bypass at least the next hop of the
+             protected LSP are desired.";
+        }
+
+        leaf bandwidth {
+          user-ext:CLI-param-help "Configure LSP bandwidth";
+          user-ext:CLI-comm-help "Configure LSP bandwidth";
+          user-ext:CLI-no-comm-help "Unconfigure LSP bandwidth";
+          type meta:bandwidth-kbps;
+          default "0";
+          description
+            "The mean bandwidth requested for this LSP.";
+        }
+
+        leaf backup-bandwidth {
+          user-ext:CLI-param-help "Configure LSP backup bandwidth";
+          user-ext:CLI-comm-help "Configure LSP backup bandwidth";
+          user-ext:CLI-no-comm-help "Unconfigure LSP backup bandwidth";
+          type meta:bandwidth-kbps;
+          default "0";
+          description
+            "If protection-type-desired is not set to 'none',
+             the estimated bandwidth required for a backup LSP
+             providing protection for this LSP.  A value of zero
+             means to use the bandwidth of the protected LSP.";
+        }
+
+        container lsp-protection {
+          user-ext:CLI-not-command;
+          when "((../lsp-protection-type-desired != 'none') and\n (((../tunnel-lsp[role = 'working']) and\n   (../tunnel-lsp[role = 'protecting'])) or\n  (../tunnel-lsp[role = 'working' and auto-protect = 'true'])))";
+          action lsp-protection-switch {
+            user-ext:CLI-param-help "Use alternate LSP for normal traffic";
+            description
+              "When set, this action indicates that the associated
+               protecting or alternate LSP should be used.  If the
+               working (protected or reroutable) LSP is currently being
+               used for normal traffic then switchover will occur.";
+          }
+
+          action lsp-protection-revert {
+            user-ext:CLI-param-help "Use working LSP for normal traffic";
+            description
+              "When set, this action indicates that this working
+               LSP should be used for normal traffic.  If the protecting
+               or alternate LSP is currently in use for normal traffic,
+               then switchback (reversion) will occur.";
+          }
+        }
+
+        container g709-resources {
+          user-ext:CLI-comm-help "Configure GMPLS resources";
+          user-ext:CLI-no-comm-help "Configure GMPLS resources";
+          when "((../lsp-encoding = 'g709-oduk') or (../lsp-encoding = 'g709-och'))";
+          description
+            "The set of resoures for this G.709 MPLS tunnel.";
+          leaf multiplexed-components {
+            user-ext:CLI-param-help "Set G.709 Number of Multiplexed Components";
+            user-ext:CLI-comm-help "Set G.709 Number of Multiplexed Components";
+            user-ext:CLI-no-comm-help "Set G.709 Number of Multiplexed Components";
+            type uint32 {
+              range "0..65535";
+            }
+            default "0";
+            description
+              "G.709 NMC (Number of Multiplexed Components).  Indicates the
+               number of identical SDH/SONET/G.709 SPEs/VCs that are
+               requested to be concatenated.";
+          }
+
+          leaf virtual-components {
+            user-ext:CLI-param-help "Set G.709 Number of Virtual Components";
+            user-ext:CLI-comm-help "Set G.709 Number of Virtual Components";
+            user-ext:CLI-no-comm-help "Set G.709 Number of Virtual Components";
+            type uint32 {
+              range "0..65535";
+            }
+            default "0";
+            description
+              "G.709 NVC (Number of Virtual Components).  This
+               indicates the number of signals of the same type that are
+               requested to be virtually concatenated.";
+          }
+
+          leaf multiplier {
+            user-ext:CLI-param-help "Set G.709 Multiplier";
+            user-ext:CLI-comm-help "Set G.709 Multiplier";
+            user-ext:CLI-no-comm-help "Set G.709 Multiplier";
+            type uint32 {
+              range "1..65535";
+            }
+            default "1";
+            description
+              "G.709 MT (Multiplier).  This indicates the
+               number of identical signals that are requested for the LSP.";
+          }
+
+          leaf odu-signal-type {
+            user-ext:CLI-param-help "Set overhead termination type";
+            user-ext:CLI-comm-help "Set overhead termination type";
+            user-ext:CLI-no-comm-help "Set overhead termination type";
+            when "(../../lsp-encoding = 'g709-oduk')";
+            type g709-odu-signal-t;
+            default "odu1";
+            description
+              "Indicates the overhead termination type.";
+          }
+
+          leaf och-signal-type {
+            user-ext:CLI-param-help "Set overhead termination type";
+            user-ext:CLI-comm-help "Set overhead termination type";
+            user-ext:CLI-no-comm-help "Set overhead termination type";
+            when "(../../lsp-encoding = 'g709-och')";
+            type g709-och-signal-t;
+            default "och1";
+            description
+              "Indicates the overhead termination type.";
+          }
+
+          leaf tolerance {
+            user-ext:CLI-param-help "Set LSP bit rate tolerance";
+            user-ext:CLI-comm-help "Set LSP bit rate tolerance";
+            user-ext:CLI-no-comm-help "Set LSP bit rate tolerance";
+            when "((../odu-signal-type = 'odu-flex-cbr') or (../odu-signal-type = 'odu-flex-gfpn') or (../odu-signal-type = 'odu-flex-gfpr'))";
+            type uint32 {
+              range "0..255";
+            }
+            default "0";
+            description
+              "The bit rate tolerance for the LSP (in parts per million).";
+          }
+
+          leaf bit-rate {
+            user-ext:CLI-param-help "Set nominal bit rate";
+            user-ext:CLI-comm-help "Set nominal bit rate";
+            user-ext:CLI-no-comm-help "Set nominal bit rate";
+            when "((../odu-signal-type = 'odu-flex-cbr') or (../odu-signal-type = 'odu-flex-gfpn') or (../odu-signal-type = 'odu-flex-gfpr'))";
+            type meta:bandwidth-kbps;
+            description
+              "The nominal bit rate.";
+          }
+        }
+
+        container gmpls-config {
+          user-ext:CLI-comm-help "Configure GMPLS parameters";
+          user-ext:CLI-no-comm-help "Configure GMPLS parameters";
+          when "((../lsp-encoding = 'g709-oduk') or (../lsp-encoding = 'g709-och'))";
+          must "(((egress-label-type) and (egress-label)) or ((not(egress-label-type)) and (not(egress-label))))" {
+            error-message
+              "Both or neither of the egress label and egress label type must be set";
+          }
+          must "(((reverse-egress-label-type) and (reverse-egress-label)) or ((not(reverse-egress-label-type)) and (not(reverse-egress-label))))" {
+            error-message
+              "Both or neither of the reverse egress label and reverse egress label type must be set";
+          }
+          description
+            "Configuration for GMPLS tunnels.";
+          leaf gpid {
+            user-ext:CLI-param-help "Set payload carried by the LSP";
+            user-ext:CLI-comm-help "Set payload carried by the LSP";
+            user-ext:CLI-no-comm-help "Set payload carried by the LSP";
+            type mpls-gpid-t;
+            default "unknown";
+            description
+              "The payload carried by the LSP.";
+          }
+
+          container link-protection {
+            user-ext:CLI-comm-help "Configure level of link protection required";
+            user-ext:CLI-no-comm-help "Configure level of link protection required";
+            description
+              "Indicates the level of link protection required.  If no
+               leafs are set, any protection may be used.";
+            leaf extra-traffic {
+              user-ext:CLI-param-help "Use links protecting other (primary) traffic";
+              user-ext:CLI-comm-help "Use links protecting other (primary) traffic";
+              user-ext:CLI-no-comm-help "Do not use links protecting other (primary) traffic";
+              type empty;
+              description
+                "Indicates that the LSP should use links that are protecting
+                 other (primary) traffic.  Such LSPs may be preempted when the
+                 links carrying the (primary) traffic being protected fail.";
+            }
+
+            leaf unprotected {
+              user-ext:CLI-comm-help "Do not use any link layer protection";
+              user-ext:CLI-no-comm-help "Allow use of link layer protection";
+              type empty;
+              description
+                "Indicates that the LSP should not use any link layer protection.";
+            }
+
+            leaf shared {
+              user-ext:CLI-comm-help "Use shared link layer protection";
+              user-ext:CLI-no-comm-help "Do not use shared link layer protection";
+              type empty;
+              description
+                "Indicates that a shared link layer protection scheme, such as
+                 1:N protection, should be used to support the LSP.";
+            }
+
+            leaf dedicated-one-to-one {
+              user-ext:CLI-comm-help "Use 1:1 protection";
+              user-ext:CLI-no-comm-help "Do not use 1:1 protection";
+              type empty;
+              description
+                "Indicates that a dedicated link layer protection scheme, i.e.,
+                 1:1 protection, should be used to support the LSP.";
+            }
+
+            leaf dedicated-one-plus-one {
+              user-ext:CLI-comm-help "Use 1+1 protection";
+              user-ext:CLI-no-comm-help "Do not use 1+1 protection";
+              type empty;
+              description
+                "Indicates that a dedicated link layer protection scheme, i.e.,
+                 1+1 protection, should be used to support the LSP.";
+            }
+
+            leaf enhanced {
+              user-ext:CLI-comm-help "Use protection more reliable than 1+1";
+              user-ext:CLI-no-comm-help "Not required to use protection more reliable than 1+1";
+              type empty;
+              description
+                "Indicates that a protection scheme that is more reliable than
+                 Dedicated 1+1 should be used, e.g., 4 fiber BLSR/MS-SPRING.";
+            }
+          }
+
+          leaf deletion-mode {
+            user-ext:CLI-param-help "Set type of deletion used to delete this LSP";
+            user-ext:CLI-comm-help "Set type of deletion used to delete this LSP";
+            user-ext:CLI-no-comm-help "Set type of deletion used to delete this LSP";
+            type mpls-deletion-mode-t;
+            default "forced";
+            description
+              "Type of deletion (forced or graceful) used to delete this
+               LSP.";
+          }
+
+          leaf egress-label-type {
+            user-ext:CLI-param-help "Set egress label type";
+            user-ext:CLI-comm-help "Set egress label type";
+            user-ext:CLI-no-comm-help "Remove egress label type";
+            type mpls-label-type;
+            description
+              "The C-Type of the egress control downstream Label";
+          }
+
+          leaf egress-label {
+            user-ext:CLI-param-help "Set egress label";
+            user-ext:CLI-comm-help "Set egress label";
+            user-ext:CLI-no-comm-help "Remove egress label";
+            type binary {
+              length "0..16";
+            }
+            must "((../egress-control-interface) or (../egress-control-interface-address))" {
+              error-message
+                "The egress control interface must be identified";
+            }
+            description
+              "The egress control downstream label in the explicit route.
+
+               This label will be inserted as the last hop of the explicit
+               route.";
+          }
+
+          leaf reverse-egress-label-type {
+            user-ext:CLI-param-help "Set reverse egress label type";
+            user-ext:CLI-comm-help "Set reverse egress label type";
+            user-ext:CLI-no-comm-help "Remove reverse egress label type";
+            when "(../../bidirectional)";
+            type mpls-label-type;
+            description
+              "The C-Type of the reverse egress control upstream Label";
+          }
+
+          leaf reverse-egress-label {
+            user-ext:CLI-param-help "Set reverse egress label";
+            user-ext:CLI-comm-help "Set reverse egress label";
+            user-ext:CLI-no-comm-help "Remove reverse egress label";
+            when "(../../bidirectional)";
+            type binary {
+              length "0..16";
+            }
+            must "((../egress-control-interface) or (../egress-control-interface-address))" {
+              error-message
+                "The egress control interface must be identified";
+            }
+            description
+              "The reverse egress control upstream label in the explicit route.
+
+               This label is inserted as the last hop of the explicit route.";
+          }
+
+          leaf egress-control-interface {
+            user-ext:CLI-param-help "Set egress control interface index";
+            user-ext:CLI-comm-help "Set egress control interface index";
+            user-ext:CLI-no-comm-help "Remove egress control interface index";
+            when "(((../egress-label) or (../reverse-egress-label)) and (not(../egress-control-interface-address)))";
+            type egress-control-interface-t;
+            description
+              "The index of the interface to use for egress control.  This
+               is used if egress-label or reverse-egress-label is set.";
+          }
+
+          leaf egress-control-interface-address {
+            user-ext:CLI-param-help "Set egress control interface address";
+            user-ext:CLI-comm-help "Set egress control interface index address";
+            user-ext:CLI-no-comm-help "Remove egress control interface index address";
+            when "(((../egress-label) or (../reverse-egress-label)) and (not(../egress-control-interface)))";
+            type interfaces:iface-ip-address-t;
+            description
+              "The address of the interface to use for egress control.  This
+               is used if egress-label or reverse-egress-label is set.";
+          }
+
+          leaf head-incoming-data-port {
+            user-ext:CLI-param-help "Set incoming data link at head node";
+            user-ext:CLI-comm-help "Set incoming data link at head node";
+            user-ext:CLI-no-comm-help "Set incoming data link at head node";
+            type uint32;
+            default "0";
+            description
+              "The logical port identifier used to uniquely identify the incoming
+               data link at the head node.
+
+               If the tunnel is dynamically routed by the head node and
+               the head node has restricted connectivity between ports,
+               this object can be used to restrict the set of egress
+               ports considered by routing.
+
+               This is useful if the tunnel is to be used for forwarding
+               data received on a specific incoming port.
+
+               The incoming port must be specified if all of the
+               following hold.
+
+               -  The LSP is dynamically routed by the source node.
+               -  The head node has restricted connectivity between ports.
+               -  There is a requirement to tunnel data through the LSP from a
+                 specific incoming port.
+               -  The first hop in the set of configued hops does not uniquely
+                 identify a port on the head node.
+
+               This value is not used to signal or cross-connect the
+               tunnel, but is used by the route calculation when
+               determining which outgoing ports can be used on the head
+               node.";
+          }
+
+          leaf tail-outgoing-data-port {
+            user-ext:CLI-param-help "Set outgoing data link at tail node";
+            user-ext:CLI-comm-help "Set outgoing data link at tail node";
+            user-ext:CLI-no-comm-help "Set outgoing data link at tail node";
+            type uint32;
+            default "0";
+            description
+              "Outgoing port on the tail node.
+
+               If the tunnel is dynamically routed by the head node and
+               the tail node has restricted connectivity between ports,
+               this object can be used to assist the routing with the
+               selection of ingress port on the tail node.
+
+               This is useful if the tunnel is to be used for forwarding
+               data to a specific outgoing port at the tail node.
+
+               The outgoing port must be specified if the tail node has
+               restricted connectivity between ports and there is a
+               requirement to tunnel data through the LSP to a specific
+               outgoing port on the tail node.  The outgoing port must be
+               specified if all of the following hold.
+
+               -  The LSP is dynamically routed by the source node.
+               -  The tail node has restricted connectivity between ports.
+               -  There is a requirement to tunnel data through the LSP to a specific
+                 outgoing port on the tail node.
+               -  The final hop in the set of configured hops entry does not uniquely
+                 identify a port on the tail node.
+
+               This value is not used to signal or cross-connect the
+               tunnel, but is used by the route calculation when
+               determining which incoming ports can be used on the tail
+               node.";
+          }
+        }
+
+        container state {
+          config false;
+          description
+            "MPLS tunnel state.";
+          leaf oper-status {
+            type meta:oper-status;
+            description
+              "The operational status of the MPLS tunnel.  This is reported
+               as 'up' if any of the LSPs providing this tunnel are
+               operationally 'up'.";
+          }
+
+          leaf tunnel-id {
+            type uint32 {
+              range "0..65535";
+            }
+            description
+              "The internal identifier assigned to this tunnel.";
+          }
+
+          leaf ingress-lsr-id {
+            type uint32;
+            description
+              "The ingress LSR ID used by this tunnel.";
+          }
+
+          leaf egress-lsr-id {
+            type uint32;
+            description
+              "The egress LSR ID used by this tunnel.";
+          }
+        }
+
+        list tunnel-lsp {
+          user-ext:CLI-comm-help "Configure LSP within RSVP tunnel";
+          user-ext:CLI-no-comm-help "Remove LSP within RSVP tunnel";
+          key "name";
+          description
+            "RSVP tunnel LSP configuration";
+          leaf name {
+            user-ext:CLI-comm-help "Set RSVP tunnel LSP name";
+            user-ext:CLI-param-help "Set RSVP tunnel LSP name";
+            type meta:name-string;
+            description
+              "A unique identifier identifying the LSP within an RSVP tunnel.";
+          }
+
+          leaf path-computation {
+            user-ext:CLI-param-help "Configure path computation method";
+            user-ext:CLI-comm-help "Specify path computation method";
+            user-ext:CLI-no-comm-help "Path computation method is explicit";
+            type rsvp-path-type;
+            default "explicit";
+            description
+              "This value instructs the source node on how to perform
+               path computation on the explicit route specified by the
+               associated entries in the explicit-path container.
+
+               If set to 'dynamic', the user specifies at least the source and
+               destination of the path and expects that a local
+               path calculation will calculate the remainder of the
+               path.  LSP setup will only succeed if a route can be
+               successfully computed at this node from the source
+               to the destination.
+
+               If set to 'dynamic-partial', the user specifies at least the
+               source and destination of the path and expects that a local
+               path calculation will calculate some or all of the remainder
+               of the path.  It is allowed for the local path calculation to
+               only partiall compute the path allowing hte remainder
+               of the path to be filled in across the network.
+
+               If set to 'explicit', the user specifies the entire path for the
+               tunnel to take.  This path may contain strict or loose hops.
+               Evaluation of the explicit route will be performed hop by hop
+               through the network.";
+          }
+
+          leaf explicit-path-name {
+            user-ext:CLI-param-help "Set LSP explicit path";
+            user-ext:CLI-comm-help "Set LSP explicit path";
+            user-ext:CLI-no-comm-help "Unset LSP explicit path";
+            type leafref {
+              path "/mpls/rsvp-te/explicit-path/name";
+            }
+            description
+              "The explicit path used by this LSP.";
+          }
+
+          leaf is-persistent {
+            user-ext:CLI-param-help "Specify whether LSP is persistent";
+            user-ext:CLI-comm-help "LSP is restored after failure";
+            user-ext:CLI-no-comm-help "LSP is not restored after failure";
+            type empty;
+            description
+              "Whether this tunnel should be restored automatically after a
+               failure occurs.";
+          }
+
+          leaf retry-timer {
+            user-ext:CLI-param-help "Configure persistent LSP retry time";
+            user-ext:CLI-comm-help "Configure persistent LSP retry time";
+            user-ext:CLI-no-comm-help "Unconfigure LSP retry time";
+            type retry-timer-t;
+            units "milliseconds";
+            default "5000";
+            description
+              "The tunnel retry interval for this LSP.  This is the
+               interval between the first failure of an LSP and the
+               first attempt to re-establish the LSP.  A value of 0
+               indicates retrying is not supported.";
+          }
+
+          container admin-groups {
+            description
+              "Admin group information for this LSP.";
+            leaf-list exclude-group {
+              user-ext:CLI-param-help "Configure admin-groups to exclude";
+              user-ext:CLI-comm-help "Configure admin-groups to exclude";
+              user-ext:CLI-no-comm-help "Unconfigure admin-groups to exclude";
+              type leafref {
+                path "/mpls/rsvp-te/admin-group/admin-group-name";
+              }
+              description
+                "List of references to named admin-groups to exclude in
+                 path calculation.";
+            }
+
+            leaf-list include-all-group {
+              user-ext:CLI-param-help "Configure admin-groups to include all";
+              user-ext:CLI-comm-help "Configure admin-groups to include all";
+              user-ext:CLI-no-comm-help "Unconfigure admin-groups to include all";
+              type leafref {
+                path "/mpls/rsvp-te/admin-group/admin-group-name";
+              }
+              description
+                "List of references to named admin-groups of which all must
+                 be included";
+            }
+
+            leaf-list include-any-group {
+              user-ext:CLI-param-help "Configure admin-groups to include any";
+              user-ext:CLI-comm-help "Configure admin-groups to include any";
+              user-ext:CLI-no-comm-help "Unconfigure admin-groups to include any";
+              type leafref {
+                path "/mpls/rsvp-te/admin-group/admin-group-name";
+              }
+              description
+                "List of references to named admin-groups of which one must
+                 be included";
+            }
+          }
+
+          leaf role {
+            user-ext:CLI-param-help "LSP role";
+            user-ext:CLI-comm-help "LSP role";
+            type lsp-role-type;
+            default "working";
+            description
+              "LSP role";
+          }
+
+          leaf protected-lsp-name {
+            user-ext:CLI-param-help "Protected LSP";
+            user-ext:CLI-comm-help "Protectd LSP";
+            when "../role = 'protecting'";
+            type leafref {
+              path "/mpls/rsvp-te/tunnel/tunnel-lsp/name";
+            }
+            description
+              "Protected LSP";
+          }
+
+          leaf auto-protect {
+            user-ext:CLI-param-help "Provision a Protecting LSP";
+            user-ext:CLI-comm-help "Provision a Protecing LSP";
+            when "../role = 'working'";
+            type boolean;
+            default "false";
+            description
+              "Automatically provision a the Protecting LSP";
+          }
+
+          leaf private-data {
+            user-ext:CLI-param-help "Configure private data";
+            user-ext:CLI-comm-help "Configure private data";
+            user-ext:CLI-no-comm-help "Remove private data";
+            type binary {
+              length "0..8";
+            }
+            description
+              "Configure the LSP private data";
+          }
+
+          leaf signal-after-path-computation {
+            user-ext:CLI-param-help "Signal LSP after computing path";
+            user-ext:CLI-comm-help "Signal LSP after computing path";
+            when "../path-computation = 'dynamic'";
+            type boolean;
+            default "true";
+            description
+              "This value instructs the source node on whether to signal the
+               LSP after path computation completes if path-computation is set
+               to 'dynamic'.  Note that if this field is initially set to
+               'false', then modifying it to 'true' will result in the LSP being
+               signaled.";
+          }
+
+          container state {
+            config false;
+            description
+              "MPLS tunnel LSP state.";
+            leaf oper-status {
+              type meta:oper-status;
+              description
+                "The operational status of the LSP.";
+            }
+
+            leaf lsp-id {
+              type uint32 {
+                range "0..65535";
+              }
+              description
+                "The internal identifier assigned to this LSP.";
+            }
+
+            leaf c-hop-te-metric-cost {
+              type uint32 {
+                range "0..2147483647";
+              }
+              description
+                "The TE metric cost of the computed path.";
+            }
+
+            container counters {
+              description
+                "MPLS tunnel counters.";
+              leaf total-up-time {
+                type uint32;
+                config false;
+                description
+                  "This value represents the aggregate up time for all
+                   instances of this tunnel, if available.  If this value is
+                   unavailable, it MUST return a value of 0.";
+              }
+
+              leaf instance-up-time {
+                type uint32;
+                config false;
+                description
+                  "This value identifies the total time that this tunnel
+                   instance's operStatus has been Up.";
+              }
+
+              leaf primary-up-time {
+                type uint32;
+                config false;
+                description
+                  "Specifies the total time the primary instance of this
+                   tunnel has been active.";
+              }
+
+              leaf path-changes {
+                type uint32;
+                description
+                  "The number of times the actual path for this LSP has
+                   changed.";
+              }
+
+              leaf state-changes {
+                type uint32;
+                description
+                  "The number of times the operational state of this
+                   LSP has changed.";
+              }
+
+              leaf current-path-time {
+                type uint32;
+                units "centiseconds";
+                description
+                  "Indicates the time at which LSP switched onto its
+                   current path.";
+              }
+            }
+
+            leaf time-to-reversion {
+              when "((../../role = 'working') and\n  (../oper-status = 'up') and\n  (../../../../lsp-state-list/lsp-state/e2e-sending-lsp = 'protecting'))";
+              type uint32;
+              units "milliseconds";
+              description
+                "This value represents the remaining time before the traffic
+                 will be reverted back to the working lsp automatically.";
+            }
+          }
+
+          container computed-hops {
+            config false;
+            description
+              "LSP computed hops.";
+            list computed-hop {
+              key "index";
+              description
+                "LSP computed hops.";
+              leaf index {
+                type uint32;
+                description
+                  "Index identifying a particular hop.";
+              }
+
+              choice type {
+                description
+                  "The computed hop type.";
+                case ip-prefix {
+                  description
+                    "IP prefix computed hop.";
+                  container ip-prefix {
+                    description
+                      "IP prefix computed hop";
+                    leaf ip-prefix {
+                      type interfaces:iface-ip-prefix-t;
+                      description
+                        "The address of this computed hop.";
+                    }
+
+                    leaf loose {
+                      type empty;
+                      description
+                        "Denotes that this hop is routed in a loose fashion
+                         instead of a strict fashion.";
+                    }
+                  }
+                }
+
+                case unnumbered-link {
+                  description
+                    "Unnumbered link computed hop";
+                  container unnumbered-link {
+                    description
+                      "Unnumbered link computed hop";
+                    leaf router-id {
+                      type interfaces:iface-ip-address-t;
+                      description
+                        "The LSR Router ID for this hop.";
+                    }
+
+                    leaf interface-id {
+                      type interface-id-t;
+                      description
+                        "The interface identifier of the unnumbered interface
+                         for this hop.";
+                    }
+
+                    leaf loose {
+                      type empty;
+                      description
+                        "Denotes that this hop is routed in a loose fashion
+                         instead of a strict fashion.";
+                    }
+                  }
+                }
+
+                case label {
+                  description
+                    "Label hop";
+                  container label {
+                    description
+                      "Label hop";
+                    leaf label-type {
+                      type mpls-label-type;
+                      description
+                        "The type of the hop label.";
+                    }
+
+                    choice label-display-type {
+                      default "gmpls-label";
+                      description
+                        "The type of the hop label";
+                      case mpls-label {
+                        description
+                          "MPLS hop label";
+                        container mpls-label {
+                          description
+                            "MPLS hop label";
+                          leaf label {
+                            type meta:mpls-label-state-integer-t;
+                            description
+                              "The hop label.";
+                          }
+                        }
+                      }
+
+                      case gmpls-label {
+                        description
+                          "GMPLS hop label";
+                        container gmpls-label {
+                          description
+                            "GMPLS MPLS hop label";
+                          leaf label {
+                            type binary {
+                              length "0..16";
+                            }
+                            description
+                              "The hop label.";
+                          }
+                        }
+                      }
+                    }
+
+                    leaf reverse {
+                      type empty;
+                      description
+                        "Indicates that the label is in the reverse LSP
+                         direction.";
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      container lsp-state-list {
+        config false;
+        description
+          "LSP state information.";
+        list lsp-state {
+          description
+            "LSP state";
+          leaf tunnel-name {
+            type meta:name-string;
+            description
+              "The name of the tunnel used to configure this LSP.
+               Only present at ingress.";
+          }
+
+          leaf lsp-name {
+            type meta:name-string;
+            description
+              "The name used to configure this LSP.
+               Only present at ingress.";
+          }
+
+          leaf source {
+            type interfaces:iface-ip-address-t;
+            description
+              "The source address of the LSP.";
+          }
+
+          leaf destination {
+            type interfaces:iface-ip-address-t;
+            description
+              "The destination address of the LSP.";
+          }
+
+          leaf tunnel-id {
+            type tunnel-lsp-id;
+            description
+              "The identifier of the owning tunnel.";
+          }
+
+          leaf lsp-id {
+            type tunnel-lsp-id;
+            description
+              "The identifier of this LSP";
+          }
+
+          leaf oper-status {
+            type meta:oper-status;
+            description
+              "The operational status of the LSP.";
+          }
+
+          leaf role {
+            type rsvp-lsp-role;
+            description
+              "This value signifies the role that this LSP
+               entry/instance represents.";
+          }
+
+          leaf resource-status {
+            type enumeration {
+              enum "primary" {
+                description
+                  "A primary LSP is a fully established LSP for
+                   which the resource allocation has been committed
+                   at the data plane";
+              }
+              enum "secondary" {
+                description
+                  "A secondary LSP is an LSP that has been provisioned
+                   in the control plane only; that is, resource allocation
+                   has not been committed at the data plane";
+              }
+            }
+            description
+              "LSP resource status type";
+            reference
+              "rfc4872, section 4.2.1";
+          }
+
+          leaf protection-role {
+            type enumeration {
+              enum "working" {
+                description
+                  "A working LSP has been configured to carry data traffic.
+                   It must be a primary LSP.  It may be protected by a
+                   protecting LSP.";
+              }
+              enum "protecting" {
+                description
+                  "A protecting LSP is an LSP that has been provisioned
+                   to protect one or more working LSPs.  It may be a
+                   primary or a secondary LSP.";
+              }
+            }
+            description
+              "LSP protection role type";
+            reference
+              "rfc4872, section 4.2.1";
+          }
+
+          leaf e2e-sending-lsp {
+            type e2e-lsp-data-t;
+            description
+              "For an LSP protected using end-to-end protection, whether
+               traffic is being transmitted on the working LSP, the
+               protecting LSP, or both.
+
+               Note that this leaf is not reported for an LSP providing
+               end-to-end protection (a protecting LSP).";
+          }
+
+          leaf e2e-receiving-lsp {
+            type e2e-lsp-data-t;
+            description
+              "For an LSP protected using end-to-end protection, whether
+               traffic is being received on the working LSP, the
+               protecting LSP, or both.
+
+               Note that this leaf is not reported for an LSP providing
+               end-to-end protection (a protecting LSP)";
+          }
+
+          leaf carry-normal-traffic {
+            type empty;
+            description
+              "This bit is set when a protecting LSP is carrying the normal
+               traffic after protection switching";
+          }
+
+          leaf protection-type-desired {
+            type rsvp-protection-type;
+            default "none";
+            description
+              "Indicates whether or not this tunnel should be protected
+               by a fast reroute mechanism, and if so which method should
+               be used.";
+          }
+
+          leaf bandwidth-protection-desired {
+            type empty;
+            description
+              "If protection-type-desired is set to a value other than 'none',
+               then backup paths with a bandwidth guarantee are desired.
+               The bandwidth to be guaranteed is indicated by
+               backup-bandwidth, or if that is set to zero, the bandwidth
+               of the LSP.";
+          }
+
+          leaf node-protect {
+            type empty;
+            description
+              "If protection-type-desired is set to a value other than 'none',
+               then backup paths that bypass at least the next hop of the
+               protected LSP are desired.";
+          }
+
+          leaf backup-state-only {
+            type boolean;
+            description
+              "Indicates that the only state present for this LSP at this
+               node is state providing fast-reroute protection for this
+               LSP at other nodes.";
+          }
+
+          uses lsp-upstream-downstream-state;
+
+          leaf local-recording-desired {
+            type boolean;
+            description
+              "Path recording is desired.";
+            reference
+              "RFC3209";
+          }
+
+          leaf se-style-desired {
+            type boolean;
+            description
+              "SE Style desired";
+            reference
+              "RFC3209";
+          }
+
+          leaf lsp-rerouting {
+            type enumeration {
+              enum "none" {
+                description
+                  "No rerouting desired";
+              }
+              enum "end-to-end-rerouting" {
+                description
+                  "End-to-end rerouting desired";
+                reference
+                  "RFC4920, RFC5420";
+              }
+              enum "boundary-rerouting" {
+                description
+                  "Boundary rerouting desired";
+                reference
+                  "RFC4920, RFC5420";
+              }
+              enum "segment-based-rerouting" {
+                description
+                  "Segment-based rerouting desired";
+                reference
+                  "RFC4920, RFC5420";
+              }
+            }
+            description
+              "LSP rerouting types";
+          }
+
+          leaf lsp-signaled-name {
+            type meta:name-string;
+            description
+              "The name signaled in the Session Attribute object.";
+          }
+
+          leaf oam-mep-entities-desired {
+            type empty;
+            description
+              "Indicates whether OAM MEP entities are desired for this LSP.";
+          }
+
+          leaf oam-mip-entities-desired {
+            type empty;
+            description
+              "Indicates whether OAM MIP entities are desired for this LSP.";
+          }
+
+          container frr-backup-lsp-state-list {
+            description
+              "FRR backup LSP state information";
+            list frr-backup-lsp-state-list {
+              description
+                "FRR backup LSP state";
+              uses lsp-upstream-downstream-state;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  augment "/interface:interfaces/interface:interface" {
+    when "(interface:forwarding-mode = 'interface:network-layer')" {
+      description
+        "TE metric can only be configured on L3 interfaces";
+    }
+    uses te-metric;
+  }
+}

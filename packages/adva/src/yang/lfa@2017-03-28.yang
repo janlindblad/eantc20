@@ -1,0 +1,636 @@
+module lfa {
+  namespace "http://metaswitch.com/yang/nbu/lfa/201703280000Z";
+  prefix lfa;
+
+  import user-extensions {
+    prefix user-ext;
+  }
+
+  import interfaces {
+    prefix interfaces;
+  }
+
+  import metaswitch-yang-types {
+    prefix meta;
+  }
+
+  organization
+    "Metaswitch Networks";
+  contact
+    "Postal: Metaswitch Networks
+             100 Church Street
+             Enfield
+             EN2 6BQ
+             United Kingdom
+     Tel:    +44 20 8366 1177
+     E-mail: info@metaswitch.com";
+  description
+    "Loop-Free Alternate";
+
+  revision 2017-03-28 {
+    description
+      "Initial revision.";
+  }
+
+  typedef lfa-protocol-t {
+    type enumeration {
+      enum "isis" {
+        value 1;
+      }
+      enum "ospfv2" {
+        value 2;
+      }
+      enum "ospfv3" {
+        value 3;
+      }
+    }
+    description
+      "LFA protocol type";
+  }
+
+  typedef lfa-afi-t {
+    type enumeration {
+      enum "ipv4" {
+        value 1;
+      }
+      enum "ipv6" {
+        value 2;
+      }
+    }
+    description
+      "LFA AFI type";
+  }
+
+  typedef lfa-router-id-t {
+    type string {
+      pattern "(((([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]))|(([0-9A-Fa-f]{4}\\.){2}[0-9A-Fa-f]{4}))?";
+    }
+    description
+      "LFA Router id.  This can be an OSPF router ID (A.B.C.D) or an ISIS
+       router ID (XXXX.XXXX.XXXX) or empty";
+  }
+
+  typedef lfa-reason-t {
+    type enumeration {
+      enum "best-candidate" {
+        value 0;
+      }
+      enum "primary-excluded" {
+        value 1;
+      }
+      enum "candidate-excluded" {
+        value 2;
+      }
+      enum "not-loop-free" {
+        value 3;
+      }
+      enum "overloaded" {
+        value 4;
+      }
+      enum "tie-metric" {
+        value 5;
+      }
+      enum "tie-node-prot" {
+        value 6;
+      }
+      enum "tie-router-id" {
+        value 7;
+      }
+      enum "tie-if-index" {
+        value 8;
+      }
+      enum "no-tunnel" {
+        value 9;
+      }
+      enum "tie-remote-lfa" {
+        value 10;
+      }
+      enum "primary-hop" {
+        value 11;
+      }
+    }
+    description
+      "Reasons for decisions about candidate LFAs.";
+  }
+
+  grouping lfa-global-config {
+    leaf include-all {
+      user-ext:CLI-comm-help "Enable LFA calculations on all interfaces";
+      user-ext:CLI-no-comm-help "Disable LFA calculations on all interfaces";
+      type empty;
+      description
+        "Whether or not LFA calculations should be enabled on all
+         interfaces by default.
+
+         If this field is set to true, then DC-LFA will attempt to
+         compute an LFA for any primary next hop, unless a more
+         specific policy disables LFA calculation for that next
+         hop.
+
+         If this field is set to false, then DC-LFA will not
+         compute an LFA for any primary next hop, unless a more
+         specific policy enables LFA calculation for that next hop.";
+    }
+
+    leaf remote {
+      user-ext:CLI-comm-help "Enable calculation of remote LFAs";
+      user-ext:CLI-no-comm-help "Disable calculation of remote LFAs";
+      type empty;
+      description
+        "Whether DC-LFA should calculate remote (that is,
+         indirectly connected) loop-free alternates for
+         destinations that cannot be protected using a local
+         (directly connected) loop-free alternate.  This feature is
+         described in RFC 7490.";
+    }
+  }
+
+  grouping lfa-global-stats {
+    container lfa-stats {
+      config false;
+      description
+        "DC-LFA global statistics.";
+      leaf total-routes {
+        type uint32;
+        config false;
+        description
+          "The total number of routes that this DC-LFA entity has
+           tried to find loop-free alternates for.";
+      }
+
+      leaf unprotected-routes {
+        type uint32;
+        config false;
+        description
+          "The number of routes that are not protected by any
+           loop-free alternate or ECMP next hop.";
+      }
+
+      leaf protected-lfa-routes {
+        type uint32;
+        config false;
+        description
+          "The number of routes that are protected by a loop-free
+           alternate.";
+      }
+
+      leaf protected-ecmp-routes {
+        type uint32;
+        config false;
+        description
+          "The number of routes that are protected by equal-cost
+           multipath next hops.";
+      }
+
+      leaf protected-local-lfa-routes {
+        type uint32;
+        config false;
+        description
+          "The number of routes that are protected by a local (that
+           is, directly connected) loop-free alternate.";
+      }
+
+      leaf protected-remote-lfa-routes {
+        type uint32;
+        config false;
+        description
+          "The number of routes that are protected by a remote (that
+           is, indirectly connected) loop-free alternate.";
+      }
+    }
+  }
+
+  grouping lfa-interface-config {
+    container lfa {
+      user-ext:CLI-comm-help "Configure LFA on interface";
+      user-ext:CLI-no-comm-help "Configure LFA on interface";
+      presence "Enable LFA";
+      description
+        "Each entry in this table represents a network interface.";
+      container protection {
+        user-ext:CLI-comm-help "Configure LFA protection for interface";
+        user-ext:CLI-no-comm-help "Configure LFA protection for interface";
+        leaf disable {
+          user-ext:CLI-comm-help "Disable LFA calculation for primary next hops";
+          user-ext:CLI-no-comm-help "Enable LFA calculation for primary next hops";
+          type empty;
+          description
+            "Whether or not LFA calculation should be enabled for
+             primary next hops that use this interface.
+
+             If this field is set to true, then DC-LFA will attempt to
+             compute an LFA for any primary next hop that uses this
+             interface.
+
+             If this field is set to false, then DC-LFA will not
+             compute an LFA for any primary next hop that uses this
+             interface.
+
+             For any interface that is not configured in this table,
+             DC-LFA uses the lfaEntEnable field in the entity table to
+             decide whether or not to compute LFAs.";
+        }
+      }
+
+      leaf exclude {
+        user-ext:CLI-comm-help "Exclude interface from giving LFA protection for other interfaces";
+        user-ext:CLI-no-comm-help "Include interface in giving LFA protection for other interfaces";
+        type empty;
+        description
+          "Whether or not this interface should be excluded from
+           providing LFA protection for other interfaces.
+
+           If this field is set to true, then DC-LFA will not use
+           this interface as an LFA for any primary next hop.
+
+           If this field is set to false, then DC-LFA will include
+           this interface as a candidate for providing LFA protection
+           to any primary next hop.
+
+           For any interface that is not configured in this table,
+           DC-LFA uses the lfaEntExcludeAll field in the entity table
+           to decide whether or not the interface should be a
+           candidate.";
+      }
+    }
+  }
+
+  grouping lfa-database-stats {
+    description
+      "DC-LFA read-only table containing statistics about the LFAs
+       available to the local router, with a separate row per
+       routing protocol-specific database identifier:
+
+       -  If the routing protocol is OSPFv2 or OSPFv3, the
+       protocol-specific database identifier is the OSPF area
+       ID.
+       -  If the routing protocol is IS-IS, the protocol-specific
+       database identifier is the IS-IS level.
+
+       The global statistics in the lfaStatsTable row for a given
+       DC-LFA entity do not necessarily match the sum of the
+       statistics in the different lfaDbStatsTable rows for the
+       same entity:
+
+       -  There may be a route to a given prefix in multiple
+       databases (for example, in both the level 1 and level 2
+       IS-IS databases).  In this case, this prefix will be
+       included once in the set of global statistics, and once
+       in each of the corresponding sets of per-database
+       statistics.
+
+       -  The global unprotected routes counter
+       (lfaStatsUnprotectedRoutes) may include routes that
+       DC-LFA has been asked to protect, but whose destination
+       prefix does not exist in any of the databases provided by
+       the RPM.  In this case, the prefix will not be included
+       in the statistics in any lfaDbStatsTable row.";
+    leaf protocol {
+      type lfa-protocol-t;
+      config false;
+      description
+        "The type of Routing Protocol Manager (RPM) that this
+         routing information was learned from.
+
+         The RPM is one of DC-OSPFv2, DC-OSPFv3, or DC-ISIS.";
+    }
+
+    leaf address-family {
+      type lfa-afi-t;
+      config false;
+      description
+        "The address family for this set of routing information.";
+    }
+
+    leaf database-id {
+      type uint32;
+      config false;
+      description
+        "Protocol-specific database identifier.
+
+         When the Routing Protocol Manager is DC-OSPFv2 or
+         DC-OSPFv3, this is the OSPF area ID.
+
+         When the Routing Protocol Manager is DC-ISIS, this is the
+         IS-IS level (which is either 1 or 2).";
+    }
+
+    leaf total-routes {
+      type uint32;
+      config false;
+      description
+        "For this particular protocol-specific database, this is
+         the total number of routes that this DC-LFA entity has
+         tried to find loop-free alternates for.";
+    }
+
+    leaf unprotected-routes {
+      type uint32;
+      config false;
+      description
+        "For this particular protocol-specific database, this is
+         the number of routes that are not protected by any
+         loop-free alternate or ECMP next hop.";
+    }
+
+    leaf protected-lfa-routes {
+      type uint32;
+      config false;
+      description
+        "For this particular protocol-specific database, this is
+         the number of routes that are protected by a loop-free
+         alternate.";
+    }
+
+    leaf protected-ecmp-routes {
+      type uint32;
+      config false;
+      description
+        "For this particular protocol-specific database, this is
+         the number of routes that are protected by equal-cost
+         multipath next hops.";
+    }
+
+    leaf protected-local-lfa-routes {
+      type uint32;
+      config false;
+      description
+        "For this particular protocol-specific database, this is
+         the number of routes that are protected by a local (that
+         is, directly connected) loop-free alternate.";
+    }
+
+    leaf protected-remote-lfa-routes {
+      type uint32;
+      config false;
+      description
+        "For this particular protocol-specific database, this is
+         the number of routes that are protected by a remote (that
+         is, indirectly connected) loop-free alternate.";
+    }
+  }
+
+  grouping lfa-path-state {
+    description
+      "DC-LFA path table.
+
+       This table contains information about all primary paths that
+       have been considered by DC-LFA.  The information in this
+       table documents the reasons why DC-LFA has, or has not,
+       selected each neighbor as the LFA for each primary path.
+
+       For every primary hext hop that DC-LFA has been asked to
+       provide protection for, there is a row in this table for
+       every other adjacent next hop and every potential remote
+       (indirectly connected) next hop.";
+    leaf prefix {
+      type interfaces:iface-ip-prefix-t;
+      config false;
+      description
+        "The destination Internet address prefix.";
+    }
+
+    leaf primary-nexthop-address {
+      type interfaces:iface-ip-address-t;
+      config false;
+      description
+        "The primary next hop router address.";
+    }
+
+    leaf primary-nexthop-if-index {
+      type meta:ro-if-index-or-zero;
+      config false;
+      description
+        "The index of the local network interface of the primary next
+         hop.";
+    }
+
+    leaf primary-nexthop-if-base-name {
+      type interfaces:iface-base-name;
+      config false;
+      description
+        "The base name of the local network interface of the primary next
+         hop.";
+    }
+
+    leaf primary-nexthop-if-ext-id {
+      type interfaces:iface-ext-id;
+      config false;
+      description
+        "The extended ID of the local network interface of the primary next
+         hop.";
+    }
+
+    leaf candidate-address {
+      type interfaces:iface-ip-address-t;
+      config false;
+      description
+        "The candidate LFA router address.";
+    }
+
+    leaf candidate-if-index {
+      type meta:ro-if-index-or-zero;
+      config false;
+      description
+        "The index of the local network interface of the candidate LFA.
+         An interface of 0 is used for remote candidates which have
+         no tunnel.";
+    }
+
+    leaf candidate-if-base-name {
+      type interfaces:iface-base-name;
+      config false;
+      description
+        "The base name of the local network interface of the candidate LFA.
+         An interface of 0 is used for remote candidates which have
+         no tunnel.";
+    }
+
+    leaf candidate-if-ext-id {
+      type interfaces:iface-ext-id;
+      config false;
+      description
+        "The extended ID of the local network interface of the candidate LFA.
+         An interface of 0 is used for remote candidates which have
+         no tunnel.";
+    }
+
+    leaf attached-router-id {
+      type lfa-router-id-t;
+      config false;
+      description
+        "If this is a remote (indirectly connected) candidate path,
+         the router ID of the directly attached neighbor used to
+         reach the candidate next-hop.
+
+         The length for this field is given in bytes.  It is set to
+         zero length for local (directly attached) candidate paths.";
+    }
+
+    leaf attached-if-index {
+      type meta:ro-if-index-or-zero;
+      config false;
+      description
+        "If this is a remote (indirectly connected) candidate path,
+         the index of the local network interface used to reach the
+         attached neighbor.
+
+         This field is set to zero for local (directly attached)
+         candidate paths.";
+    }
+
+    leaf attached-if-base-name {
+      type interfaces:iface-base-name;
+      config false;
+      description
+        "If this is a remote (indirectly connected) candidate path,
+         the base name of the local network interface used to reach the
+         attached neighbor.
+
+         This field is set to zero for local (directly attached)
+         candidate paths.";
+    }
+
+    leaf attached-if-ext-id {
+      type interfaces:iface-ext-id;
+      config false;
+      description
+        "If this is a remote (indirectly connected) candidate path,
+         the extended ID of the local network interface used to reach the
+         attached neighbor.
+
+         This field is set to zero for local (directly attached)
+         candidate paths.";
+    }
+
+    leaf providing-protection {
+      type boolean;
+      config false;
+      description
+        "If this candidate is providing LFA protection to the
+         primary path, then this field is set to true.
+         Otherwise, it is set to false.";
+    }
+
+    leaf reason {
+      type lfa-reason-t;
+      config false;
+      description
+        "The reason for the decision that DC-LFA has taken for this
+         candidate.  If lfaPathProvidingProtection is true, this is
+         set to lfaRsnBestCandidate.  Otherwise, it gives the
+         reason why the candidate was rejected.
+
+         The other path properties given in this row contain the
+         detailed data that DC-LFA used when reaching this
+         decision.";
+    }
+
+    leaf primary-excluded {
+      type boolean;
+      config false;
+      description
+        "Whether or not this primary path is excluded from being
+         protected by an LFA because of a policy.";
+    }
+
+    leaf candidate-excluded {
+      type boolean;
+      config false;
+      description
+        "Whether or not this candidate is excluded from being an
+         LFA because of a policy.
+
+         If lfaPathRemoteLfa is true, the policy used is a
+         combination of the policy applied to the
+         lfaPathCandIfIndex and the lfaPathAttachedIfIndex.";
+    }
+
+    leaf loop-free {
+      type boolean;
+      config false;
+      description
+        "Whether or not this candidate is loop-free for this
+         destination.";
+    }
+
+    leaf overloaded {
+      type boolean;
+      config false;
+      description
+        "Whether or not this candidate is a path via an overloaded
+         neighbor router.";
+    }
+
+    leaf primary {
+      type boolean;
+      config false;
+      description
+        "Whether or not this candidate is a primary path.  Primary
+         paths are least-cost paths via non-overloaded next hops.";
+    }
+
+    leaf remote-lfa {
+      type boolean;
+      config false;
+      description
+        "Whether or not this candidate is a remote (indirectly
+         attached) LFA path.";
+    }
+
+    leaf metric {
+      type uint32;
+      config false;
+      description
+        "For a local (directly attached) LFA, the total IGP metric
+         of this path.
+
+         If lfaPathRemoteLfa is True then the path is indirectly
+         attached and this is the tunnel metric to reach the remote
+         LFA hop.";
+    }
+
+    leaf node-protecting {
+      type boolean;
+      config false;
+      description
+        "Whether or not this path protects against the failure of
+         the next-hop router.";
+    }
+
+    leaf router-id {
+      type lfa-router-id-t;
+      config false;
+      description
+        "The router ID of the next hop router on this path.
+
+         The length for this field is given in bytes.";
+    }
+  }
+
+  grouping lfa-global-state {
+    description
+      "Global LFA state.";
+    container lfa-database-stats-list {
+      config false;
+      description
+        "Container to hold LFA Database Statistics.";
+      list lfa-database-stats {
+        description
+          "LFA Database Statistics.";
+        uses lfa-database-stats;
+      }
+    }
+
+    container lfa-path-list {
+      config false;
+      description
+        "Container to hold LFA Path Table.";
+      list lfa-path {
+        description
+          "DC-LFA path table.";
+        uses lfa-path-state;
+      }
+    }
+  }
+}

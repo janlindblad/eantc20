@@ -1,0 +1,370 @@
+module adva-dnos-pm {
+  namespace "http://www.advaoptical.com/cim/adva-dnos-pm";
+  prefix pm;
+
+  import adva-dnos-types {
+    prefix adva-types;
+  }
+
+  import adva-dnos-extensions {
+    prefix adva-ext;
+  }
+
+  import openconfig-yang-types {
+    prefix oc-yang;
+  }
+
+  import openconfig-interfaces {
+    prefix oc-if;
+  }
+
+  organization
+    "Adva Optical Networking";
+  contact
+    "For technical support, please contact your service channel";
+  description
+    "Definitions for Performance Monitor commands.";
+
+  revision 2019-07-31 {
+    description
+      "Integrating to ADVA YANG models.";
+  }
+  revision 2016-02-03 {
+    description
+      "Eighth draft version.";
+  }
+
+  grouping counters-data {
+    container counters-pm-data {
+      description
+        "All counters for interface";
+      list counter-values {
+        key "counter-name interval";
+        leaf counter-name {
+          type string;
+          description
+            "Counter name.";
+        }
+
+        leaf interval {
+          type int8;
+        }
+
+        leaf title {
+          type string;
+          description
+            "Counter title.";
+        }
+
+        leaf value {
+          type oc-yang:counter64;
+          description
+            "Value of single counter";
+        }
+
+        leaf first-time-stamp {
+          type uint64;
+        }
+
+        leaf last-time-stamp {
+          type uint64;
+        }
+      }
+    }
+  }
+
+  grouping counter-access-oam {
+    leaf if-name {
+      type leafref {
+        path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+      }
+      mandatory true;
+      description
+        "Interface name - could be port or trunk name";
+    }
+
+    leaf md-level {
+      type adva-types:oam-md-level;
+      mandatory true;
+    }
+
+    leaf md-name {
+      type adva-types:oam-md-name;
+      mandatory true;
+      description
+        "Maintenance Domain";
+    }
+
+    leaf ma-name {
+      type adva-types:oam-ma-name;
+      mandatory true;
+      description
+        "Maintenance Association";
+    }
+
+    leaf rmep-id {
+      type adva-types:oam-mep-id;
+      description
+        "Mandatory only when destination-type value is 'rmep'";
+    }
+
+    leaf test-name {
+      type string {
+        length "1 .. 20";
+      }
+    }
+  }
+
+  grouping counter-access-any {
+    leaf if-name {
+      type leafref {
+        path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+      }
+      mandatory true;
+      description
+        "Interface name - could be port or trunk name";
+    }
+
+    leaf counter-name {
+      type string;
+      description
+        "Counter name.";
+    }
+  }
+
+  grouping history-interval {
+    leaf history-type {
+      type enumeration {
+        enum "MIN15" {
+          value 0;
+          description
+            "History with 15 minutes interval";
+        }
+        enum "HOUR24" {
+          value 1;
+          description
+            "History with 24 hours interval";
+        }
+      }
+    }
+
+    leaf interval-number {
+      adva-ext:agema-default "0";
+      type uint32 {
+        range "0 .. 96";
+      }
+      description
+        "Number of history interval. For 15 min. history 0-last (default), <1-96>-additional. For 24 hours history <0-1>, default(0) - current day.";
+    }
+
+    leaf all {
+      type empty;
+      description
+        "Get history data for all intervals";
+    }
+
+    leaf from-time-stamp {
+      type uint64;
+      description
+        "Time stamp for getting history data from";
+    }
+
+    leaf till-time-stamp {
+      adva-ext:agema-default "0";
+      type uint64;
+      description
+        "Time stamp for getting history data till. 0-till current time (default)";
+    }
+  }
+
+  container pm_objects {
+    container config-pm {
+      leaf enable {
+        adva-ext:agema-default "false";
+        type boolean;
+        description
+          "PM mode for OPX-device.";
+      }
+    }
+  }
+
+  rpc pm-on-demand {
+    description
+      "Manage on-demand counters for the interface";
+    input {
+      uses counter-access-any;
+
+      leaf cmd {
+        type enumeration {
+          enum "START" {
+            value 1;
+            description
+              "Start on-demand collection";
+          }
+          enum "SUSPEND" {
+            value 2;
+            description
+              "Suspend on-demand collection";
+          }
+          enum "RESUME" {
+            value 3;
+            description
+              "Resume on-demand collection";
+          }
+          enum "STOP" {
+            value 4;
+            description
+              "Stop on-demand collection";
+          }
+          enum "RESET" {
+            value 5;
+            description
+              "Reset on-demand statistics";
+          }
+          enum "REMOVE" {
+            value 6;
+            description
+              "Remove on-demand statistics";
+          }
+        }
+        description
+          "PM on-demand status for this counter on this port.";
+      }
+
+      leaf monitoring-interval {
+        adva-ext:agema-default "0";
+        type int32;
+        description
+          "Monitoring time in seconds - default forever.";
+      }
+    }
+
+    output {
+      leaf status {
+        type string;
+      }
+    }
+  }
+
+  rpc pm-show-current-oam {
+    description
+      "Show current PM statistics for done interface";
+    input {
+      uses counter-access-oam;
+    }
+
+    output {
+      uses counters-data;
+    }
+  }
+
+  rpc pm-show-current-any {
+    description
+      "Show current PM statistics for done interface";
+    input {
+      uses counter-access-any;
+    }
+
+    output {
+      uses counters-data;
+    }
+  }
+
+  rpc pm-show-on-demand-oam {
+    description
+      "Show on-demand collected PM statistics for done interface";
+    input {
+      uses counter-access-oam;
+    }
+
+    output {
+      uses counters-data;
+    }
+  }
+
+  rpc pm-show-on-demand-any {
+    description
+      "Show on-demand collected PM statistics for done interface";
+    input {
+      uses counter-access-any;
+    }
+
+    output {
+      uses counters-data;
+    }
+  }
+
+  rpc pm-show-history-oam {
+    description
+      "Show history of collected PM statistics for done interface";
+    input {
+      uses counter-access-oam;
+
+      uses history-interval;
+
+      leaf counter-name {
+        type string;
+        description
+          "Counter name.";
+      }
+    }
+
+    output {
+      uses counters-data;
+    }
+  }
+
+  rpc pm-show-history-any {
+    description
+      "Show history of collected PM statistics for done interface";
+    input {
+      uses counter-access-any;
+
+      uses history-interval;
+    }
+
+    output {
+      uses counters-data;
+    }
+  }
+
+  rpc pm-clear-history-oam {
+    description
+      "Clear history of collected PM statistics for done interface";
+    input {
+      uses counter-access-oam;
+
+      leaf test-type {
+        type adva-types:oam-measurement-type;
+        description
+          "Test type";
+      }
+
+      leaf counter-name {
+        type string;
+        description
+          "Counter name.";
+      }
+    }
+
+    output {
+      leaf status {
+        type string;
+      }
+    }
+  }
+
+  rpc pm-clear-history-any {
+    description
+      "Clear history of collected PM statistics for done interface";
+    input {
+      uses counter-access-any;
+    }
+
+    output {
+      leaf status {
+        type string;
+      }
+    }
+  }
+}

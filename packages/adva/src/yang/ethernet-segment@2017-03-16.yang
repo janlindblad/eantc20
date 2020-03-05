@@ -1,0 +1,298 @@
+module ethernet-segment {
+  namespace "http://metaswitch.com/yang/nbu/ethernet-segment/201703160000Z";
+  prefix ethernet-segment;
+
+  import user-extensions {
+    prefix user-ext;
+  }
+
+  import interfaces {
+    prefix interfaces;
+  }
+
+  import metaswitch-yang-types {
+    prefix meta;
+  }
+
+  import metaswitch-custom-yang-types {
+    prefix custom;
+  }
+
+  organization
+    "Metaswitch Networks";
+  contact
+    "Postal: Metaswitch Networks
+             100 Church Street
+             Enfield
+             EN2 6BQ
+             United Kingdom
+     Tel:    +44 20 8366 1177
+     E-mail: info@metaswitch.com";
+  description
+    "EVPN Ethernet Segments";
+
+  revision 2017-03-16 {
+    description
+      "Initial revision.";
+  }
+
+  typedef evpn-status-t {
+    type enumeration {
+      enum "up" {
+        description
+          "Status is up";
+      }
+      enum "down" {
+        description
+          "Status is down";
+      }
+    }
+    description
+      "Status values";
+  }
+
+  typedef esi-t {
+    type string {
+      pattern "([0-9a-fA-F]{2})(:[0-9a-fA-F]{2}){9}";
+    }
+    description
+      "Ethernet Segment Identifier";
+  }
+
+  typedef election-wait-time-t {
+    type uint32 {
+      range "0..3600";
+    }
+    description
+      "(0..3600)";
+  }
+
+  grouping bgp-params {
+    description
+      "BGP parameters";
+    leaf rd {
+      user-ext:CLI-comm-help "Set the Route Distinguisher";
+      user-ext:CLI-no-comm-help "Use default Route Distinguisher";
+      user-ext:CLI-param-help "Set the Route Distinguisher";
+      type meta:bgp-route-distinguisher;
+      description
+        "The configured route distinguisher for this EVI";
+    }
+
+    leaf rt {
+      user-ext:CLI-comm-help "Set the Route Target";
+      user-ext:CLI-no-comm-help "Use default Route Target";
+      user-ext:CLI-param-help "Set the Route Target";
+      type meta:route-target-value-t;
+      description
+        "The route target for this EVPN instance";
+    }
+  }
+
+  grouping ethernet-segment-config {
+    description
+      "Ethernet segment configuration";
+    container evpn-ethernet-segment {
+      user-ext:CLI-comm-help "Configure an EVPN Ethernet Segment";
+      user-ext:CLI-no-comm-help "Remove an EVPN Ethernet Segment";
+      must "(single-homed-mode) or (all-active-mode)" {
+        error-message
+          "Multi-homing mode must be specified";
+      }
+      description
+        "Ethernet segment configuration";
+      leaf esi {
+        user-ext:CLI-comm-help "Set the Ethernet Segment Identifier";
+        user-ext:CLI-no-comm-help "Remove the Ethernet Segment Identifier";
+        user-ext:CLI-param-help "Set the Ethernet Segment Identifier";
+        type esi-t;
+        description
+          "Ethernet segment identifier (ESI)";
+      }
+
+      choice active-mode {
+        description
+          "Choice of multi-homing mode";
+        case single-homed {
+          leaf single-homed-mode {
+            user-ext:CLI-comm-help "Force single-homed";
+            user-ext:CLI-no-comm-help "Reset multi-homed mode to default";
+            type empty;
+            description
+              "single-homed-mode";
+          }
+        }
+
+        case all-active {
+          leaf all-active-mode {
+            user-ext:CLI-comm-help "Enable all-active multi-homing";
+            user-ext:CLI-no-comm-help "Reset multi-homed mode to default";
+            type empty;
+            description
+              "all-active-mode";
+          }
+        }
+      }
+
+      container bgp {
+        user-ext:CLI-comm-help "Configure BGP parameters";
+        user-ext:CLI-no-comm-help "Remove BGP parameter configuration";
+        description
+          "BGP parameters";
+        uses bgp-params;
+      }
+
+      container df-election {
+        user-ext:CLI-comm-help "Configure DF election parameters";
+        user-ext:CLI-no-comm-help "Remove DF election configuration";
+        description
+          "df-election";
+        leaf wait-time {
+          user-ext:CLI-comm-help "Set the DF election wait time";
+          user-ext:CLI-no-comm-help "Reset DF election wait time to default";
+          user-ext:CLI-param-help "Set the DF election wait time";
+          type election-wait-time-t;
+          units "seconds";
+          default "3";
+          description
+            "DF election wait time";
+        }
+      }
+    }
+  }
+
+  grouping ethernet-segment-state {
+    description
+      "Ethernet segment operational state";
+    container evpn-ethernet-segment-state {
+      config false;
+      description
+        "Ethernet segment operational state";
+      leaf status {
+        type evpn-status-t;
+        description
+          "Ethernet Segment status";
+      }
+
+      leaf interface-status {
+        type evpn-status-t;
+        description
+          "Interface status";
+      }
+
+      leaf esi {
+        type esi-t;
+        description
+          "Ethernet segment identifier (ESI)";
+      }
+
+      leaf active-mode {
+        type string;
+        description
+          "Single-homed-mode/all-active-mode";
+      }
+
+      container bgp {
+        config false;
+        description
+          "BGP parameters";
+        uses bgp-params;
+      }
+
+      container df-election {
+        config false;
+        description
+          "DF election parameters";
+        leaf wait-time {
+          type election-wait-time-t;
+          description
+            "DF election wait time";
+        }
+      }
+
+      container member-list {
+        config false;
+        description
+          "Members of the Ethernet Segment";
+        list member {
+          description
+            "Member of the Ethernet Segment";
+          leaf ip-address {
+            type interfaces:iface-ip-address-t;
+            description
+              "IP address of an ES member";
+          }
+        }
+      }
+
+      container df-list {
+        config false;
+        description
+          "Ethernet Segment Designated Forwarder list";
+        list df {
+          config false;
+          description
+            "Ethernet Segment Designated Forwarder on a VLAN";
+          leaf vlan {
+            type uint32;
+            description
+              "VLAN identifier";
+          }
+
+          leaf ip-address {
+            type interfaces:iface-ip-address-t;
+            description
+              "Designated forwarder IP address";
+          }
+        }
+      }
+    }
+  }
+
+  container ethernet-segment {
+    user-ext:CLI-not-command;
+    description
+      "Ethernet Segments";
+    container interfaces {
+      user-ext:CLI-not-command;
+      description
+        "Ethernet Segment configuration";
+      list interface {
+        user-ext:CLI-comm-help "Configure interface as EVPN Ethernet Segment";
+        user-ext:CLI-no-comm-help "Remove EVPN Ethernet Segment configuration";
+        if-feature "interfaces:standard-interfaces";
+        key "if-name";
+        description
+          "EVPN Ethernet Segment configuration.";
+        leaf if-name {
+          user-ext:CLI-comm-help "Interface name";
+          user-ext:CLI-param-help "Interface name";
+          type custom:iface-name;
+          description
+            "A unique identifier identifying the interface.";
+        }
+
+        uses ethernet-segment-config;
+      }
+    }
+
+    container interface-state {
+      user-ext:CLI-not-command;
+      config false;
+      description
+        "Ethernet Segment state";
+      list interface {
+        if-feature "interfaces:standard-interfaces";
+        description
+          "Per-interface EVPN configuration and state.";
+        leaf if-name {
+          type interfaces:iface-name;
+          description
+            "A unique identifier identifying the interface.";
+        }
+
+        uses ethernet-segment-state;
+      }
+    }
+  }
+}
