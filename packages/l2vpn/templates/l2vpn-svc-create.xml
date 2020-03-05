@@ -4,6 +4,36 @@
    <name>{$DEVICE}</name>
     <config>
 
+      <!-- NOKIA -->
+      <configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf">
+        <service>
+          <epipe>
+            <service-name>{$VPN_NAME}</service-name>
+            <service-id>{$PW_ID}</service-id>
+            <customer>1</customer>
+            <admin-state>enable</admin-state>
+            <spoke-sdp>
+              <sdp-bind-id>{$PW_ID}:{$PW_ID}</sdp-bind-id>
+              <admin-state>enable</admin-state>
+            </spoke-sdp>
+            <sap>
+              <sap-id>{$PHYS_INTERFACE}:{$VPN_NAME}</sap-id>
+              <admin-state>enable</admin-state>
+            </sap>
+          </epipe>
+          <sdp>
+            <sdp-id>{$PW_ID}</sdp-id>
+            <admin-state>enable</admin-state>
+            <delivery-type>mpls</delivery-type>
+            <ldp>true</ldp>
+            <far-end>
+              <ip-address>{$REM_ROUTER_ID}</ip-address>
+            </far-end>
+          </sdp>
+        </service>
+      </configure>
+      <!-- NOKIA -->
+
       <!-- ERICSSON -->
       <!--?ned-id eri0-nc-1.0:eri0-nc-1.0?>
       <contexts xmlns="urn:rdns:com:ericsson:oammodel:ericsson-contexts-router6000" tags="merge">
