@@ -73,6 +73,34 @@
       </configure>
       <!-- END NOKIA -->
 
+      <!-- JUNIPER -->
+      <?elif-ned-id juniper-junos-19_4R1_10-nc-1.0:juniper-junos-19_4R1_10-nc-1.0?>
+      <configuration xmlns="http://yang.juniper.net/junos/conf/root" tags="merge">
+        <routing-instances xmlns="http://yang.juniper.net/junos/conf/routing-instances">
+          <instance>
+            <name>{$SERVICE_NAME}-{$EVI}</name>
+            <vtep-source-interface>
+              <interface-name>lo0.0</interface-name>
+            </vtep-source-interface>
+            <instance-type>evpn</instance-type>
+            <vlan-id>none</vlan-id>
+            <interface>
+              <name>{$CE_INTERFACE}</name>
+            </interface>
+            <route-distinguisher>
+              <rd-type>{$RD_IPV4}:{$EVI}</rd-type>
+            </route-distinguisher>
+            <vrf-target>
+              <community>target:65000:{$EVI}</community>
+            </vrf-target>
+            <protocols>
+              <evpn/>
+            </protocols>
+          </instance>
+        </routing-instances>
+      </configuration>
+      <!-- END JUNIPER -->
+
       <!-- ARRCUS -->
       <?elif-ned-id arcos-evpn-services-nc-1_0-nc-1.0:arcos-evpn-services-nc-1_0-nc-1.0?>
       <network-instances xmlns="http://openconfig.net/yang/network-instance" tags="merge">

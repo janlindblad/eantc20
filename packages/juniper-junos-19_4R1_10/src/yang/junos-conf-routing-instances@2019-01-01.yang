@@ -6613,7 +6613,7 @@
          description "VPLS configuration";
          uses juniper-protocols-l2vpn;
        }
-       container evpn {
+       container evpn { presence "evpn mode"; // JLINDBLA
          description "EVPN configuration";
          uses juniper-protocols-l2vpn;
        }
