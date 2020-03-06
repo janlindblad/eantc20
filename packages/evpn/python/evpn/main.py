@@ -1,126 +1,79 @@
 # -*- mode: python; python-indent: 4 -*-
 import ncs
 from ncs.application import Service
+from hashlib import md5
+from functools import reduce
 
-# service=root.l2vpn_svc__l2vpn_svc.sites.site["berlin"]
-# acc2=service.site_network_accesses.site_network_access["acc-2"]
-# acc2.ip_connection.ipv4.addresses
+def get_hash(s, minval=1000, maxval = 10000):
+    m = md5()
+    m.update(s.encode())
+    return reduce(lambda a,v: a*256+v, m.digest()[:4], 0) % (maxval-minval) + minval
 
 # ----------------
 # SERVICE CALLBACK
 # ----------------
 class ServiceCallbacks(Service):
-
-    def get_others(self, root, our_site, our_vpn_id):
-        others = []
-        for site in root.l2vpn_svc__l2vpn_svc.sites.site:
-            if site == our_site:
-                continue
-            for pol in site.vpn_policies.vpn_policy:
-                for ent in pol.entries:
-                    for vpn in ent.vpn: 
-                        if vpn.vpn_id == our_vpn_id:
-                            self.log.info('otherside site: ', site.site_id)
-                            others += [site]
-        return others
-
     @Service.create
     def cb_create(self, tctx, root, service, proplist):
+        self.log.info('<=== Service create(service=', service._path, ')')
+        try:
+            self.log.info(':::: name ', service.name, ': ', service.a, ' to ', service.z)
+            svcid = service.name+service.a+service.z
+            vni = get_hash(svcid, 1, 100)
+            self.log.info(':::: vni ', vni)
 
-        self.log.info('Service create(service=', service._path, ')')
+            # COMMON
+            template = ncs.template.Template(service)
+            vars = ncs.template.Variables()
+            vars.add('SERVICE_NAME',  service.name)
+            vars.add('VNI',           vni)
+            vars.add('EVI',           get_hash(svcid))
+            vars.add('RT',            get_hash(svcid, 1, 99))
 
-        self.log.info('site ', service.site_id)
-        for site_network_access in service.site_network_accesses.site_network_access:
-            self.log.info('site-acc: ', site_network_access.network_access_id)
-            pol_id = site_network_access.vpn_attachment.vpn_policy_id
-            device_name = site_network_access.device_reference
-            self.log.info('device: ', device_name)
-            for pol_entry in service.vpn_policies.vpn_policy[pol_id].entries:
-                self.log.info('policy: ', pol_entry.id)
-                for vpn in pol_entry.vpn:
-                    vpn_name = vpn.vpn_id
-                    self.log.info('vpn: ', vpn_name)
-                    topo_this = root.topo_l2__topo_l2[vpn_name,device_name]
-                    interface_name = topo_this.interface
-                    self.log.info('device_name: ', device_name)
-                    self.log.info('interface: ', interface_name)
+            # PREPARE A-SIDE
+            vars.add('DEVICE',        root.evpn__evpn.sites.site[service.a].device)
+            vars.add('CE_INTERFACE',  root.evpn__evpn.sites.site[service.a].interface)
 
-                    for other in self.get_others(root, service, vpn_name):
-                        self.log.info('otherside sites2: ', other.site_id)
-                        for other_site_network_access in other.site_network_accesses.site_network_access:
-                            self.log.info('other-site-acc: ', other_site_network_access.network_access_id)
-                            other_pol_id = other_site_network_access.vpn_attachment.vpn_policy_id
-                            other_device_name = other_site_network_access.device_reference
-                            other_device = root.topo_l2__topo_l2[vpn_name,other_device_name]
+            # INSTANTIATE A-SIDE
+            self.log.info('AAAA apply a-side: ', vars)
+            template.apply('evpn-template', vars)
 
-                            vars = ncs.template.Variables()
-                            vars.add('DEVICE',        device_name)
-                            vars.add('PHYS_INTERFACE',interface_name) 
-                            vars.add('VPN_NAME',      vpn_name)
-                            vars.add('REM_ROUTER_ID', other_device.router_id)
-                            vars.add('PW_ID',         50)
+            # PREPARE Z-SIDE
+            vars.add('DEVICE',        root.evpn__evpn.sites.site[service.z].device)
+            vars.add('CE_INTERFACE',  root.evpn__evpn.sites.site[service.z].interface)
 
-                            template = ncs.template.Template(service)
-                            template.apply('l2vpn-svc-create', vars)
+            # INSTANTIATE Z-SIDE
+            self.log.info('ZZZZ apply z-side: ', vars)
+            template.apply('evpn-template', vars)
 
-        self.log.info('Service create done.')
+        except Exception as ex:
+            self.log.error('XXXX Exception: ', ex)
 
-    def cb_create_18(self, tctx, root, service, proplist):
-        self.log.info('Service create(service=', service._path, ')')
-
-        self.log.info('site ', service.site_id)
-        for site_network_access in service.site_network_accesses.site_network_access:
-            self.log.info('site-acc: ', site_network_access.network_access_id)
-            pol_id = site_network_access.vpn_attachment.vpn_policy_id
-            device_name = site_network_access.device_reference
-            self.log.info('device: ', device_name)
-            for pol_entry in service.vpn_policies.vpn_policy[pol_id].entries:
-                self.log.info('policy: ', pol_entry.id)
-                for vpn in pol_entry.vpn:
-                    vpn_name = vpn.vpn_id
-                    self.log.info('vpn: ', vpn_name)
-
-                    interface_name         = root.topo_l2__topo_l2[vpn_name,device_name].interface
-                    locator_name           = root.topo_l2__topo_l2[vpn_name,device_name].locator
-
-                    for other in self.get_others(root, service, vpn_name):
-                        self.log.info('otherside sites2: ', other.site_id)
-                        for other_site_network_access in other.site_network_accesses.site_network_access:
-                            self.log.info('other-site-acc: ', other_site_network_access.network_access_id)
-                            other_pol_id = other_site_network_access.vpn_attachment.vpn_policy_id
-                            other_device_name = other_site_network_access.device_reference
-                            other_locator_name = root.topo_l2__topo_l2[vpn_name,other_device_name].locator
-
-                            vars = ncs.template.Variables()
-                            vars.add('DEVICE',       device_name)
-                            vars.add('INTERFACE',    interface_name) 
-                            vars.add('VPN_NAME',     vpn_name)
-
-                            #UTSTARCOM
-                            vars.add('SP_VLAN_ID',        "1001")
-                            vars.add('INTERFACE_NAME',    "eth1.1.444")
-                            vars.add('LOCATOR',           locator_name)
-                            vars.add('OTHERSIDE_LOCATOR', other_locator_name)
-                            vars.add('PHY_INTF',          '\\\\\\interface=536873984')
-                            vars.add('VPN_ID',            "111")
-                            vars.add('VRF',               "111")
-
-                            #ZTE
-                            #vars.add('OTHERSIDE_IP', "100.0.0.125")
-                            #xgei-0/0/1/9 INTERFACE
-                            #100.0.0.125 OTHERSIDE_IP
-
-                            template = ncs.template.Template(service)
-                            template.apply('l2vpn-svc-create', vars)
-
-        self.log.info('Service create done.')
+        self.log.info('===> Service create done.')
 
 # ---------------------------------------------
 # COMPONENT THREAD THAT WILL BE STARTED BY NCS.
 # ---------------------------------------------
 class Main(ncs.application.Application):
     def setup(self):
+        # The application class sets up logging for us. It is accessible
+        # through 'self.log' and is a ncs.log.Log instance.
         self.log.info('Main RUNNING')
-        self.register_service('l2vpn-servicepoint', ServiceCallbacks)
+
+        # Service callbacks require a registration for a 'service point',
+        # as specified in the corresponding data model.
+        #
+        self.register_service('evpn-servicepoint', ServiceCallbacks)
+
+        # If we registered any callback(s) above, the Application class
+        # took care of creating a daemon (related to the service/action point).
+
+        # When this setup method is finished, all registrations are
+        # considered done and the application is 'started'.
+
     def teardown(self):
+        # When the application is finished (which would happen if NCS went
+        # down, packages were reloaded or some error occurred) this teardown
+        # method will be called.
+
         self.log.info('Main FINISHED')

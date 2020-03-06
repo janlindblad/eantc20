@@ -3,6 +3,68 @@ module evpn {
   namespace "http://example.com/eantc20/evpn";
   prefix evpn;
 
-  
+  import ietf-inet-types {
+    prefix inet;
+  }
+  import ietf-yang-types {
+    prefix yang;
+  }
+  import ietf-netconf-acm {
+    prefix nacm;
+  } 
+  import tailf-ncs { 
+    prefix ncs; 
+  }
 
+  container evpn {
+    container sites {
+      list site {
+        key name;
+        leaf name {
+          type string;
+        }
+        leaf ipv4-address {
+          type inet:ipv4-address;
+        }
+        leaf ipv6-address {
+          type inet:ipv6-address;
+        }
+        must "ipv4-address or ipv6-address";
+
+        leaf device {
+          type leafref {
+            path /ncs:devices/ncs:device/ncs:name;
+          }
+        }
+        leaf interface {
+          type string;
+        }
+      }
+    }
+    container connections {
+      list connection {
+        key name;
+        leaf name {
+          type string;
+        }
+
+        uses ncs:service-data; 
+        ncs:servicepoint evpn-servicepoint;
+
+        leaf a {
+          mandatory true;
+          type leafref {
+            path /evpn/sites/site/name;
+          }
+        }
+        leaf z {
+          mandatory true;
+          type leafref {
+            path /evpn/sites/site/name;
+          }
+        }
+        must "not(a = z)";
+      }
+    }
+  }
 }

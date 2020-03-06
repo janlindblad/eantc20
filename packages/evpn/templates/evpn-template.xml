@@ -1,0 +1,170 @@
+<config-template xmlns="http://tail-f.com/ns/config/1.0">
+ <devices xmlns="http://tail-f.com/ns/ncs">
+  <device tags="nocreate">
+   <name>{$DEVICE}</name>
+   <config>
+
+      <!-- METASWITCH -->
+      <?if-ned-id meta_130-nc-1.0:meta_130-nc-1.0?>
+      <evpn xmlns="http://metaswitch.com/yang/nbu/evpn/201703150000Z" tags="merge">
+        <instance>
+          <evi-name>{$SERVICE_NAME}_{$EVI}<!--{ "ALLOC evi1"}--></evi-name>
+          <evi>{$EVI}<!--{"1 ALLOC uniq"}--></evi>
+          <vpn-target>
+            <route-target>{$RT}:1<!--{"ALLOC same on both sides 40:1"}--></route-target>
+            <route-target-type>both</route-target-type>
+          </vpn-target>
+          <vxlan/>
+          <bridge-domain>
+            <vxlan-config>
+              <vni>{$VNI}"ALLOC same on both sides 1"}</vni>
+            </vxlan-config>
+            <interfaces>
+              <interface>
+                <if-name>{$CE_INTERFACE}<!--"TOPO spirent CE eth4"}--></if-name>
+              </interface>
+            </interfaces>
+          </bridge-domain>
+          <auto-rt-type>
+            <none/>
+          </auto-rt-type>
+        </instance>
+      </evpn>
+      <interfaces xmlns="http://metaswitch.com/yang/nbu/interface/201709270000Z" tags="merge">
+        <interface>
+          <name>{$CE_INTERFACE}</name>
+          <forwarding-mode>layer-2-forwarding</forwarding-mode>
+        </interface>
+      </interfaces>
+      <!-- END METASWITCH -->
+
+      <!-- NOKIA -->
+      <?elif-ned-id nokia_sros_20_2_r1-nc-1.0:nokia_sros_20_2_r1-nc-1.0?>
+      <configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf" tags="merge">
+        <service>
+          <vpls>
+            <service-name>{$SERVICE_NAME}{$EVI}<!--{"OPER netconf-test-4-7"}--></service-name>
+            <service-id>{$EVI}<!--"ALLOC match below 4047"}--></service-id>
+            <customer>1</customer>
+            <admin-state>enable</admin-state>
+            <bgp>
+              <bgp-instance>1</bgp-instance>
+              <route-target>
+                <export>target:65000:{$EVI}<!--"ALLOC as above 4047"}--></export>
+                <import>target:65000:{$EVI}<!--"AS above 4047"}--></import>
+              </route-target>
+            </bgp>
+            <bgp-evpn>
+              <evi>{$EVI}<!--"ALLOC match other side 4047"}--></evi>
+              <mpls>
+                <bgp-instance>1</bgp-instance>
+                <admin-state>enable</admin-state>
+                <auto-bind-tunnel>
+                  <resolution>any</resolution>
+                </auto-bind-tunnel>
+              </mpls>
+            </bgp-evpn>
+            <sap>
+              <sap-id>{$CE_INTERFACE}:{$VNI}<!--"TOPO spirent CE esat-2/1/10: ALLOC vlan uniq 7"}--></sap-id>
+              <admin-state>enable</admin-state>
+            </sap>
+          </vpls>
+        </service>
+      </configure>
+      <!-- END NOKIA -->
+
+      <!-- ARRCUS -->
+      <?elif-ned-id arcos-evpn-services-nc-1_0-nc-1.0:arcos-evpn-services-nc-1_0-nc-1.0?>
+      <network-instances xmlns="http://openconfig.net/yang/network-instance" tags="merge">
+        <network-instance>
+          <name>{$SERVICE_NAME}_{$EVI}<!--Tenant-A--></name>
+          <config>
+            <name>{$SERVICE_NAME}_{$EVI}<!--Tenant-A--></name>
+            <type xmlns:oc-ni-types="http://openconfig.net/yang/network-instance-types">oc-ni-types:L3VRF</type>
+          </config>
+          <table-connections>
+            <table-connection>
+              <src-protocol xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:DIRECTLY_CONNECTED</src-protocol>
+              <dst-protocol xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:BGP</dst-protocol>
+              <address-family xmlns:oc-types="http://openconfig.net/yang/openconfig-types">oc-types:IPV4</address-family>
+              <config>
+                <src-protocol xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:DIRECTLY_CONNECTED</src-protocol>
+                <address-family xmlns:oc-types="http://openconfig.net/yang/openconfig-types">oc-types:IPV4</address-family>
+                <dst-protocol xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:BGP</dst-protocol>
+              </config>
+            </table-connection>
+          </table-connections>
+          <interfaces>
+            <interface>
+              <id>{$CE_INTERFACE}<!--vlan22--></id>
+              <config>
+                <id>{$CE_INTERFACE}<!--vlan22--></id>
+                <interface>{$CE_INTERFACE}<!--vlan22--></interface>
+                <subinterface>0</subinterface>
+              </config>
+            </interface>
+          </interfaces>
+          <protocols>
+            <protocol>
+              <identifier xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:BGP</identifier>
+              <name>{$SERVICE_NAME}_{$EVI}<!--Tenant-A--></name>
+              <config>
+                <identifier xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:BGP</identifier>
+                <name>{$SERVICE_NAME}_{$EVI}<!--Tenant-A--></name>
+              </config>
+              <bgp>
+                <global>
+                  <config>
+                    <route-distinguisher xmlns="http://yang.arrcus.com/arcos/openconfig/bgp/augments">100.0.0.22:10</route-distinguisher>
+                  </config>
+                  <afi-safis>
+                    <afi-safi>
+                      <afi-safi-name xmlns:oc-bgp-types="http://openconfig.net/yang/bgp-types">oc-bgp-types:IPV4_UNICAST</afi-safi-name>
+                      <config>
+                        <afi-safi-name xmlns:oc-bgp-types="http://openconfig.net/yang/bgp-types">oc-bgp-types:IPV4_UNICAST</afi-safi-name>
+                      </config>
+                      <rt-afi-safis xmlns="http://yang.arrcus.com/arcos/openconfig/bgp/augments">
+                        <rt-afi-safi>
+                          <rt-afi-safi-name xmlns:oc-bgp-types="http://openconfig.net/yang/bgp-types">oc-bgp-types:L2VPN_EVPN</rt-afi-safi-name>
+                          <config>
+                            <rt-afi-safi-name xmlns:oc-bgp-types="http://openconfig.net/yang/bgp-types">oc-bgp-types:L2VPN_EVPN</rt-afi-safi-name>
+                          </config>
+                          <route-targets>
+                            <route-target>
+                              <route-target>1000:{$VNI}<!--1000--></route-target>
+                              <route-target-type>import</route-target-type>
+                              <config>
+                                <route-target>1000:{$VNI}<!--1000--></route-target>
+                                <route-target-type>import</route-target-type>
+                              </config>
+                            </route-target>
+                            <route-target>
+                              <route-target>1000:{$VNI}<!--1000--></route-target>
+                              <route-target-type>export</route-target-type>
+                              <config>
+                                <route-target>1000:{$VNI}<!--1000--></route-target>
+                                <route-target-type>export</route-target-type>
+                              </config>
+                            </route-target>
+                          </route-targets>
+                        </rt-afi-safi>
+                      </rt-afi-safis>
+                    </afi-safi>
+                  </afi-safis>
+                </global>
+              </bgp>
+            </protocol>
+          </protocols>
+          <vni xmlns="http://yang.arrcus.com/arcos/vxlan">
+            <vni-id>{$VNI}!<!--1000--></vni-id>
+            <local-tunnel-endpoint-id>0</local-tunnel-endpoint-id>
+          </vni>
+        </network-instance>
+      </network-instances>
+      <!-- END ARRCUS -->
+
+      <?end?>
+   </config>
+  </device>
+ </devices>
+</config-template>

@@ -4,9 +4,9 @@
       <collect-forward-diff>true</collect-forward-diff>
     </global-settings>
   </services>
-  <uc51 xmlns="http://example.com/uc51">
+  <evpn xmlns="http://example.com/evpn">
     <name>33</name>
     <device>eth</device>
     <dummy>127.0.0.1</dummy>
-  </uc51>
+  </evpn>
 </config>
