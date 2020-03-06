@@ -29,7 +29,7 @@ module evpn {
         leaf ipv6-address {
           type inet:ipv6-address;
         }
-        must "ipv4-address or ipv6-address";
+        //must "ipv4-address or ipv6-address";
 
         leaf device {
           type leafref {

@@ -17,7 +17,7 @@
           <vxlan/>
           <bridge-domain>
             <vxlan-config>
-              <vni>{$VNI}"ALLOC same on both sides 1"}</vni>
+              <vni>{$VNI}<!--"ALLOC same on both sides 1"}--></vni>
             </vxlan-config>
             <interfaces>
               <interface>
@@ -65,7 +65,7 @@
               </mpls>
             </bgp-evpn>
             <sap>
-              <sap-id>{$CE_INTERFACE}:{$VNI}<!--"TOPO spirent CE esat-2/1/10: ALLOC vlan uniq 7"}--></sap-id>
+              <sap-id>{$CE_INTERFACE}<!--"TOPO spirent CE esat-2/1/10: ALLOC vlan uniq 7"}--></sap-id>
               <admin-state>enable</admin-state>
             </sap>
           </vpls>
