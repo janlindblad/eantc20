@@ -289,15 +289,15 @@ module arista-isis-deviations {
     }
   }
 
-  deviation "/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:isis/oc-netinst:global/oc-netinst:afi-safi/oc-netinst:af/oc-netinst:multi-topology/oc-netinst:config" {
-    description
-      "multi-topology is not supported for IPV4 address-family in EOS";
-    deviate add {
-      must "derived-from-or-self(../../afi-name, 'oc-isis-types:IPV6')" {
-        error-message "multi-topology is not supported for IPV4 address-family in EOS";
-      }
-    }
-  }
+//  deviation "/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:isis/oc-netinst:global/oc-netinst:afi-safi/oc-netinst:af/oc-netinst:multi-topology/oc-netinst:config" {//JLINDBLA
+//    description
+//      "multi-topology is not supported for IPV4 address-family in EOS";
+//    deviate add { 
+//      must "derived-from-or-self(../../afi-name, 'oc-isis-types:IPV6')" {
+//        error-message "multi-topology is not supported for IPV4 address-family in EOS";
+//      }
+//    }
+//  }
 
   deviation "/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:isis/oc-netinst:global/oc-netinst:afi-safi/oc-netinst:af/oc-netinst:config/oc-netinst:metric" {
     description
