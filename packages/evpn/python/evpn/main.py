@@ -28,7 +28,8 @@ class ServiceCallbacks(Service):
             vars = ncs.template.Variables()
             vars.add('SERVICE_NAME',  service.name)
             vars.add('VNI',           vni)
-            vars.add('EVI',           get_hash(svcid))
+            vars.add('EVI',           vni)
+            vars.add('VLANID',        vni)
             vars.add('RT',            get_hash(svcid, 1, 99))
 
             # PREPARE A-SIDE

@@ -8,20 +8,20 @@
       <?if-ned-id meta_130-nc-1.0:meta_130-nc-1.0?>
       <evpn xmlns="http://metaswitch.com/yang/nbu/evpn/201703150000Z" tags="merge">
         <instance>
-          <evi-name>{$SERVICE_NAME}_{$EVI}<!--{ "ALLOC evi1"}--></evi-name>
-          <evi>{$EVI}<!--{"1 ALLOC uniq"}--></evi>
+          <evi-name>{$SERVICE_NAME}_{$EVI}</evi-name>
+          <evi>{$EVI}</evi>
           <vpn-target>
-            <route-target>{$RT}:1<!--{"ALLOC same on both sides 40:1"}--></route-target>
+            <route-target>{$VNI}:{$VNI}</route-target>
             <route-target-type>both</route-target-type>
           </vpn-target>
           <vxlan/>
           <bridge-domain>
             <vxlan-config>
-              <vni>{$VNI}<!--"ALLOC same on both sides 1"}--></vni>
+              <vni>{$VNI}</vni>
             </vxlan-config>
             <interfaces>
               <interface>
-                <if-name>{$CE_INTERFACE}<!--"TOPO spirent CE eth4"}--></if-name>
+                <if-name>{$CE_INTERFACE}.{$VNI}</if-name>
               </interface>
             </interfaces>
           </bridge-domain>
@@ -35,6 +35,25 @@
           <name>{$CE_INTERFACE}</name>
           <forwarding-mode>layer-2-forwarding</forwarding-mode>
         </interface>
+        <interface>
+          <name>{$CE_INTERFACE}.{$VNI}</name>
+          <type>vlanSubif</type>
+          <parent-interface>{$CE_INTERFACE}</parent-interface>
+          <encapsulation>
+            <flexible>
+              <match>
+                <dot1q-vlan-tagged>
+                  <outer-tag>
+                    <dot1q-tag>
+                      <tag-type>c-vlan</tag-type>
+                      <vlan-id>{$VNI}</vlan-id>
+                    </dot1q-tag>
+                  </outer-tag>
+                </dot1q-vlan-tagged>
+              </match>
+            </flexible>
+          </encapsulation>
+        </interface>
       </interfaces>
       <!-- END METASWITCH -->
 
@@ -43,19 +62,19 @@
       <configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf" tags="merge">
         <service>
           <vpls>
-            <service-name>{$SERVICE_NAME}{$EVI}<!--{"OPER netconf-test-4-7"}--></service-name>
-            <service-id>{$EVI}<!--"ALLOC match below 4047"}--></service-id>
+            <service-name>{$SERVICE_NAME}{$EVI}</service-name>
+            <service-id>{$EVI}</service-id>
             <customer>1</customer>
             <admin-state>enable</admin-state>
             <bgp>
               <bgp-instance>1</bgp-instance>
               <route-target>
-                <export>target:65000:{$EVI}<!--"ALLOC as above 4047"}--></export>
-                <import>target:65000:{$EVI}<!--"AS above 4047"}--></import>
+                <export>target:65000:{$EVI}</export>
+                <import>target:65000:{$EVI}</import>
               </route-target>
             </bgp>
             <bgp-evpn>
-              <evi>{$EVI}<!--"ALLOC match other side 4047"}--></evi>
+              <evi>{$EVI}</evi>
               <mpls>
                 <bgp-instance>1</bgp-instance>
                 <admin-state>enable</admin-state>
@@ -65,7 +84,7 @@
               </mpls>
             </bgp-evpn>
             <sap>
-              <sap-id>{$CE_INTERFACE}<!--"TOPO spirent CE esat-2/1/10: ALLOC vlan uniq 7"}--></sap-id>
+              <sap-id>{$CE_INTERFACE}</sap-id>
               <admin-state>enable</admin-state>
             </sap>
           </vpls>
@@ -105,91 +124,184 @@
       <?elif-ned-id arcos-evpn-services-nc-1_0-nc-1.0:arcos-evpn-services-nc-1_0-nc-1.0?>
       <network-instances xmlns="http://openconfig.net/yang/network-instance" tags="merge">
         <network-instance>
-          <name>{$SERVICE_NAME}_{$EVI}<!--Tenant-A--></name>
-          <config>
-            <name>{$SERVICE_NAME}_{$EVI}<!--Tenant-A--></name>
-            <type xmlns:oc-ni-types="http://openconfig.net/yang/network-instance-types">oc-ni-types:L3VRF</type>
-          </config>
-          <table-connections>
-            <table-connection>
-              <src-protocol xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:DIRECTLY_CONNECTED</src-protocol>
-              <dst-protocol xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:BGP</dst-protocol>
-              <address-family xmlns:oc-types="http://openconfig.net/yang/openconfig-types">oc-types:IPV4</address-family>
-              <config>
-                <src-protocol xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:DIRECTLY_CONNECTED</src-protocol>
-                <address-family xmlns:oc-types="http://openconfig.net/yang/openconfig-types">oc-types:IPV4</address-family>
-                <dst-protocol xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:BGP</dst-protocol>
-              </config>
-            </table-connection>
-          </table-connections>
-          <interfaces>
-            <interface>
-              <id>{$CE_INTERFACE}<!--vlan22--></id>
-              <config>
-                <id>{$CE_INTERFACE}<!--vlan22--></id>
-                <interface>{$CE_INTERFACE}<!--vlan22--></interface>
-                <subinterface>0</subinterface>
-              </config>
-            </interface>
-          </interfaces>
-          <protocols>
-            <protocol>
-              <identifier xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:BGP</identifier>
-              <name>{$SERVICE_NAME}_{$EVI}<!--Tenant-A--></name>
-              <config>
-                <identifier xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:BGP</identifier>
-                <name>{$SERVICE_NAME}_{$EVI}<!--Tenant-A--></name>
-              </config>
-              <bgp>
-                <global>
-                  <config>
-                    <route-distinguisher xmlns="http://yang.arrcus.com/arcos/openconfig/bgp/augments">100.0.0.22:10</route-distinguisher>
-                  </config>
-                  <afi-safis>
-                    <afi-safi>
-                      <afi-safi-name xmlns:oc-bgp-types="http://openconfig.net/yang/bgp-types">oc-bgp-types:IPV4_UNICAST</afi-safi-name>
-                      <config>
-                        <afi-safi-name xmlns:oc-bgp-types="http://openconfig.net/yang/bgp-types">oc-bgp-types:IPV4_UNICAST</afi-safi-name>
-                      </config>
-                      <rt-afi-safis xmlns="http://yang.arrcus.com/arcos/openconfig/bgp/augments">
-                        <rt-afi-safi>
-                          <rt-afi-safi-name xmlns:oc-bgp-types="http://openconfig.net/yang/bgp-types">oc-bgp-types:L2VPN_EVPN</rt-afi-safi-name>
-                          <config>
-                            <rt-afi-safi-name xmlns:oc-bgp-types="http://openconfig.net/yang/bgp-types">oc-bgp-types:L2VPN_EVPN</rt-afi-safi-name>
-                          </config>
-                          <route-targets>
-                            <route-target>
-                              <route-target>1000:{$VNI}<!--1000--></route-target>
-                              <route-target-type>import</route-target-type>
-                              <config>
-                                <route-target>1000:{$VNI}<!--1000--></route-target>
-                                <route-target-type>import</route-target-type>
-                              </config>
-                            </route-target>
-                            <route-target>
-                              <route-target>1000:{$VNI}<!--1000--></route-target>
-                              <route-target-type>export</route-target-type>
-                              <config>
-                                <route-target>1000:{$VNI}<!--1000--></route-target>
-                                <route-target-type>export</route-target-type>
-                              </config>
-                            </route-target>
-                          </route-targets>
-                        </rt-afi-safi>
-                      </rt-afi-safis>
-                    </afi-safi>
-                  </afi-safis>
-                </global>
-              </bgp>
-            </protocol>
-          </protocols>
-          <vni xmlns="http://yang.arrcus.com/arcos/vxlan">
-            <vni-id>{$VNI}!<!--1000--></vni-id>
-            <local-tunnel-endpoint-id>0</local-tunnel-endpoint-id>
-          </vni>
+         <name>vlan{$VNI}</name>
+         <config>
+           <name>vlan{$VNI}</name>
+           <type xmlns:oc-ni-types="http://openconfig.net/yang/network-instance-types">oc-ni-types:L2VLAN</type>
+           <vlan>{$VNI}</vlan>
+           <advertise-mac-routes>true</advertise-mac-routes>
+         </config>
+         <protocols>
+           <protocol>
+             <identifier xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:BGP</identifier>
+             <name>vlan{$VNI}</name>
+             <config>
+               <identifier xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:BGP</identifier>
+               <name>vlan{$VNI}</name>
+             </config>
+             <bgp>
+               <global>
+                 <config>
+                   <route-distinguisher xmlns="http://yang.arrcus.com/arcos/openconfig/bgp/augments">{$RD_IPV4}:{$VNI}</route-distinguisher>
+                 </config>
+               </global>
+               <route-targets xmlns="http://yang.arrcus.com/arcos/openconfig/bgp/augments">
+                 <route-target>
+                   <route-target>{$VNI}:{$VNI}</route-target>
+                   <route-target-type>both</route-target-type>
+                   <config>
+                     <route-target>{$VNI}:{$VNI}</route-target>
+                     <route-target-type>both</route-target-type>
+                   </config>
+                 </route-target>
+               </route-targets>
+             </bgp>
+           </protocol>
+         </protocols>
+         <vni xmlns="http://yang.arrcus.com/arcos/vxlan">
+           <vni-id>{$VNI}</vni-id>
+           <local-tunnel-endpoint-id>0</local-tunnel-endpoint-id>
+         </vni>
         </network-instance>
       </network-instances>
+      <vlans xmlns="http://openconfig.net/yang/vlan" tags="merge">
+       <vlan>
+         <vlan-id>{$VNI}</vlan-id>
+         <config>
+           <vlan-id>{$VNI}</vlan-id>
+         </config>
+       </vlan>
+      </vlans>
       <!-- END ARRCUS -->
+
+      <!-- ARISTA -->
+<!--
+
+      <?elif-ned-id eos4230f_305-nc-1.0:eos4230f_305-nc-1.0?>
+      <network-instances xmlns="http://openconfig.net/yang/network-instance" tags="merge">
+        <network-instance>
+          <name>{$SERVICE_NAME}_{$VLANID}</name>
+          <config>
+            <name>{$SERVICE_NAME}_{$VLANID}</name>
+            <type xmlns:oc-ni-types="http://openconfig.net/yang/network-instance-types">oc-ni-types:L3VRF<!- -oc-ni-types:DEFAULT_INSTANCE- -></type>
+          </config>
+          <vlans>
+            <vlan>
+             <vlan-id>{$VLANID}</vlan-id>
+             <config>
+               <vlan-id>{$VLANID}</vlan-id>
+               <name>VLAN{$VLANID}</name>
+               <status>ACTIVE</status>
+               <mac-learning xmlns="http://arista.com/yang/openconfig/network-instance/vlan/augments">true</mac-learning>
+             </config>
+           </vlan>
+         </vlans>
+       </network-instance>
+      </network-instances>
+
+
+          <interface>
+            <name>Vlan{$VLANID}</name>
+            <config>
+              <name>Vlan{$VLANID}</name>
+              <type xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">ianaift:l3ipvlan</type>
+              <loopback-mode>false</loopback-mode>
+              <description></description>
+              <enabled>true</enabled>
+              <load-interval xmlns="http://arista.com/yang/openconfig/interfaces/augments">300</load-interval>
+            </config>
+            <hold-time>
+              <config>
+                <up>0</up>
+                <down>0</down>
+              </config>
+            </hold-time>
+            <tunnel xmlns="http://openconfig.net/yang/interfaces/tunnel">
+              <ipv4>
+                <proxy-arp>
+                  <config>
+                    <mode>DISABLE</mode>
+                  </config>
+                </proxy-arp>
+                <unnumbered>
+                  <config>
+                    <enabled>false</enabled>
+                  </config>
+                </unnumbered>
+                <config>
+                  <enabled>true</enabled>
+                  <dhcp-client>false</dhcp-client>
+                </config>
+              </ipv4>
+              <ipv6>
+                <router-advertisement>
+                  <config>
+                    <suppress>false</suppress>
+                  </config>
+                </router-advertisement>
+                <unnumbered>
+                  <config>
+                    <enabled>false</enabled>
+                  </config>
+                </unnumbered>
+                <config>
+                  <enabled>true</enabled>
+                  <dup-addr-detect-transmits>1</dup-addr-detect-transmits>
+                  <dhcp-client>false</dhcp-client>
+                </config>
+              </ipv6>
+            </tunnel>
+            <routed-vlan xmlns="http://openconfig.net/yang/vlan">
+              <config>
+                <vlan>Vlan{$VLANID}</vlan>
+              </config>
+              <ipv4 xmlns="http://openconfig.net/yang/interfaces/ip">
+                <addresses>
+                  <address>
+                    <ip>{$CE_INTERFACE}</ip>
+                    <config>
+                      <ip>{$CE_INTERFACE}</ip>
+                      <prefix-length>24</prefix-length>
+                      <addr-type xmlns="http://arista.com/yang/openconfig/interfaces/augments">PRIMARY</addr-type>
+                    </config>
+                  </address>
+                </addresses>
+                <config>
+                  <enabled>true</enabled>
+                  <mtu>1500</mtu>
+                </config>
+              </ipv4>
+              <ipv6 xmlns="http://openconfig.net/yang/interfaces/ip">
+                <config>
+                  <enabled>true</enabled>
+                  <mtu>1500</mtu>
+                  <dup-addr-detect-transmits>1</dup-addr-detect-transmits>
+                </config>
+              </ipv6>
+            </routed-vlan>
+          </interface>
+
+          <interface>
+            <id>Vlan4047</id>
+            <config>
+              <id>Vlan4047</id>
+              <interface>Vlan4047</interface>
+            </config>
+          </interface>
+
+              <vlan>
+                <vlan-id>4047</vlan-id>
+                <config>
+                  <vlan-id>4047</vlan-id>
+                  <name>VLAN4047</name>
+                  <status>ACTIVE</status>
+                  <mac-learning xmlns="http://arista.com/yang/openconfig/network-instance/vlan/augments">true</mac-learning>
+                </config>
+              </vlan>
+-->
+
+
+      <!-- END ARISTA -->
 
       <?end?>
    </config>
