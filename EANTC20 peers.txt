@@ -11,6 +11,7 @@ Arrcus      arcos-evpn-services-nc-1.0                    .6 .7        192.168.1
 Arista      eos4230f_305-nc-1.0                     .4       .7 .8     192.168.10.19:22       arista:KEY eantc20-ari19
             eos4230f_304-nc-1.0                              .7 .8     192.168.10.20:22       arista:KEY eantc20-ari19
 Delta       adva-nc-1.0                                .5 .6 .7 .8     192.168.10.47          admin:admin
+Adva        adva-nc-1.0                                   .6           192.168.10.6           admin:admin
 Adva        adva-nc-1.0                                .5 .6 .7 .8     192.168.10.7           admin:admin
 Lumina C                                                     .7        192.168.10.191:8181    admin:admin
 Lumina C                                                     .7        192.168.10.190:38181   admin:admin
