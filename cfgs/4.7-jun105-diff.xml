@@ -1,0 +1,28 @@
+<devices xmlns="http://tail-f.com/ns/ncs">
+  <device>
+    <name>jun105</name>
+    <config>
+      <configuration xmlns="http://yang.juniper.net/junos/conf/root">
+        <routing-instances xmlns="http://yang.juniper.net/junos/conf/routing-instances">
+          <instance>
+            <name>EVPN-1</name>
+            <instance-type>evpn</instance-type>
+            <vlan-id>none</vlan-id>
+            <interface>
+              <name>xe-0/1/7.300</name>
+            </interface>
+            <route-distinguisher>
+              <rd-type>100.0.0.105:4047</rd-type>
+            </route-distinguisher>
+            <vrf-target>
+              <community>target:65000:4047</community>
+            </vrf-target>
+            <protocols>
+              <evpn/>
+            </protocols>
+          </instance>
+        </routing-instances>
+      </configuration>
+    </config>
+  </device>
+</devices>

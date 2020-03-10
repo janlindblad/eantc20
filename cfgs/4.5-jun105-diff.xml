@@ -1,0 +1,40 @@
+<devices xmlns="http://tail-f.com/ns/ncs">
+  <device>
+    <name>jun105</name>
+    <config>
+      <configuration xmlns="http://yang.juniper.net/junos/conf/root">
+        <routing-instances xmlns="http://yang.juniper.net/junos/conf/routing-instances">
+          <instance>
+            <name>L2VPN-1</name>
+            <instance-type>l2vpn</instance-type>
+            <interface>
+              <name>xe-0/1/7.301</name>
+            </interface>
+            <route-distinguisher>
+              <rd-type>100.0.0.105:4048</rd-type>
+            </route-distinguisher>
+            <vrf-target>
+              <community>target:65000:4048</community>
+            </vrf-target>
+            <protocols>
+              <l2vpn>
+                <encapsulation-type>ethernet</encapsulation-type>
+                <interface>
+                  <name>xe-0/1/7.301</name>
+                </interface>
+                <site>
+                  <name>S1</name>
+                  <site-identifier>1</site-identifier>
+                  <interface>
+                    <name>xe-0/1/7.301</name>
+                    <remote-site-id>2</remote-site-id>
+                  </interface>
+                </site>
+              </l2vpn>
+            </protocols>
+          </instance>
+        </routing-instances>
+      </configuration>
+    </config>
+  </device>
+</devices>
