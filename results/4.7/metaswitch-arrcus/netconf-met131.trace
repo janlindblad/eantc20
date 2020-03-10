@@ -1,0 +1,889 @@
+>>>>out 10-Mar-2020::10:16:40.352 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131
+<hello xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <capabilities>
+    <capability>urn:ietf:params:netconf:base:1.0</capability>
+    <capability>urn:ietf:params:netconf:base:1.1</capability>
+  </capabilities>
+</hello>
+
+<<<<in 10-Mar-2020::10:16:40.355 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131
+<hello xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <capabilities>
+    <capability>urn:ietf:params:netconf:base:1.0</capability>
+    <capability>urn:ietf:params:netconf:base:1.1</capability>
+    <capability>urn:ietf:params:netconf:capability:writable-running:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:candidate:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:confirmed-commit:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:confirmed-commit:1.1</capability>
+    <capability>urn:ietf:params:netconf:capability:xpath:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:url:1.0?scheme=ftp,sftp,file</capability>
+    <capability>urn:ietf:params:netconf:capability:validate:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:validate:1.1</capability>
+    <capability>urn:ietf:params:netconf:capability:rollback-on-error:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:notification:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:interleave:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:with-defaults:1.0?basic-mode=explicit&amp;also-supported=report-all-tagged</capability>
+    <capability>urn:ietf:params:netconf:capability:yang-library:1.0?revision=2016-06-21&amp;module-set-id=4083f0967e5cc9aa0d9b787590a43d98</capability>
+    <capability>http://tail-f.com/ns/netconf/extensions</capability>
+    <capability>http://metaswitch.com/yang/nbu/alarmnotification?module=alarmnotification</capability>
+    <capability>http://metaswitch.com/yang/nbu/bd?module=bd&amp;revision=2016-01-01</capability>
+    <capability>http://metaswitch.com/yang/nbu/bfd/201512110000Z?module=bfd&amp;revision=2015-12-11</capability>
+    <capability>http://metaswitch.com/yang/nbu/cfm/201704210000Z?module=cfm&amp;revision=2017-09-21</capability>
+    <capability>http://metaswitch.com/yang/nbu/erps/201704200000Z?module=erps&amp;revision=2017-04-20&amp;features=sub-ring-virtual-channel,sub-ring,ring-profile-template</capability>
+    <capability>http://metaswitch.com/yang/nbu/ethernet-segment/201703160000Z?module=ethernet-segment&amp;revision=2017-03-16</capability>
+    <capability>http://metaswitch.com/yang/nbu/evpn/201703150000Z?module=evpn&amp;revision=2017-03-15&amp;features=static-type2-routes,evpn-vxlan,evpn-mpls</capability>
+    <capability>http://metaswitch.com/yang/nbu/i3?module=i3&amp;revision=2016-01-01&amp;features=emu</capability>
+    <capability>http://metaswitch.com/yang/nbu/igmp-router/201511040000Z?module=igmp-router&amp;revision=2018-04-13&amp;features=igmp-router</capability>
+    <capability>http://metaswitch.com/yang/nbu/interfaces/201510090000Z?module=interfaces&amp;revision=2015-10-09&amp;features=standard-interfaces,custom-interfaces</capability>
+    <capability>http://metaswitch.com/yang/nbu/ip-prefix/201602250000Z?module=ip-prefix&amp;revision=2016-02-25</capability>
+    <capability>http://metaswitch.com/yang/nbu/l2vpn/201601200000Z?module=l2vpn&amp;revision=2016-01-20&amp;features=l2vpns</capability>
+    <capability>http://metaswitch.com/yang/nbu/l3vpn/201511130000Z?module=l3vpn&amp;revision=2016-07-07&amp;features=l3vpns</capability>
+    <capability>http://metaswitch.com/yang/nbu/ldp/201512230000Z?module=ldp&amp;revision=2015-12-23&amp;features=ldp-lsps</capability>
+    <capability>http://metaswitch.com/yang/nbu/lfa/201703280000Z?module=lfa&amp;revision=2017-03-28</capability>
+    <capability>http://metaswitch.com/yang/nbu/lldp/201512170000Z?module=lldp&amp;revision=2015-12-17</capability>
+    <capability>http://metaswitch.com/yang/nbu/lsp-ping/201701090000Z?module=lsp-ping&amp;revision=2017-01-09&amp;features=pw-lsp-ping</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-custom-yang-types/201803090000Z?module=metaswitch-custom-yang-types&amp;revision=2018-03-09&amp;features=standard-interfaces</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-diagnostics/201907110000Z?module=metaswitch-diagnostics&amp;revision=2019-07-11</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-fdb-common/201905210000Z?module=metaswitch-fdb-common&amp;revision=2019-05-21</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-features/201904010000Z?module=metaswitch-features&amp;revision=2019-04-01&amp;features=segment-routing-vrf,segment-routing-ti-lfa,segment-routing-strict-spf,segment-routing-sid-prefix-ipv6,segment-routing-sid-adj,segment-routing-multi-topology,segment-routing-multi-area,segment-routing-mpls,segment-routing-ipv6,ip-frr</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-igmp-snooping/201803230000Z?module=metaswitch-igmp-snooping&amp;revision=2018-03-23&amp;features=igmp-snooping</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-location/201901140000Z?module=metaswitch-location&amp;revision=2019-01-14</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-mldp-test-app/201912190000Z?module=metaswitch-mldp-test-app&amp;revision=2019-12-19</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-mldp/201905310000Z?module=metaswitch-mldp&amp;revision=2019-05-31</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-mpls/201901010000Z?module=metaswitch-mpls&amp;revision=2019-06-06</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-vlan/201803200000Z?module=metaswitch-vlan&amp;revision=2018-03-20</capability>
+    <capability>http://metaswitch.com/yang/nbu/mpls-oam/201704250000Z?module=mpls-oam&amp;revision=2017-04-25</capability>
+    <capability>http://metaswitch.com/yang/nbu/mpls-static/201512110000Z?module=mpls-static&amp;revision=2017-03-06&amp;features=static-lsps</capability>
+    <capability>http://metaswitch.com/yang/nbu/ospf-common/201511060000Z?module=ospf-common&amp;revision=2015-11-06</capability>
+    <capability>http://metaswitch.com/yang/nbu/ospfv2/201511050000Z?module=ospfv2&amp;revision=2015-11-05</capability>
+    <capability>http://metaswitch.com/yang/nbu/ospfv3/201511060000Z?module=ospfv3&amp;revision=2015-11-06</capability>
+    <capability>http://metaswitch.com/yang/nbu/pim/201511040000Z?module=pim&amp;revision=2015-11-04</capability>
+    <capability>http://metaswitch.com/yang/nbu/redist/201602080000Z?module=redist&amp;revision=2016-02-08</capability>
+    <capability>http://metaswitch.com/yang/nbu/rgs?module=rgs&amp;revision=2016-01-01</capability>
+    <capability>http://metaswitch.com/yang/nbu/rip/201609090000Z?module=rip&amp;revision=2016-09-09</capability>
+    <capability>http://metaswitch.com/yang/nbu/route-map/201602250000Z?module=route-map&amp;revision=2016-02-25</capability>
+    <capability>http://metaswitch.com/yang/nbu/routing/201512140000Z?module=routing&amp;revision=2015-12-14</capability>
+    <capability>http://metaswitch.com/yang/nbu/user-extensions/201602170000Z?module=user-extensions&amp;revision=2016-02-17</capability>
+    <capability>http://metaswitch.com/yang/nbu/yang-types/201510290000Z?module=metaswitch-yang-types&amp;revision=2015-10-29</capability>
+    <capability>http://tail-f.com/ns/aaa/1.1?module=tailf-aaa&amp;revision=2018-09-12</capability>
+    <capability>http://tail-f.com/ns/common/query?module=tailf-common-query&amp;revision=2017-12-15</capability>
+    <capability>http://tail-f.com/ns/kicker?module=tailf-kicker&amp;revision=2017-09-28</capability>
+    <capability>http://tail-f.com/ns/progress?module=tailf-progress&amp;revision=2018-06-21</capability>
+    <capability>http://tail-f.com/ns/webui?module=tailf-webui&amp;revision=2013-03-07</capability>
+    <capability>http://tail-f.com/yang/acm?module=tailf-acm&amp;revision=2013-03-07</capability>
+    <capability>http://tail-f.com/yang/common?module=tailf-common&amp;revision=2018-09-15</capability>
+    <capability>http://tail-f.com/yang/common-monitoring?module=tailf-common-monitoring&amp;revision=2013-06-14</capability>
+    <capability>http://tail-f.com/yang/confd-monitoring?module=tailf-confd-monitoring&amp;revision=2013-06-14</capability>
+    <capability>http://tail-f.com/yang/netconf-monitoring?module=tailf-netconf-monitoring&amp;revision=2016-11-24</capability>
+    <capability>http://tail-f.com/yang/xsd-types?module=tailf-xsd-types&amp;revision=2017-11-20</capability>
+    <capability>urn:ieee:std:802.1Q:yang:ieee802-dot1q-types?module=ieee802-dot1q-types&amp;revision=2016-09-22</capability>
+    <capability>urn:ieee:std:802:yang:ieee802-types?module=ieee802-types&amp;revision=2016-07-24</capability>
+    <capability>urn:ietf:params:xml:ns:yang:iana-crypt-hash?module=iana-crypt-hash&amp;revision=2014-08-06&amp;features=crypt-hash-sha-512,crypt-hash-sha-256,crypt-hash-md5</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-inet-types?module=ietf-inet-types&amp;revision=2013-07-15</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-acm?module=ietf-netconf-acm&amp;revision=2012-02-22</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring?module=ietf-netconf-monitoring&amp;revision=2010-10-04</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-notifications?module=ietf-netconf-notifications&amp;revision=2012-02-06</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-restconf-monitoring?module=ietf-restconf-monitoring&amp;revision=2017-01-26</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-yang-library?module=ietf-yang-library&amp;revision=2016-06-21</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-yang-types?module=ietf-yang-types&amp;revision=2013-07-15</capability>
+    <capability>urn:ietf:params:xml:ns:netconf:base:1.0?module=ietf-netconf&amp;revision=2011-06-01</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults?module=ietf-netconf-with-defaults&amp;revision=2011-06-01</capability>
+  </capabilities>
+  <session-id>46</session-id>
+</hello>
+
+>>>>out 10-Mar-2020::10:16:40.379 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="1">
+  <lock>
+    <target>
+      <running/>
+    </target>
+  </lock>
+</rpc>
+
+>>>>out 10-Mar-2020::10:16:40.380 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="2">
+  <discard-changes/>
+</rpc>
+
+>>>>out 10-Mar-2020::10:16:40.380 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="3">
+  <lock>
+    <target>
+      <candidate/>
+    </target>
+  </lock>
+</rpc>
+
+>>>>out 10-Mar-2020::10:16:40.380 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="4">
+  <get xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <filter>
+      <netconf-state xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring">
+        <datastores>
+          <datastore>
+            <name>running</name>
+            <transaction-id xmlns="http://tail-f.com/yang/netconf-monitoring"/>
+          </datastore>
+        </datastores>
+      </netconf-state>
+    </filter>
+  </get>
+</rpc>
+
+<<<<in 10-Mar-2020::10:16:40.386 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="1">
+  <ok/>
+</rpc-reply>
+
+<<<<in 10-Mar-2020::10:16:40.497 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="2">
+  <ok/>
+</rpc-reply>
+
+<<<<in 10-Mar-2020::10:16:40.497 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="3">
+  <ok/>
+</rpc-reply>
+
+<<<<in 10-Mar-2020::10:16:40.497 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="4">
+  <data>
+    <netconf-state xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring">
+      <datastores>
+        <datastore>
+          <name xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">running</name>
+          <transaction-id xmlns="http://tail-f.com/yang/netconf-monitoring">1583-830392-713187</transaction-id>
+        </datastore>
+      </datastores>
+    </netconf-state>
+  </data>
+</rpc-reply>
+
+>>>>out 10-Mar-2020::10:16:40.506 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="5">
+  <edit-config xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <target>
+      <candidate/>
+    </target>
+    <test-option>test-then-set</test-option>
+    <error-option>rollback-on-error</error-option>
+    <config>
+      <interfaces xmlns="http://metaswitch.com/yang/nbu/interface/201709270000Z">
+        <interface>
+          <name>eth1.52</name>
+          <parent-interface>eth1</parent-interface>
+          <encapsulation>
+            <flexible>
+              <match>
+                <dot1q-vlan-tagged>
+                  <outer-tag>
+                    <dot1q-tag>
+                      <tag-type>c-vlan</tag-type>
+                      <vlan-id>52</vlan-id>
+                    </dot1q-tag>
+                  </outer-tag>
+                </dot1q-vlan-tagged>
+              </match>
+            </flexible>
+          </encapsulation>
+          <type>vlanSubif</type>
+        </interface>
+      </interfaces>
+      <evpn xmlns="http://metaswitch.com/yang/nbu/evpn/201703150000Z">
+        <instance>
+          <evi-name>473_52</evi-name>
+          <evi>52</evi>
+          <auto-rt-type>
+            <none/>
+          </auto-rt-type>
+          <vpn-target>
+            <route-target>52:52</route-target>
+            <route-target-type>both</route-target-type>
+          </vpn-target>
+          <vxlan/>
+          <bridge-domain>
+            <interfaces>
+              <interface>
+                <if-name>eth1.52</if-name>
+              </interface>
+            </interfaces>
+            <vxlan-config>
+              <vni>52</vni>
+            </vxlan-config>
+          </bridge-domain>
+        </instance>
+      </evpn>
+    </config>
+  </edit-config>
+</rpc>
+
+>>>>out 10-Mar-2020::10:16:40.506 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="6">
+  <validate>
+    <source>
+      <candidate/>
+    </source>
+  </validate>
+</rpc>
+
+<<<<in 10-Mar-2020::10:16:40.553 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="5">
+  <ok/>
+</rpc-reply>
+
+<<<<in 10-Mar-2020::10:16:40.564 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="6">
+  <ok/>
+</rpc-reply>
+
+>>>>out 10-Mar-2020::10:16:40.777 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="7">
+  <commit>
+    <confirmed/>
+  </commit>
+</rpc>
+
+<<<<in 10-Mar-2020::10:16:41.050 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="7">
+  <ok/>
+</rpc-reply>
+
+>>>>out 10-Mar-2020::10:16:41.070 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="8">
+  <commit/>
+</rpc>
+
+>>>>out 10-Mar-2020::10:16:41.070 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="9">
+  <get xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <filter>
+      <netconf-state xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring">
+        <datastores>
+          <datastore>
+            <name>running</name>
+            <transaction-id xmlns="http://tail-f.com/yang/netconf-monitoring"/>
+          </datastore>
+        </datastores>
+      </netconf-state>
+    </filter>
+  </get>
+</rpc>
+
+>>>>out 10-Mar-2020::10:16:41.071 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="10">
+  <unlock>
+    <target>
+      <candidate/>
+    </target>
+  </unlock>
+</rpc>
+
+>>>>out 10-Mar-2020::10:16:41.071 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="11">
+  <unlock>
+    <target>
+      <running/>
+    </target>
+  </unlock>
+</rpc>
+
+<<<<in 10-Mar-2020::10:16:41.118 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="8">
+  <ok/>
+</rpc-reply>
+
+<<<<in 10-Mar-2020::10:16:41.121 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="9">
+  <data>
+    <netconf-state xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring">
+      <datastores>
+        <datastore>
+          <name xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">running</name>
+          <transaction-id xmlns="http://tail-f.com/yang/netconf-monitoring">1583-831812-137846</transaction-id>
+        </datastore>
+      </datastores>
+    </netconf-state>
+  </data>
+</rpc-reply>
+
+<<<<in 10-Mar-2020::10:16:41.251 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="10">
+  <ok/>
+</rpc-reply>
+
+<<<<in 10-Mar-2020::10:16:41.251 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="11">
+  <ok/>
+</rpc-reply>
+
+>>>>out 10-Mar-2020::10:17:12.312 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="12">
+  <close-session/>
+</rpc>
+
+>>>>out 10-Mar-2020::10:17:12.312 user: admin/968 thandle 16736 hostname JLINDBLA-M-W0J2 device met131 session-id=46 NCS close
+>>>>out 10-Mar-2020::10:19:30.997 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131
+<hello xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <capabilities>
+    <capability>urn:ietf:params:netconf:base:1.0</capability>
+    <capability>urn:ietf:params:netconf:base:1.1</capability>
+  </capabilities>
+</hello>
+
+<<<<in 10-Mar-2020::10:19:31.004 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131
+<hello xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <capabilities>
+    <capability>urn:ietf:params:netconf:base:1.0</capability>
+    <capability>urn:ietf:params:netconf:base:1.1</capability>
+    <capability>urn:ietf:params:netconf:capability:writable-running:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:candidate:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:confirmed-commit:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:confirmed-commit:1.1</capability>
+    <capability>urn:ietf:params:netconf:capability:xpath:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:url:1.0?scheme=ftp,sftp,file</capability>
+    <capability>urn:ietf:params:netconf:capability:validate:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:validate:1.1</capability>
+    <capability>urn:ietf:params:netconf:capability:rollback-on-error:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:notification:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:interleave:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:with-defaults:1.0?basic-mode=explicit&amp;also-supported=report-all-tagged</capability>
+    <capability>urn:ietf:params:netconf:capability:yang-library:1.0?revision=2016-06-21&amp;module-set-id=4083f0967e5cc9aa0d9b787590a43d98</capability>
+    <capability>http://tail-f.com/ns/netconf/extensions</capability>
+    <capability>http://metaswitch.com/yang/nbu/alarmnotification?module=alarmnotification</capability>
+    <capability>http://metaswitch.com/yang/nbu/bd?module=bd&amp;revision=2016-01-01</capability>
+    <capability>http://metaswitch.com/yang/nbu/bfd/201512110000Z?module=bfd&amp;revision=2015-12-11</capability>
+    <capability>http://metaswitch.com/yang/nbu/cfm/201704210000Z?module=cfm&amp;revision=2017-09-21</capability>
+    <capability>http://metaswitch.com/yang/nbu/erps/201704200000Z?module=erps&amp;revision=2017-04-20&amp;features=sub-ring-virtual-channel,sub-ring,ring-profile-template</capability>
+    <capability>http://metaswitch.com/yang/nbu/ethernet-segment/201703160000Z?module=ethernet-segment&amp;revision=2017-03-16</capability>
+    <capability>http://metaswitch.com/yang/nbu/evpn/201703150000Z?module=evpn&amp;revision=2017-03-15&amp;features=static-type2-routes,evpn-vxlan,evpn-mpls</capability>
+    <capability>http://metaswitch.com/yang/nbu/i3?module=i3&amp;revision=2016-01-01&amp;features=emu</capability>
+    <capability>http://metaswitch.com/yang/nbu/igmp-router/201511040000Z?module=igmp-router&amp;revision=2018-04-13&amp;features=igmp-router</capability>
+    <capability>http://metaswitch.com/yang/nbu/interfaces/201510090000Z?module=interfaces&amp;revision=2015-10-09&amp;features=standard-interfaces,custom-interfaces</capability>
+    <capability>http://metaswitch.com/yang/nbu/ip-prefix/201602250000Z?module=ip-prefix&amp;revision=2016-02-25</capability>
+    <capability>http://metaswitch.com/yang/nbu/l2vpn/201601200000Z?module=l2vpn&amp;revision=2016-01-20&amp;features=l2vpns</capability>
+    <capability>http://metaswitch.com/yang/nbu/l3vpn/201511130000Z?module=l3vpn&amp;revision=2016-07-07&amp;features=l3vpns</capability>
+    <capability>http://metaswitch.com/yang/nbu/ldp/201512230000Z?module=ldp&amp;revision=2015-12-23&amp;features=ldp-lsps</capability>
+    <capability>http://metaswitch.com/yang/nbu/lfa/201703280000Z?module=lfa&amp;revision=2017-03-28</capability>
+    <capability>http://metaswitch.com/yang/nbu/lldp/201512170000Z?module=lldp&amp;revision=2015-12-17</capability>
+    <capability>http://metaswitch.com/yang/nbu/lsp-ping/201701090000Z?module=lsp-ping&amp;revision=2017-01-09&amp;features=pw-lsp-ping</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-custom-yang-types/201803090000Z?module=metaswitch-custom-yang-types&amp;revision=2018-03-09&amp;features=standard-interfaces</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-diagnostics/201907110000Z?module=metaswitch-diagnostics&amp;revision=2019-07-11</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-fdb-common/201905210000Z?module=metaswitch-fdb-common&amp;revision=2019-05-21</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-features/201904010000Z?module=metaswitch-features&amp;revision=2019-04-01&amp;features=segment-routing-vrf,segment-routing-ti-lfa,segment-routing-strict-spf,segment-routing-sid-prefix-ipv6,segment-routing-sid-adj,segment-routing-multi-topology,segment-routing-multi-area,segment-routing-mpls,segment-routing-ipv6,ip-frr</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-igmp-snooping/201803230000Z?module=metaswitch-igmp-snooping&amp;revision=2018-03-23&amp;features=igmp-snooping</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-location/201901140000Z?module=metaswitch-location&amp;revision=2019-01-14</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-mldp-test-app/201912190000Z?module=metaswitch-mldp-test-app&amp;revision=2019-12-19</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-mldp/201905310000Z?module=metaswitch-mldp&amp;revision=2019-05-31</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-mpls/201901010000Z?module=metaswitch-mpls&amp;revision=2019-06-06</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-vlan/201803200000Z?module=metaswitch-vlan&amp;revision=2018-03-20</capability>
+    <capability>http://metaswitch.com/yang/nbu/mpls-oam/201704250000Z?module=mpls-oam&amp;revision=2017-04-25</capability>
+    <capability>http://metaswitch.com/yang/nbu/mpls-static/201512110000Z?module=mpls-static&amp;revision=2017-03-06&amp;features=static-lsps</capability>
+    <capability>http://metaswitch.com/yang/nbu/ospf-common/201511060000Z?module=ospf-common&amp;revision=2015-11-06</capability>
+    <capability>http://metaswitch.com/yang/nbu/ospfv2/201511050000Z?module=ospfv2&amp;revision=2015-11-05</capability>
+    <capability>http://metaswitch.com/yang/nbu/ospfv3/201511060000Z?module=ospfv3&amp;revision=2015-11-06</capability>
+    <capability>http://metaswitch.com/yang/nbu/pim/201511040000Z?module=pim&amp;revision=2015-11-04</capability>
+    <capability>http://metaswitch.com/yang/nbu/redist/201602080000Z?module=redist&amp;revision=2016-02-08</capability>
+    <capability>http://metaswitch.com/yang/nbu/rgs?module=rgs&amp;revision=2016-01-01</capability>
+    <capability>http://metaswitch.com/yang/nbu/rip/201609090000Z?module=rip&amp;revision=2016-09-09</capability>
+    <capability>http://metaswitch.com/yang/nbu/route-map/201602250000Z?module=route-map&amp;revision=2016-02-25</capability>
+    <capability>http://metaswitch.com/yang/nbu/routing/201512140000Z?module=routing&amp;revision=2015-12-14</capability>
+    <capability>http://metaswitch.com/yang/nbu/user-extensions/201602170000Z?module=user-extensions&amp;revision=2016-02-17</capability>
+    <capability>http://metaswitch.com/yang/nbu/yang-types/201510290000Z?module=metaswitch-yang-types&amp;revision=2015-10-29</capability>
+    <capability>http://tail-f.com/ns/aaa/1.1?module=tailf-aaa&amp;revision=2018-09-12</capability>
+    <capability>http://tail-f.com/ns/common/query?module=tailf-common-query&amp;revision=2017-12-15</capability>
+    <capability>http://tail-f.com/ns/kicker?module=tailf-kicker&amp;revision=2017-09-28</capability>
+    <capability>http://tail-f.com/ns/progress?module=tailf-progress&amp;revision=2018-06-21</capability>
+    <capability>http://tail-f.com/ns/webui?module=tailf-webui&amp;revision=2013-03-07</capability>
+    <capability>http://tail-f.com/yang/acm?module=tailf-acm&amp;revision=2013-03-07</capability>
+    <capability>http://tail-f.com/yang/common?module=tailf-common&amp;revision=2018-09-15</capability>
+    <capability>http://tail-f.com/yang/common-monitoring?module=tailf-common-monitoring&amp;revision=2013-06-14</capability>
+    <capability>http://tail-f.com/yang/confd-monitoring?module=tailf-confd-monitoring&amp;revision=2013-06-14</capability>
+    <capability>http://tail-f.com/yang/netconf-monitoring?module=tailf-netconf-monitoring&amp;revision=2016-11-24</capability>
+    <capability>http://tail-f.com/yang/xsd-types?module=tailf-xsd-types&amp;revision=2017-11-20</capability>
+    <capability>urn:ieee:std:802.1Q:yang:ieee802-dot1q-types?module=ieee802-dot1q-types&amp;revision=2016-09-22</capability>
+    <capability>urn:ieee:std:802:yang:ieee802-types?module=ieee802-types&amp;revision=2016-07-24</capability>
+    <capability>urn:ietf:params:xml:ns:yang:iana-crypt-hash?module=iana-crypt-hash&amp;revision=2014-08-06&amp;features=crypt-hash-sha-512,crypt-hash-sha-256,crypt-hash-md5</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-inet-types?module=ietf-inet-types&amp;revision=2013-07-15</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-acm?module=ietf-netconf-acm&amp;revision=2012-02-22</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring?module=ietf-netconf-monitoring&amp;revision=2010-10-04</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-notifications?module=ietf-netconf-notifications&amp;revision=2012-02-06</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-restconf-monitoring?module=ietf-restconf-monitoring&amp;revision=2017-01-26</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-yang-library?module=ietf-yang-library&amp;revision=2016-06-21</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-yang-types?module=ietf-yang-types&amp;revision=2013-07-15</capability>
+    <capability>urn:ietf:params:xml:ns:netconf:base:1.0?module=ietf-netconf&amp;revision=2011-06-01</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults?module=ietf-netconf-with-defaults&amp;revision=2011-06-01</capability>
+  </capabilities>
+  <session-id>48</session-id>
+</hello>
+
+>>>>out 10-Mar-2020::10:19:31.075 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="1">
+  <lock>
+    <target>
+      <running/>
+    </target>
+  </lock>
+</rpc>
+
+>>>>out 10-Mar-2020::10:19:31.075 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="2">
+  <discard-changes/>
+</rpc>
+
+>>>>out 10-Mar-2020::10:19:31.075 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="3">
+  <lock>
+    <target>
+      <candidate/>
+    </target>
+  </lock>
+</rpc>
+
+>>>>out 10-Mar-2020::10:19:31.076 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="4">
+  <get xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <filter>
+      <netconf-state xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring">
+        <datastores>
+          <datastore>
+            <name>running</name>
+            <transaction-id xmlns="http://tail-f.com/yang/netconf-monitoring"/>
+          </datastore>
+        </datastores>
+      </netconf-state>
+    </filter>
+  </get>
+</rpc>
+
+<<<<in 10-Mar-2020::10:19:31.115 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="1">
+  <ok/>
+</rpc-reply>
+
+<<<<in 10-Mar-2020::10:19:31.212 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="2">
+  <ok/>
+</rpc-reply>
+
+<<<<in 10-Mar-2020::10:19:31.213 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="3">
+  <ok/>
+</rpc-reply>
+
+<<<<in 10-Mar-2020::10:19:31.214 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="4">
+  <data>
+    <netconf-state xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring">
+      <datastores>
+        <datastore>
+          <name xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">running</name>
+          <transaction-id xmlns="http://tail-f.com/yang/netconf-monitoring">1583-831812-137846</transaction-id>
+        </datastore>
+      </datastores>
+    </netconf-state>
+  </data>
+</rpc-reply>
+
+>>>>out 10-Mar-2020::10:19:31.219 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="5">
+  <edit-config xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <target>
+      <candidate/>
+    </target>
+    <test-option>test-then-set</test-option>
+    <error-option>rollback-on-error</error-option>
+    <config>
+      <interfaces xmlns="http://metaswitch.com/yang/nbu/interface/201709270000Z">
+        <interface xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0"
+                   nc:operation="delete">
+          <name>eth1.52</name>
+        </interface>
+      </interfaces>
+      <evpn xmlns="http://metaswitch.com/yang/nbu/evpn/201703150000Z">
+        <instance xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0"
+                  nc:operation="delete">
+          <evi-name>473_52</evi-name>
+        </instance>
+      </evpn>
+    </config>
+  </edit-config>
+</rpc>
+
+>>>>out 10-Mar-2020::10:19:31.219 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="6">
+  <validate>
+    <source>
+      <candidate/>
+    </source>
+  </validate>
+</rpc>
+
+<<<<in 10-Mar-2020::10:19:31.461 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="5">
+  <ok/>
+</rpc-reply>
+
+<<<<in 10-Mar-2020::10:19:31.461 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="6">
+  <ok/>
+</rpc-reply>
+
+>>>>out 10-Mar-2020::10:19:31.461 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="7">
+  <commit>
+    <confirmed/>
+  </commit>
+</rpc>
+
+<<<<in 10-Mar-2020::10:19:31.726 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="7">
+  <ok/>
+</rpc-reply>
+
+>>>>out 10-Mar-2020::10:19:31.736 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="8">
+  <commit/>
+</rpc>
+
+>>>>out 10-Mar-2020::10:19:31.736 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="9">
+  <get xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <filter>
+      <netconf-state xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring">
+        <datastores>
+          <datastore>
+            <name>running</name>
+            <transaction-id xmlns="http://tail-f.com/yang/netconf-monitoring"/>
+          </datastore>
+        </datastores>
+      </netconf-state>
+    </filter>
+  </get>
+</rpc>
+
+>>>>out 10-Mar-2020::10:19:31.737 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="10">
+  <unlock>
+    <target>
+      <candidate/>
+    </target>
+  </unlock>
+</rpc>
+
+>>>>out 10-Mar-2020::10:19:31.737 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="11">
+  <unlock>
+    <target>
+      <running/>
+    </target>
+  </unlock>
+</rpc>
+
+<<<<in 10-Mar-2020::10:19:31.792 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="8">
+  <ok/>
+</rpc-reply>
+
+<<<<in 10-Mar-2020::10:19:31.792 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="9">
+  <data>
+    <netconf-state xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring">
+      <datastores>
+        <datastore>
+          <name xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">running</name>
+          <transaction-id xmlns="http://tail-f.com/yang/netconf-monitoring">1583-831982-837707</transaction-id>
+        </datastore>
+      </datastores>
+    </netconf-state>
+  </data>
+</rpc-reply>
+
+<<<<in 10-Mar-2020::10:19:31.907 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="10">
+  <ok/>
+</rpc-reply>
+
+<<<<in 10-Mar-2020::10:19:31.908 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="11">
+  <ok/>
+</rpc-reply>
+
+>>>>out 10-Mar-2020::10:20:02.664 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="12">
+  <close-session/>
+</rpc>
+
+>>>>out 10-Mar-2020::10:20:02.665 user: admin/871 thandle 16762 hostname JLINDBLA-M-W0J2 device met131 session-id=48 NCS close
+>>>>out 10-Mar-2020::10:20:17.526 user: admin/871 thandle 16312 hostname JLINDBLA-M-W0J2 device met131
+<hello xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <capabilities>
+    <capability>urn:ietf:params:netconf:base:1.0</capability>
+    <capability>urn:ietf:params:netconf:base:1.1</capability>
+  </capabilities>
+</hello>
+
+<<<<in 10-Mar-2020::10:20:17.534 user: admin/871 thandle 16312 hostname JLINDBLA-M-W0J2 device met131
+<hello xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <capabilities>
+    <capability>urn:ietf:params:netconf:base:1.0</capability>
+    <capability>urn:ietf:params:netconf:base:1.1</capability>
+    <capability>urn:ietf:params:netconf:capability:writable-running:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:candidate:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:confirmed-commit:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:confirmed-commit:1.1</capability>
+    <capability>urn:ietf:params:netconf:capability:xpath:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:url:1.0?scheme=ftp,sftp,file</capability>
+    <capability>urn:ietf:params:netconf:capability:validate:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:validate:1.1</capability>
+    <capability>urn:ietf:params:netconf:capability:rollback-on-error:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:notification:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:interleave:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:with-defaults:1.0?basic-mode=explicit&amp;also-supported=report-all-tagged</capability>
+    <capability>urn:ietf:params:netconf:capability:yang-library:1.0?revision=2016-06-21&amp;module-set-id=4083f0967e5cc9aa0d9b787590a43d98</capability>
+    <capability>http://tail-f.com/ns/netconf/extensions</capability>
+    <capability>http://metaswitch.com/yang/nbu/alarmnotification?module=alarmnotification</capability>
+    <capability>http://metaswitch.com/yang/nbu/bd?module=bd&amp;revision=2016-01-01</capability>
+    <capability>http://metaswitch.com/yang/nbu/bfd/201512110000Z?module=bfd&amp;revision=2015-12-11</capability>
+    <capability>http://metaswitch.com/yang/nbu/cfm/201704210000Z?module=cfm&amp;revision=2017-09-21</capability>
+    <capability>http://metaswitch.com/yang/nbu/erps/201704200000Z?module=erps&amp;revision=2017-04-20&amp;features=sub-ring-virtual-channel,sub-ring,ring-profile-template</capability>
+    <capability>http://metaswitch.com/yang/nbu/ethernet-segment/201703160000Z?module=ethernet-segment&amp;revision=2017-03-16</capability>
+    <capability>http://metaswitch.com/yang/nbu/evpn/201703150000Z?module=evpn&amp;revision=2017-03-15&amp;features=static-type2-routes,evpn-vxlan,evpn-mpls</capability>
+    <capability>http://metaswitch.com/yang/nbu/i3?module=i3&amp;revision=2016-01-01&amp;features=emu</capability>
+    <capability>http://metaswitch.com/yang/nbu/igmp-router/201511040000Z?module=igmp-router&amp;revision=2018-04-13&amp;features=igmp-router</capability>
+    <capability>http://metaswitch.com/yang/nbu/interfaces/201510090000Z?module=interfaces&amp;revision=2015-10-09&amp;features=standard-interfaces,custom-interfaces</capability>
+    <capability>http://metaswitch.com/yang/nbu/ip-prefix/201602250000Z?module=ip-prefix&amp;revision=2016-02-25</capability>
+    <capability>http://metaswitch.com/yang/nbu/l2vpn/201601200000Z?module=l2vpn&amp;revision=2016-01-20&amp;features=l2vpns</capability>
+    <capability>http://metaswitch.com/yang/nbu/l3vpn/201511130000Z?module=l3vpn&amp;revision=2016-07-07&amp;features=l3vpns</capability>
+    <capability>http://metaswitch.com/yang/nbu/ldp/201512230000Z?module=ldp&amp;revision=2015-12-23&amp;features=ldp-lsps</capability>
+    <capability>http://metaswitch.com/yang/nbu/lfa/201703280000Z?module=lfa&amp;revision=2017-03-28</capability>
+    <capability>http://metaswitch.com/yang/nbu/lldp/201512170000Z?module=lldp&amp;revision=2015-12-17</capability>
+    <capability>http://metaswitch.com/yang/nbu/lsp-ping/201701090000Z?module=lsp-ping&amp;revision=2017-01-09&amp;features=pw-lsp-ping</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-custom-yang-types/201803090000Z?module=metaswitch-custom-yang-types&amp;revision=2018-03-09&amp;features=standard-interfaces</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-diagnostics/201907110000Z?module=metaswitch-diagnostics&amp;revision=2019-07-11</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-fdb-common/201905210000Z?module=metaswitch-fdb-common&amp;revision=2019-05-21</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-features/201904010000Z?module=metaswitch-features&amp;revision=2019-04-01&amp;features=segment-routing-vrf,segment-routing-ti-lfa,segment-routing-strict-spf,segment-routing-sid-prefix-ipv6,segment-routing-sid-adj,segment-routing-multi-topology,segment-routing-multi-area,segment-routing-mpls,segment-routing-ipv6,ip-frr</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-igmp-snooping/201803230000Z?module=metaswitch-igmp-snooping&amp;revision=2018-03-23&amp;features=igmp-snooping</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-location/201901140000Z?module=metaswitch-location&amp;revision=2019-01-14</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-mldp-test-app/201912190000Z?module=metaswitch-mldp-test-app&amp;revision=2019-12-19</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-mldp/201905310000Z?module=metaswitch-mldp&amp;revision=2019-05-31</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-mpls/201901010000Z?module=metaswitch-mpls&amp;revision=2019-06-06</capability>
+    <capability>http://metaswitch.com/yang/nbu/metaswitch-vlan/201803200000Z?module=metaswitch-vlan&amp;revision=2018-03-20</capability>
+    <capability>http://metaswitch.com/yang/nbu/mpls-oam/201704250000Z?module=mpls-oam&amp;revision=2017-04-25</capability>
+    <capability>http://metaswitch.com/yang/nbu/mpls-static/201512110000Z?module=mpls-static&amp;revision=2017-03-06&amp;features=static-lsps</capability>
+    <capability>http://metaswitch.com/yang/nbu/ospf-common/201511060000Z?module=ospf-common&amp;revision=2015-11-06</capability>
+    <capability>http://metaswitch.com/yang/nbu/ospfv2/201511050000Z?module=ospfv2&amp;revision=2015-11-05</capability>
+    <capability>http://metaswitch.com/yang/nbu/ospfv3/201511060000Z?module=ospfv3&amp;revision=2015-11-06</capability>
+    <capability>http://metaswitch.com/yang/nbu/pim/201511040000Z?module=pim&amp;revision=2015-11-04</capability>
+    <capability>http://metaswitch.com/yang/nbu/redist/201602080000Z?module=redist&amp;revision=2016-02-08</capability>
+    <capability>http://metaswitch.com/yang/nbu/rgs?module=rgs&amp;revision=2016-01-01</capability>
+    <capability>http://metaswitch.com/yang/nbu/rip/201609090000Z?module=rip&amp;revision=2016-09-09</capability>
+    <capability>http://metaswitch.com/yang/nbu/route-map/201602250000Z?module=route-map&amp;revision=2016-02-25</capability>
+    <capability>http://metaswitch.com/yang/nbu/routing/201512140000Z?module=routing&amp;revision=2015-12-14</capability>
+    <capability>http://metaswitch.com/yang/nbu/user-extensions/201602170000Z?module=user-extensions&amp;revision=2016-02-17</capability>
+    <capability>http://metaswitch.com/yang/nbu/yang-types/201510290000Z?module=metaswitch-yang-types&amp;revision=2015-10-29</capability>
+    <capability>http://tail-f.com/ns/aaa/1.1?module=tailf-aaa&amp;revision=2018-09-12</capability>
+    <capability>http://tail-f.com/ns/common/query?module=tailf-common-query&amp;revision=2017-12-15</capability>
+    <capability>http://tail-f.com/ns/kicker?module=tailf-kicker&amp;revision=2017-09-28</capability>
+    <capability>http://tail-f.com/ns/progress?module=tailf-progress&amp;revision=2018-06-21</capability>
+    <capability>http://tail-f.com/ns/webui?module=tailf-webui&amp;revision=2013-03-07</capability>
+    <capability>http://tail-f.com/yang/acm?module=tailf-acm&amp;revision=2013-03-07</capability>
+    <capability>http://tail-f.com/yang/common?module=tailf-common&amp;revision=2018-09-15</capability>
+    <capability>http://tail-f.com/yang/common-monitoring?module=tailf-common-monitoring&amp;revision=2013-06-14</capability>
+    <capability>http://tail-f.com/yang/confd-monitoring?module=tailf-confd-monitoring&amp;revision=2013-06-14</capability>
+    <capability>http://tail-f.com/yang/netconf-monitoring?module=tailf-netconf-monitoring&amp;revision=2016-11-24</capability>
+    <capability>http://tail-f.com/yang/xsd-types?module=tailf-xsd-types&amp;revision=2017-11-20</capability>
+    <capability>urn:ieee:std:802.1Q:yang:ieee802-dot1q-types?module=ieee802-dot1q-types&amp;revision=2016-09-22</capability>
+    <capability>urn:ieee:std:802:yang:ieee802-types?module=ieee802-types&amp;revision=2016-07-24</capability>
+    <capability>urn:ietf:params:xml:ns:yang:iana-crypt-hash?module=iana-crypt-hash&amp;revision=2014-08-06&amp;features=crypt-hash-sha-512,crypt-hash-sha-256,crypt-hash-md5</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-inet-types?module=ietf-inet-types&amp;revision=2013-07-15</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-acm?module=ietf-netconf-acm&amp;revision=2012-02-22</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring?module=ietf-netconf-monitoring&amp;revision=2010-10-04</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-notifications?module=ietf-netconf-notifications&amp;revision=2012-02-06</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-restconf-monitoring?module=ietf-restconf-monitoring&amp;revision=2017-01-26</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-yang-library?module=ietf-yang-library&amp;revision=2016-06-21</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-yang-types?module=ietf-yang-types&amp;revision=2013-07-15</capability>
+    <capability>urn:ietf:params:xml:ns:netconf:base:1.0?module=ietf-netconf&amp;revision=2011-06-01</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults?module=ietf-netconf-with-defaults&amp;revision=2011-06-01</capability>
+  </capabilities>
+  <session-id>49</session-id>
+</hello>
+
+>>>>out 10-Mar-2020::10:20:17.564 user: admin/871 thandle 16312 hostname JLINDBLA-M-W0J2 device met131 session-id=49
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="1">
+  <get-config>
+    <source>
+      <running/>
+    </source>
+    <filter>
+      <router xmlns="http://metaswitch.com/yang/nbu/routing/201512140000Z"/>
+      <router xmlns="http://metaswitch.com/yang/nbu/ospfv3/201511060000Z"/>
+      <router xmlns="http://metaswitch.com/yang/nbu/ospfv2/201511050000Z"/>
+      <segment-routing-config xmlns="http://metaswitch.com/yang/nbu/metaswitch-segment-routing/201811190000Z"/>
+      <mpls xmlns="http://metaswitch.com/yang/nbu/metaswitch-mpls/201901010000Z"/>
+      <mpls xmlns="http://metaswitch.com/yang/nbu/ldp/201512230000Z"/>
+      <load-balancing xmlns="http://metaswitch.com/yang/nbu/interfaces/201510090000Z"/>
+      <interface xmlns="http://metaswitch.com/yang/nbu/interfaces/201510090000Z"/>
+      <interfaces xmlns="http://metaswitch.com/yang/nbu/interface/201709270000Z"/>
+      <evpn xmlns="http://metaswitch.com/yang/nbu/evpn/201703150000Z"/>
+      <ethernet-segment xmlns="http://metaswitch.com/yang/nbu/ethernet-segment/201703160000Z"/>
+      <router xmlns="http://metaswitch.com/yang/nbu/bgp/201512020000Z"/>
+    </filter>
+  </get-config>
+</rpc>
+
+<<<<in 10-Mar-2020::10:20:17.687 user: admin/871 thandle 16312 hostname JLINDBLA-M-W0J2 device met131 session-id=49
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="1">
+  <data>
+    <router xmlns="http://metaswitch.com/yang/nbu/bgp/201512020000Z">
+      <bgp>
+        <as-num>100</as-num>
+        <global>
+          <address-family>
+            <ipv4>
+              <unicast>
+                <redistribution>
+                  <local>
+                    <name>my_local</name>
+                  </local>
+                </redistribution>
+              </unicast>
+            </ipv4>
+          </address-family>
+          <bgp>
+            <router-id>100.0.0.131</router-id>
+          </bgp>
+          <neighbor>
+            <address>20.24.131.24</address>
+            <remote-as>100</remote-as>
+            <send-community-ext/>
+            <update-source>20.24.131.131</update-source>
+            <address-family>
+              <l2vpn>
+                <evpn>
+                  <enable/>
+                </evpn>
+              </l2vpn>
+            </address-family>
+          </neighbor>
+        </global>
+      </bgp>
+    </router>
+    <interfaces xmlns="http://metaswitch.com/yang/nbu/interface/201709270000Z">
+      <interface>
+        <name>eth1</name>
+        <forwarding-mode>layer-2-forwarding</forwarding-mode>
+      </interface>
+      <interface>
+        <name>eth3</name>
+        <type>ip-forward</type>
+        <forwarding-mode>network-layer</forwarding-mode>
+        <ipv4>
+          <address>
+            <ip>20.24.131.131</ip>
+            <prefix-length>24</prefix-length>
+          </address>
+        </ipv4>
+      </interface>
+      <interface>
+        <name>lo</name>
+        <type>sw-loopback</type>
+        <forwarding-mode>network-layer</forwarding-mode>
+        <ipv4>
+          <address>
+            <ip>100.0.0.131</ip>
+            <prefix-length>32</prefix-length>
+          </address>
+        </ipv4>
+      </interface>
+    </interfaces>
+  </data>
+</rpc-reply>
+
+>>>>out 10-Mar-2020::10:20:17.689 user: admin/871 thandle 16312 hostname JLINDBLA-M-W0J2 device met131 session-id=49
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="2">
+  <get xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <filter>
+      <netconf-state xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring">
+        <datastores>
+          <datastore>
+            <name>running</name>
+            <transaction-id xmlns="http://tail-f.com/yang/netconf-monitoring"/>
+          </datastore>
+        </datastores>
+      </netconf-state>
+    </filter>
+  </get>
+</rpc>
+
+<<<<in 10-Mar-2020::10:20:17.699 user: admin/871 thandle 16312 hostname JLINDBLA-M-W0J2 device met131 session-id=49
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="2">
+  <data>
+    <netconf-state xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring">
+      <datastores>
+        <datastore>
+          <name xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">running</name>
+          <transaction-id xmlns="http://tail-f.com/yang/netconf-monitoring">1583-831982-837707</transaction-id>
+        </datastore>
+      </datastores>
+    </netconf-state>
+  </data>
+</rpc-reply>
+
+>>>>out 10-Mar-2020::10:20:48.223 user: admin/871 thandle 16312 hostname JLINDBLA-M-W0J2 device met131 session-id=49
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="3">
+  <close-session/>
+</rpc>
+
+>>>>out 10-Mar-2020::10:20:48.223 user: admin/871 thandle 16312 hostname JLINDBLA-M-W0J2 device met131 session-id=49 NCS close

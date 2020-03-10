@@ -1,0 +1,47 @@
+<network-instances xmlns="http://openconfig.net/yang/network-instance">
+<network-instance>
+<name>10</name>
+<tables>
+<table>
+<protocol xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:DIRECTLY_CONNECTED</protocol>
+<address-family xmlns:oc-types="http://openconfig.net/yang/openconfig-types">oc-types:IPV6</address-family>
+<config>
+<address-family xmlns:oc-types="http://openconfig.net/yang/openconfig-types">oc-types:IPV6</address-family>
+<protocol xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:DIRECTLY_CONNECTED</protocol>
+</config>
+</table>
+<table>
+<protocol xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:DIRECTLY_CONNECTED</protocol>
+<address-family xmlns:oc-types="http://openconfig.net/yang/openconfig-types">oc-types:IPV4</address-family>
+<config>
+<address-family xmlns:oc-types="http://openconfig.net/yang/openconfig-types">oc-types:IPV4</address-family>
+<protocol xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:DIRECTLY_CONNECTED</protocol>
+</config>
+</table>
+</tables>
+<protocols>
+<protocol>
+<identifier xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:DIRECTLY_CONNECTED</identifier>
+<name>DIRECTLY_CONNECTED</name>
+<config>
+<identifier xmlns:oc-pol-types="http://openconfig.net/yang/policy-types">oc-pol-types:DIRECTLY_CONNECTED</identifier>
+<name>DIRECTLY_CONNECTED</name>
+</config>
+</protocol>
+</protocols>
+<inter-instance-policies>
+<apply-policy>
+<config>
+<import-policy>1</import-policy>
+<export-policy>1</export-policy>
+</config>
+</apply-policy>
+</inter-instance-policies>
+<config>
+<route-distinguisher>65000:6</route-distinguisher>
+<name>10</name>
+<type xmlns:oc-ni-types="http://openconfig.net/yang/network-instance-types">oc-ni-types:L3VRF</type>
+</config>
+</network-instance>
+</network-instances>
+

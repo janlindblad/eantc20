@@ -1,0 +1,1058 @@
+
+root@Arrcus24# 
+root@Arrcus24# 
+root@Arrcus24# 
+root@Arrcus24#       show run
+system hostname Arrcus24
+system login-banner "ARCOS (c) Arrcus, Inc."
+system ssh-server enable true
+system ssh-server permit-root-login true
+system netconf-server enable true
+system netconf-server transport ssh enable true
+system grpc-server enable true
+system grpc-server port 9339
+system grpc-server listen-addresses [ 0.0.0.0 ]
+system aaa authentication admin-user admin-password $6$hCdM8JILJP8oJDHr$g1w0pjRc92tfDAhoQXjrRX3fmXFRHERRRNk23knmOhyOPI5kiC8rAnSJf1ECuzRr9QNMEt/E60znf2suq9wh50
+system aaa authentication admin-user ssh-key eehddydydyd
+system aaa authentication user arrcus
+ password $6$NCAiT0/RhXgiV2ik$MDZwUb2XNbREwAbldYcMdhO5enMPAZR4zf6fupLMC2Maob9A24P1uHDR9mGlXD3F5K0bVuChDpKoF/XeP3Wjt1
+ role     SYSTEM_ROLE_ADMIN
+!
+alias ain
+ expansion " adj-rib-in-post | include \"adj-rib\""
+!
+alias aind
+ expansion " adj-rib-in-post route "
+!
+alias aout
+ expansion " adj-rib-out | include \"adj-rib\""
+!
+alias aoutd
+ expansion " adj-rib-out route "
+!
+alias ap
+ expansion "show network-instance default protocol BGP default all-neighbor * afi-safi * state prefixes"
+!
+alias ap4
+ expansion "show network-instance default protocol BGP default all-neighbor * afi-safi IPV4_UNICAST state prefixes"
+!
+alias ap6
+ expansion "show network-instance default protocol BGP default all-neighbor * afi-safi IPV6_UNICAST state prefixes"
+!
+alias asu
+ expansion "show network-instance default protocol BGP default neighbor * state session-state | select state session-elapsed-time | select state peer-as | select state established-transitions | select state local-as"
+!
+alias att
+ expansion "show network-instance default protocol BGP default rib attr-set"
+!
+alias b4
+ expansion "show network-instance default protocol BGP default rib afi-safi IPV4_UNICAST loc-rib route | include \"rib route\""
+!
+[7m--More--[27m[8D[Kalias b6
+ expansion "show network-instance default protocol BGP default rib afi-safi IPV6_UNICAST loc-rib route | include \"rib route\""
+!
+alias bd
+ expansion "tech-support bgp-debug protocol debug all op on"
+!
+alias be
+ expansion "show network-instance default protocol BGP default rib afi-safi L2VPN_EVPN loc-rib route | include \"loc-rib route\""
+!
+alias be2
+ expansion "show network-instance default protocol BGP default rib afi-safi L2VPN_EVPN loc-rib route route-type 2 | include \"loc-rib route\""
+!
+alias be4
+ expansion "show network-instance default protocol BGP default rib afi-safi L2VPN_EVPN loc-rib route | include \"loc-rib route\""
+!
+alias be5
+ expansion "show network-instance default protocol BGP default rib afi-safi L2VPN_EVPN loc-rib route route-type 5 | include \"loc-rib route\""
+!
+alias be6
+ expansion "show network-instance default protocol BGP default rib afi-safi L2VPN_EVPN loc-rib route route-type 6 | include \"loc-rib route\""
+!
+alias rta
+ expansion "show network-instance Tenant-A rib IPV4 ipv4-entries"
+!
+hardware platform forwarding-mode STORE_AND_FORWARD
+hardware platform forwarding-scale fwd-profile P1
+hardware platform forwarding-scale overlay-nexthop-profile P3
+interface ma1
+ type    ethernetCsmacd
+ enabled true
+ subinterface 0
+  ipv4 address 192.168.10.24
+   prefix-length 23
+  !
+ !
+!
+interface swp1
+ type    ethernetCsmacd
+ enabled true
+ ethernet port-speed SPEED_10GB
+ subinterface 0
+  ipv4 address 10.10.200.247
+   prefix-length 24
+  !
+ !
+!
+[7m--More--[27m[8D[Kinterface swp2
+ type    ethernetCsmacd
+ enabled true
+!
+interface swp3
+ type    ethernetCsmacd
+ enabled true
+ subinterface 0
+  ipv4 address 10.10.23.23
+   prefix-length 24
+  !
+ !
+!
+interface swp4
+ type ethernetCsmacd
+!
+interface swp5
+ type ethernetCsmacd
+!
+interface swp6
+ type ethernetCsmacd
+!
+interface swp7
+ type ethernetCsmacd
+!
+interface swp8
+ type ethernetCsmacd
+!
+interface swp9
+ type ethernetCsmacd
+!
+interface swp10
+ type ethernetCsmacd
+!
+interface swp11
+ type ethernetCsmacd
+!
+interface swp12
+ type ethernetCsmacd
+!
+interface swp13
+ type ethernetCsmacd
+!
+interface swp14
+ type ethernetCsmacd
+!
+[7m--More--[27m[8D[Kinterface swp15
+ type    ethernetCsmacd
+ mtu     1500
+ enabled true
+ ethernet switched-vlan interface-mode TRUNK
+ ethernet switched-vlan trunk-vlans [ 52 ]
+!
+interface swp16
+ type    ethernetCsmacd
+ mtu     1500
+ enabled true
+ ethernet port-speed SPEED_10GB
+ subinterface 0
+  ipv4 address 20.24.131.24
+   prefix-length 24
+  !
+ !
+!
+interface swp17
+ type ethernetCsmacd
+!
+interface swp18
+ type ethernetCsmacd
+!
+interface swp19
+ type ethernetCsmacd
+!
+interface swp20
+ type ethernetCsmacd
+!
+interface swp21
+ type ethernetCsmacd
+!
+interface swp22
+ type ethernetCsmacd
+!
+interface swp23
+ type ethernetCsmacd
+!
+interface swp24
+ type ethernetCsmacd
+!
+interface swp25
+ type ethernetCsmacd
+!
+interface swp26
+[7m--More--[27m[8D[K type ethernetCsmacd
+!
+interface swp27
+ type ethernetCsmacd
+!
+interface swp28
+ type ethernetCsmacd
+!
+interface swp29
+ type ethernetCsmacd
+!
+interface swp30
+ type ethernetCsmacd
+!
+interface swp31
+ type ethernetCsmacd
+!
+interface swp32
+ type ethernetCsmacd
+!
+interface swp33
+ type ethernetCsmacd
+!
+interface swp34
+ type ethernetCsmacd
+!
+interface swp35
+ type ethernetCsmacd
+!
+interface swp36
+ type ethernetCsmacd
+!
+interface swp37
+ type ethernetCsmacd
+!
+interface swp38
+ type ethernetCsmacd
+!
+interface swp39
+ type ethernetCsmacd
+!
+interface swp40
+ type ethernetCsmacd
+!
+interface swp41
+ type ethernetCsmacd
+[7m--More--[27m[8D[K!
+interface swp42
+ type ethernetCsmacd
+!
+interface swp43
+ type ethernetCsmacd
+!
+interface swp44
+ type ethernetCsmacd
+!
+interface swp45
+ type ethernetCsmacd
+!
+interface swp46
+ type ethernetCsmacd
+!
+interface swp47
+ type ethernetCsmacd
+!
+interface swp48
+ type ethernetCsmacd
+!
+interface swp49
+ type ethernetCsmacd
+!
+interface swp50
+ type ethernetCsmacd
+!
+interface swp51
+ type ethernetCsmacd
+!
+interface swp52
+ type ethernetCsmacd
+!
+interface swp53
+ type ethernetCsmacd
+!
+interface swp54
+ type ethernetCsmacd
+!
+interface swp55
+ type ethernetCsmacd
+!
+interface swp56
+ type ethernetCsmacd
+!
+[7m--More--[27m[8D[Kinterface loopback0
+ type    softwareLoopback
+ enabled true
+ subinterface 0
+  ipv4 address 100.0.0.24
+   prefix-length 32
+  !
+ !
+!
+network-instance Arrcus22
+ description CE_Connection_To_Arrcus22
+ interface swp1
+ !
+ protocol STATIC static-routes
+  static-route 0.0.0.0/0
+   next-hop-index 1
+    next-hop 10.10.200.254
+    interface swp1
+   !
+  !
+ !
+!
+network-instance Arrcus23
+ description CE_Connection_To_Arrcus23
+ interface swp3
+ !
+ protocol STATIC static-routes
+  static-route 0.0.0.0/0
+   next-hop-index 1
+    next-hop 10.10.23.254
+    interface swp2
+   !
+  !
+  static-route 10.10.201.0/24
+   next-hop-index 1
+    next-hop 10.10.200.254
+    interface swp1
+   !
+  !
+ !
+!
+network-instance default
+ protocol BGP default
+  global as 100
+  global router-id 20.24.131.131
+  global afi-safi IPV4_UNICAST
+[7m--More--[27m[8D[K   network 100.0.0.24/32
+   !
+  !
+  global afi-safi L2VPN_EVPN
+  !
+  neighbor 20.24.131.131
+   peer-as 100
+   transport local-address 20.24.131.24
+   afi-safi IPV4_UNICAST
+    exit
+   !
+   afi-safi L2VPN_EVPN
+    exit
+   !
+   exit
+  !
+ !
+ protocol STATIC static-routes
+  static-route 0.0.0.0/0
+   next-hop-index 1
+    next-hop 192.168.10.1
+    interface ma1
+   !
+  !
+ !
+!
+network-instance management
+!
+evpn anycast-gateway-mac 00:aa:aa:aa:aa:aa
+lldp interface ma1
+!
+lldp interface swp1
+!
+lldp interface swp2
+!
+lldp interface swp3
+!
+lldp interface swp4
+!
+lldp interface swp5
+!
+lldp interface swp6
+!
+lldp interface swp7
+!
+lldp interface swp8
+[7m--More--[27m[8D[K!
+lldp interface swp9
+!
+lldp interface swp10
+!
+lldp interface swp11
+!
+lldp interface swp12
+!
+lldp interface swp13
+!
+lldp interface swp14
+!
+lldp interface swp15
+!
+lldp interface swp16
+!
+lldp interface swp17
+!
+lldp interface swp18
+!
+lldp interface swp19
+!
+lldp interface swp20
+!
+lldp interface swp21
+!
+lldp interface swp22
+!
+lldp interface swp23
+!
+lldp interface swp24
+!
+lldp interface swp25
+!
+lldp interface swp26
+!
+lldp interface swp27
+!
+lldp interface swp28
+!
+lldp interface swp29
+!
+lldp interface swp30
+!
+lldp interface swp31
+[7m--More--[27m[8D[K!
+lldp interface swp32
+!
+lldp interface swp33
+!
+lldp interface swp34
+!
+lldp interface swp35
+!
+lldp interface swp36
+!
+lldp interface swp37
+!
+lldp interface swp38
+!
+lldp interface swp39
+!
+lldp interface swp40
+!
+lldp interface swp41
+!
+lldp interface swp42
+!
+lldp interface swp43
+!
+lldp interface swp44
+!
+lldp interface swp45
+!
+lldp interface swp46
+!
+lldp interface swp47
+!
+lldp interface swp48
+!
+lldp interface swp49
+!
+lldp interface swp50
+!
+lldp interface swp51
+!
+lldp interface swp52
+!
+lldp interface swp53
+!
+lldp interface swp54
+[7m--More--[27m[8D[K!
+lldp interface swp55
+!
+lldp interface swp56
+!
+overlay local-tunnel-endpoint 0
+ source-interface loopback0
+!
+control-plane service-policy INGRESS
+ name __system_default_copp_policy__
+!
+[7m(END)[27m[5D[Kroot@Arrcus24#    q
+root@Arrcus24:~# 
+root@Arrcus24:~# 
+root@Arrcus24:~# 
+root@Arrcus24:~# 
+root@Arrcus24:~# arcos_cli
+Welcome to ARCOS CLI
+root connected from 192.168.141.129 using ssh on Arrcus24
+[?7hroot@Arrcus24# 
+root@Arrcus24# 
+root@Arrcus24# 
+root@Arrcus24# show run netwning-config network-instance
+network-instance Arrcus22
+ description CE_Connection_To_Arrcus22
+ interface swp1
+ !
+ protocol STATIC static-routes
+  static-route 0.0.0.0/0
+   next-hop-index 1
+    next-hop 10.10.200.254
+    interface swp1
+   !
+  !
+ !
+!
+network-instance Arrcus23
+ description CE_Connection_To_Arrcus23
+ interface swp3
+ !
+ protocol STATIC static-routes
+  static-route 0.0.0.0/0
+   next-hop-index 1
+    next-hop 10.10.23.254
+    interface swp2
+   !
+  !
+  static-route 10.10.201.0/24
+   next-hop-index 1
+    next-hop 10.10.200.254
+    interface swp1
+   !
+  !
+ !
+!
+network-instance default
+ protocol BGP default
+  global as 100
+  global router-id 20.24.131.131
+  global afi-safi IPV4_UNICAST
+   network 100.0.0.24/32
+   !
+  !
+  global afi-safi L2VPN_EVPN
+  !
+  neighbor 20.24.131.131
+   peer-as 100
+   transport local-address 20.24.131.24
+   afi-safi IPV4_UNICAST
+[7m--More--[27m[8D[K    exit
+   !
+   afi-safi L2VPN_EVPN
+    exit
+   !
+   exit
+  !
+ !
+ protocol STATIC static-routes
+  static-route 0.0.0.0/0
+   next-hop-index 1
+    next-hop 192.168.10.1
+    interface ma1
+   !
+  !
+ !
+!
+network-instance management
+!
+[7m(END)[27m[5D[Kroot@Arrcus24#   asu
+root@Arrcus24# show network-instance default protocol BGP default neighbor * state session-state | select state session-elapsed-time | select state peer-as | select state established-transitions | select state local-as
+neighbor
+                                                      SESSION   
+NEIGHBOR       PEER  LOCAL  SESSION      ESTABLISHED  ELAPSED   
+ADDRESS        AS    AS     STATE        TRANSITIONS  TIME      
+----------------------------------------------------------------
+20.24.131.131  100   100    ESTABLISHED  1            08:56:56  
+
+root@Arrcus24# 
+root@Arrcus24# 
+root@Arrcus24# 
+root@Arrcus24# ap
+root@Arrcus24# show network-instance default protocol BGP default all-neighbor * afi-safi * state prefixes
+all-neighbor
+                                                                                                    ADJ    
+                                                                                                    RIB    
+                                                                                                    IN     
+NEIGHBOR       AFI SAFI                      TOTAL     TOTAL                      DELETION          PRE    
+ADDRESS        NAME          RECEIVED  SENT  RECEIVED 0ƒ…  ££££££££[ë p  H0ƒ…   0ƒ…  ðZë p  Š¤>eÿ  ----------------------------------------------------------------------------------------------------------
+20.24.131.131  IPV4_UNICAST  2         1     2         1      0          0        0         0       0      
+               L2VPN_EVPN    0         0     8         6      6          8        0         0       0      
+
+root@Arrcus24# 
+root@Arrcus24# 
+root@Arrcus24# 
+root@Arrcus24# 
+root@Arrcus24# 
+root@Arrcus24# 
+root@Arrcus24# 
+root@Arrcus24# ap  asu   show running-config network-instance                                    show run              show run        asu   ap  show running-config network-instance                                    show network-instance vlan52 l2rib mac-entries                                              ap  show network-instance vlan52 l2rib mac-entries
+-------------------------------------^
+syntax error: unknown element
+root@Arrcus24# 
+System message at 2020-03-10 09:15:26...
+Commit performed by root via ssh using netconf.
+root@Arrcus24# show network-instance vlan52 l2rib mac-entries                                              ap  asu   show running-config network-instance
+network-instance Arrcus22
+ description CE_Connection_To_Arrcus22
+ interface swp1
+ !
+ protocol STATIC static-routes
+  static-route 0.0.0.0/0
+   next-hop-index 1
+    next-hop 10.10.200.254
+    interface swp1
+   !
+  !
+ !
+!
+network-instance Arrcus23
+ description CE_Connection_To_Arrcus23
+ interface swp3
+ !
+ protocol STATIC static-routes
+  static-route 0.0.0.0/0
+   next-hop-index 1
+    next-hop 10.10.23.254
+    interface swp2
+   !
+  !
+  static-route 10.10.201.0/24
+   next-hop-index 1
+    next-hop 10.10.200.254
+    interface swp1
+   !
+  !
+ !
+!
+network-instance default
+ protocol BGP default
+  global as 100
+  global router-id 20.24.131.131
+  global afi-safi IPV4_UNICAST
+   network 100.0.0.24/32
+   !
+  !
+  global afi-safi L2VPN_EVPN
+  !
+  neighbor 20.24.131.131
+   peer-as 100
+   transport local-address 20.24.131.24
+   afi-safi IPV4_UNICAST
+[7m--More--[27m[8D[K    exit
+   !
+   afi-safi L2VPN_EVPN
+    exit
+   !
+   exit
+  !
+ !
+ protocol STATIC static-routes
+  static-route 0.0.0.0/0
+   next-hop-index 1
+    next-hop 192.168.10.1
+    interface ma1
+   !
+  !
+ !
+!
+network-instance management
+!
+network-instance vlan52
+ type                 L2VLAN
+ vlan                 52
+ advertise-mac-routes true
+ protocol BGP vlan52
+  global route-distinguisher 100.0.0.24:52
+  route-target 52:52 both
+  !
+ !
+ vni 52
+  local-tunnel-endpoint-id 0
+ !
+!
+[7m(END)[27m[5D[Kroot@Arrcus24#  
+root@Arrcus24# 
+root@Arrcus24# 
+root@Arrcus24# 
+root@Arrcus24# ap  asu
+root@Arrcus24# show network-instance default protocol BGP default neighbor * state session-state | select state session-elapsed-time | select state peer-as | select state established-transitions | select state local-as
+neighbor
+                                                      SESSION   
+NEIGHBOR       PEER  LOCAL  SESSION      ESTABLISHED  ELAPSED   
+ADDRESS        AS    AS     STATE        TRANSITIONS  TIME      
+----------------------------------------------------------------
+20.24.131.131  100   100    ESTABLISHED  1            08:58:08  
+
+root@Arrcus24# asu  p
+root@Arrcus24# show network-instance default protocol BGP default all-neighbor * afi-safi * state prefixes
+all-neighbor
+                                                                                                    ADJ    
+                                                                                                    RIB    
+                                                                                                    IN     
+NEIGHBOR       AFI SAFI                      TOTAL     TOTAL                      DELETION          PRE    
+ADDRESS        NAME          RECEIVED  SENT  RECEIVED 0ƒ…  ££££££££[ë p  H0ƒ…   0ƒ…  ðZë p  Š¤>eÿ  ----------------------------------------------------------------------------------------------------------
+20.24.131.131  IPV4_UNICAST  2         1     2         1      0          0        0         0       0      
+               L2VPN_EVPN    0         2     8         8      6          8        0         0       0      
+
+root@Arrcus24# ap  asu     show running-config network-instance                                    show network-instance vlan52 l2rib mac-entries
+l2rib mac-entries entry
+                                                                                                   NH    
+                   LOCAL      ORIGIN    SEQ                                    NEXT  ENCAP  L2     NI    
+MAC ADDRESS        INTERFACE  PROTOCOL  NUM  LAST UPDATED                      HOP   TYPE   LABEL  NAME  
+---------------------------------------------------------------------------------------------------------
+00:10:94:00:00:01  swp15      LOCAL     0    2020-00ƒ…  ££££££££[ë p  H0ƒ…   0ƒ…  ðZë p  Š¤>eÿ  
+root@Arrcus24# show network-instance vlan52 l2rib mac-entries
+l2rib mac-entries entry
+                                                                                                   NH    
+                   LOCAL      ORIGIN    SEQ                                    NEXT  ENCAP  L2     NI    
+MAC ADDRESS        INTERFACE  PROTOCOL  NUM  LAST UPDATED                      HOP   TYPE   LABEL  NAME  
+---------------------------------------------------------------------------------------------------------
+00:10:94:00:00:01  swp15      LOCAL     0    2020-00ƒ…  ££££££££[ë p  H0ƒ…   0ƒ…  ðZë p  Š¤>eÿ  
+root@Arrcus24# show network-instance vlan52 l2rib mac-entries
+l2rib mac-entries entry
+                                                                                                   NH    
+                   LOCAL      ORIGIN    SEQ                                    NEXT  ENCAP  L2     NI    
+MAC ADDRESS        INTERFACE  PROTOCOL  NUM  LAST UPDATED                      HOP   TYPE   LABEL  NAME  
+---------------------------------------------------------------------------------------------------------
+00:10:94:00:00:01  swp15      LOCAL     0    2020-00ƒ…  ££££££££[ë p  H0ƒ…   0ƒ…  ðZë p  Š¤>eÿ  
+root@Arrcus24# show network-instance vlan52 l2rib mac-entries
+l2rib mac-entries entry
+                                                                                                   NH    
+                   LOCAL      ORIGIN    SEQ                                    NEXT  ENCAP  L2     NI    
+MAC ADDRESS        INTERFACE  PROTOCOL  NUM  LAST UPDATED                      HOP   TYPE   LABEL  NAME  
+---------------------------------------------------------------------------------------------------------
+00:10:94:00:00:01  swp15      LOCAL     0    2020-00ƒ…  ££££££££[ë p  H0ƒ…   0ƒ…  ðZë p  Š¤>eÿ  
+root@Arrcus24# show network-instance vlan52 l2rib mac-entries
+l2rib mac-entries entry
+                   LOCAL      ORIGIN       SEQ                                                 ENCAP  L2     NH NI    
+MAC ADDRESS        INTERFACE  PROTOCOL     NUM  LAST UPDATED                      NEXT HOP     TYPE   LABEL  NAME     
+----------------------------------------------------------------------------------------------------------------------
+00:10:94:00:00:01  swp15      LOCAL        0    2020-03-10T08:41:06.984516-00:00                                      
+0ƒ…  ££££££££[ë p  H0ƒ…   0ƒ…  ðZë p  Š¤>eÿ  -10T09:16:56.141838-00:00  100.0.0.131  VXLAN  52     default  
+
+root@Arrcus24# show network-instance vlan52 l2rib mac-entries                                              show network-instance vlan52 l2rib mac-entries                                              show network-instance vlan52 l2rib mac-entries                                              show network-instance vlan52 l2rib mac-entries                                              show network-instance vlan52 l2rib mac-entries                                              ap
+root@Arrcus24# show network-instance default protocol BGP default all-neighbor * afi-safi * state prefixes
+all-neighbor
+                                                                                                    ADJ    
+                                                                                                    RIB    
+                                                                                                    IN     
+NEIGHBOR       AFI SAFI                      TOTAL     TOTAL                      DELETION          PRE    
+ADDRESS        NAME          RECEIVED  SENT  RECEIVED  SENT   WITHDRAWN  DELETED  PENDING   DENIED  ONLY   
+-----------------------------------------------------------------------------------------------------------
+20.24.131.131  IPV4_UNICAST  2         1     2         1      0          0        0         0       0      
+               L2VPN_EVPN    2         2     10        8      6          8        0         0       0      
+
+root@Arrcus24# shiw    show runin   int swp15
+interface swp15
+ type    ethernetCsmacd
+ mtu     1500
+ enabled true
+ ethernet switched-vlan interface-mode TRUNK
+ ethernet switched-vlan trunk-vlans [ 52 ]
+!
+root@Arrcus24# show int swp15
+interface swp15
+ type                           ethernetCsmacd
+ mtu                            1500
+ name                           swp15
+ description                    
+ enabled                        true
+ ifindex                        161
+ admin-status                   UP
+ oper-status                    UP
+ last-change                    2020-03-10T00:17:20.336712-00:00
+ counters in-octets  411565312
+ counters in-unicast-pkts 3215345
+ counters in-broadcast-pkts 16
+ counters in-multicast-pkts 0
+ counters in-discards 70
+ counters in-errors  0
+ counters in-unknown-protos 0
+ counters out-octets 387974483
+ counters out-unicast-pkts 3020787
+ counters out-broadcast-pkts 0
+ counters out-multicast-pkts 17317
+ counters out-discards 201494
+ counters out-errors 0
+ counters in-bits-rate 101792
+ counters in-bits-rate-brief "101.79 kbps"
+ counters in-pkts-rate 100
+ counters out-bits-rate 70392
+ counters out-bits-rate-brief "70.39 kbps"
+ counters out-pkts-rate 101
+ counters queue-drop-pkts 0
+ counters errors fcs-error 0
+ counters errors align-error 0
+ counters errors symbol-error 0
+ counters errors giant-pkts 0
+ counters errors runt-pkts 0
+ load-interval                  30
+ media-type                     FIBER
+ module-type                    10G_BASE_CR
+ fec                            fec-none
+ fec-corrected-errors           0
+ fec-uncorrected-errors         0
+ speed-group                    13
+ time-elapsed-since-last-change 09:00:12
+ dynamic ipv6-link-local fe80::b6a90ƒ…  ££££££££[ë p  H0ƒ…   0ƒ…  ðZë p  Š¤>eÿ  :C9:2C
+ ethernet state auto-negotiate false
+[7m--More--[27m[8D[KAborted: by user
+root@Arrcus24# show int swp15
+interface swp15
+ type                           ethernetCsmacd
+ mtu                            1500
+ name                           swp15
+ description                    
+ enabled                        true
+ ifindex                        161
+ admin-status                   UP
+ oper-status                    UP
+ last-change                    2020-03-10T00:17:20.336712-00:00
+ counters in-octets  411565312
+ counters in-unicast-pkts 3215345
+ counters in-broadcast-pkts 16
+ counters in-multicast-pkts 0
+ counters in-discards 70
+ counters in-errors  0
+ counters in-unknown-protos 0
+ counters out-octets 387974483
+ counters out-unicast-pkts 3020787
+ counters out-broadcast-pkts 0
+ counters out-multicast-pkts 17317
+ counters out-discards 201494
+ counters out-errors 0
+ counters in-bits-rate 101792
+ counters in-bits-rate-brief "101.79 kbps"
+ counters in-pkts-rate 100
+ counters out-bits-rate 70392
+ counters out-bits-rate-brief "70.39 kbps"
+ counters out-pkts-rate 101
+ counters queue-drop-pkts 0
+ counters errors fcs-error 0
+ counters errors align-error 0
+ counters errors symbol-error 0
+ counters errors giant-pkts 0
+ counters errors runt-pkts 0
+ load-interval                  30
+ media-type                     FIBER
+ module-type                    10G_BASE_CR
+ fec                            fec-none
+ fec-corrected-errors           0
+ fec-uncorrected-errors         0
+ speed-group                    13
+ time-elapsed-since-last-change 09:00:15
+ dynamic ipv6-link-local fe80::b6a9:fcff:fe1a:c92c
+ ethernet state mac-address B4:A9:FC:1A:C9:2C
+ ethernet state auto-negotiate false
+[7m--More--[27m[8D[KAborted: by user
+root@Arrcus24# show int swp15 6
+interface swp16
+ type                           ethernetCsmacd
+ mtu                            1500
+ name                           swp16
+ description                    
+ enabled                        true
+ ifindex                        162
+ admin-status                   UP
+ oper-status                    UP
+ last-change                    2020-03-10T00:17:20.393622-00:00
+ counters in-octets  527419148
+ counters in-unicast-pkts 3032127
+ counters in-broadcast-pkts 0
+ counters in-multicast-pkts 1075
+ counters in-discards 0
+ counters in-errors  0
+ counters in-unknown-protos 0
+ counters out-octets 524985675
+ counters out-unicast-pkts 3017930
+ counters out-broadcast-pkts 1
+ counters out-multicast-pkts 1088
+ counters out-discards 2
+ counters out-errors 0
+ counters in-bits-rate 126032
+ counters in-bits-rate-brief "126.03 kbps"
+ counters in-pkts-rate 93
+ counters out-bits-rate 102976
+ counters out-bits-rate-brief "102.98 kbps"
+ counters out-pkts-rate 77
+ counters queue-drop-pkts 0
+ counters errors fcs-error 0
+ counters errors align-error 0
+ counters errors symbol-error 0
+ counters errors giant-pkts 0
+ counters errors runt-pkts 0
+ load-interval                  30
+ media-type                     FIBER
+ module-type                    10G_BASE_CR
+ fec                            fec-none
+ fec-corrected-errors           0
+ fec-uncorrected-errors         0
+ speed-group                    13
+ time-elapsed-since-last-change 09:00:19
+ dynamic ipv6-link-local fe80::b6a9:fcff0ƒ…  ££££££££[ë p  H0ƒ…   0ƒ…  ðZë p  Š¤>eÿ  D
+ ethernet state auto-negotiate false
+[7m--More--[27m[8D[KAborted: by user
+root@Arrcus24# show int swp16
+interface swp16
+ type                           ethernetCsmacd
+ mtu                            1500
+ name                           swp16
+ description                    
+ enabled                        true
+ ifindex                        162
+ admin-status                   UP
+ oper-status                    UP
+ last-change                    2020-03-10T00:17:20.393622-00:00
+ counters in-octets  527600865
+ counters in-unicast-pkts 3033172
+ counters in-broadcast-pkts 0
+ counters in-multicast-pkts 1076
+ counters in-discards 0
+ counters in-errors  0
+ counters in-unknown-protos 0
+ counters out-octets 525167486
+ counters out-unicast-pkts 3018976
+ counters out-broadcast-pkts 1
+ counters out-multicast-pkts 1088
+ counters out-discards 2
+ counters out-errors 0
+ counters in-bits-rate 131520
+ counters in-bits-rate-brief "131.52 kbps"
+ counters in-pkts-rate 97
+ counters out-bits-rate 115008
+ counters out-bits-rate-brief "115.01 kbps"
+ counters out-pkts-rate 86
+ counters queue-drop-pkts 0
+ counters errors fcs-error 0
+ counters errors align-error 0
+ counters errors symbol-error 0
+ counters errors giant-pkts 0
+ counters errors runt-pkts 0
+ load-interval                  30
+ media-type                     FIBER
+ module-type                    10G_BASE_CR
+ fec                            fec-none
+ fec-corrected-errors           0
+ fec-uncorrected-errors         0
+ speed-group                    13
+ time-elapsed-since-last-change 09:00:29
+ dynamic ipv6-link-local fe80::b6a9:fcff0ƒ…  ££££££££[ë p  H0ƒ…   0ƒ…  ðZë p  Š¤>eÿ  D
+ ethernet state auto-negotiate false
+[7m--More--[27m[8D[KAborted: by user
+root@Arrcus24# 
+System message at 2020-03-10 09:18:16...
+Commit performed by root via ssh using netconf.
+root@Arrcus24# show runn 
+Possible completions:
+  acl                       Access Control List (ACL) configuration
+  alias                     Command alias configuration
+  bfd                       Bi-Directional Forwarding Detection (BFD) configuration
+  break-out                 Physical port break-out configuration
+  control-plane             Control Plane configuration
+  copp                      Control Plane Policing (CoPP) configuration
+  event                     Event manager configuration
+  evpn                      EVPN configuration
+  hardware                  Platform specific configuration
+  interface                 Interface configuration
+  ip-neighbor               Global ARP and ND neighbor configuration
+  key-chains                All configured key-chains on the device.
+  knob-acl                  Top-level container for Global ACL knobs
+  lacp                      Link Aggregation Control Protocol (LACP) configuration
+  lldp                      Link Layer Discovery Protocol (LLDP) configuration
+  monitor-session           List of monitoring sessions (enabled only when atleast one destination configured)
+  mpls-label-ranges         MPLS label range configuration
+  network-instance          Network instances configured on the local system
+  network-instance-global   Global parameters related to any network-instance
+  overlay                   Network Overlays Manager CLI
+  qos                       Quality of Service (QoS) configuration
+  relay-agent               DHCP Relay Agent co0ƒ…  ££££££££[ë p  H0ƒ…   0ƒ…  ðZë p  Š¤>eÿ  configuration
+  sflow                     sFlow configuration
+  stp                       Spanning Tree Protocol (STP) configuration
+  system                    System level configuration
+  telemetry-system          Telemetry system configuration
+  vlan                      Virtual Local Area Network (VLAN) configuration
+  |                         Output modifiers
+  <cr>                      
+root@Arrcus24# show runn neting-config network-instance
+network-instance Arrcus22
+ description CE_Connection_To_Arrcus22
+ interface swp1
+ !
+ protocol STATIC static-routes
+  static-route 0.0.0.0/0
+   next-hop-index 1
+    next-hop 10.10.200.254
+    interface swp1
+   !
+  !
+ !
+!
+network-instance Arrcus23
+ description CE_Connection_To_Arrcus23
+ interface swp3
+ !
+ protocol STATIC static-routes
+  static-route 0.0.0.0/0
+   next-hop-index 1
+    next-hop 10.10.23.254
+    interface swp2
+   !
+  !
+  static-route 10.10.201.0/24
+   next-hop-index 1
+    next-hop 10.10.200.254
+    interface swp1
+   !
+  !
+ !
+!
+network-instance default
+ protocol BGP default
+  global as 100
+  global router-id 20.24.131.131
+  global afi-safi IPV4_UNICAST
+   network 100.0.0.24/32
+   !
+  !
+  global afi-safi L2VPN_EVPN
+  !
+  neighbor 20.24.131.131
+   peer-as 100
+   transport local-address 20.24.131.24
+   afi-safi IPV4_UNICAST
+[7m--More--[27m[8D[K    exit
+   !
+   afi-safi L2VPN_EVPN
+    exit
+   !
+   exit
+  !
+ !
+ protocol STATIC static-routes
+  static-route 0.0.0.0/0
+   next-hop-index 1
+    next-hop 192.168.10.1
+    interface ma1
+   !
+  !
+ !
+!
+network-instance management
+!
+[7m(END)[27m[5D[Kroot@Arrcus24#  asu
+root@Arrcus24# show network-instance default protocol BGP default neighbor * state session-state | select state session-elapsed-time | select state peer-as | select state established-transitions | select state local-as
+neighbor
+                                                      SESSION   
+NEIGHBOR       PEER  LOCAL  SESSION      ESTABLISHED  ELAPSED   
+ADDRESS        AS    AS     STATE        TRANSITIONS  TIME      
+----------------------------------------------------------------
+20.24.131.131  100   100    ESTABLISHED  1            09:01:50  
+
+root@Arrcus24# ap
+root@Arrcus24# show network-instance default protocol BGP default all-neighbor * afi-safi * state prefixes
+all-neighbor
+                                                                                                    ADJ    
+                                                                                                    RIB    
+                                                                                                    IN     
+NEIGHBOR       AFI SAFI                      TOTAL     TOTAL                      DELETION          PRE    
+ADDRESS        NAME          RECEIVED  SENT  RECEIVED  SENT   WITHDRAWN  DELETED  PENDING   DENIED  ONLY   
+-----------------------------------------------------------------------------------------------------------
+20.24.131.131  IPV4_UNICAST  2         1     2         1      0          0        0         0       0      
+               L2VPN_EVPN    0         0     10        8      8          10       0         0       0      
+
+root@Arrcus24# 

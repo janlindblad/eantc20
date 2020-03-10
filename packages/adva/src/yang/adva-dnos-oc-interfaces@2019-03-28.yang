@@ -180,7 +180,7 @@ module adva-dnos-oc-interfaces {
   }
 
   augment "/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinterface/oc-if:config" {
-    when "../../../oc-if:config/oc-if:type = 'ift:softwareLoopback' or ../../../oc-if:config/oc-if:type = 'ift:l3ipvlan'";
+    //when "../../../oc-if:config/oc-if:type = 'ift:softwareLoopback' or ../../../oc-if:config/oc-if:type = 'ift:l3ipvlan'";//JLINDBLA
     description
       "Adds ADVA interface data";
     uses adva-vrf-config;

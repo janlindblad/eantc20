@@ -1,0 +1,49 @@
+<interfaces xmlns="http://openconfig.net/yang/interfaces">
+<interface>
+<name>eth-1/0/2.1</name>
+<subinterfaces>
+<subinterface>
+<index>0</index>
+<config>
+<index>0</index>
+<vrf xmlns="http://www.advaoptical.com/cim/adva-dnos-oc-interfaces">10</vrf>
+</config>
+<ipv4 xmlns="http://openconfig.net/yang/interfaces/ip">
+<addresses>
+<address>
+<ip>20.6.167.6</ip>
+<config>
+<prefix-length>24</prefix-length>
+<ip>20.6.167.6</ip>
+</config>
+</address>
+</addresses>
+</ipv4>
+<ipv6 xmlns="http://openconfig.net/yang/interfaces/ip">
+<addresses>
+<address>
+<ip>2001:0:6:167::6</ip>
+<config>
+<prefix-length>64</prefix-length>
+<ip>2001:0:6:167::6</ip>
+</config>
+</address>
+</addresses>
+<config>
+</config>
+</ipv6>
+<vlan xmlns="http://openconfig.net/yang/vlan">
+<config>
+<vlan-id>206</vlan-id>
+</config>
+</vlan>
+</subinterface>
+</subinterfaces>
+<config>
+<enabled>true</enabled>
+<name>eth-1/0/2.1</name>
+<type xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">ianaift:l3ipvlan</type>
+</config>
+</interface>
+</interfaces>
+

@@ -1,0 +1,34 @@
+4.4 Arista
+
+18:18:29 admin@ncs(config-config)# devices device ari20 sync-f 
+result true
+18:19:21 admin@ncs(config-config)# rload merge 4.4-ari20-diff.cfg                                                                                    
+Loading.
+220 bytes parsed in 0.11 sec (1.89 KiB/sec)
+18:21:06 admin@ncs(config-address-20.20.168.20)# sh c
+oc-if:interfaces interface Vlan4046
+ routed-vlan ipv4 addresses address 20.20.168.20
+  config ip 20.20.168.20
+ !
+ routed-vlan ipv4 addresses address 20.20.168.20
+  config prefix-length 24
+  config addr-type PRIMARY
+ !
+!
+18:21:08 admin@ncs(config-address-20.20.168.20)# commit
+Commit complete.
+
+
+18:34:33 admin@ncs# con
+Entering configuration mode terminal
+18:34:34 admin@ncs(config)# no devices device ari20 config oc-if:interfaces interface Vlan4046 routed-vlan ipv4 addresses address 20.20.168.20
+18:34:47 admin@ncs(config)# show c
+devices device ari20
+ config
+  oc-if:interfaces interface Vlan4046
+   no routed-vlan ipv4 addresses address 20.20.168.20
+  !
+ !
+!
+18:34:48 admin@ncs(config)# commit
+Commit complete.
