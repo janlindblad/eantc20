@@ -1,0 +1,158 @@
+4.7 Juniper Nokia NSO
+
+=====[#1]=====>
+=====[#2]=====>
+
+19:17:00 admin@ncs# devices device nok150 sync-f
+result true
+19:19:05 admin@ncs# devices device jun105 sync-f 
+result true
+
+
+=====[#3]=====>
+
+19:19:13 admin@ncs# evpn connections connection 476 re-deploy dry-run 
+cli {
+    local-node {
+        data  devices {
+                   device jun105 {
+                       config {
+                           configuration {
+                               routing-instances {
+              +                    instance 476-79 {
+              +                        instance-type evpn;
+              +                        vlan-id none;
+              +                        interface xe-0/1/7.300;
+              +                        route-distinguisher {
+              +                            rd-type 100.0.0.105:79;
+              +                        }
+              +                        vrf-target {
+              +                            community target:65000:79;
+              +                        }
+              +                        protocols {
+              +                            evpn {
+              +                            }
+              +                        }
+              +                    }
+                               }
+                           }
+                       }
+                   }
+                   device nok150 {
+                       config {
+                           configure {
+                               service {
+              +                    vpls 79 {
+              +                        service-id 79;
+              +                        customer 1;
+              +                        admin-state enable;
+              +                        bgp 1 {
+              +                            route-target {
+              +                                export target:65000:79;
+              +                                import target:65000:79;
+              +                            }
+              +                        }
+              +                        bgp-evpn {
+              +                            evi 79;
+              +                            mpls 1 {
+              +                                admin-state enable;
+              +                                auto-bind-tunnel {
+              +                                    resolution any;
+              +                                }
+              +                            }
+              +                        }
+              +                        sap esat-2/1/10:7 {
+              +                            admin-state enable;
+              +                        }
+              +                    }
+                               }
+                           }
+                       }
+                   }
+               }
+              
+    }
+}
+19:20:08 admin@ncs# evpn connections connection 476 re-deploy        
+19:20:24 admin@ncs# 
+System message at 2020-03-10 19:20:24...
+Commit performed by admin via console using cli.
+19:20:24 admin@ncs# *** ALARM final-commit-error: RPC error towards nok150: operation_failed: 
+            command failed
+            MINOR: CLI Command not allowed for this user.
+
+=====[Comment]=====> 
+=== The error above happens with a copy command after the network wide transaction has finished,
+=== and is of no consequence in the context of the test.
+
+=====[#6]=====>
+
+19:20:24 admin@ncs# evpn connections connection 476 un-deploy dry-run
+cli {
+    local-node {
+        data  devices {
+                   device jun105 {
+                       config {
+                           configuration {
+                               routing-instances {
+              -                    instance 476-79 {
+              -                        instance-type evpn;
+              -                        vlan-id none;
+              -                        interface xe-0/1/7.300;
+              -                        route-distinguisher {
+              -                            rd-type 100.0.0.105:79;
+              -                        }
+              -                        vrf-target {
+              -                            community target:65000:79;
+              -                        }
+              -                        protocols {
+              -                            evpn {
+              -                            }
+              -                        }
+              -                    }
+                               }
+                           }
+                       }
+                   }
+                   device nok150 {
+                       config {
+                           configure {
+                               service {
+              -                    vpls 79 {
+              -                        service-id 79;
+              -                        customer 1;
+              -                        admin-state enable;
+              -                        bgp 1 {
+              -                            route-target {
+              -                                export target:65000:79;
+              -                                import target:65000:79;
+              -                            }
+              -                        }
+              -                        bgp-evpn {
+              -                            evi 79;
+              -                            mpls 1 {
+              -                                admin-state enable;
+              -                                auto-bind-tunnel {
+              -                                    resolution any;
+              -                                }
+              -                            }
+              -                        }
+              -                        sap esat-2/1/10:7 {
+              -                            admin-state enable;
+              -                        }
+              -                    }
+                               }
+                           }
+                       }
+                   }
+               }
+              
+    }
+}
+19:22:37 admin@ncs# evpn connections connection 476 un-deploy        
+Error: RPC error towards nok150: lock_denied: 
+            MINOR: MGMT_CORE #2052: Exclusive datastore access unavailable - model-driven interface editing global candidate
+        
+19:22:46 admin@ncs# evpn connections connection 476 un-deploy
+19:22:58 admin@ncs# 
+

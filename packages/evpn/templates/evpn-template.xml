@@ -6,7 +6,9 @@
 
       <!-- METASWITCH -->
       <?if-ned-id meta_130-nc-1.0:meta_130-nc-1.0?>
-      <evpn xmlns="http://metaswitch.com/yang/nbu/evpn/201703150000Z" tags="merge">
+
+      <!-- VxLAN style implementation -->
+      <!--evpn xmlns="http://metaswitch.com/yang/nbu/evpn/201703150000Z" tags="merge">
         <instance>
           <evi-name>{$SERVICE_NAME}_{$EVI}</evi-name>
           <evi>{$EVI}</evi>
@@ -54,6 +56,57 @@
             </flexible>
           </encapsulation>
         </interface>
+      </interfaces-->
+
+      <!-- MPLS style implementation -->
+      <evpn xmlns="http://metaswitch.com/yang/nbu/evpn/201703150000Z" tags="merge">
+        <instance>
+          <evi-name>{$SERVICE_NAME}_{$EVI}</evi-name>
+          <evi>{$EVI}</evi>
+          <vpn-target>
+            <route-target>65000:{$VNI}</route-target>
+            <route-target-type>both</route-target-type>
+          </vpn-target>
+          <mpls/>
+          <bridge-domain>
+            <interfaces>
+              <interface>
+                <if-name>{$CE_INTERFACE}</if-name>
+              </interface>
+            </interfaces>
+          </bridge-domain>
+          <auto-rt-type>
+            <none/>
+          </auto-rt-type>
+        </instance>
+      </evpn>
+      <!--evpn xmlns="http://metaswitch.com/yang/nbu/evpn/201703150000Z">
+      <instance>
+        <evi-name>evi4047</evi-name>
+        <evi>4047</evi>
+        <vpn-target>
+          <route-target>65000:4047</route-target>
+          <route-target-type>both</route-target-type>
+        </vpn-target>
+        <mpls/>
+        <bridge-domain>
+          <interfaces>
+            <interface>
+              <if-name>eth1</if-name>
+            </interface>
+          </interfaces>
+        </bridge-domain>
+        <auto-rt-type>
+          <none/>
+        </auto-rt-type>
+      </instance>
+      </evpn-->
+
+      <interfaces xmlns="http://metaswitch.com/yang/nbu/interface/201709270000Z" tags="merge">
+        <interface>
+          <name>{$CE_INTERFACE}</name>
+          <forwarding-mode>layer-2-forwarding</forwarding-mode>
+        </interface>
       </interfaces>
       <!-- END METASWITCH -->
 
@@ -62,7 +115,7 @@
       <configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf" tags="merge">
         <service>
           <vpls>
-            <service-name>{$SERVICE_NAME}{$EVI}</service-name>
+            <service-name>{$EVI}</service-name>
             <service-id>{$EVI}</service-id>
             <customer>1</customer>
             <admin-state>enable</admin-state>
@@ -98,9 +151,9 @@
         <routing-instances xmlns="http://yang.juniper.net/junos/conf/routing-instances">
           <instance>
             <name>{$SERVICE_NAME}-{$EVI}</name>
-            <vtep-source-interface>
+            <!--vtep-source-interface>
               <interface-name>lo0.0</interface-name>
-            </vtep-source-interface>
+            </vtep-source-interface-->
             <instance-type>evpn</instance-type>
             <vlan-id>none</vlan-id>
             <interface>
