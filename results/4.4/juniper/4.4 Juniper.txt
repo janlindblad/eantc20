@@ -1,0 +1,500 @@
+4.4 Juniper
+
+
+
+15:07:28 admin@ncs(config)# devices device jun105 sync-f
+result true
+15:07:32 admin@ncs(config)# rollv
+                            ^
+% Invalid input detected at '^' marker.
+15:07:32 admin@ncs(config)# rollv
+                            ^
+% Invalid input detected at '^' marker.
+15:07:32 admin@ncs(config)# rollback configuration 
+15:07:44 admin@ncs(config)# show c
+devices device jun105
+ config
+  configuration interfaces interface xe-0/1/7
+   no disable
+  !
+ !
+!
+15:07:45 admin@ncs(config)# commit
+Commit complete.
+15:07:52 admin@ncs(config)# rollback configuration 
+15:08:00 admin@ncs(config)# show c
+devices device jun105
+ config
+  configuration interfaces interface xe-0/1/7
+   disable
+  !
+ !
+!
+15:08:02 admin@ncs(config)# commit
+Commit complete.
+15:08:05 admin@ncs(config)# devices device jun105 rpc rpc-get-interface-information
+15:10:49 admin@ncs(config-device-jun105)# 
+15:11:00 admin@ncs(config-device-jun105)# devices device jun105 rpc rpc-get-interface-information xe-0/1/7
+Terminated: 15
+JLINDBLA-M-W0J2:eantc20 jlindbla$ ncs_cli -Cu admin
+
+admin connected from 127.0.0.1 using console on JLINDBLA-M-W0J2
+15:13:53 admin@ncs# devices device jun105 rpc rpc-get-interface-informationget-interface-informationTerminated: 15
+JLINDBLA-M-W0J2:eantc20 jlindbla$ ncs_cli -Cu admin
+
+admin connected from 127.0.0.1 using console on JLINDBLA-M-W0J2
+15:14:23 admin@ncs# devices device jun105 rpc rpc-get-interface-informationTerminated: 15
+JLINDBLA-M-W0J2:eantc20 jlindbla$ ncs_cli -Cu admin
+
+admin connected from 127.0.0.1 using console on JLINDBLA-M-W0J2
+15:15:04 admin@ncs# coml
+                    ^
+% Invalid input detected at '^' marker.
+15:15:04 admin@ncs# compl
+Possible completions:
+  complete-on-space   Enable/disable completion on space
+  compliance          Compliance reporting
+15:15:04 admin@ncs# complete-on-space false 
+15:15:10 admin@ncs# devices device jun105 rpc rpc-get-interface-information get-interface-information interface-name xe-0/1/7
+interface-information <physical-interface>
+                         <name>
+                       xe-0/1/7
+                       </name>
+                         <admin-status junos:format="Administratively down">
+                       down
+                       </admin-status>
+                         <oper-status>
+                       down
+                       </oper-status>
+                         <local-index>
+                       159
+                       </local-index>
+                         <snmp-index>
+                       549
+                       </snmp-index>
+                         <description>
+                       To_Spirent_168_port4_slot_1
+                       </description>
+                         <link-level-type>
+                       Flexible-Ethernet
+                       </link-level-type>
+                         <sonet-mode>
+                       LAN-PHY
+                       </sonet-mode>
+                         <mtu>
+                       1522
+                       </mtu>
+                         <mru>
+                       1530
+                       </mru>
+                         <source-filtering>
+                       disabled
+                       </source-filtering>
+                         <speed>
+                       10Gbps
+                       </speed>
+                         <bpdu-error>
+                       none
+                       </bpdu-error>
+                         <ld-pdu-error>
+                       none
+                       </ld-pdu-error>
+                         <l2pt-error>
+                       none
+                       </l2pt-error>
+                         <loopback>
+                       none
+                       </loopback>
+                         <if-flow-control>
+                       enabled
+                       </if-flow-control>
+                         <if-speed-cfg>
+                       Auto
+                       </if-speed-cfg>
+                         <pad-to-minimum-frame-size>
+                       Disabled
+                       </pad-to-minimum-frame-size>
+                         <if-device-flags>
+                           <ifdf-present/>
+                           <ifdf-running/>
+                           <ifdf-down/>
+                         </if-device-flags>
+                         <ifd-specific-config-flags>
+                           <internal-flags>
+                       0x200
+                       </internal-flags>
+                         </ifd-specific-config-flags>
+                         <if-config-flags>
+                           <iff-hardware-down/>
+                           <iff-down/>
+                           <iff-snmp-traps/>
+                           <internal-flags>
+                       0x4000
+                       </internal-flags>
+                         </if-config-flags>
+                         <if-media-flags>
+                           <internal-flags>
+                       0x800
+                       </internal-flags>
+                         </if-media-flags>
+                         <physical-interface-cos-information>
+                           <physical-interface-cos-hw-max-queues>
+                       8
+                       </physical-interface-cos-hw-max-queues>
+                           <physical-interface-cos-use-max-queues>
+                       8
+                       </physical-interface-cos-use-max-queues>
+                           <physical-interface-schedulers>
+                       0
+                       </physical-interface-schedulers>
+                         </physical-interface-cos-information>
+                         <current-physical-address>
+                       88:e6:4b:c0:c4:72
+                       </current-physical-address>
+                         <hardware-physical-address>
+                       88:e6:4b:c0:c4:72
+                       </hardware-physical-address>
+                         <interface-flapped junos:seconds="79408">
+                       2020-03-10 01:04:40 CET (22:03:28 ago)
+                       </interface-flapped>
+                         <traffic-statistics junos:style="brief">
+                           <input-bps>
+                       0
+                       </input-bps>
+                           <input-pps>
+                       0
+                       </input-pps>
+                           <output-bps>
+                       0
+                       </output-bps>
+                           <output-pps>
+                       0
+                       </output-pps>
+                         </traffic-statistics>
+                         <active-alarms>
+                           <interface-alarms>
+                             <ethernet-alarm-link-down/>
+                           </interface-alarms>
+                         </active-alarms>
+                         <active-defects>
+                           <interface-alarms>
+                             <ethernet-alarm-link-down/>
+                             <ethernet-alarm-link-local-fault/>
+                           </interface-alarms>
+                         </active-defects>
+                         <ethernet-pcs-statistics junos:style="verbose">
+                           <bit-error-seconds>
+                       6
+                       </bit-error-seconds>
+                           <errored-blocks-seconds>
+                       6
+                       </errored-blocks-seconds>
+                         </ethernet-pcs-statistics>
+                         <interface-transmit-statistics>
+                       Disabled
+                       </interface-transmit-statistics>
+                         <logical-interface>
+                           <name>
+                       xe-0/1/7.0
+                       </name>
+                           <local-index>
+                       340
+                       </local-index>
+                           <snmp-index>
+                       541
+                       </snmp-index>
+                           <if-config-flags>
+                             <iff-device-down/>
+                             <iff-snmp-traps/>
+                             <internal-flags>
+                       0x4000
+                       </internal-flags>
+                           </if-config-flags>
+                           <link-address junos:format="VLAN-Tag [ 0x8100.400 ] ">
+                       [ 0x8100.400 ] 
+                       </link-address>
+                           <encapsulation>
+                       ENET2
+                       </encapsulation>
+                           <policer-overhead/>
+                           <traffic-statistics junos:style="brief">
+                             <input-packets>
+                       0
+                       </input-packets>
+                             <output-packets>
+                       0
+                       </output-packets>
+                           </traffic-statistics>
+                           <filter-information/>
+                           <address-family>
+                             <address-family-name>
+                       inet
+                       </address-family-name>
+                             <mtu>
+                       1500
+                       </mtu>
+                             <max-local-cache>
+                       100000
+                       </max-local-cache>
+                             <new-hold-limit>
+                       100000
+                       </new-hold-limit>
+                             <intf-curr-cnt>
+                       0
+                       </intf-curr-cnt>
+                             <intf-unresolved-cnt>
+                       0
+                       </intf-unresolved-cnt>
+                             <intf-dropcnt>
+                       0
+                       </intf-dropcnt>
+                             <address-family-flags>
+                               <ifff-is-primary/>
+                               <ifff-sendbcast-pkt-to-re/>
+                               <internal-flags>
+                       0x0
+                       </internal-flags>
+                             </address-family-flags>
+                             <interface-address>
+                               <ifa-flags>
+                                 <ifaf-down/>
+                                 <ifaf-current-preferred/>
+                                 <ifaf-current-primary/>
+                               </ifa-flags>
+                               <ifa-destination>
+                       20.105.168/24
+                       </ifa-destination>
+                               <ifa-local>
+                       20.105.168.105
+                       </ifa-local>
+                               <ifa-broadcast>
+                       20.105.168.255
+                       </ifa-broadcast>
+                             </interface-address>
+                           </address-family>
+                           <address-family>
+                             <address-family-name>
+                       inet6
+                       </address-family-name>
+                             <mtu>
+                       1500
+                       </mtu>
+                             <max-local-cache>
+                       75000
+                       </max-local-cache>
+                             <new-hold-limit>
+                       75000
+                       </new-hold-limit>
+                             <intf-curr-cnt>
+                       0
+                       </intf-curr-cnt>
+                             <intf-unresolved-cnt>
+                       0
+                       </intf-unresolved-cnt>
+                             <intf-dropcnt>
+                       0
+                       </intf-dropcnt>
+                             <address-family-flags>
+                               <ifff-is-primary/>
+                               <internal-flags>
+                       0x0
+                       </internal-flags>
+                             </address-family-flags>
+                             <interface-address>
+                               <ifa-flags>
+                                 <ifaf-down/>
+                                 <ifaf-current-preferred/>
+                                 <ifaf-current-primary/>
+                               </ifa-flags>
+                               <ifa-destination>
+                       2001:105:168::/64
+                       </ifa-destination>
+                               <ifa-local>
+                       2001:105:168::105
+                       </ifa-local>
+                               <interface-address>
+                                 <in6-addr-flags>
+                                   <in6-tentative/>
+                                 </in6-addr-flags>
+                               </interface-address>
+                             </interface-address>
+                             <interface-address>
+                               <ifa-flags>
+                                 <ifaf-down/>
+                                 <ifaf-current-preferred/>
+                                 <internal-flags>
+                       0x800
+                       </internal-flags>
+                               </ifa-flags>
+                               <ifa-destination>
+                       fe80::/64
+                       </ifa-destination>
+                               <ifa-local>
+                       fe80::8ae6:4b01:90c0:c472
+                       </ifa-local>
+                               <interface-address>
+                                 <in6-addr-flags>
+                                   <in6-tentative/>
+                                 </in6-addr-flags>
+                               </interface-address>
+                             </interface-address>
+                           </address-family>
+                           <address-family>
+                             <address-family-name>
+                       multiservice
+                       </address-family-name>
+                             <mtu>
+                       Unlimited
+                       </mtu>
+                             <address-family-flags>
+                               <internal-flags>
+                       0x0
+                       </internal-flags>
+                             </address-family-flags>
+                           </address-family>
+                         </logical-interface>
+                         <logical-interface>
+                           <name>
+                       xe-0/1/7.300
+                       </name>
+                           <local-index>
+                       338
+                       </local-index>
+                           <snmp-index>
+                       559
+                       </snmp-index>
+                           <if-config-flags>
+                             <iff-device-down/>
+                             <iff-snmp-traps/>
+                             <internal-flags>
+                       0x20004000
+                       </internal-flags>
+                           </if-config-flags>
+                           <link-address junos:format="VLAN-Tag [ 0x8100.300 ] In(pop) Out(push 0x8100.300) ">
+                       [ 0x8100.300 ] In(pop) Out(push 0x8100.300) 
+                       </link-address>
+                           <encapsulation>
+                       VLAN-Bridge
+                       </encapsulation>
+                           <policer-overhead/>
+                           <traffic-statistics junos:style="brief">
+                             <input-packets>
+                       0
+                       </input-packets>
+                             <output-packets>
+                       0
+                       </output-packets>
+                           </traffic-statistics>
+                           <filter-information/>
+                           <address-family>
+                             <address-family-name>
+                       bridge
+                       </address-family-name>
+                             <mtu>
+                       1522
+                       </mtu>
+                             <address-family-flags>
+                               <ifff-is-primary/>
+                               <internal-flags>
+                       0x4000000
+                       </internal-flags>
+                             </address-family-flags>
+                           </address-family>
+                         </logical-interface>
+                         <logical-interface>
+                           <name>
+                       xe-0/1/7.301
+                       </name>
+                           <local-index>
+                       343
+                       </local-index>
+                           <snmp-index>
+                       560
+                       </snmp-index>
+                           <if-config-flags>
+                             <iff-device-down/>
+                             <iff-snmp-traps/>
+                             <internal-flags>
+                       0x4000
+                       </internal-flags>
+                           </if-config-flags>
+                           <link-address junos:format="VLAN-Tag [ 0x8100.301 ] ">
+                       [ 0x8100.301 ] 
+                       </link-address>
+                           <encapsulation>
+                       VLAN-CCC
+                       </encapsulation>
+                           <policer-overhead/>
+                           <traffic-statistics junos:style="brief">
+                             <input-packets>
+                       0
+                       </input-packets>
+                             <output-packets>
+                       0
+                       </output-packets>
+                           </traffic-statistics>
+                           <filter-information/>
+                           <address-family>
+                             <address-family-name>
+                       ccc
+                       </address-family-name>
+                             <mtu>
+                       1522
+                       </mtu>
+                             <address-family-flags>
+                               <ifff-is-primary/>
+                               <internal-flags>
+                       0x0
+                       </internal-flags>
+                             </address-family-flags>
+                           </address-family>
+                         </logical-interface>
+                         <logical-interface>
+                           <name>
+                       xe-0/1/7.32767
+                       </name>
+                           <local-index>
+                       341
+                       </local-index>
+                           <snmp-index>
+                       533
+                       </snmp-index>
+                           <if-config-flags>
+                             <iff-device-down/>
+                             <iff-snmp-traps/>
+                             <internal-flags>
+                       0x4004000
+                       </internal-flags>
+                           </if-config-flags>
+                           <link-address junos:format="VLAN-Tag [ 0x0000.0 ] ">
+                       [ 0x0000.0 ] 
+                       </link-address>
+                           <encapsulation>
+                       ENET2
+                       </encapsulation>
+                           <policer-overhead/>
+                           <traffic-statistics junos:style="brief">
+                             <input-packets>
+                       0
+                       </input-packets>
+                             <output-packets>
+                       0
+                       </output-packets>
+                           </traffic-statistics>
+                           <filter-information/>
+                           <address-family>
+                             <address-family-name>
+                       multiservice
+                       </address-family-name>
+                             <mtu>
+                       Unlimited
+                       </mtu>
+                             <address-family-flags>
+                               <ifff-none/>
+                             </address-family-flags>
+                           </address-family>
+                         </logical-interface>
+                       </physical-interface>
+                       
+15:18:00 admin@ncs# 
+
