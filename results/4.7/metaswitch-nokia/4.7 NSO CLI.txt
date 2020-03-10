@@ -1,0 +1,220 @@
+4.7 NSO CLI
+
+=====[#1]=====>
+=====[#2]=====>
+
+18:30:50 admin@ncs# devices device met133 sync-from 
+result true
+18:31:43 admin@ncs# devices device nok150 sync-from
+result true
+18:31:54 admin@ncs# 
+18:31:55 admin@ncs# 
+18:31:55 admin@ncs# show running-config evpn 
+evpn sites site ari
+ ipv4-address 20.20.168.20
+ device       ari20
+ interface    Ethernet25
+!
+evpn sites site arr
+ ipv4-address 100.0.0.24
+ device       arr23
+ interface    vlan22
+!
+evpn sites site jun
+ ipv4-address 100.0.0.105
+ device       jun105
+ interface    xe-0/1/7.300
+!
+evpn sites site met
+ device    met133
+ interface eth1
+!
+evpn sites site met131
+ device    met131
+ interface eth1
+!
+evpn sites site nok
+ device    nok150
+ interface esat-2/1/10:7
+!
+evpn sites site xyz
+!
+evpn connections connection 471
+ a nok
+ z jun
+!
+evpn connections connection 472
+ a met
+ z arr
+!
+evpn connections connection 473
+ a met131
+ z arr
+!
+evpn connections connection 474
+ a met131
+ z arr
+!
+evpn connections connection 475
+ a met
+ z nok
+!
+
+=====[#3]=====>
+
+18:32:29 admin@ncs# evpn connections connection 475 re-deploy dry-run 
+cli {
+    local-node {
+        data  devices {
+                   device met133 {
+                       config {
+                           evpn {
+              +                instance 475_48 {
+              +                    evi 48;
+              +                    vpn-target 65000:48 {
+              +                        route-target-type both;
+              +                    }
+              +                    mpls;
+              +                    bridge-domain {
+              +                        interfaces {
+              +                            interface eth1;
+              +                        }
+              +                    }
+              +                    auto-rt-type {
+              +                        none;
+              +                    }
+              +                }
+                           }
+                           interfaces {
+              +                interface eth1 {
+              +                    forwarding-mode layer-2-forwarding;
+              +                }
+                           }
+                       }
+                   }
+                   device nok150 {
+                       config {
+                           configure {
+                               service {
+              +                    vpls 48 {
+              +                        service-id 48;
+              +                        customer 1;
+              +                        admin-state enable;
+              +                        bgp 1 {
+              +                            route-target {
+              +                                export target:65000:48;
+              +                                import target:65000:48;
+              +                            }
+              +                        }
+              +                        bgp-evpn {
+              +                            evi 48;
+              +                            mpls 1 {
+              +                                admin-state enable;
+              +                                auto-bind-tunnel {
+              +                                    resolution any;
+              +                                }
+              +                            }
+              +                        }
+              +                        sap esat-2/1/10:7 {
+              +                            admin-state enable;
+              +                        }
+              +                    }
+                               }
+                           }
+                       }
+                   }
+               }
+              
+    }
+}
+18:32:44 admin@ncs# evpn connections connection 475 re-deploy        
+18:32:59 admin@ncs# 
+System message at 2020-03-10 18:32:59...
+Commit performed by admin via console using cli.
+18:32:59 admin@ncs# *** ALARM final-commit-error: RPC error towards nok150: operation_failed: 
+            command failed
+            MINOR: CLI Command not allowed for this user.
+
+=====[Comment]=====> 
+=== The error above happens with a copy command after the network wide transaction has finished,
+=== and is of no consequence in the context of the test.
+
+
+=====[#3]=====>
+        
+18:32:59 admin@ncs# show devices device nok150 live-status state service vpls 48 oper-state       
+oper-state up
+
+
+=====[#6]=====>
+
+18:33:55 admin@ncs# evpn connections connection 475 un-deploy dry-run                      
+cli {
+    local-node {
+        data  devices {
+                   device met133 {
+                       config {
+                           evpn {
+              -                instance 475_48 {
+              -                    evi 48;
+              -                    vpn-target 65000:48 {
+              -                        route-target-type both;
+              -                    }
+              -                    mpls;
+              -                    bridge-domain {
+              -                        interfaces {
+              -                            interface eth1;
+              -                        }
+              -                    }
+              -                    auto-rt-type {
+              -                        none;
+              -                    }
+              -                }
+                           }
+                           interfaces {
+              -                interface eth1 {
+              -                    forwarding-mode layer-2-forwarding;
+              -                }
+                           }
+                       }
+                   }
+                   device nok150 {
+                       config {
+                           configure {
+                               service {
+              -                    vpls 48 {
+              -                        service-id 48;
+              -                        customer 1;
+              -                        admin-state enable;
+              -                        bgp 1 {
+              -                            route-target {
+              -                                export target:65000:48;
+              -                                import target:65000:48;
+              -                            }
+              -                        }
+              -                        bgp-evpn {
+              -                            evi 48;
+              -                            mpls 1 {
+              -                                admin-state enable;
+              -                                auto-bind-tunnel {
+              -                                    resolution any;
+              -                                }
+              -                            }
+              -                        }
+              -                        sap esat-2/1/10:7 {
+              -                            admin-state enable;
+              -                        }
+              -                    }
+                               }
+                           }
+                       }
+                   }
+               }
+              
+    }
+}
+18:34:31 admin@ncs# evpn connections connection 475 un-deploy        
+18:34:44 admin@ncs# show devices device nok150 live-status state service vpls 48 oper-state
+------------------------------------------------------------------------------^
+syntax error: unknown argument
+18:34:51 admin@ncs# 
