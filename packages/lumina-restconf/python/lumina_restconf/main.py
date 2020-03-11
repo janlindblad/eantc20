@@ -169,7 +169,8 @@ class Main(ncs.application.Application):
     self.log.info('LuminaController FINISHED')
 
 def get(restconf_path):
-  url = 'http://192.168.10.190:38181/restconf/' + restconf_path
+  #url = 'http://192.168.10.190:38181/restconf/' + restconf_path
+  url = 'http://192.168.10.191:38181/restconf/' + restconf_path
   headers = []
   body = None
   response = requests.get(
@@ -182,10 +183,12 @@ def get(restconf_path):
   return response.json()
 
 def main():
-  parsed_json = get('config/network-topology:network-topology/topology/topology-netconf')
+  parsed_json = get('config/jsonrpc:config/configured-endpoints/eantc-evpn-svc-wfe/yang-ext:mount/eantc-evpn-svc:evpn')
   print(json.dumps(parsed_json, indent=4, sort_keys=True))
-  parsed_json = get('config/ietf-l2vpn-svc:ietf-l2vpn-svc')
-  print(json.dumps(parsed_json, indent=4, sort_keys=True))
+  #parsed_json = get('config/network-topology:network-topology/topology/topology-netconf')
+  #print(json.dumps(parsed_json, indent=4, sort_keys=True))
+  #parsed_json = get('config/ietf-l2vpn-svc:ietf-l2vpn-svc')
+  #print(json.dumps(parsed_json, indent=4, sort_keys=True))
 
 if __name__ == "__main__":
   main()

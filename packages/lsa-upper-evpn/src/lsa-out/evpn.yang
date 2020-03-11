@@ -1,0 +1,65 @@
+module lsa-evpn {
+  yang-version 1.1;
+  namespace "http://example.com/eantc20/lsa-evpn";
+  prefix lsa-evpn;
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+  import ietf-yang-types {
+    prefix yang;
+  }
+  import ietf-netconf-acm {
+    prefix nacm;
+  }
+  import tailf-ncs {
+    prefix ncs;
+  }
+
+  container evpn {
+    container sites {
+      list site {
+        key "name";
+        leaf name {
+          type string;
+        }
+        leaf ipv4-address {
+          type inet:ipv4-address;
+        }
+        leaf ipv6-address {
+          type inet:ipv6-address;
+        }
+        leaf device {
+          type string;
+          // LSA plugin converted 'leafref' to string.
+        }
+        leaf interface {
+          type string;
+        }
+      }
+    }
+    container connections {
+      list connection {
+        key "name";
+        leaf name {
+          type string;
+        }
+        uses ncs:service-data;
+        ncs:servicepoint evpn-servicepoint;
+        leaf a {
+          mandatory true;
+          type leafref {
+            path "/evpn/sites/site/name";
+          }
+        }
+        leaf z {
+          mandatory true;
+          type leafref {
+            path "/evpn/sites/site/name";
+          }
+        }
+        // LSA plugin removed must: not(a = z)
+      }
+    }
+  }
+}

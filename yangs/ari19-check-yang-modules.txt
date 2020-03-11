@@ -1,0 +1,911 @@
+module {
+    name arista-exp-eos
+    status supported
+    device-revision 2016-11-09
+    ncs-revision 2016-11-09
+}
+module {
+    name arista-eos-types
+    status supported
+    device-revision 2016-10-14
+    ncs-revision 2016-10-14
+}
+module {
+    name arista-exp-eos-vxlan
+    status supported
+    device-revision 2018-08-01
+    ncs-revision 2018-08-01
+}
+module {
+    name arista-exp-eos-vxlan-config
+    status supported
+    device-revision 2018-08-01
+    ncs-revision 2018-08-01
+}
+module {
+    name arista-exp-eos-multicast
+    status supported
+    device-revision 2017-10-20
+    ncs-revision 2017-10-20
+}
+module {
+    name arista-acl-deviations
+    status supported
+    device-revision 2019-06-17
+    ncs-revision 2019-06-17
+}
+module {
+    name arista-bgp-augments
+    status supported
+    device-revision 2019-11-12
+    ncs-revision 2019-11-12
+}
+module {
+    name arista-bgp-deviations
+    status supported
+    device-revision 2019-05-25
+    ncs-revision 2020-01-23
+}
+module {
+    name arista-intf-deviations
+    status supported
+    device-revision 2016-12-28
+    ncs-revision 2016-12-28
+}
+module {
+    name arista-isis-augments
+    status supported
+    device-revision 2018-01-12
+    ncs-revision 2018-01-12
+}
+module {
+    name arista-isis-deviations
+    status supported
+    device-revision 2019-05-14
+    ncs-revision 2019-05-14
+}
+module {
+    name arista-local-routing-deviations
+    status supported
+    device-revision 2017-11-22
+    ncs-revision 2020-01-23
+}
+module {
+    name arista-mpls-augments
+    status supported
+    device-revision 2017-12-21
+    ncs-revision 2017-12-21
+}
+module {
+    name arista-mpls-deviations
+    status supported
+    device-revision 2018-03-19
+    ncs-revision 2018-03-19
+}
+module {
+    name arista-vlan-deviations
+    status supported
+    device-revision 2019-11-13
+    ncs-revision 2020-01-23
+}
+module {
+    name arista-vlan-augments
+    status supported
+    device-revision 2017-10-01
+    ncs-revision 2017-10-01
+}
+module {
+    name arista-netinst-deviations
+    status supported
+    device-revision 2019-05-24
+    ncs-revision 2019-05-24
+}
+module {
+    name arista-pim-augments
+    status supported
+    device-revision 2019-04-24
+    ncs-revision 2019-04-24
+}
+module {
+    name arista-rpol-augments
+    status supported
+    device-revision 2018-04-12
+    ncs-revision 2018-04-12
+}
+module {
+    name arista-rpol-deviations
+    status supported
+    device-revision 2016-02-01
+    ncs-revision 2016-02-01
+}
+module {
+    name vlan-translation
+    status supported
+    device-revision 2019-07-31
+    ncs-revision 2019-07-31
+}
+module {
+    name openconfig-acl
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-bgp-neighbor
+    status supported
+    device-revision 2019-05-28
+    ncs-revision 2019-05-28
+}
+module {
+    name openconfig-bgp-common-structure
+    status supported
+    device-revision 2019-05-28
+    ncs-revision 2019-05-28
+}
+module {
+    name openconfig-bgp-common-multiprotocol
+    status supported
+    device-revision 2019-05-28
+    ncs-revision 2019-05-28
+}
+module {
+    name openconfig-bgp-global
+    status supported
+    device-revision 2019-05-28
+    ncs-revision 2019-05-28
+}
+module {
+    name openconfig-bgp-common
+    status supported
+    device-revision 2019-05-28
+    ncs-revision 2019-05-28
+}
+module {
+    name openconfig-bgp-peer-group
+    status supported
+    device-revision 2019-05-28
+    ncs-revision 2019-05-28
+}
+module {
+    name openconfig-bgp
+    status supported
+    device-revision 2019-05-28
+    ncs-revision 2019-05-28
+}
+module {
+    name openconfig-bgp-policy
+    status supported
+    device-revision 2019-02-01
+    ncs-revision 2019-02-01
+}
+module {
+    name openconfig-bgp-errors
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-bgp-types
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-packet-match
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-igmp-types
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-if-aggregate
+    status supported
+    device-revision 2019-04-16
+    ncs-revision 2019-04-16
+}
+module {
+    name openconfig-if-ethernet
+    status supported
+    device-revision 2019-04-16
+    ncs-revision 2019-04-16
+}
+module {
+    name openconfig-if-ip
+    status supported
+    device-revision 2019-01-08
+    ncs-revision 2019-01-08
+}
+module {
+    name openconfig-if-tunnel
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-isis-lsdb-types
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-isis-types
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-local-routing
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-mpls-static
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2019-03-26
+}
+module {
+    name openconfig-mpls-igp
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2019-03-26
+}
+module {
+    name openconfig-mpls-te
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2019-03-26
+}
+module {
+    name openconfig-mpls
+    status supported
+    device-revision 2019-03-26
+    ncs-revision 2019-03-26
+}
+module {
+    name openconfig-mpls-sr
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-mpls-types
+    status supported
+    device-revision 2019-03-26
+    ncs-revision 2019-03-26
+}
+module {
+    name openconfig-network-instance-l2
+    status supported
+    device-revision 2019-04-16
+    ncs-revision 2019-05-14
+}
+module {
+    name openconfig-network-instance
+    status supported
+    device-revision 2019-05-14
+    ncs-revision 2019-05-14
+}
+module {
+    name openconfig-network-instance-l3
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-network-instance-types
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-extensions
+    status supported
+    device-revision 2018-10-17
+    ncs-revision 2018-10-17
+}
+module {
+    name openconfig-if-types
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-isis-lsp
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-isis-routing
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-isis
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-ospf-policy
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-ospf-types
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-packet-match-types
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-pim-types
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-pf-forwarding-policies
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-pf-path-groups
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-pf-interfaces
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-policy-forwarding
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-pf-srte
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-policy-types
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-routing-policy
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-mpls-rsvp
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-segment-routing
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-inet-types
+    status supported
+    device-revision 2019-04-25
+    ncs-revision 2019-04-25
+}
+module {
+    name openconfig-yang-types
+    status supported
+    device-revision 2018-11-21
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-vlan
+    status supported
+    device-revision 2019-04-16
+    ncs-revision 2019-04-16
+}
+module {
+    name openconfig-vlan-types
+    status supported
+    device-revision 2019-01-31
+    ncs-revision 2019-01-31
+}
+module {
+    name iana-if-type
+    status supported
+    device-revision 2017-01-19
+    ncs-revision 2017-01-19
+}
+module {
+    name ietf-interfaces
+    status supported
+    device-revision 2018-02-20
+    ncs-revision 2018-02-20
+}
+module {
+    name arista-intf-augments
+    status unsupported
+    device-revision 2019-11-13
+    ncs-revision 2019-07-31
+}
+module {
+    name openconfig-aft-ethernet
+    status unsupported
+    device-revision 2019-08-01
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-aft-ipv6
+    status unsupported
+    device-revision 2019-08-01
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-aft-mpls
+    status unsupported
+    device-revision 2019-08-01
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-aft-common
+    status unsupported
+    device-revision 2019-08-01
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-aft-pf
+    status unsupported
+    device-revision 2019-08-01
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-aft-ipv4
+    status unsupported
+    device-revision 2019-08-01
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-aft
+    status unsupported
+    device-revision 2019-08-01
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-aft-types
+    status unsupported
+    device-revision 2019-08-01
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-igmp
+    status unsupported
+    device-revision 2019-07-09
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-interfaces
+    status unsupported
+    device-revision 2019-07-10
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-mpls-ldp
+    status unsupported
+    device-revision 2019-07-09
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-types
+    status unsupported
+    device-revision 2019-04-16
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-ospfv2-global
+    status unsupported
+    device-revision 2019-07-09
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-ospfv2-area
+    status unsupported
+    device-revision 2019-07-09
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-ospfv2-area-interface
+    status unsupported
+    device-revision 2019-07-09
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-ospfv2-lsdb
+    status unsupported
+    device-revision 2019-07-09
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-ospfv2-common
+    status unsupported
+    device-revision 2019-07-09
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-ospfv2
+    status unsupported
+    device-revision 2019-07-09
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-pim
+    status unsupported
+    device-revision 2019-07-09
+    ncs-revision 2018-11-21
+}
+module {
+    name openconfig-rib-bgp-tables
+    status unsupported
+    device-revision 2019-04-25
+    ncs-revision 2019-04-16
+}
+module {
+    name openconfig-rib-bgp-shared-attributes
+    status unsupported
+    device-revision 2019-04-25
+    ncs-revision 2019-04-16
+}
+module {
+    name openconfig-rib-bgp-attributes
+    status unsupported
+    device-revision 2019-04-25
+    ncs-revision 2019-04-16
+}
+module {
+    name openconfig-rib-bgp-table-attributes
+    status unsupported
+    device-revision 2019-04-25
+    ncs-revision 2019-04-16
+}
+module {
+    name openconfig-rib-bgp
+    status unsupported
+    device-revision 2019-04-25
+    ncs-revision 2019-04-16
+}
+module {
+    name openconfig-rib-bgp-types
+    status unsupported
+    device-revision 2019-03-14
+    ncs-revision 2019-02-27
+}
+module {
+    name openconfig-aaa-tacacs
+    status not-loaded
+    device-revision 2018-11-21
+}
+module {
+    name openconfig-aaa-radius
+    status not-loaded
+    device-revision 2018-11-21
+}
+module {
+    name openconfig-aaa
+    status not-loaded
+    device-revision 2019-08-20
+}
+module {
+    name openconfig-aaa-types
+    status not-loaded
+    device-revision 2018-11-21
+}
+module {
+    name openconfig-alarms
+    status not-loaded
+    device-revision 2019-07-09
+}
+module {
+    name openconfig-alarm-types
+    status not-loaded
+    device-revision 2018-11-21
+}
+module {
+    name openconfig-lacp
+    status not-loaded
+    device-revision 2018-11-21
+}
+module {
+    name openconfig-lldp
+    status not-loaded
+    device-revision 2018-11-21
+}
+module {
+    name openconfig-lldp-types
+    status not-loaded
+    device-revision 2018-11-21
+}
+module {
+    name openconfig-messages
+    status not-loaded
+    device-revision 2018-08-13
+}
+module {
+    name openconfig-platform
+    status not-loaded
+    device-revision 2019-04-16
+}
+module {
+    name openconfig-platform-types
+    status not-loaded
+    device-revision 2019-06-03
+}
+module {
+    name openconfig-relay-agent
+    status not-loaded
+    device-revision 2018-11-21
+}
+module {
+    name openconfig-system
+    status not-loaded
+    device-revision 2019-03-15
+}
+module {
+    name openconfig-system-logging
+    status not-loaded
+    device-revision 2018-11-21
+}
+module {
+    name openconfig-system-management
+    status not-loaded
+    device-revision 2018-11-21
+}
+module {
+    name openconfig-procmon
+    status not-loaded
+    device-revision 2019-03-15
+}
+module {
+    name openconfig-system-terminal
+    status not-loaded
+    device-revision 2018-11-21
+}
+module {
+    name ietf-netconf
+    status not-loaded
+    device-revision 2011-06-01
+}
+module {
+    name ietf-inet-types
+    status not-loaded
+    device-revision 2013-07-15
+}
+module {
+    name ietf-netconf-monitoring
+    status not-loaded
+    device-revision 2010-10-04
+}
+module {
+    name ietf-yang-types
+    status not-loaded
+    device-revision 2013-07-15
+}
+module {
+    name arista-gnoi-cert
+    status not-loaded
+    device-revision 2018-01-15
+}
+module {
+    name arista-exp-eos-qos
+    status not-loaded
+    device-revision 2017-09-26
+}
+module {
+    name arista-exp-eos-qos-acl-config
+    status not-loaded
+    device-revision 2019-11-12
+}
+module {
+    name arista-exp-eos-qos-config
+    status not-loaded
+    device-revision 2017-09-26
+}
+module {
+    name arista-exp-eos-varp-intf
+    status not-loaded
+    device-revision 2019-05-22
+}
+module {
+    name arista-exp-eos-varp-net-inst
+    status not-loaded
+    device-revision 2019-05-22
+}
+module {
+    name arista-exp-eos-igmpsnooping
+    status not-loaded
+    device-revision 2017-10-23
+}
+module {
+    name arista-aft-augments
+    status not-loaded
+    device-revision 2019-10-01
+}
+module {
+    name arista-bfd-augments
+    status not-loaded
+    device-revision 2019-01-14
+}
+module {
+    name arista-bfd-deviations
+    status not-loaded
+    device-revision 2018-08-08
+}
+module {
+    name arista-lacp-augments
+    status not-loaded
+    device-revision 2017-09-14
+}
+module {
+    name arista-lacp-deviations
+    status not-loaded
+    device-revision 2017-09-07
+}
+module {
+    name arista-lldp-augments
+    status not-loaded
+    device-revision 2018-03-06
+}
+module {
+    name arista-lldp-deviations
+    status not-loaded
+    device-revision 2018-04-02
+}
+module {
+    name arista-srte-augments
+    status not-loaded
+    device-revision 2019-08-07
+}
+module {
+    name arista-srte-deviations
+    status not-loaded
+    device-revision 2019-01-03
+}
+module {
+    name arista-qos-augments
+    status not-loaded
+    device-revision 2019-10-31
+}
+module {
+    name arista-relay-agent-deviations
+    status not-loaded
+    device-revision 2016-11-21
+}
+module {
+    name arista-system-augments
+    status not-loaded
+    device-revision 2018-06-03
+}
+module {
+    name arista-system-deviations
+    status not-loaded
+    device-revision 2017-09-24
+}
+module {
+    name arista-rpc-netconf
+    status not-loaded
+    device-revision 2018-01-04
+}
+module {
+    name openconfig-bfd
+    status not-loaded
+    device-revision 2019-06-02
+}
+module {
+    name openconfig-hercules-interfaces
+    status not-loaded
+    device-revision 2018-06-01
+}
+module {
+    name openconfig-hercules-platform-linecard
+    status not-loaded
+    device-revision 2018-06-01
+}
+module {
+    name openconfig-hercules-platform-chassis
+    status not-loaded
+    device-revision 2018-06-01
+}
+module {
+    name openconfig-hercules-platform-node
+    status not-loaded
+    device-revision 2018-06-01
+}
+module {
+    name openconfig-hercules-platform-port
+    status not-loaded
+    device-revision 2018-06-01
+}
+module {
+    name openconfig-hercules-platform
+    status not-loaded
+    device-revision 2018-06-01
+}
+module {
+    name openconfig-hercules-qos
+    status not-loaded
+    device-revision 2018-06-01
+}
+module {
+    name openconfig-platform-cpu
+    status not-loaded
+    device-revision 2018-11-21
+}
+module {
+    name openconfig-platform-fan
+    status not-loaded
+    device-revision 2018-11-21
+}
+module {
+    name openconfig-platform-linecard
+    status not-loaded
+    device-revision 2018-11-21
+}
+module {
+    name openconfig-platform-port
+    status not-loaded
+    device-revision 2018-11-21
+}
+module {
+    name openconfig-platform-psu
+    status not-loaded
+    device-revision 2018-11-21
+}
+module {
+    name openconfig-qos-interfaces
+    status not-loaded
+    device-revision 2019-08-20
+}
+module {
+    name openconfig-qos-elements
+    status not-loaded
+    device-revision 2019-08-20
+}
+module {
+    name openconfig-qos
+    status not-loaded
+    device-revision 2019-08-20
+}
+module {
+    name openconfig-qos-types
+    status not-loaded
+    device-revision 2018-11-21
+}
+module {
+    name arista-exp-eos-mlag
+    status not-loaded
+    device-revision 2017-11-29
+}

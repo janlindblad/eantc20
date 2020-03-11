@@ -1,0 +1,24 @@
+<ncs-package xmlns="http://tail-f.com/ns/ncs-packages">
+  <name>lsa-lower-evpn</name>
+  <package-version>1.0</package-version>
+  <description>EANTC20 Use Case 4.7</description>
+  <ncs-min-version>5.3</ncs-min-version>
+  <required-package>
+    <name>meta_130-nc-1.0</name>
+  </required-package>
+  <required-package>
+    <name>nokia_sros_20_2_r1-nc-1.0</name>
+  </required-package>
+  <required-package>
+    <name>arcos-evpn-services-nc-1_0-nc-1.0</name>
+  </required-package>
+  <required-package>
+    <name>juniper-junos-19_4R1_10-nc-1.0</name>
+  </required-package>
+  <component>
+    <name>evpn</name>
+    <application>
+      <python-class-name>lsa_lower_evpn.main.Main</python-class-name>
+    </application>
+  </component>
+</ncs-package>
