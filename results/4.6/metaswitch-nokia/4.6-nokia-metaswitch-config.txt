@@ -1,0 +1,158 @@
+################################################################################
+##
+## L3VPN service config
+##
+################################################################################
+
+<config xmlns="http://tail-f.com/ns/config/1.0">
+  <l3vpn-svc xmlns="urn:ietf:params:xml:ns:yang:ietf-l3vpn-svc">
+    <vpn-services>
+      <vpn-service>
+        <vpn-id>blue4_6</vpn-id>
+      </vpn-service>
+    </vpn-services>
+    <sites>
+      <site>
+        <site-id>metaswitch</site-id>
+        <private>
+          <re-deploy-counter>6</re-deploy-counter>
+          <latest-commit-params>g2o=</latest-commit-params>
+          <latest-u-info>g2gJZAANbGF0ZXN0X3VfaW5mb2QAA2NsaWQAB2NvbnNvbGVtAAAABWFkbWluaARhf2EAYQBh
+AWEAbQAAAABkAAl1bmRlZmluZWRq</latest-u-info>
+        </private>
+        <locations>
+          <location>
+            <location-id>1</location-id>
+            <city>Berlin</city>
+            <country-code>DE</country-code>
+          </location>
+        </locations>
+        <devices>
+          <device>
+            <device-id>meta134</device-id>
+            <location>1</location>
+          </device>
+        </devices>
+        <management>
+          <type>provider-managed</type>
+        </management>
+        <site-network-accesses>
+          <site-network-access>
+            <site-network-access-id>m1</site-network-access-id>
+            <device-reference>meta134</device-reference>
+            <ip-connection>
+              <ipv4>
+                <address-allocation-type>static-address</address-allocation-type>
+                <addresses>
+                  <provider-address>20.134.167.134</provider-address>
+                  <prefix-length>24</prefix-length>
+                </addresses>
+              </ipv4>
+              <ipv6>
+                <address-allocation-type>static-address</address-allocation-type>
+                <addresses>
+                  <provider-address>2001:0:134:167::134</provider-address>
+                  <prefix-length>64</prefix-length>
+                </addresses>
+              </ipv6>
+            </ip-connection>
+            <service>
+              <svc-input-bandwidth>10000000000</svc-input-bandwidth>
+              <svc-output-bandwidth>10000000000</svc-output-bandwidth>
+              <svc-mtu>1514</svc-mtu>
+            </service>
+            <vpn-attachment>
+              <vpn-id>blue4_6</vpn-id>
+              <site-role>any-to-any-role</site-role>
+            </vpn-attachment>
+          </site-network-access>
+        </site-network-accesses>
+      </site>
+      <site>
+        <site-id>nokia</site-id>
+        <private>
+          <re-deploy-counter>5</re-deploy-counter>
+          <latest-commit-params>g2o=</latest-commit-params>
+          <latest-u-info>g2gJZAANbGF0ZXN0X3VfaW5mb2QAA2NsaWQAB2NvbnNvbGVtAAAABWFkbWluaARhf2EAYQBh
+AWEAbQAAAABkAAl1bmRlZmluZWRq</latest-u-info>
+        </private>
+        <locations>
+          <location>
+            <location-id>1</location-id>
+            <city>Berlin</city>
+            <country-code>DE</country-code>
+          </location>
+        </locations>
+        <devices>
+          <device>
+            <device-id>nokia20.2r1</device-id>
+            <location>1</location>
+          </device>
+        </devices>
+        <management>
+          <type>provider-managed</type>
+        </management>
+        <site-network-accesses>
+          <site-network-access>
+            <site-network-access-id>n1</site-network-access-id>
+            <device-reference>nokia20.2r1</device-reference>
+            <ip-connection>
+              <ipv4>
+                <address-allocation-type>static-address</address-allocation-type>
+                <addresses>
+                  <provider-address>20.150.167.150</provider-address>
+                  <prefix-length>24</prefix-length>
+                </addresses>
+              </ipv4>
+              <ipv6>
+                <address-allocation-type>static-address</address-allocation-type>
+                <addresses>
+                  <provider-address>2001:0:150:167::150</provider-address>
+                  <prefix-length>64</prefix-length>
+                </addresses>
+              </ipv6>
+            </ip-connection>
+            <service>
+              <svc-input-bandwidth>10000000000</svc-input-bandwidth>
+              <svc-output-bandwidth>10000000000</svc-output-bandwidth>
+              <svc-mtu>1514</svc-mtu>
+            </service>
+            <vpn-attachment>
+              <vpn-id>blue4_6</vpn-id>
+              <site-role>any-to-any-role</site-role>
+            </vpn-attachment>
+          </site-network-access>
+        </site-network-accesses>
+      </site>
+    </sites>
+  </l3vpn-svc>
+</config>
+
+
+
+
+
+
+
+
+
+################################################################################
+##
+## L3VPN topology config
+##
+################################################################################
+
+<config xmlns="http://tail-f.com/ns/config/1.0">
+  <topo xmlns="http://example.com/eantc/topology">
+    <vpn-name>blue4_6</vpn-name>
+    <device-name>meta134</device-name>
+    <interface>xe9</interface>
+    <phys-interface>something</phys-interface>
+  </topo>
+  <topo xmlns="http://example.com/eantc/topology">
+    <vpn-name>blue4_6</vpn-name>
+    <device-name>nokia20.2r1</device-name>
+    <interface>local</interface>
+    <phys-interface>esat-2/1/10:6</phys-interface>
+  </topo>
+</config>

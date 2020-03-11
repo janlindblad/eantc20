@@ -1,0 +1,159 @@
+################################################################################
+##
+## L2VPN service config
+##
+################################################################################
+
+<config xmlns="http://tail-f.com/ns/config/1.0">
+  <l2vpn-svc xmlns="urn:ietf:params:xml:ns:yang:ietf-l2vpn-svc">
+    <vpn-services>
+      <vpn-service>
+        <vpn-id>45</vpn-id>
+        <frame-delivery>
+          <multicast-gp-port-mapping>static-mapping</multicast-gp-port-mapping>
+        </frame-delivery>
+        <ce-vlan-preservation>true</ce-vlan-preservation>
+        <ce-vlan-cos-preservation>true</ce-vlan-cos-preservation>
+      </vpn-service>
+    </vpn-services>
+    <sites>
+      <site>
+        <site-id>1</site-id>
+        <private>
+          <re-deploy-counter>9</re-deploy-counter>
+          <latest-commit-params>g2o=</latest-commit-params>
+          <latest-u-info>g2gJZAANbGF0ZXN0X3VfaW5mb2QAA2NsaWQAB2NvbnNvbGVtAAAABWFkbWluaARhf2EAYQBh
+AWEAbQAAAABkAAl1bmRlZmluZWRq</latest-u-info>
+        </private>
+        <devices>
+          <device>
+            <device-id>meta134-l2</device-id>
+            <location>1</location>
+          </device>
+        </devices>
+        <management>
+          <type>provider-managed</type>
+        </management>
+        <locations>
+          <location>
+            <location-id>1</location-id>
+            <city>Boston</city>
+            <country-code>US</country-code>
+          </location>
+        </locations>
+        <vpn-policies>
+          <vpn-policy>
+            <vpn-policy-id>1</vpn-policy-id>
+            <entries>
+              <id>1</id>
+              <vpn>
+                <vpn-id>45</vpn-id>
+              </vpn>
+            </entries>
+          </vpn-policy>
+        </vpn-policies>
+        <default-ce-vlan-id>1</default-ce-vlan-id>
+        <site-network-accesses>
+          <site-network-access>
+            <network-access-id>1</network-access-id>
+            <device-reference>meta134-l2</device-reference>
+            <connection>
+              <oam>
+                <md-name>1</md-name>
+                <md-level>1</md-level>
+              </oam>
+            </connection>
+            <vpn-attachment>
+              <vpn-policy-id>1</vpn-policy-id>
+            </vpn-attachment>
+            <service>
+              <svc-mtu>1514</svc-mtu>
+            </service>
+          </site-network-access>
+        </site-network-accesses>
+      </site>
+      <site>
+        <site-id>2</site-id>
+        <private>
+          <re-deploy-counter>13</re-deploy-counter>
+          <latest-commit-params>g2o=</latest-commit-params>
+          <latest-u-info>g2gJZAANbGF0ZXN0X3VfaW5mb2QAA2NsaWQAB2NvbnNvbGVtAAAABWFkbWluaARhf2EAYQBh
+AWEAbQAAAABkAAl1bmRlZmluZWRq</latest-u-info>
+        </private>
+        <devices>
+          <device>
+            <device-id>nokia20.2r1</device-id>
+            <location>2</location>
+          </device>
+        </devices>
+        <management>
+          <type>provider-managed</type>
+        </management>
+        <locations>
+          <location>
+            <location-id>2</location-id>
+            <city>newyork</city>
+            <country-code>US</country-code>
+          </location>
+        </locations>
+        <vpn-policies>
+          <vpn-policy>
+            <vpn-policy-id>1</vpn-policy-id>
+            <entries>
+              <id>1</id>
+              <vpn>
+                <vpn-id>45</vpn-id>
+              </vpn>
+            </entries>
+          </vpn-policy>
+        </vpn-policies>
+        <default-ce-vlan-id>1</default-ce-vlan-id>
+        <site-network-accesses>
+          <site-network-access>
+            <network-access-id>1</network-access-id>
+            <device-reference>nokia20.2r1</device-reference>
+            <connection>
+              <oam>
+                <md-name>1</md-name>
+                <md-level>1</md-level>
+              </oam>
+            </connection>
+            <vpn-attachment>
+              <vpn-policy-id>1</vpn-policy-id>
+            </vpn-attachment>
+            <service>
+              <svc-mtu>1514</svc-mtu>
+            </service>
+          </site-network-access>
+        </site-network-accesses>
+      </site>
+    </sites>
+  </l2vpn-svc>
+</config>
+
+
+
+
+
+
+
+################################################################################
+##
+## Topology config for L2VPN service
+##
+################################################################################
+
+<config xmlns="http://tail-f.com/ns/config/1.0">
+  <topo-l2 xmlns="http://example.com/eantc/topology-l2">
+    <vpn-name>45</vpn-name>
+    <device-name>meta134-l2</device-name>
+    <interface>xe9</interface>
+    <router-id>100.0.0.134</router-id>
+  </topo-l2>
+  <topo-l2 xmlns="http://example.com/eantc/topology-l2">
+    <vpn-name>45</vpn-name>
+    <device-name>nokia20.2r1</device-name>
+    <interface>esat-2/1/10</interface>
+    <router-id>100.0.0.150</router-id>
+  </topo-l2>
+</config>

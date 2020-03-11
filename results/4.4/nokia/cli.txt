@@ -1,0 +1,213 @@
+16:10:59 admin@ncs(config)# devices device meta134 sync-from
+result true
+16:11:06 admin@ncs(config)# devices device meta134 config interfaces interface xe9 disabled
+16:11:16 admin@ncs(config-interface-xe9)# top
+16:11:19 admin@ncs(config)# commit dry-run
+cli {
+    local-node {
+        data  devices {
+                  device meta134 {
+                      config {
+                          interfaces {
+                              interface xe9 {
+             -                    enabled;
+             +                    disabled;
+                              }
+                          }
+                      }
+                  }
+              }
+    }
+}
+16:11:23 admin@ncs(config)# commit
+Commit complete.
+16:11:32 admin@ncs(config)# do show devices device meta134 live-status interfaces-state interface xe9 oper-status
+oper-status down
+16:11:55 admin@ncs(config)# rollback configuration 10066
+16:12:32 admin@ncs(config)# commit dry-run
+cli {
+    local-node {
+        data  devices {
+                  device meta134 {
+                      config {
+                          interfaces {
+                              interface xe9 {
+             -                    disabled;
+             +                    enabled;
+                              }
+                          }
+                      }
+                  }
+              }
+    }
+}
+16:12:37 admin@ncs(config)# commit
+Commit complete.
+16:12:44 admin@ncs(config)# do show devices device meta134 live-status interfaces-state interface xe9 oper-status
+oper-status up
+16:12:56 admin@ncs(config)#
+16:13:05 admin@ncs#
+JOJOHANS-M-33JJ:common jojohans$ ncs_cli -C -u admin
+
+admin connected from 127.0.0.1 using console on JOJOHANS-M-33JJ
+16:13:23 admin@ncs# dev
+Possible completions:
+  devices    The managed devices and device communication settings
+  devtools   Enable/disable development tools
+16:13:23 admin@ncs# devices device nokia
+Possible completions:
+  nokia19.10r3  nokia20.2r1
+16:13:23 admin@ncs# devices device nokia20.2r1 connect
+result true
+info (admin) Connected to nokia20.2r1 - 192.168.10.150:830
+16:13:41 admin@ncs# devices device meta134  connect
+result true
+info (admin) Connected to meta134 - 192.168.10.134:2022
+16:13:50 admin@ncs# devices device nokia20.2r1 disconnect
+16:13:55 admin@ncs# devices device nokia20.2r1 disconnect
+16:14:02 admin@ncs# devices device meta134  disconnect
+16:14:11 admin@ncs#
+JOJOHANS-M-33JJ:common jojohans$ ncs_cli -C -u admin
+
+admin connected from 127.0.0.1 using console on JOJOHANS-M-33JJ
+16:18:09 admin@ncs# config
+Entering configuration mode terminal
+16:18:13 admin@ncs(config)# noki
+                            ^
+% Invalid input detected at '^' marker.
+16:18:13 admin@ncs(config)# devices device nokia
+Possible completions:
+  nokia19.10r3  nokia20.2r1
+16:18:13 admin@ncs(config)# devices device nokia20.2r1 sync-from
+result true
+16:18:55 admin@ncs(config)# devices device nokia20.2r1 config configure port esat-2/1/10 admin-state disable
+16:19:48 admin@ncs(config-port-esat-2/1/10)# commit dry-run
+cli {
+    local-node {
+        data  devices {
+                  device nokia20.2r1 {
+                      config {
+                          configure {
+                              port esat-2/1/10 {
+             -                    admin-state enable;
+             +                    admin-state disable;
+                              }
+                          }
+                      }
+                  }
+              }
+    }
+}
+16:20:01 admin@ncs(config-port-esat-2/1/10)# commit
+Commit complete.
+16:20:06 admin@ncs(config-port-esat-2/1/10)# *** ALARM final-commit-error: RPC error towards nokia20.2r1: operation_failed:
+            command failed
+            MINOR: CLI Command not allowed for this user.
+
+16:20:06 admin@ncs(config-port-esat-2/1/10)# devices device meta134 config interfaces interface xe9 disabled
+16:20:30 admin@ncs(config-interface-xe9)# commit
+Commit complete.
+16:20:40 admin@ncs(config-interface-xe9)# do show devices device meta134 live-status interfaces-state interface xe9 oper-status
+oper-status down
+16:21:09 admin@ncs(config-interface-xe9)# do show devices device nokia20.2r1 live-status state port esat-2/1/10
+live-status state port esat-2/1/10
+ bundle-number                 0
+ down-reason                   ""
+ far-end-port-id               ""
+ hardware-mac-address          d0:99:d5:80:2a:0b
+ interface-group-handler-index 0
+ number-of-channels            0
+ oper-state                    down
+ otu-capable                   false
+ physical-link                 false
+ port-class                    xcm-e
+ port-state                    link-down
+ previous-state                link-up
+ protocols-supported           ""
+ type                          10/100/gig-ethernet-sfp
+ user-assigned-mac             false
+ wavelength-tracker-capable    false
+ rs-fec-oper-mode              none
+ statistics counter-discontinuity-time 2020-03-09T08:08:13.1+01:00
+ statistics in-discards       0
+ statistics in-errors         2
+ statistics in-octets         528770944766
+ statistics in-packets        1053657342
+ statistics in-unknown-protocol-discards 0
+ statistics in-broadcast-packets 120
+ statistics in-multicast-packets 90
+ statistics in-unicast-packets 1053657132
+ statistics out-discards      0
+ statistics out-errors        0
+ statistics out-octets        445545806936
+ statistics out-packets       865192980
+ statistics out-broadcast-packets 81
+ statistics out-multicast-packets 50
+ statistics out-unicast-packets 865192849
+                      CURRENT  PEAK   PEAK
+COUNTER               VALUE    VALUE  TIMESTAMP
+-------------------------------------------------
+ipcp                  0        -      -
+dhcp                  0        -      -
+arp                   0        -      -
+static                0        -      -
+data-triggered        0        -      -
+aaa                   0        -      -
+gtp                   0        -      -
+bonding               0        -      -
+dhcp-bsm              0        -      -
+static-bsm            0        -      -
+dhcp-bsm-antispoof    0        -      -
+static-bsm-antispoof  0        -      -
+
+                           CURRENT  PEAK   PEAK
+COUNTER                    VALUE    VALUE  TIMESTAMP
+------------------------------------------------------
+ppp-slaac                  0        -      -
+ppp-dhcp6-na               0        -      -
+ppp-dhcp6-pd               0        -      -
+ppp-dhcp6-pd-mngdrt        0        -      -
+ipoe-slaac                 0        -      -
+ipoe-dhcp6-na              0        -      -
+ipoe-dhcp6-pd              0        -      -
+Aborted: by user
+16:21:44 admin@ncs(config-interface-xe9)# rol
+                                          ^
+% Invalid input detected at '^' marker.
+16:21:44 admin@ncs(config-interface-xe9)# top
+16:22:22 admin@ncs(config)# rollback configuration 10070
+16:22:32 admin@ncs(config)# rollback configuration 10069
+16:22:36 admin@ncs(config)# commit dry-run
+cli {
+    local-node {
+        data  devices {
+                  device meta134 {
+                      config {
+                          interfaces {
+                              interface xe9 {
+             -                    disabled;
+             +                    enabled;
+                              }
+                          }
+                      }
+                  }
+                  device nokia20.2r1 {
+                      config {
+                          configure {
+                              port esat-2/1/10 {
+             -                    admin-state disable;
+             +                    admin-state enable;
+                              }
+                          }
+                      }
+                  }
+              }
+    }
+}
+16:22:41 admin@ncs(config)# commit
+Commit complete.
+16:22:54 admin@ncs(config)# do show devices device nokia20.2r1 live-status state port esat-2/1/10 oper-state
+oper-state up
+16:23:07 admin@ncs(config)# do show devices device meta134 live-status interfaces-state interface xe9 oper-status
+oper-status up
+16:23:16 admin@ncs(config)#
