@@ -1,0 +1,166 @@
+module user-extensions
+{
+    namespace "http://metaswitch.com/yang/nbu/user-extensions/201602170000Z";
+    prefix "user-ext";
+
+    description "User extensions YANG module";
+
+    revision 2016-02-17
+    {
+        description "Draft variant of User extensions";
+    }
+
+    extension is-subparam-for
+    {
+        argument master;
+        description "Define that this node is subparameter for node defined in argument";
+    }
+
+    extension CLI-comm-switch
+    {
+        argument text;
+        description "Create command from switch of two lists
+                        Use it very carefully!
+                       - Keys in both lists MUST have same names;
+                       - Both lists can have only one key;
+                       - Key fields in lists MUST have different types or patterns in types;  		
+                    ";
+    }
+
+    extension CLI-comm-alias
+    {
+        argument text;
+        description "Create command with name from argument
+                     Special marks:
+                        $parent - alias to parent command";
+    }
+
+    extension CLI-not-command
+    {
+        description "Mark that this node will not be mapped to CLI command";
+    }
+
+    extension CLI-ucallback
+    {
+        argument text;
+        description "Mark that this node will call some function";
+    }
+
+    extension CLI-validate-apply
+    {
+        argument text;
+        description "Mark that this node will call some validate function in apply moment";
+    }
+
+    extension CLI-validate
+    {
+        argument text;
+        description "Mark that this node will call some validate function in validate moment";
+    }
+
+    extension CLI-comm-help
+    {
+        argument text;
+        description "This extension can be used to define the command help text. It will be used instead of 'description' node test";
+    }
+
+    extension CLI-no-comm-help
+    {
+        argument text;
+        description "Can be used to define help text for 'no' command. Will be used instead of the 'description' node text";
+    }
+
+    extension CLI-show-comm-help
+    {
+        argument text;
+        description "Can be used to define help text for 'show' command";
+    }
+
+    extension CLI-param-help
+    {
+        argument text;
+        description "Adds description for inner value of leaf or leaf-list";
+    }
+
+    extension CLI-show-command
+    {
+        argument text;
+        description "Describe show command in CLI";
+    }
+
+    extension CLI-encrypted-password
+    {
+        argument text;
+        description "Describe password";
+    }
+
+    extension CLI-view-prompt
+    {
+        argument text;
+        description "Prompt text that show after enter view";
+    }
+
+    extension CLI-root-view
+    {
+        description "Define that this node must be in root view";
+    }
+
+    extension CLI-cache-time
+    {
+        argument text;
+        description "Define cache time to live";
+    }
+
+    extension CLI-simple-command
+    {
+        argument text;
+        description "Describe some command in JSON for map in klish XML";
+    }
+
+    extension CLI-sort-callback
+    {
+        argument text;
+        description "Mark that this list will call sort callback instead original netconf sort";
+    }
+
+    extension NCD-autocreate
+    {
+        description "Mark node to autocreate with parent creation";
+        argument text;
+    }
+
+    extension CLI-no-comm-break
+    {
+        description "Mark that we don't need take no-command deeper";
+    }
+
+    extension CLI-permissions
+    {
+        description "Static permissions for command";
+        argument text;
+    }
+
+    extension CLI-exec-line
+    {
+        description "Execute some other line";
+        argument text;
+    }
+
+    extension CLI-optional-exp
+    {
+        argument text;
+        description "Expand node by optional behavior";
+    }
+
+    extension CLI-default-val
+    {
+        argument text;
+        description "Expand node by default value";
+    }
+
+    extension CLI-max-elements-errmsg
+    {
+        argument text;
+        description "Custom error message if max elements in list reached";
+    }
+}

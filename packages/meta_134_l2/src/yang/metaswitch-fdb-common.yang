@@ -1,0 +1,86 @@
+module metaswitch-fdb-common {
+
+  namespace "http://metaswitch.com/yang/nbu/metaswitch-fdb-common/201905210000Z";
+  prefix metaswitch-fdb-common;
+
+  import interface { prefix "interface"; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Forwarding Database common definitions";
+
+  revision 2019-05-21 {
+    description "Initial revision.";
+  }
+
+  typedef fdb-entry-t {
+    type enumeration {
+      enum other                 { value 1; }
+      enum invalid               { value 2; }
+      enum learned               { value 3; }
+      enum local                 { value 4; }
+      enum configured            { value 5; }
+    }
+    description
+      " invalid    - this entry is no longer valid (for
+                     example, it was learned but has since aged out), but
+                     has not yet been flushed from the table.
+        learned    - the FDB entry has been learned and is being used.
+        local      - the entry represents one of the device's addresses.
+        configured - the FDB entry has been statically configured by
+                     management.
+        other      - none of the above.";
+  }
+
+
+  grouping fdb-entry-list {
+
+    container entry-list {
+
+      list entry {
+
+        description
+          "FDB entries for a Bridge Domain.";
+
+        config false;
+
+        leaf mac-address {
+          // Low-level model info: Corresponds to l2fFdbMacAddress.
+          type string {
+            length "0..17";
+          }
+          description
+            "MAC address.";
+        }
+
+        leaf if-name  {
+          // Low-level model info: Corresponds to l2fFdbOutIfIndex.
+          type interface:iface-name;
+          description
+            "The interface on which the MAC address can be reached.";
+        }
+
+        leaf type {
+          // Low-level model info: Corresponds to l2fFdbStatus.
+          type fdb-entry-t;
+          description
+            "The type of the FDB entry.";
+          config false;
+        }
+
+      } // entry
+
+    } // entry-list
+
+  } // fdb-entry-list
+
+} // metaswitch-fdb-common

@@ -1,0 +1,2697 @@
+
+module l2vpn {
+
+  namespace "http://metaswitch.com/yang/nbu/l2vpn/201601200000Z";
+
+  prefix l2vpn;
+
+  import ietf-yang-types { prefix yang; }
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix "interfaces"; }
+  import interface { prefix "interface"; }
+  import metaswitch-yang-types { prefix meta; }
+  import bgp { prefix bgp; }
+  import mpls-static { prefix "static"; }
+  import rsvp-te { prefix rsvp-te; }
+  import metaswitch-custom-yang-types { prefix "custom"; }
+  import metaswitch-mpls { prefix "mpls"; }
+  import metaswitch-fdb-common { prefix "fdb"; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Layer 2 VPN Manager";
+
+  revision 2016-01-20 {
+    description "Initial revision.";
+  }
+
+  typedef l2vm-vpls-mc-flood-mode {
+    type enumeration {
+      enum all                              { value 1; description "All multicast frames should be flooded"; }
+      enum unknown                          { value 2; description "Unknown multicast frames should be flooded"; }
+      enum none                             { value 3; description "Unknown multicast frames should be dropped"; }
+    }
+    description
+      "Multicast flood mode";
+  }
+
+  typedef l2vm-vpls-ac-status {
+    type enumeration {
+      enum unknown                          { value 0; }
+      enum active                           { value 1; }
+      enum standby                          { value 2; }
+    }
+    description
+      "The status of a VPLS Attachment Circuit.";
+  }
+
+  typedef l2vm-vpls-name {
+    type meta:ascii-string {
+      length "1..128";
+    }
+    description
+      "WORD (1-128)";
+  }
+
+  typedef mpls-pw-owner-tc {
+    type enumeration {
+      enum manual                           { value 1; description "Manual (static configuration)"; }
+      enum pseudowire-id-fec-signaling      { value 2; description "Pseudowire ID FEC element with LDP signaling"; }
+      enum generalized-fec-signaling        { value 3; description "LDP signaling with the generalized attachment FEC"; }
+    }
+    description
+      "Pseudowire owner";
+  }
+
+  typedef control-word-type {
+    type enumeration {
+      enum non-preferred {
+        description "No preference for control-word";
+      }
+      enum preferred {
+        description "Prefer to have control-word negotiation";
+       }
+    }
+    description "Control-word negotiation preference type";
+  }
+
+  typedef pw-class-ref {
+    type meta:ascii-string {
+      length "0..16";
+    }
+    description
+      "WORD (0-16)";
+  }
+
+  typedef control-word-status-t {
+    type enumeration {
+      enum waiting-for-next-message         { value 1; }
+      enum sent-wrong-bit-error             { value 2; }
+      enum received-withdraw-wrong-bit      { value 3; }
+      enum illegal-received-bit             { value 4; }
+      enum control-word-present             { value 5; }
+      enum control-word-not-present         { value 6; }
+      enum not-yet-known                    { value 7; }
+    }
+  }
+
+  typedef mpls-pw-owner-t {
+    type enumeration {
+      enum manual                          { value 1; description "Manual (static configuration)"; }
+      enum pseudowire-id-fec-signaling     { value 2; description "Signaling with the pseudowire ID FEC element with LDP signaling"; }
+      enum generalized-fec-signaling       { value 3; description "LDP signaling with the generalized attachment FEC"; }
+      enum layer2-tp-control-protocol      { value 4; description "Layer 2 signaling"; }
+      enum bgp                             { value 5; description "BGP signaling"; }
+      enum other                           { value 6; description "Other"; }
+    }
+    description
+      "Pseudowire owner";
+  }
+
+  typedef mpls-pw-psn-type-t {
+    type enumeration {
+      enum mpls                            { value 1; description "MPLS"; }
+      enum layer2-tp                       { value 2; description "Layer 2 TP"; }
+      enum ip                              { value 3; description "UDP over IP encapsulation"; }
+      enum mpls-over-ip                    { value 4; description "MPLS over IP"; }
+      enum mpls-over-gre-tunnels           { value 5; description "MPLS over GRE tunnels"; }
+      enum other                           { value 6; description "Other"; }
+    }
+    description
+      "Pseudowire PSN type";
+  }
+
+  typedef mpls-pw-if-mtu-t {
+    type uint32 {
+      range "0..65535";
+    }
+    description
+      "(0-65535)";
+  }
+
+  typedef oper-status-t {
+    type enumeration {
+      enum up                               { value 1; }
+      enum down                             { value 2; }
+      enum dormant                          { value 3; }
+      enum lower-layer-down                 { value 4; }
+      enum going-up                         { value 5; }
+      enum going-down                       { value 6; }
+      enum failed                           { value 7; }
+    }
+  }
+
+  typedef vpn-type-t {
+    type enumeration {
+      enum none                             { value 0; }
+      enum ls                               { value 1; }
+      enum ws                               { value 2; }
+    }
+  }
+
+  typedef transport-mode-t {
+    type enumeration {
+      enum ethernet                         { value 1; description "Ethernet"; }
+      enum vlan                             { value 2; description "VLAN"; }
+    }
+    description
+      "Transport mode";
+  }
+
+  typedef l2vpn-pw-id-t {
+    type uint32 {
+        range "1..1073741823";
+      }
+    description
+      "(1-1073741823)";
+  }
+
+  typedef l2vpn-label-t {
+    type uint32 {
+      range "16..1048575";
+    }
+    description
+      "(16-1048575)";
+  }
+
+  typedef l2vpn-max-fdb-entries-t {
+    type uint32 {
+      range "1..512000";
+    }
+    description
+      "(1-512000)";
+  }
+
+  typedef l2vpn-aging-time-t {
+    type uint32 {
+      range "300..86400";
+    }
+    description
+      "SECS (300-86400)";
+  }
+
+  typedef l2vpn-mtu-t {
+    type uint32 {
+      range "64..9192";
+    }
+    description
+      "(64-9192)";
+  }
+
+  typedef l2vpn-max-mac-limit-t {
+    type uint32 {
+      range "1..512000";
+    }
+    description
+      "(1-512000)";
+  }
+
+  typedef l2vpn-if-mtu-t {
+    type uint32 {
+      range "0..65535";
+    }
+    description
+      "(0-65535)";
+  }
+
+  typedef pw-name-t {
+    type meta:ascii-string {
+      length "0..16";
+    }
+    description
+      "WORD (0-16)";
+  }
+
+  typedef pw-description-t {
+    type meta:ascii-string {
+      length "0..16";
+    }
+    description
+      "WORD (0-16)";
+  }
+
+  typedef vfi-name-t {
+    type meta:ascii-string {
+      length "0..16";
+    }
+    description
+      "WORD (0-16)";
+  }
+
+  typedef pw-class-name-t {
+    type meta:ascii-string {
+      length "0..16";
+    }
+    description
+      "WORD (0-16)";
+  }
+
+  typedef l2vpn-xconnect-group-name {
+    type meta:ascii-string {
+      length "1..128";
+    }
+    description
+      "WORD (1-128)";
+  }
+
+  typedef l2vpn-vpws-name {
+    type meta:ascii-string {
+      length "1..128";
+    }
+    description
+      "WORD (1-128)";
+  }
+
+  typedef redundancy-state-actual-t {
+    type enumeration {
+      enum unavailable                      { value 1; description "Unavailable"; }
+      enum active                           { value 2; description "Active"; }
+      enum standby                          { value 3; description "Standby"; }
+      enum switchover-in-progress           { value 4; description "Switchover-in-progress"; }
+      enum blocked                          { value 5; description "Blocked"; }
+    }
+    description
+      "The redundancy state of the PW.";
+  }
+
+  typedef iface_status_t {
+    type enumeration{
+      enum down            {value 0;}
+      enum up              {value 1;}
+      enum unknown         {value 2;}
+    }
+    description
+      "AC interface status";
+  }
+
+  feature l2vpns {
+    description
+      "This feature means that the device supports Layer 2 VPNs";
+  }
+
+  grouping pw-remote-capabilities {
+
+    // Low-level model info: Corresponds to AMB_PW_CAPABILITIES_TC (pwRemoteCapabilities).
+
+    description
+      "Indicates the capabilities as advertised by the peer.";
+
+    leaf status-indication {
+      type boolean;
+        description
+          "VC status can be signaled.";
+        config false;
+    }
+
+    leaf vccv {
+      type boolean;
+        description
+          "VCCV ID can be signaled.";
+        config false;
+    }
+
+  } // pw-remote-capabilities
+
+  grouping pw-remote-status-capable {
+
+    // Low-level model info: Corresponds to AMB_PW_REMOTE_STATUS_CAP_TC (pwRemoteStatusCapable).
+
+    description
+      "Indicates the remote node capability to advertise the PW
+      status notification.";
+
+    leaf not-applicable {
+      type boolean;
+      description
+        "Manually set PW.";
+      config false;
+    }
+
+    leaf not-yet-known {
+      type boolean;
+      description
+        "The signaling protocol has not yet finished the process of
+        capability determination.";
+          config false;
+    }
+
+    leaf remote-capable {
+      type boolean;
+      description
+        "Remote node is capable of signaling the pseudowire status notification.";
+      config false;
+    }
+
+    leaf remote-not-capable {
+      type boolean;
+      description
+        "Remote node is not capable of sending the pseudowire status notification.";
+      config false;
+    }
+
+  } // pw-remote-status-capable
+
+  grouping pw-local-status {
+
+    // Low-level model info: Corresponds to AMB_MPLS_PW_STATUS_TC (pwLocalStatus).
+
+    description
+      "The status of the PW at the local node. This field
+      indicates whether any local faults have been detected on the PW. ";
+
+    leaf not-forwarding {
+      type boolean;
+        description
+          "Not forwarding.";
+        config false;
+    }
+
+    leaf service-pseudowire-receive-fault {
+      type boolean;
+        description
+          "Local customer-facing (ingress) receive fault.";
+        config false;
+    }
+
+    leaf  service-pseudowire-send-fault {
+      type boolean;
+        description
+          "Local customer-facing (egress) send fault.";
+        config false;
+    }
+
+    leaf psn-pseudowire-receive-fault {
+      type boolean;
+        description
+          "Local PSN-facing (ingress) receive fault.";
+        config false;
+    }
+
+    leaf psn-pseudowire-send-fault {
+      type boolean;
+        description
+          "Local PSN-facing (egress) send fault.";
+        config false;
+    }
+
+    leaf switchover {
+      type boolean;
+        description
+          "Request a switchover to make this pseudowire active within
+          its PW redundancy set.  ";
+        config false;
+    }
+
+  } // pw-local-status
+
+  grouping pw-129-identifiers {
+
+    description
+      "FEC 129 and MPLS-TP pseudowire identifiers.";
+
+    // Low-level model info: Corresponds to pwGroupAttachmentId.
+    leaf agi {
+      type string {
+        length "1..16";
+      }
+      description
+        "Attachment Group Identifier.";
+      user-ext:CLI-comm-help "Set attachment group identifier";
+    }
+
+    // Low-level model info: Corresponds to pwLocalAttachmentId.
+    leaf source-AII {
+      type string {
+        length "1..16";
+      }
+      description
+        "Source Attachment Individual Identifier.";
+      user-ext:CLI-comm-help "Set source attachment individual identifier";
+    }
+
+    // Low-level model info: Corresponds to pwRemoteAttachmentId.
+    leaf target-AII {
+      type string {
+        length "1..16";
+      }
+      description
+        "Target Attachment Individual Identifier.";
+      user-ext:CLI-comm-help "Set target attachment individual identifier";
+    }
+
+  } // pw-129-identifiers
+
+  grouping pw {
+
+    // Low-level model info: Corresponds to pwPeerAddr and pwPeerAddrType.
+    leaf peer-addr {
+      type interfaces:iface-ip-address-t;
+      description
+        "The peer node address";
+
+      user-ext:CLI-comm-help "Set peer node address";
+      user-ext:CLI-no-comm-help "Remove peer node address";
+      user-ext:CLI-param-help "Set peer node address";
+    }
+
+    // Low-level model info: Corresponds to pwId and pwRedundancySetId.
+    leaf pw-id {
+      type l2vpn-pw-id-t;
+      description
+        "The pseudowire identifier";
+
+      user-ext:CLI-comm-help "Set pseudowire identifier";
+      user-ext:CLI-no-comm-help "Remove pseudowire identifier";
+      user-ext:CLI-param-help "Set pseudowire identifier";
+    }
+
+    // Low-level model info: Corresponds to pwDescr.
+    leaf description {
+      type pw-description-t;
+      default "";
+      description
+        "A textual string containing information about the PW";
+
+      user-ext:CLI-comm-help "Set pseudowire description";
+      user-ext:CLI-no-comm-help "Remove pseudowire description";
+      user-ext:CLI-param-help "Set pseudowire identifier";
+    }
+
+    leaf pw-class {
+      type pw-class-ref;
+      description
+        "PW pw-class reference";
+
+      user-ext:CLI-comm-help "Set pseudowire pw-class reference";
+      user-ext:CLI-no-comm-help "Remove pseudowire pw-class reference";
+      user-ext:CLI-param-help "Set pseudowire pw-class reference";
+    }
+
+    leaf ignore-mtu-mismatch {
+      type empty;
+      description
+        "Whether to ignore any MTU mismatch for this pseudowire";
+
+      user-ext:CLI-comm-help "Ignore MTU mismatch on pseudowire";
+      user-ext:CLI-no-comm-help "Do not ignore MTU mismatch on pseudowire";
+    }
+
+    leaf ignore-encapsulation-mismatch {
+      type empty;
+      description
+        "Whether to ignore any encapsulation mismatch for this pseudowire";
+
+      user-ext:CLI-comm-help
+        "Ignore encapsulation mismatch on pseudowire";
+      user-ext:CLI-no-comm-help
+        "Do not ignore encapsulation mismatch on pseudowire";
+    }
+
+    container tunnel {
+      description
+        "Identifier of the tunnel over which to run the pseudowire";
+
+      user-ext:CLI-comm-help
+        "Identify tunnel over which to run the pseudowire";
+      user-ext:CLI-no-comm-help
+        "Run pseudowire over any physical or virtual interface to peer-addr";
+
+      presence "Specify underlying tunnel for the PW";
+
+      choice tunnel {
+
+        mandatory true;
+
+        case rsvp-te {
+
+          container rsvp-te {
+
+            description
+              "RSVP-TE LSP tunnel identifier";
+
+            user-ext:CLI-comm-help "Set RSVP-TE tunnel identifier";
+            user-ext:CLI-no-comm-help "Remove RSVP-TE tunnel identifier";
+
+            leaf tunnel-name {
+              type leafref {
+                path "/rsvp-te:mpls/rsvp-te:rsvp-te/rsvp-te:tunnel/rsvp-te:name";
+              }
+              mandatory true;
+              description
+                "The RSVP-TE tunnel name.";
+
+              user-ext:CLI-param-help "Set tunnel name";
+              user-ext:CLI-comm-help "Set tunnel name";
+              user-ext:CLI-no-comm-help "Remove tunnel name";
+            }
+
+          } // rsvp-te
+        }
+
+        case mpls-static {
+
+          container mpls-static {
+
+            description
+              "Static MPLS tunnel identifier";
+
+            user-ext:CLI-comm-help "Set static MPLS tunnel identifier";
+            user-ext:CLI-no-comm-help "Remove static MPLS tunnel identifier";
+
+            leaf tunnel-name {
+              type leafref {
+                path "/static:mpls/static:static/static:static-lsp/static:name";
+              }
+              mandatory true;
+              description
+                "The static MPLS tunnel name.";
+
+              user-ext:CLI-param-help "Set tunnel name";
+              user-ext:CLI-comm-help "Set tunnel name";
+              user-ext:CLI-no-comm-help "Remove tunnel name";
+            }
+          }
+        }
+
+      } // tunnel (choice)
+    }
+
+    container mpls {
+
+      description
+        "MPLS configuration commands";
+
+      user-ext:CLI-comm-help "Configure MPLS";
+      user-ext:CLI-no-comm-help "Configure MPLS";
+
+      container static {
+
+        description
+          "MPLS configuration commands for static pseudowires";
+
+        user-ext:CLI-comm-help "Configure MPLS for static pseudowires";
+        user-ext:CLI-no-comm-help "Configure MPLS for static pseudowires";
+
+        container label {
+
+          description
+            "MPLS configuration label commands for static pseudowires";
+
+          user-ext:CLI-comm-help "Configure MPLS labels for static pseudowires";
+          user-ext:CLI-no-comm-help "Configure MPLS labels for static pseudowires";
+
+          // Low-level model info: Corresponds to pwInboundLabel.
+          leaf local {
+            type l2vpn-label-t;
+            description
+              "The PW label used in the inbound direction";
+
+            user-ext:CLI-comm-help "Set PW label used in the inbound direction";
+            user-ext:CLI-no-comm-help "Remove local label";
+            user-ext:CLI-param-help "Set PW label used in the inbound direction";
+          }
+
+          // Low-level model info: Corresponds to pwOutboundLabel.
+          leaf remote {
+            type l2vpn-label-t;
+            description
+              "The PW label used in the outbound direction.";
+
+            user-ext:CLI-comm-help "Set PW label used in the outbound direction";
+            user-ext:CLI-no-comm-help "Remove remote label";
+            user-ext:CLI-param-help "Set PW label used in the outbound direction";
+          }
+
+        } // label
+
+      } // static
+
+    } // mpls
+
+  } // pw
+
+  grouping pw-state-129-identifiers {
+
+    // Low-level model info: Corresponds to pwDisplayGroupAttachmentID.
+    leaf agi {
+      type string;
+      description
+        "Attachment Group Identifier.";
+        config false;
+    }
+
+    // Low-level model info: Corresponds to pwDisplayLocalAttachmentID.
+    leaf source-AII {
+      type string;
+      description
+        "Source Attachment Individual Identifier.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to pwDisplayRemoteAttachmentID.
+    leaf target-AII {
+      type string;
+      description
+        "Target Attachment Individual Identifier.";
+      config false;
+    }
+
+  } // pw-129-identifiers
+
+  // State parameters meaningful for both auto-discovered (with BGP) and manual
+  // configured PWs.
+  grouping pw-common-state-parameters {
+
+    // Low-level model info: Corresponds to pwDisplayType.
+    leaf type {
+      type meta:l2vpn-pw-type-t;
+      description
+        "Indicates the service carried over this PW.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to pwDisplayOwner.
+    leaf owner {
+      type mpls-pw-owner-t;
+      description
+        "The protocol responsible for establishing this PW.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to pwDisplayLocalGroupID.
+    leaf local-group-id {
+      type uint32;
+      description
+        "Indicates the group containing this PW.  A value of zero means that
+         this PW is not grouped.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to pwDisplayCw.
+    leaf control-word-status {
+      type control-word-status-t;
+      description
+        "If signaling is used for PW establishment, this object
+         indicates the status of the control word negotiation, and
+         in both signaling or manual configuration indicates
+         whether or not CW is to be present for this PW.";
+       config false;
+    }
+
+    // Low-level model info: Corresponds to pwDisplayRemoteIfString.
+    leaf remote-interface-string {
+      type string;
+      description
+        "Indicates the interface description string as received by
+        the maintenance protocol.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to pwDisplayInboundLabel.
+    leaf inbound-label {
+      type uint32;
+      description
+        "The PW label used in the inbound direction";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to pwDisplayOutboundLabel.
+    leaf outbound-label {
+      type uint32;
+      description
+        "The PW label used in the outbound direction";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to pwDisplayCreateTime.
+    leaf create-time {
+      type yang:date-and-time;
+      description
+        "System time when this PW was created.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to pwDisplayUpTime.
+    leaf up-time {
+      type uint32;
+      units "TimeTicks";
+      description
+        "The total time that the operational status of the PW has been
+         'up'.  This value may be accumulated across several different
+         periods of being operationally 'up'.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to pwDisplayLastChange.
+    leaf last-change {
+      type yang:date-and-time;
+      description
+        "The system time at the time the PW entered its current
+         operational status.  If the current state was entered prior
+         to the last re-initialization of the local network management
+         subsystem, then this leaf contains a zero value.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to pwDisplayAdminStatus.
+    leaf admin-status {
+      type meta:admin-status;
+      description
+        "The desired operational status of this PW.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to pwDisplayOperStatus.
+    leaf oper-status {
+      type oper-status-t;
+      description
+        "Indicates the operational status of the PW.";
+      config false;
+    }
+
+    container local-status {
+      description
+        "Indicates the operational status of the PW.";
+      config false;
+
+      uses pw-local-status;
+
+    } // local-status
+
+    container remote-status-capable {
+      description
+        "Indicates the remote node capability to advertise the PW
+         status notification.";
+      config false;
+
+      uses pw-remote-status-capable;
+
+    } // remote-status-capable
+
+    container remote-status {
+      description
+        "Indicates the status of the PW as was advertised by the remote.";
+      config false;
+
+      uses pw-local-status;
+
+    } // remote-status
+
+    // Low-level model info: Corresponds to pwVpnIndex.
+    leaf vpn-index {
+      type uint32;
+      description
+        "A number unique to the VPN to which this pseudowire has been bound,
+         if applicable.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to pwVpnType.
+    leaf vpn-type {
+      type vpn-type-t;
+      description
+        "A number unique to the VPN to which this pseudowire has been bound,
+         if applicable.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to pwRedundancyStateActual.
+    leaf redundancy-state-actual {
+      type redundancy-state-actual-t;
+      description
+        "The redundancy state of the PW.";
+      config false;
+    }
+
+    uses pw-state-129-identifiers;
+
+  } // pw-common-state-parameters
+
+  // State parameters meaningful only for manual configured PWs.
+  grouping pw-configured-state-parameters {
+
+    // Low-level model info: Corresponds to pwPsnType.
+    leaf psn-type {
+      type mpls-pw-psn-type-t;
+      description
+        "Indicates the PSN type of this PW.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to pwLocalIfMtu.
+    leaf local-interface-mtu {
+      type mpls-pw-if-mtu-t;
+      description
+        "Indicates the locally supported MTU size over the interface
+         (or virtual interface) associated with the PW, or zero if not
+         configured.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to pwRemoteGroupID.
+    leaf remote-group-id {
+      type uint32;
+      description
+        "Obtained from the Group ID field as received via the maintenance
+         protocol used for PW setup.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to pwRemoteIfMtu.
+    leaf remote-interface-mtu {
+      type uint32;
+      description
+        "The remote interface MTU as (optionally) received from the
+        remote node via the maintenance protocol.";
+      config false;
+    }
+
+    container remote-capabilities {
+
+      description
+        "Indicates the capabilities as advertised by the peer.";
+
+      config false;
+
+      uses pw-remote-capabilities;
+
+    } // remote-capabilities
+
+  } // pw-configured-state-parameters
+
+  // State parameters meaningful only for auto-discovered (with BGP) PWs.
+  grouping pw-discovered-state-parameters {
+
+      // Low-level model info: Corresponds to pwDisplayPeerAddr.
+      leaf peer-addr {
+        type interfaces:iface-ip-address-t;
+        description
+          "The peer node address.";
+        config false;
+      }
+
+      // Low-level model info: Corresponds to pwDisplayLocalVeID.
+      leaf local-ve-id {
+        type uint32;
+        description
+          "The local site ID for the VPWS/VPLS site hosted at the local PE
+           router.";
+        config false;
+      }
+
+      // Low-level model info: Corresponds to pwDisplayRemoteVeID.
+      leaf remote-ve-id {
+        type uint32;
+        description
+          "The remote site ID for the remote peer of the PW.";
+        config false;
+      }
+
+      // Low-level model info: Corresponds to pwDisplayLocalBgpRD.
+      leaf local-bgp-rd {
+        type string;
+        description
+          "The locally-assigned route distinguisher.";
+        config false;
+      }
+
+      // Low-level model info: Corresponds to pwDisplayRemoteBgpRD.
+      leaf remote-bgp-rd {
+        type string;
+        description
+          "The remotely-assigned route distinguisher.";
+        config false;
+      }
+
+  } // pw-discovered-state-parameters
+
+  // All state parameters for manual configured PWs.
+  grouping pw-state {
+
+    container state {
+
+      // Low level model info: Corresponds to the operational state of the
+      // AMB_MPLS_PW (pwTable)
+
+      config false;
+
+      uses pw-configured-state-parameters;
+      uses pw-common-state-parameters;
+
+    } // state
+
+  } // pw-state
+
+  grouping autodiscovery {
+    container autodiscovery {
+
+      description
+        "Autodiscovery configuration commands";
+
+      user-ext:CLI-comm-help "Configure autodiscovery parameters";
+      user-ext:CLI-no-comm-help "Configure autodiscovery parameters";
+
+      container bgp {
+
+        description
+          "Autodiscovery configuration commands";
+
+        presence "Enable autodiscovery for BGP";
+
+        user-ext:CLI-comm-help "Configure BGP autodiscovery parameters";
+        user-ext:CLI-no-comm-help "Configure BGP autodiscovery parameters";
+
+        // If bgp autodiscovery is configured, the ve-id must be mandatory set.
+        must "signaling-protocol/bgp/ve-id" {
+          error-message "The ve-id must be set if BGP autodiscovery is enabled";
+        }
+
+        // Low-level model info: Corresponds to vplsConfigRouteDistinguisher /
+        // vpwsConfigRouteDistinguisher.
+        leaf rd {
+          type meta:bgp-route-distinguisher;
+          description
+           "The route distinguisher";
+
+          user-ext:CLI-comm-help "Set route distinguisher";
+          user-ext:CLI-no-comm-help "Remove route distinguisher";
+          user-ext:CLI-param-help "Set route distinguisher";
+        }
+
+        container signaling-protocol {
+
+          description
+            "Autodiscovery signaling protocol";
+
+          user-ext:CLI-comm-help "Configure autodiscovery signaling protocol";
+          user-ext:CLI-no-comm-help "Configure autodiscovery signaling protocol";
+
+          container bgp {
+
+            description
+              "Autodiscovery signaling protocol BGP";
+
+            presence "Enable BGP as the signaling protocol";
+
+            user-ext:CLI-comm-help "Configure BGP as the signaling protocol";
+            user-ext:CLI-no-comm-help "Configure BGP as the signaling protocol";
+
+            // Low-level model info: Corresponds to vplsConfigLocalVeID /
+            // vpwsConfigLocalSiteID.
+            leaf ve-id {
+              type bgp:l2vpn-ve-id-t;
+              description
+                "The local VE ID";
+
+              user-ext:CLI-comm-help "Set local VPLS VE ID";
+              user-ext:CLI-no-comm-help "Remove VPLS VE ID";
+              user-ext:CLI-param-help "Set local VPLS VE ID";
+            }
+
+          } // bgp
+
+        } // signaling-protocol
+
+        list route-target {
+
+          // Low-level model info: Corresponds to AMB_L2VM_BGP_RT_CFG
+          // (l2vmBgpRTCfgTable).
+
+          description
+            "Configure L2VPN BGP Route Target";
+
+          user-ext:CLI-comm-help "Configure BGP Route Target";
+          user-ext:CLI-no-comm-help "Remove BGP Route Target";
+
+          key "rt-value";
+
+          // At least one of the export or import types must be configured, in
+          // order that the configuration is valid.
+          must "(export) or (import)" {
+            error-message "The autodiscovery BGP route type must be configured";
+          }
+
+          // Low-level model info: Corresponds to l2vmBgpRTCfgRT.
+          leaf rt-value {
+            type meta:vpn-rt-value-t;
+            description
+              "The route target associated with the L2VPN service";
+
+            user-ext:CLI-param-help "Route target";
+          }
+
+          // Low-level model info: Corresponds to l2vmBgpRTCfgType.
+          leaf export {
+            type empty;
+            description
+              "The export type of a route target usage";
+
+            user-ext:CLI-comm-help "Set route target usage to export";
+            user-ext:CLI-no-comm-help "Disable the export route target usage";
+          }
+
+          // Low-level model info: Corresponds to l2vmBgpRTCfgType.
+          leaf import {
+            type empty;
+            description
+              "The import type of a route target usage";
+
+            user-ext:CLI-comm-help "Set route target usage to import";
+            user-ext:CLI-no-comm-help "Disable the import route target usage";
+          }
+
+        } // route-target
+
+      } // bgp
+
+    } // autodiscovery
+
+  } // autodiscovery
+
+  grouping pw-config {
+
+    list pw {
+
+      // Low-level model info: Corresponds to AMB_MPLS_PW (pwTable),
+      // and AMB_L2VM_VPLS_PS_BIND_CFG (vplsPwSetBindCfgTable)
+
+      description
+          "VPLS PWs.";
+
+      user-ext:CLI-comm-help "Configure pseudowire for bridge-domain";
+      user-ext:CLI-no-comm-help "Remove pseudowire for bridge-domain";
+
+      key "name";
+
+      unique "peer-addr pw-id";
+
+      // Low-level model info: Corresponds to pwName.
+      leaf name {
+        type pw-name-t;
+        description
+          "Set pw name";
+
+        user-ext:CLI-param-help "Pseudowire name";
+      }
+
+      uses pw;
+      uses pw-129-identifiers;
+      uses pw-state;
+
+      container backup {
+
+        description
+          "VPLS PWs.";
+
+        presence "Enable backup PW";
+
+        user-ext:CLI-comm-help "Configure backup pseudowire for bridge domain";
+        user-ext:CLI-no-comm-help "Configure backup pseudowire for bridge domain";
+
+        container pw {
+
+          description
+            "VPLS PWs.";
+
+          user-ext:CLI-comm-help "Configure backup pseudowires for bridge domain";
+          user-ext:CLI-no-comm-help "Configure backup pseudowires for bridge domain";
+
+          presence "Enable backup PW";
+
+          uses pw;
+          uses pw-129-identifiers;
+          uses pw-state;
+
+        } // pw
+
+      } // backup
+
+    } // pw
+
+  } // pw-config
+
+  grouping bridge-domain-config {
+
+    // Low-level model info: Corresponds to AMB_L2VM_VPLS_CONFIG (vplsConfigTable).
+
+    description
+      "VPLS Configuration Table.
+
+      This list specifies information for configuring and
+      monitoring Virtual Private LAN Services (VPLS).
+
+      It corresponds to vplsConfigTable and vplsBgpADConfigTable
+      in draft-ietf-l2vpn-vpls-mib-12.
+
+      An entry in this list represents a Virtual Private LAN Services
+      (VPLS) in a packet network.";
+
+    container mac {
+
+      description
+        "MAC configuration commands";
+
+      user-ext:CLI-comm-help "Configure MAC parameters for bridge-domain";
+      user-ext:CLI-no-comm-help "Configure MAC parameters for bridge-domain";
+      user-ext:NCD-autocreate "";
+
+      // Low-level model info: Corresponds to vplsConfigMacLearning.
+      leaf learning {
+        type boolean;
+        default true;
+        description
+          "Learning option enable";
+
+        user-ext:CLI-param-help "Configure whether MAC-learning is enabled.";
+        user-ext:CLI-comm-help "Configure whether MAC-learning is enabled.";
+        user-ext:CLI-no-comm-help "Enable MAC-learning.";
+        user-ext:NCD-autocreate "";
+      }
+
+      container limit {
+
+        description
+          "MAC-limit configuration commands";
+
+        user-ext:CLI-comm-help "Configure MAC-limit";
+        user-ext:CLI-no-comm-help "Configure MAC-limit";
+
+        // Low-level model info: Corresponds to vplsConfigMacSize.
+        // Low-level model info: Note that the yang default is different to the MIB default.
+        leaf maximum {
+          type l2vpn-max-fdb-entries-t;
+          default 4000;
+          description
+            "The maximum number of learned and static entries allowed
+            in the VPLS Forwarder's FDB.  A value of zero means no
+            maximum (not supported by this range).";
+
+          user-ext:CLI-comm-help "Set MAC-limit maximum learning";
+          user-ext:CLI-no-comm-help "Set MAC-limit maximum learning to default";
+          user-ext:CLI-param-help "Set maximum number of learning MACs";
+        }
+
+      } // limit
+
+      container aging {
+
+        description
+          "MAC-Aging configuration commands";
+
+        user-ext:CLI-comm-help "Configure MAC-Aging ";
+        user-ext:CLI-no-comm-help "Configure MAC-Aging";
+
+        // Low-level model info: Corresponds to vplsConfigMacAge.
+        // Low-level model info: Note that the yang default is different to the MIB default.
+        leaf time {
+          type l2vpn-aging-time-t;
+          units "seconds";
+          default 300;
+          description
+            "The aging time for entries in the VPLS Forwarder's FDB.
+            Set to zero to disable MAC aging.";
+
+          user-ext:CLI-comm-help "Set MAC-Aging time in seconds";
+          user-ext:CLI-no-comm-help "Set MAC-Aging time to default";
+          user-ext:CLI-param-help "Set MAC-Aging time in seconds";
+        }
+
+      } // aging
+
+    } // mac
+
+    // Low-level model info: Corresponds to vplsConfigMtu.
+    leaf mtu {
+      type l2vpn-mtu-t;
+      units "bytes";
+      default 1500;
+      description
+        "The layer 2 MTU of this VPLS.
+
+        When using auto-discovery and signaling, this specifies
+        the signaled layer 2 MTU.  This can be used to limit the
+        MTU to a value lower than the MTU supported by the
+        associated Pseudowires.
+
+        Changing this value will cause an interruption to data
+        flow for this VPLS.";
+
+      user-ext:CLI-comm-help "Set MTU in bytes for bridge-domain";
+      user-ext:CLI-no-comm-help "Set MTU in bytes for bridge-domain to default";
+      user-ext:CLI-param-help "Set MTU";
+    }
+
+    // Low-level model info: Corresponds to vplsConfigAutoMtu.
+    leaf auto-mtu {
+      type boolean;
+      default false;
+      description
+        "Whether the VPLS should automatically derive the MTU to
+        use for pseudowires from the MTU of the attachment
+        circuits bound to this VPLS.  If this field is set to
+        true, then any value configured in the mtu leaf is
+        ignored.
+
+        Note that if this field is set to true, a change to an
+        attachment circuit's MTU size, or activation or
+        deactivation of an attachment circuit, may cause an
+        interruption to data flow for this VPLS.
+
+        Changing the value of this field will cause an
+        interruption to data flow for this VPLS.";
+
+      user-ext:CLI-param-help "Configure whether to derive the pseudowire MTU from the bound attachment circuits' MTU";
+      user-ext:CLI-comm-help "Configure whether to derive the pseudowire MTU from the bound attachment circuits' MTU";
+      user-ext:CLI-no-comm-help "Use the mtu value for the pseudowire MTU";
+    }
+
+    container flooding {
+
+      description
+          "Configure flooding parameters";
+
+      user-ext:CLI-comm-help "Configure flooding parameters";
+      user-ext:CLI-no-comm-help "Configure flooding parameters";
+
+      container unknown-unicast {
+
+        description
+            "Configure unknown-unicast flooding parameters";
+
+        user-ext:CLI-comm-help "Configure unknown-unicast flooding parameters";
+        user-ext:CLI-no-comm-help "Configure unknown-unicast flooding parameters";
+
+        // Low-level model info: Corresponds to vplsConfigDiscardUnknownDest.
+        // Low-level model info: If the disabled leaf is not empty, then set to set MIB field to true; otherwise, false.
+        leaf disable {
+          type empty;
+          description
+            "Enable/disable unknown-unicast flooding.
+
+             If disabled, then frames received with an unknown destination
+             MAC are discarded in this VPLS.  If enabled, then the packets
+             are processed.";
+
+          user-ext:CLI-comm-help "Disable unknown-unicast flooding";
+          user-ext:CLI-no-comm-help "Enable unknown-unicast flooding";
+        }
+
+      } // unknown-unicast
+
+      // Low-level model info: Corresponds to vplsConfigMultiCastFloodMode.
+      leaf multicast-flood-mode {
+        type l2vm-vpls-mc-flood-mode;
+        default "all";
+        description
+          "This field specifies which (if any) multicast frames are
+          flooded in this VPLS.";
+
+        user-ext:CLI-comm-help "Set multicast flood mode";
+        user-ext:CLI-no-comm-help "Set multicast flood mode to default";
+        user-ext:CLI-param-help "Set multicast flood mode";
+      }
+
+    } // flooding
+
+    uses autodiscovery;
+
+    // Low-level model info: Corresponds to vplsConfigAdminStatus.
+    leaf shutdown {
+      type empty;
+      description
+        "The administrative status of this VPLS instance";
+
+      user-ext:CLI-comm-help "Deactivate the VPLS instance";
+      user-ext:CLI-no-comm-help "Activate the VPLS instance";
+    }
+
+    // Low level model info: Corresponds to vplsConfigPwEncapType.
+    leaf transport-mode {
+      type transport-mode-t;
+      default "ethernet";
+      description
+        "Set the MPLS PW encapsulation type used by this VPLS.";
+
+      user-ext:CLI-comm-help "Set encapsulation type for bridge-domain";
+      user-ext:CLI-no-comm-help "Set encapsulation type for bridge-domain to default";
+      user-ext:CLI-param-help "Set encapsulation type";
+    }
+
+    uses pw-config;
+
+    list vfi {
+
+      // Low-level model info: Corresponds to AMB_L2VM_VPLS_PS_BIND_CFG (vplsPwSetBindCfgTable)
+
+      description
+        "Each VFI corresponds to a split horizon group";
+
+      user-ext:CLI-comm-help "Configure VFI for bridge-domain";
+      user-ext:CLI-no-comm-help "Remove VFI for bridge-domain";
+
+      key "name";
+
+      // Low-level model info: Each name maps to a vplsPwSetBindCfgSpltHznGrp.
+      leaf name {
+        type vfi-name-t;
+        description
+          "Set VFI name";
+
+        user-ext:CLI-param-help "VFI name";
+      }
+
+      uses pw-config;
+
+      // Low-level model info: Corresponds to vplsPwSetBindCfgAdminStatus.
+      leaf shutdown {
+        type empty;
+        description
+          "The administrative status of the VPLS PW Set Binding.";
+
+        user-ext:CLI-comm-help "Deactivate the VPLS PW Set Binding";
+        user-ext:CLI-no-comm-help "Activate the VPLS PW Set Binding";
+      }
+
+    } // vfi
+
+  } // bridge-domain-config
+
+  grouping bridge-domain-state {
+
+    // Low-level model info: Corresponds to AMB_L2VM_VPLS_STATUS (vplsStatusTable)
+    // and AMB_L2VM_VPLS_CONFIG (vplsConfigTable)
+
+    description
+      "This read-only table provides information for monitoring
+      Virtual Private LAN Services (VPLS).
+
+      It corresponds to vplsStatusTable in draft-ietf-l2vpn-vpls-mib-12.";
+
+    // Low-level model info: Corresponds to vplsStatusOperStatus.
+    leaf oper-status {
+      type meta:oper-status;
+      description
+        "The current operational state of this VPLS instance.
+
+        If the operational status is 'up' then the VPLS is
+        programmed in the data plane.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to vplsStatusPwSetUpGauge.
+    leaf pw-set-gauge-up {
+      type uint32;
+      description
+        "This field specifies the total number of operationally
+        'up' PW Sets currently present in this VPLS instance.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to sum of all vplsStatusPwSet*Gauge MIB fields.
+    leaf pw-set-gauge-total {
+      type uint32;
+      description
+        "This field specifies the total number of PW Sets
+        currently present in this VPLS instance.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to vplsStatusAcUpGauge.
+    leaf ac-gauge-up {
+      type uint32;
+      description
+        "This field specifies the total number of operationally
+        'up' attachment circuits currently present in this VPLS
+        instance.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to sum of all vplsStatusAc*Gauge MIB fields.
+    leaf ac-gauge-total {
+      type uint32;
+      description
+        "This field specifies the total number of attachment circuits
+        currently present in this VPLS instance.";
+      config false;
+    }
+
+    leaf vfi-cfg-total {
+      type uint32;
+      description
+        "This field specifies the total number of VFIs currently
+         configured in this VPLS instance.";
+      config false;
+    }
+
+    container mac {
+
+      config false;
+
+      container aging {
+
+        config false;
+
+        // Low-level model info: Corresponds to vplsConfigMacAge.
+        leaf time {
+          type uint32;
+          description
+            "The aging time for entries in the VPLS Forwarder's FDB.";
+          config false;
+        }
+
+      } // aging
+
+      container limit {
+
+        config false;
+
+        // Low-level model info: Corresponds to vplsConfigMacSize.
+        leaf maximum {
+          type uint32;
+          description
+            "The maximum number of learned and static entries allowed
+            in the FDB for this AC binding.  A value of zero means no
+            maximum (not supported by this range).";
+          config false;
+        }
+
+      } // limit
+
+    } //mac
+
+  } // bridge-domain-state
+
+  grouping bridge-domain-parameters {
+
+    uses bridge-domain-config;
+
+    container state {
+
+      config false;
+
+      uses bridge-domain-state;
+
+    } // state
+
+  } // bridge-domain-parameters
+
+  grouping bridge-domain-interface-config {
+
+    // Low-level model info: Corresponds to AMB_L2VM_VPLS_AC_BIND_CFG (vplsAcBindCfgTable).
+
+    description
+      "This table provides an association between an Interface (as
+      an attachment circuit) and a VPLS service.
+
+      Multiple ACs can be associated to a single VPLS service.
+
+      Note that changes to this table may cause the corresponding
+      AC to go operationally down as it may involve re-programming
+      the AC in the data plane.";
+
+    user-ext:CLI-comm-help "Configure bridge domain interface parameters";
+    user-ext:CLI-no-comm-help "Configure bridge domain interface parameters";
+
+    container mac {
+
+      description
+        "MAC configuration commands";
+
+      user-ext:CLI-comm-help "Configure MAC parameters on interface";
+      user-ext:CLI-no-comm-help "Configure MAC parameters on interface";
+      user-ext:NCD-autocreate "";
+
+      // Low-level model info: Corresponds to vplsAcBindCfgMacLearning.
+      leaf learning {
+        type boolean;
+        default true;
+        description
+          "Learning option enable";
+
+        user-ext:CLI-param-help "Configure whether MAC-learning is enabled.";
+        user-ext:CLI-comm-help "Configure whether MAC-learning is enabled.";
+        user-ext:CLI-no-comm-help "Enable MAC-learning.";
+        user-ext:NCD-autocreate "";
+      }
+
+      container limit {
+
+        description
+          "MAC-limit configuration commands";
+
+        user-ext:CLI-comm-help "Configure MAC limit";
+        user-ext:CLI-no-comm-help "Configure MAC limit";
+
+        // Low-level model info: Corresponds to vplsAcBindCfgMacAddrLimit.
+        // Low-level model info: Note that the yang default is different to the MIB default.
+        leaf maximum {
+          type l2vpn-max-mac-limit-t;
+          default 4000;
+          description
+            "The maximum number of learned and static entries allowed
+            in the FDB for this AC binding.  A value of zero means no
+            maximum (not supported by this range).";
+
+          user-ext:CLI-comm-help "Set maximum number of learning MACs";
+          user-ext:CLI-no-comm-help "Set maximum number of learning MACs to default";
+          user-ext:CLI-param-help "Set maximum number of learning MACs";
+        }
+
+      } // limit
+
+    } // mac
+
+  } // bridge-domain-interface-config
+
+  grouping bridge-domain-interface-state {
+
+    // Low-level model info: Corresponds to read-only fields in AMB_L2VM_VPLS_AC_BIND (vplsAcBindTable).
+
+    description
+      "This table provides an association between an Interface (as
+      an attachment circuit) and a VPLS service.
+
+      Multiple ACs can be associated to a single VPLS service.
+
+      Note that changes to this table may cause the corresponding
+      AC to go operationally down as it may involve re-programming
+      the AC in the data plane.";
+
+    // Low-level model info: Corresponds to vplsAcBindOperStatus.
+    leaf oper-status {
+      type meta:oper-status;
+      description
+        "The curent operational status of the binding.  If the
+        operational status is 'up' then the AC is programmed in
+        the data plane and bound to the VPLS.";
+      config false;
+    }
+
+    leaf iface-status {
+      type iface_status_t;
+      description
+        "Interface oper status, used custom get callback (receive from if-manager)";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to vplsAcBindAcStatus.
+    leaf ac-status {
+      type l2vm-vpls-ac-status;
+      description
+        "The current status of the AC.";
+      config false;
+    }
+
+  } // bridge-domain-interface-state
+
+  grouping bridge-domain-interface-parameters {
+
+    uses bridge-domain-interface-config;
+
+    container state {
+
+      config false;
+
+      uses bridge-domain-interface-state;
+
+    } // state
+
+  } // bridge-domain-interface-parameters
+
+  grouping p2p-interface-state {
+
+    // Low-level model info: Corresponds to read-only fields in AMB_L2VM_VPWS_BIND_CFG (vpwsBindCfgTable).
+
+    // Low-level model info: Corresponds to vpwsBindCfgOperStatus.
+    leaf oper-status {
+      type meta:oper-status;
+      description
+        "The current operational status of the VPWS binding.
+        If the operational status is 'up' then the cross-connect
+        for this binding is programmed in the data plane.";
+      config false;
+    }
+
+    leaf iface-status {
+      type iface_status_t;
+      description
+        "Interface oper status, used custom get callback (receive from if-manager)";
+      config false;
+    }
+
+  } // p2p-interface-state
+
+  grouping p2p-interface-parameters {
+
+    container state {
+
+      config false;
+
+      uses p2p-interface-state;
+
+    } // state
+
+  } // p2p-interface-parameters
+
+
+  // Low-level model info: The L2VPN top level MIB is AMB_L2VM_ENTITY (l2vmEntityTable).
+
+  container l2vpn {
+
+    // Low-level model info: Corresponds to AMB_L2VM_ENTITY (l2vmEntityTable), but note that there are no config or state fields from this MIB.
+
+    presence "Enable L2VPN.";
+
+    description
+      "Configure L2VPN";
+
+    user-ext:CLI-comm-help "Configure L2VPN";
+    user-ext:CLI-no-comm-help "Remove L2VPN";
+
+    list pw-class {
+      // Low-level model info: Corresponds to AMB_MPLS_PW (pwTable).
+
+      description
+        "Configure pseudowire class reference";
+
+      user-ext:CLI-comm-help "Configure pseudowire class reference";
+      user-ext:CLI-no-comm-help "Remove pseudowire class reference";
+
+      key "name";
+
+      must "(/mpls:mpls/mpls:router-id != '')" {
+        error-message "If L2VPN is configured, an MPLS router-id must be defined";
+      }
+
+      // Low-level model info: Corresponds to pwName.
+      leaf name {
+        type pw-class-name-t;
+        description
+          "Set pw-class name";
+
+        user-ext:CLI-param-help "PW-class name";
+      }
+
+      container encapsulation {
+
+        description
+            "Encapsulation commands";
+
+        user-ext:CLI-comm-help "Configure encapsulation";
+        user-ext:CLI-no-comm-help "Configure encapsulation";
+
+        container mpls {
+
+          description
+            "MPLS encapsulation commands";
+
+          user-ext:CLI-comm-help "Configure MPLS encapsulation";
+          user-ext:CLI-no-comm-help "Configure MPLS encapsulation";
+
+          // The MTU cannot be configured with default value 0 for the LDP signaled PWs
+          must "(((mtu) and (mtu != 0) and ((signaling-type = 'pseudowire-id-fec-signaling') or (signaling-type = 'generalized-fec-signaling')))"
+             + " or ((signaling-type != 'pseudowire-id-fec-signaling') and (signaling-type != 'generalized-fec-signaling'))"
+             + " or (not(signaling-type)))" {
+              error-message "The PW encapsulation mtu must be set and not 0 if the signaling type is LDP";
+          }
+
+          // Low-level model info: Corresponds to pwLocalIfMtu.
+          leaf mtu {
+            type l2vpn-if-mtu-t;
+            default 0;
+            description
+              "The locally-supported MTU size over the interface";
+
+            user-ext:CLI-comm-help "Set MTU in bytes for pseudowire";
+            user-ext:CLI-no-comm-help "Set MTU in bytes for pseudowire to default";
+            user-ext:CLI-param-help "Set MTU";
+          }
+
+          // Low-level model info: Corresponds to pwCwPreference.
+          leaf control-word {
+            type control-word-type;
+            default non-preferred;
+            description
+              "Defines whether the control word will be sent with each
+              packet by the local node";
+
+            user-ext:CLI-comm-help "Set control word preference for pseudowire";
+            user-ext:CLI-no-comm-help "Set control word preference for pseudowire to default";
+            user-ext:CLI-param-help "Set control word preference";
+          }
+
+          // Low level model info: Corresponds to pwOwner.
+          leaf signaling-type {
+            type mpls-pw-owner-tc;
+            default manual;
+            description
+              "Set by the operator to indicate the protocol responsible
+              for establishing this PW";
+
+            user-ext:CLI-comm-help "Set pseudowire signaling type";
+            user-ext:CLI-no-comm-help "Set pseudowire signaling type to default";
+            user-ext:CLI-param-help "Set pseudowire signaling type";
+          }
+
+        } // mpls
+
+      } // encapsulation
+
+    } // pw-class
+
+    list bridge-domain {
+
+      // Low-level model info: Corresponds to AMB_L2VM_VPLS_CONFIG (vplsConfigTable) and AMB_L2VM_VPLS_STATUS (vplsStatusTable).
+
+      description
+        "Bridge domain";
+
+      user-ext:CLI-comm-help "Configure VPLS bridge domain";
+      user-ext:CLI-no-comm-help "Remove VPLS bridge domain";
+
+      key "name";
+
+      must "(/mpls:mpls/mpls:router-id != '')" {
+        error-message "If L2VPN is configured, an MPLS router-id must be defined";
+      }
+
+      // Low-level model info: Corresponds to vplsIndex (Mapper needs to convert between the key name and an arbitrary index).
+      leaf name {
+        type l2vm-vpls-name;
+        description
+          "Set bridge-domain name";
+
+        user-ext:CLI-param-help "Bridge domain name";
+      }
+
+      uses bridge-domain-parameters;
+
+      container interfaces {
+
+        if-feature interfaces:standard-interfaces;
+        user-ext:CLI-not-command;
+
+        list interface {
+
+          description "Per-interface L2VPN configuration and state.";
+
+          user-ext:CLI-comm-help "Configure L2VPN on interface";
+          user-ext:CLI-no-comm-help "Configure L2VPN on interface";
+
+          key "if-name";
+
+          leaf if-name {
+            type custom:iface-name;
+            description
+              "A unique identifier identifying the interface.";
+
+
+            user-ext:CLI-comm-help "Set interface name";
+            user-ext:CLI-param-help "Set interface name";
+          }
+
+          // An L3 interface cannot be configured as an attachment circuit.
+          must "not(/interface:interfaces/interface:interface[interface:name = current()/if-name]/interface:forwarding-mode) or " +
+               "(/interface:interfaces/interface:interface[interface:name = current()/if-name]/interface:forwarding-mode != 'interface:network-layer')"
+          {
+            error-message "L2VPN AC cannot be an L3 interface.";
+          }
+
+          uses bridge-domain-interface-parameters;
+
+        } // interface
+
+      } // interfaces
+
+      container custom-interfaces {
+
+        if-feature interfaces:custom-interfaces;
+        user-ext:CLI-not-command;
+
+        container interface {
+
+          description "Per-interface L2VPN configuration and state.";
+
+          user-ext:CLI-comm-help "Configure L2VPN on interface";
+          user-ext:CLI-no-comm-help "Configure L2VPN on interface";
+
+          container oneGE {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "gigabitethernet/gigabitethernet-sub";
+
+            list gigabitethernet {
+
+              description "1G interface";
+
+              user-ext:CLI-comm-help "Add L2VPN configuration to 1G interface";
+              user-ext:CLI-no-comm-help "Remove L2VPN configuration from 1G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "1G interface name";
+              }
+
+              uses bridge-domain-interface-parameters;
+
+            } // gigabitethernet
+
+            list gigabitethernet-sub {
+
+              description "1G sub-interface";
+
+              user-ext:CLI-comm-help "Add L2VPN configuration to 1G sub-interface";
+              user-ext:CLI-no-comm-help "Remove L2VPN configuration from 1G sub-interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-subiface-range-t;
+                description "<unit>/<dev>/<port>.<subid>";
+                user-ext:CLI-param-help "1G sub-interface";
+              }
+
+              uses bridge-domain-interface-parameters;
+
+            } // gigabitethernet-sub
+
+          } // oneGE
+
+          container tenGE {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "tengigabitethernet/tengigabitethernet-sub";
+
+            list tengigabitethernet {
+
+              description "10G interface";
+
+              user-ext:CLI-comm-help "Add L2VPN configuration to 10G interface";
+              user-ext:CLI-no-comm-help "Remove L2VPN configuration from 10G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "10G interface name";
+              }
+
+              uses bridge-domain-interface-parameters;
+
+            } // tengigabitethernet
+
+            list tengigabitethernet-sub {
+
+              description "10G sub-interface";
+
+              user-ext:CLI-comm-help "Add L2VPN configuration to 10G sub-interface";
+              user-ext:CLI-no-comm-help "Remove L2VPN configuration from 10G sub-interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-subiface-range-t;
+                description "<unit>/<dev>/<port>.<subid>";
+                user-ext:CLI-param-help "10G sub-interface";
+              }
+
+              uses bridge-domain-interface-parameters;
+
+            } // tengigabitethernet-sub
+
+          } // tenGE
+
+          container fortyGE {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "fortygigabitethernet/fortygigabitethernet-sub";
+
+            list fortygigabitethernet {
+
+              description "40G interface";
+
+              user-ext:CLI-comm-help "Add L2VPN configuration to 40G interface";
+              user-ext:CLI-no-comm-help "Remove L2VPN configuration from 40G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "40G interface name";
+              }
+
+              uses bridge-domain-interface-parameters;
+
+            } // fortygigabitethernet
+
+            list fortygigabitethernet-sub {
+
+              description "40G sub-interface";
+
+              user-ext:CLI-comm-help "Add L2VPN configuration to 40G sub-interface";
+              user-ext:CLI-no-comm-help "Remove L2VPN configuration from 40G sub-interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-subiface-range-t;
+                description "<unit>/<dev>/<port>.<subid>";
+                user-ext:CLI-param-help "Set 40G sub-interface";
+              }
+
+              uses bridge-domain-interface-parameters;
+
+            } // fortygigabitethernet-sub
+
+          } // fortyGE
+
+          container hundredGE {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "hundredgigabitethernet/hundredgigabitethernet-sub";
+
+            list hundredgigabitethernet {
+
+              description "100G interface";
+
+              user-ext:CLI-comm-help "Add L2VPN configuration to 100G interface";
+              user-ext:CLI-no-comm-help "Remove L2VPN configuration from 100G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "100G interface name";
+              }
+
+              uses bridge-domain-interface-parameters;
+
+            } // hundredgigabitethernet
+
+            list hundredgigabitethernet-sub {
+
+              description "100G sub-interface";
+
+              user-ext:CLI-comm-help "Add L2VPN configuration to 100G sub-interface";
+              user-ext:CLI-no-comm-help "Remove L2VPN configuration from 100G sub-interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-subiface-range-t;
+                description "<unit>/<dev>/<port>.<subid>";
+                user-ext:CLI-param-help "100G sub-interface";
+              }
+
+              uses bridge-domain-interface-parameters;
+
+            } // hundredgigabitethernet-sub
+
+          } // hundredGE
+
+          container bundle-ifaces {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "bundle-ether/bundle-ether-sub";
+
+            list bundle-ether {
+
+              description "Bundle-Ether interface";
+
+              user-ext:CLI-comm-help "Add L2VPN configuration to bundle interface";
+              user-ext:CLI-no-comm-help "Remove L2VPN configuration from bundle interface";
+
+              key "bundle-id";
+
+              leaf bundle-id {
+                type interfaces:bundle-id-t;
+                description "Bundle-ether id";
+                user-ext:CLI-param-help "Bundle interface id";
+              }
+
+              uses bridge-domain-interface-parameters;
+
+            } // bundle-ether
+
+            list bundle-ether-sub {
+
+              description "Bundle-Ether sub-interface";
+
+              user-ext:CLI-comm-help "Add L2VPN configuration to bundle sub-interface";
+              user-ext:CLI-no-comm-help "Remove L2VPN configuration from bundle sub-interface";
+
+              key "bundle-id";
+
+              leaf bundle-id {
+                type interfaces:bundle-sub-id-t;
+                description "Bundle-ether id";
+                user-ext:CLI-param-help "Bundle sub-interface id";
+              }
+
+              uses bridge-domain-interface-parameters;
+
+            } // bundle-ether-sub
+
+          } // bundle-ifaces
+
+        } // interface
+
+      } // custom-interfaces
+
+    } // bridge-domain
+
+
+    container bridge-domain-pw-state-list {
+
+      config false;
+
+      list bridge-domain {
+
+        // Low-level model info: Corresponds to AMB_L2VM_VPLS_STATUS (vplsStatusTable).
+
+        description
+          "Bridge domain";
+
+        config false;
+        key "name";
+
+        leaf name {
+          type l2vm-vpls-name;
+          description
+            "Bridge-domain name";
+
+          config false;
+        }
+
+        container pw-list {
+
+          config false;
+
+          list pw {
+
+            description
+              "A row in this table represents a Pseudowire (PW) virtual
+              connection across a packet switched network (PSN).  This
+              includes both PWs provisioned in PwTable and also PWs that
+              have been automatically created by the control plane.";
+
+            config false;
+
+            key "name";
+
+            leaf name {
+              type pw-name-t;
+              description
+                "PW name";
+
+              config false;
+            }
+
+            uses pw-common-state-parameters;
+            uses pw-discovered-state-parameters;
+            uses pw-configured-state-parameters;
+
+          } // pw
+
+        } // pw-list
+
+      } // bridge-domain
+
+    } // bridge-domain-pw-state-list
+
+
+    list xconnect-group {
+
+      // Does not correspond to any low level table.
+
+      description
+        "Grouping on the high level management interface";
+
+      user-ext:CLI-comm-help "Configure VPWS group";
+      user-ext:CLI-no-comm-help "Remove VPWS group";
+
+      key "name";
+
+      leaf name {
+        type l2vpn-xconnect-group-name;
+        description
+          "Set xconnect-group name";
+
+        user-ext:CLI-param-help "Xconnect-group name";
+      }
+
+      list p2p {
+
+        // Low-level model info: Corresponds to AMB_L2VM_VPWS_CONFIG (vpwsConfigTable).
+
+        description
+          "Configure p2p";
+
+        user-ext:CLI-comm-help "Configure VPWS";
+        user-ext:CLI-no-comm-help "Remove VPWS";
+
+        key "name";
+
+        // Low-level model info: Corresponds to vpwsIndex (Mapper needs to convert between the key name and an arbitrary index).
+        leaf name {
+          type l2vpn-vpws-name;
+          description
+            "Set VPWS name.";
+
+          user-ext:CLI-param-help "Set VPWS name";
+        }
+
+        // Low-level model info: Corresponds to vpwsConfigMtu.
+        leaf mtu {
+          type l2vpn-mtu-t;
+          units "bytes";
+          default 1500;
+          description
+            "The layer 2 MTU of this VPWS.
+
+            When using auto-discovery and signaling, this specifies
+            the signaled layer 2 MTU.
+
+            Changing this value will cause an interruption to data
+            flow for this VPWS.";
+
+          user-ext:CLI-comm-help "Set MTU in bytes for VPWS";
+          user-ext:CLI-no-comm-help "Set MTU in bytes for VPWS to default";
+          user-ext:CLI-param-help "Set MTU";
+        }
+
+        // Low-level model info: Corresponds to vpwsConfigAutoMtu.
+        leaf auto-mtu {
+          type boolean;
+          default false;
+          description
+            "Whether the VPWS should automatically derive the MTU to
+            use for pseudowires from the MTU of the attachment circuit
+            bound to the pseudowire.  If this field is set to true,
+            then any value configured in vpwsConfigMtu is ignored.
+
+            This field is not supported for BGP-signalled VPWSs.
+
+            Note that if this field is set to true, a change to an
+            attachment circuit's MTU size may cause an interruption to
+            data flow for this VPWS.
+
+            Changing the value of this field will cause an
+            interruption to data flow for this VPWS.";
+
+          // Auto-MTU is only supported when BGP signalling is not in use.
+          must "(not((. = 'true') and
+                     (../autodiscovery/bgp/signaling-protocol/bgp/ve-id)))" {
+            error-message "VPWS auto-mtu is only supported when BGP signalling is not in use";
+          }
+
+          user-ext:CLI-param-help "Configure whether to derive the pseudowire MTU from the bound attachment circuits' MTU";
+          user-ext:CLI-comm-help "Configure whether to derive the pseudowire MTU from the bound attachment circuits' MTU";
+          user-ext:CLI-no-comm-help "Use the mtu value for the pseudowire MTU";
+        }
+
+        // Low-level model info: Corresponds to vpwsConfigAdminStatus.
+        leaf shutdown {
+          type empty;
+          description
+            "The administrative status of this VPWS instance.";
+
+          user-ext:CLI-comm-help "Deactivate the VPWS instance";
+          user-ext:CLI-no-comm-help "Activate the VPWS instance";
+        }
+
+        // Low level model info: Corresponds to vpwsConfigPwEncapType.
+        leaf transport-mode {
+          type transport-mode-t;
+          default "ethernet";
+          description
+            "The MPLS PW encapsulation type used by this VPWS";
+
+          user-ext:CLI-comm-help "Set encapsulation type for VPWS";
+          user-ext:CLI-no-comm-help "Set encapsulation type for VPWS to default";
+          user-ext:CLI-param-help "Set encapsulation type";
+        }
+
+        uses autodiscovery;
+
+        list pw {
+          // Low-level model info: Corresponds to AMB_MPLS_PW (pwTable)
+
+          description
+            "VPWS PWs.";
+
+          user-ext:CLI-comm-help "Configure pseudowire for VPWS";
+          user-ext:CLI-no-comm-help "Remove pseudowire for VPWS";
+
+          key "name";
+
+          max-elements "2";
+
+          // Low-level model info: Corresponds to pwName.
+          leaf name {
+            type pw-name-t;
+            description
+              "Set pseudowire name";
+
+            user-ext:CLI-param-help "Set pseudowire name";
+          }
+
+          uses pw;
+          uses pw-129-identifiers;
+          uses pw-state;
+
+          container backup {
+
+            description
+              "VPWS PWs.";
+
+            user-ext:CLI-comm-help "Configure backup pseudowire for VPWS";
+            user-ext:CLI-no-comm-help "Configure backup pseudowire for VPWS";
+
+            presence "Enable backup PW";
+
+            uses pw;
+            uses pw-129-identifiers;
+            uses pw-state;
+
+          } // backup
+
+        } // pw
+
+        container interfaces {
+
+          if-feature interfaces:standard-interfaces;
+          user-ext:CLI-not-command;
+
+          list interface {
+
+            description "Per-interface L2VPN configuration and state.";
+
+            user-ext:CLI-comm-help "Configure L2VPN on interface";
+            user-ext:CLI-no-comm-help "Configure L2VPN on interface";
+
+            key "if-name";
+
+            leaf if-name {
+              type custom:iface-name;
+              description
+                "A unique identifier identifying the interface.";
+
+              user-ext:CLI-comm-help "Set interface name";
+              user-ext:CLI-param-help "Set interface name";
+            }
+
+            // An L3 interface cannot be configured as an attachment circuit.
+            must "not(/interface:interfaces/interface:interface[interface:name = current()/if-name]/interface:forwarding-mode) or " +
+                 "(/interface:interfaces/interface:interface[interface:name = current()/if-name]/interface:forwarding-mode != 'interface:network-layer')"
+            {
+              error-message "L2VPN AC cannot be an L3 interface.";
+            }
+
+            uses p2p-interface-parameters;
+
+          } // interface
+
+        } // interfaces
+
+        container custom-interfaces {
+
+          if-feature interfaces:custom-interfaces;
+          user-ext:CLI-not-command;
+
+          container interface {
+
+            description "Per-interface L2VPN configuration and state";
+
+            user-ext:CLI-comm-help "Configure L2VPN on interface";
+            user-ext:CLI-no-comm-help "Configure L2VPN on interface";
+
+            container oneGE {
+
+              user-ext:CLI-not-command;
+              user-ext:CLI-comm-switch "gigabitethernet/gigabitethernet-sub";
+
+              list gigabitethernet {
+
+                description "1G interface";
+
+                user-ext:CLI-comm-help "Add L2VPN configuration to 1G interface";
+                user-ext:CLI-no-comm-help "Remove L2VPN configuration from 1G interface";
+
+                key "if-num";
+
+                leaf if-num {
+                  type interfaces:eth-iface-num-t;
+                  description "<unit>/<dev>/<port>";
+                  user-ext:CLI-param-help "1G interface name";
+                }
+
+                uses p2p-interface-parameters;
+
+              } // gigabitethernet
+
+              list gigabitethernet-sub {
+
+                description "1G sub-interface";
+
+                user-ext:CLI-comm-help "Add L2VPN configuration to 1G sub-interface";
+                user-ext:CLI-no-comm-help "Remove L2VPN configuration from 1G sub-interface";
+
+                key "if-num";
+
+                leaf if-num {
+                  type interfaces:eth-subiface-range-t;
+                  description "<unit>/<dev>/<port>.<subid>";
+                  user-ext:CLI-param-help "1G sub-interface";
+                }
+
+                uses p2p-interface-parameters;
+
+              } // gigabitethernet-sub
+
+            } // oneGE
+
+            container tenGE {
+
+              user-ext:CLI-not-command;
+              user-ext:CLI-comm-switch "tengigabitethernet/tengigabitethernet-sub";
+
+              list tengigabitethernet {
+
+                description "10G interface";
+
+                user-ext:CLI-comm-help "Add L2VPN configuration to 10G interface";
+                user-ext:CLI-no-comm-help "Remove L2VPN configuration from 10G interface";
+
+                key "if-num";
+
+                leaf if-num {
+                  type interfaces:eth-iface-num-t;
+                  description "<unit>/<dev>/<port>";
+                  user-ext:CLI-param-help "10G interface name";
+                }
+
+                uses p2p-interface-parameters;
+
+              } // tengigabitethernet
+
+              list tengigabitethernet-sub {
+
+                description "10G sub-interface";
+
+                user-ext:CLI-comm-help "Add L2VPN configuration to 10G sub-interface";
+                user-ext:CLI-no-comm-help "Remove L2VPN configuration from 10G sub-interface";
+
+                key "if-num";
+
+                leaf if-num {
+                  type interfaces:eth-subiface-range-t;
+                  description "<unit>/<dev>/<port>.<subid>";
+                  user-ext:CLI-param-help "10G sub-interface";
+                }
+
+                uses p2p-interface-parameters;
+
+              } // tengigabitethernet-sub
+
+            } // tenGE
+
+            container fortyGE {
+
+              user-ext:CLI-not-command;
+              user-ext:CLI-comm-switch "fortygigabitethernet/fortygigabitethernet-sub";
+
+              list fortygigabitethernet {
+
+                description "40G interface";
+
+                user-ext:CLI-comm-help "Add L2VPN configuration to 40G interface";
+                user-ext:CLI-no-comm-help "Remove L2VPN configuration from 40G interface";
+
+                key "if-num";
+
+                leaf if-num {
+                  type interfaces:eth-iface-num-t;
+                  description "<unit>/<dev>/<port>";
+                  user-ext:CLI-param-help "40G interface name";
+                }
+
+                uses p2p-interface-parameters;
+
+              } // fortygigabitethernet
+
+              list fortygigabitethernet-sub {
+
+                description "40G sub-interface";
+
+                user-ext:CLI-comm-help "Add L2VPN configuration to 40G sub-interface";
+                user-ext:CLI-no-comm-help "Remove L2VPN configuration from 40G sub-interface";
+
+                key "if-num";
+
+                leaf if-num {
+                  type interfaces:eth-subiface-range-t;
+                  description "<unit>/<dev>/<port>.<subid>";
+                  user-ext:CLI-param-help "40G sub-interface";
+                }
+
+                uses p2p-interface-parameters;
+
+              } // fortygigabitethernet-sub
+
+            } // fortyGE
+
+            container hundredGE {
+
+              user-ext:CLI-not-command;
+              user-ext:CLI-comm-switch "hundredgigabitethernet/hundredgigabitethernet-sub";
+
+              list hundredgigabitethernet {
+
+                description "100G interface";
+
+                user-ext:CLI-comm-help "Add L2VPN configuration to 100G interface";
+                user-ext:CLI-no-comm-help "Remove L2VPN configuration from 100G interface";
+
+                key "if-num";
+
+                leaf if-num {
+                  type interfaces:eth-iface-num-t;
+                  description "<unit>/<dev>/<port>";
+                  user-ext:CLI-param-help "100G interface name";
+                }
+
+                uses p2p-interface-parameters;
+
+              } // hundredgigabitethernet
+
+              list hundredgigabitethernet-sub {
+
+                description "100G sub-interface";
+
+                user-ext:CLI-comm-help "Add L2VPN configuration to 100G sub-interface";
+                user-ext:CLI-no-comm-help "Remove L2VPN configuration from 100G sub-interface";
+
+                key "if-num";
+
+                leaf if-num {
+                  type interfaces:eth-subiface-range-t;
+                  description "<unit>/<dev>/<port>.<subid>";
+                  user-ext:CLI-param-help "100G sub-interface";
+                }
+
+                uses p2p-interface-parameters;
+
+              } // hundredgigabitethernet-sub
+
+            } // hundredGE
+
+            container bundle-ifaces {
+
+              user-ext:CLI-not-command;
+              user-ext:CLI-comm-switch "bundle-ether/bundle-ether-sub";
+
+              list bundle-ether {
+
+                description "Bundle-Ether interface";
+
+                user-ext:CLI-comm-help "Add L2VPN configuration to bundle interface";
+                user-ext:CLI-no-comm-help "Remove L2VPN configuration from bundle interface";
+
+                key "bundle-id";
+
+                leaf bundle-id {
+                  type interfaces:bundle-id-t;
+                  description "Bundle-ether id";
+                  user-ext:CLI-param-help "Bundle interface id";
+                }
+
+                uses p2p-interface-parameters;
+
+              } // bundle-ether
+
+              list bundle-ether-sub {
+
+                description "Bundle-Ether sub-interface";
+
+                user-ext:CLI-comm-help "Add L2VPN configuration to bundle sub-interface";
+                user-ext:CLI-no-comm-help "Remove L2VPN configuration from bundle sub-interface";
+
+                key "bundle-id";
+
+                leaf bundle-id {
+                  type interfaces:bundle-sub-id-t;
+                  description "Bundle-ether id";
+                  user-ext:CLI-param-help "Bundle sub-interface id";
+                }
+
+                uses p2p-interface-parameters;
+
+              } // bundle-ether-sub
+
+            } // bundle-ifaces
+
+          } // interface
+
+        } // custom-interfaces
+
+      } // p2p
+
+    } // xconnect-group
+
+    container xconnect-pw-state-list {
+
+      config false;
+
+      list xconnect-group {
+
+        // Does not correspond to any low level table.
+
+        description
+          "Grouping on the high level management interface";
+
+        config false;
+
+        key "name";
+
+        leaf name {
+          type l2vpn-xconnect-group-name;
+          description
+            "xconnect-group name";
+
+          config false;
+        }
+
+	      container p2p-list {
+
+          config false;
+
+          list p2p {
+
+            // Low-level model info: Corresponds to AMB_L2VM_VPWS_CONFIG (vpwsConfigTable).
+
+            description
+              "Configure p2p";
+
+            config false;
+
+            key "name";
+
+            leaf name {
+              type l2vpn-vpws-name;
+              description
+                "VPWS name.";
+
+              config false;
+            }
+
+            container pw-list {
+
+              config false;
+
+              list pw {
+
+                // Low-level model info: Corresponds to AMB_MPLS_PW_DISPLAY (pwDisplayTable).
+
+                description
+                  "A row in this table represents a Pseudowire (PW) virtual
+                  connection across a packet switched network (PSN).  This
+                  includes both PWs provisioned in PwTable and also PWs that
+                  have been automatically created by the control plane.";
+
+                config false;
+
+                leaf name {
+                  type pw-name-t;
+                  description
+                    "The PW name if configured, or a generated name if the PW
+                     was automatically created by the control plane.
+
+                     This can't be guaranteed to be unique so it shouldn't be
+                     used as a list key.";
+
+                  config false;
+                }
+
+                uses pw-common-state-parameters;
+                uses pw-discovered-state-parameters;
+                uses pw-configured-state-parameters;
+
+              } // pw
+
+            } // pw-list
+
+          } // p2p
+
+          } // p2p-list
+
+      } // xconnect-group
+
+    } // xconnect-pw-state-list
+
+    container forwarding-database-list {
+
+      config false;
+
+      list bridge-domain {
+
+        // Low-level model info: Corresponds to AMB_STUBS_L2F_FDB (l2fFdbTable).
+
+        description
+          "Bridge domain";
+
+        config false;
+        key "name";
+
+        leaf name {
+          type l2vm-vpls-name;
+          description
+            "Bridge-domain name";
+
+          config false;
+        }
+
+        uses fdb:fdb-entry-list;
+
+      } // bridge-domain
+
+    } // forwarding-database-list
+
+  } // l2vpn
+
+} // l2vpn

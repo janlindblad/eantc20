@@ -1,0 +1,515 @@
+
+module mpls-static {
+
+  namespace "http://metaswitch.com/yang/nbu/mpls-static/201512110000Z";
+
+  prefix mpls-static;
+
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix "interfaces"; }
+  import metaswitch-yang-types { prefix meta; }
+  import metaswitch-mpls { prefix "mpls"; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "MPLS Static LSPs";
+
+  revision 2017-03-06 {
+    description
+      "Initial revision.";
+    reference "RFC 3031: A YANG Data Model for Static MPLS LSPs";
+  }
+
+
+  typedef lsp-priority-type {
+    type uint32 {
+      range "0..7";
+    }
+    description
+      "(0-7)";
+  }
+
+  typedef bandwidth-t
+  {
+    type uint32
+    {
+      range "1..2147483647";
+    }
+    description
+      "KBPS (1-2147483647)";
+  }
+
+  typedef global-id-t {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "A number in the range 0-4294967295";
+  }
+
+  typedef lsp-role-type {
+      type enumeration  {
+          enum working                    { value 1; description "Working LSP"; }
+          enum protecting                 { value 2; description "Protecting LSP"; }
+      }
+      description
+          "If protection is used, the LSP role";
+  }
+
+  typedef mpls-index-t {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "A number in the range 0-4294967295";
+  }
+
+  feature static-lsps {
+    description
+      "This feature means that the device supports Static LSPs";
+  }
+
+  grouping out-segment-nh-info {
+
+    description "Common out segment next hop info";
+
+    container out-segment-nh-info {
+      must "(outgoing)" {
+        error-message "The outgoing interface must be defined";
+      }
+
+      description "Out segment next hop info";
+
+      user-ext:CLI-not-command;
+
+      list nexthop-label {
+
+        key "label-index";
+
+        description
+          "List of next hop labels.";
+
+        user-ext:CLI-comm-help "Configure next hop labels";
+        user-ext:CLI-no-comm-help "Remove next hop labels";
+
+        leaf label-index {
+          type mpls-index-t;
+          user-ext:CLI-param-help "Index of next hop label";
+          description "Index of next hop label";
+        }
+
+        leaf label {
+          type meta:mpls-label-integer-t;
+          description "The next hop label";
+
+          user-ext:CLI-param-help "Set next hop label";
+          user-ext:CLI-comm-help "Set next hop label";
+          user-ext:CLI-no-comm-help "Remove next hop label";
+        }
+      }
+
+      leaf nexthop-address {
+        type interfaces:iface-ip-address-t;
+        description "The next hop address.";
+
+        user-ext:CLI-param-help "Set next hop address";
+        user-ext:CLI-comm-help "Set next hop address";
+        user-ext:CLI-no-comm-help "Remove next hop address";
+      }
+
+      container outgoing {
+
+        description "The outgoing interface.";
+
+        user-ext:CLI-param-help "Set outgoing interface";
+        user-ext:CLI-comm-help "Set outgoing interface";
+        user-ext:CLI-no-comm-help "Remove outgoing interface";
+
+        uses interfaces:iface-service-use;
+      }
+    }
+  }
+
+  grouping mpls-tp-id {
+    description "MPLS TP identifier";
+    leaf global-id {
+      // Low-level model info: Corresponds to mplsNodeConfigGlobalId.
+      type global-id-t;
+
+      description
+        "The Global Operator Identifier.
+
+         The Global Operator is defined to uniquely identify an
+         operator.  The Global Operator can contain the 2-octet or
+         4-octet value of the provider's Autonomous System Number
+         (ASN).
+
+         A Global ID of zero means that no Global ID is present.";
+
+      user-ext:CLI-comm-help "Configure global ID";
+      user-ext:CLI-no-comm-help "Remove global ID";
+      user-ext:CLI-param-help "Configure global ID";
+    }
+
+    leaf node-id {
+      // Low-level model info: Corresponds to mplsNodeConfigNodeId.
+      type interfaces:iface-ipv4-address-t;
+      description
+        "The Node ID.
+
+         The Node ID is a unique 32-bit value assigned by the
+         operator within the scope of the Global Operator
+         Identifier.";
+
+      user-ext:CLI-comm-help "Configure node ID";
+      user-ext:CLI-no-comm-help "Remove node ID";
+      user-ext:CLI-param-help "Configure node ID";
+    }
+
+  } // mpls-tp-id
+
+  grouping in-segment-info {
+
+    description "In-segment information.";
+
+    leaf label {
+      type meta:mpls-label-integer-t;
+      mandatory true;
+      description "The incoming label.";
+
+      user-ext:CLI-param-help "Set incoming label";
+      user-ext:CLI-comm-help "Set incoming label";
+      user-ext:CLI-no-comm-help "Remove incoming label";
+    }
+
+    container label-space {
+
+      description
+        "Interface that identifies the label space from which the incoming
+         label is assigned.
+
+         This is omitted when using the global label space and is only
+         required for an in segment using a per-interface label space.";
+      user-ext:CLI-param-help "Set incoming interface";
+      user-ext:CLI-comm-help "Set incoming interface";
+      user-ext:CLI-no-comm-help "Remove incoming interface";
+
+      presence
+        "Use an interface label space instead of the global label space.";
+
+      uses interfaces:iface-service-use;
+    }
+  }
+
+  container mpls {
+
+    description
+      "MPLS static LSPs configuration.";
+
+    user-ext:CLI-comm-help "Configure static LSPs";
+    user-ext:CLI-no-comm-help "Remove static LSPs";
+
+    container static {
+
+      description
+        "Container to hold static LSP configuration.";
+
+      presence "Enable static LSP support";
+
+      container default-tp-id {
+        // Low-level model info: Corresponds to AMB_MPLS_NODE_CONFIG
+        // (mplsNodeConfigTable).
+        description
+          "Default MPLS-TP node identifiers for the ingress of static LSPs.";
+
+        user-ext:CLI-comm-help "Configure default ingress MPLS-TP identifiers";
+        user-ext:CLI-no-comm-help "Remove default ingress MPLS-TP identifiers";
+
+        uses mpls-tp-id;
+
+      } // default-tp-id
+
+      list static-lsp {
+
+        // Low-level model info: Corresponds to AMB_LMGR_XC (mplsXCTable) and
+        // AMB_MPLS_TUNNEL (mplsTunnelTable).
+
+        key "name";
+
+        description
+          "Static LSP configuration.";
+
+        user-ext:CLI-comm-help "Configure static LSP";
+        user-ext:CLI-no-comm-help "Remove static LSP";
+
+        must "(/mpls:mpls/mpls:router-id != '')" {
+          error-message "If a static LSP is configured, an MPLS router-id must be defined";
+        }
+
+        leaf name {
+          type meta:mpls-lsp-name-string;
+
+          user-ext:CLI-param-help "LSP name";
+          description
+            "LSP name";
+        }
+
+        choice endpoints {
+
+          mandatory true;
+
+          case mpls {
+
+            leaf source {
+              type interfaces:iface-ipv4-address-t;
+              mandatory true;
+              description
+                "LSP source address";
+              user-ext:CLI-param-help "Configure LSP source address";
+              user-ext:CLI-no-comm-help "Remove LSP source address";
+            }
+
+            leaf destination {
+              type interfaces:iface-ipv4-address-t;
+              mandatory true;
+              description
+                "LSP destination address";
+
+              user-ext:CLI-param-help "Configure LSP destination address";
+              user-ext:CLI-no-comm-help "Remove LSP destination address";
+            }
+
+          } // mpls
+
+          case mpls-tp {
+
+            container ingress-tp-id {
+              // Low-level model info: Corresponds to AMB_MPLS_NODE_CONFIG
+              // (mplsNodeConfigTable).
+              description
+                "MPLS-TP node identifiers for the ingress LSR.";
+
+              user-ext:CLI-comm-help "Configure ingress MPLS-TP identifiers";
+              user-ext:CLI-no-comm-help "Remove ingress MPLS-TP identifiers";
+
+              uses mpls-tp-id ;
+
+            } // ingress-tp-id
+
+            container egress-tp-id {
+              // Low-level model info: Corresponds to AMB_MPLS_NODE_CONFIG
+              // (mplsNodeConfigTable).
+              description
+                "MPLS-TP node identifiers for the egress LSR.";
+
+              user-ext:CLI-comm-help "Configure egress MPLS-TP identifiers";
+              user-ext:CLI-no-comm-help "Remove egress MPLS-TP identifiers";
+
+              uses mpls-tp-id {
+                refine global-id {
+                  mandatory true;
+                }
+                refine node-id {
+                  mandatory true;
+                }
+              }
+            } // egress-tp-id
+
+          } // mpls-tp
+        }
+
+        container in-segment {
+
+          // Low-level model info: Corresponds to AMB_LMGR_IN_SEGMENT
+          // (mplsInSegmentTable) table
+
+          description
+            "The LMGR In Segment Table describes the incoming segments of
+             static LSPs.  This table contains one row per incoming segment
+             and there is one row per static LSP.";
+
+          user-ext:CLI-comm-help "Configure in segment";
+          user-ext:CLI-no-comm-help "Remove in segment";
+
+          choice in-segment-type {
+            description "Type of in-segment.";
+
+            case simple-in-segment {
+
+              uses in-segment-info;
+            }
+
+            case in-segment {
+              list in-segment {
+
+                key "in-segment-index";
+
+                description
+                  "List of in-segments.";
+
+                user-ext:CLI-comm-help "Configure in-segment";
+                user-ext:CLI-no-comm-help "Remove in-segment";
+
+                leaf in-segment-index {
+                  type mpls-index-t;
+                  user-ext:CLI-param-help "Index of in-segment";
+                  description "Index of in-segment entry";
+                }
+                uses in-segment-info;
+              }
+            }
+          }
+        }
+
+        container out-segment {
+
+          // Low-level model info: Corresponds to AMB_LMGR_OUT_SEGMENT
+          // (mplsOutSegmentTable) table
+          description
+            "The LMGR Out Segment Table describes the outgoing segments of
+             static LSPs.  This table contains one row per outgoing segment
+             and there is one row per static LSP.";
+
+          user-ext:CLI-comm-help "Configure out segment";
+          user-ext:CLI-no-comm-help "Remove out segment";
+
+          choice out-segment-type {
+            description "Type of out-segment.";
+            case simple-path {
+              uses out-segment-nh-info;
+            }
+
+            case path {
+              list path {
+                key "path-index";
+
+                description
+                  "List of out-segment paths.";
+
+                user-ext:CLI-comm-help "Configure out-segment path";
+                user-ext:CLI-no-comm-help "Remove out-segment path";
+
+                leaf path-index {
+                  type mpls-index-t;
+                  user-ext:CLI-param-help "Index of out-segment path";
+                  description "Index of out-segment path";
+                }
+
+                uses out-segment-nh-info;
+
+              }
+            }
+          }
+        }
+
+        must "((in-segment) or (out-segment))" {
+          error-message
+            "Ingress or egress segment must be defined for a static LSP";
+        }
+
+        leaf bandwidth {
+          // Low-level model info: Corresponds to mplsTrafficParamMeanRate.
+          type bandwidth-t;
+
+          user-ext:CLI-param-help "The bandwidth required";
+          description
+            "Bandwidth required";
+
+          user-ext:CLI-param-help "Set bandwidth";
+          user-ext:CLI-comm-help "Set bandwidth";
+          user-ext:CLI-no-comm-help "Remove bandwidth";
+        }
+
+        leaf lsp-priority-setup {
+          // Low-level model info: Corresponds to mplsTunnelSetupPrio.
+          type lsp-priority-type;
+
+          default "0";
+
+          description "LSP setup priority";
+          user-ext:CLI-param-help "Configure setup priority";
+          user-ext:CLI-comm-help "Configure setup priority";
+          user-ext:CLI-no-comm-help "Remove setup priority";
+        }
+
+        leaf lsp-priority-hold {
+          // Low-level model info: Corresponds to mplsTunnelHoldingPrio.
+          type lsp-priority-type;
+
+          default "0";
+
+          description "LSP hold priority";
+          user-ext:CLI-param-help "Configure holding priority";
+          user-ext:CLI-comm-help "Configure holding priority";
+          user-ext:CLI-no-comm-help "Remove holding priority";
+        }
+
+        leaf role {
+          // Low-level model info: Corresponds to mplsTunnelProtecting.
+          type lsp-role-type;
+
+          default "working";
+
+          description "LSP protection role";
+          user-ext:CLI-param-help "LSP role";
+          user-ext:CLI-comm-help "LSP role";
+        }
+
+      } // static-lsp
+
+      list bidir-static-lsp {
+
+        // Low-level model info: Corresponds to AMB_MPLS_TUNNEL_EXL
+        // (mplsTunnelExtTable).
+
+        key "name";
+
+        description
+          "Bidirectional LSP configuration.";
+
+        user-ext:CLI-comm-help "Configure bidirectional LSP information";
+        user-ext:CLI-no-comm-help "Remove bidirectional LSP information";
+
+        leaf name {
+          type meta:mpls-lsp-name-string;
+
+          user-ext:CLI-param-help "Bidirectional LSP name";
+          description
+            "Bidirectional LSP name";
+        }
+
+        leaf forward-lsp {
+          type leafref {
+            path "/mpls/static/static-lsp/name";
+          }
+          user-ext:CLI-param-help "Name of static forward LSP";
+          description
+            "Configured static forward LSP";
+        }
+
+        leaf reverse-lsp {
+          type leafref {
+            path "/mpls/static/static-lsp/name";
+          }
+          user-ext:CLI-param-help "Name of static reverse LSP";
+          description
+            "Configured static reverse LSP";
+        }
+
+      } // bidir-static-lsps
+
+    } // static
+
+  } // mpls-static
+
+} // mpls-static
+

@@ -1,0 +1,2554 @@
+module interface {
+
+  // Actions require Yang version 1.1.
+  // Start yang1.1-only
+  yang-version 1.1;
+  // End yang1.1-only
+
+  namespace "http://metaswitch.com/yang/nbu/interface/201709270000Z";
+
+  prefix interface;
+
+  import ietf-yang-types {
+    prefix yang;
+  }
+  import metaswitch-custom-yang-types {
+    prefix custom;
+  }
+  import ieee802-types {
+    prefix "ieee";
+  }
+  import metaswitch-yang-types {
+    prefix meta;
+  }
+  import user-extensions {
+    prefix "user-ext";
+  }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "This module contains a collection of YANG definitions for
+     managing network interfaces.
+
+     This YANG model is closely based on the interfaces YANG module
+     developed by the IETF and which is copyright (c) 2014 IETF Trust and
+     the persons identified as authors of the code.  All rights reserved.
+     Redistribution and use in source and binary forms, with or
+     without modification, is permitted pursuant to, and subject
+     to the license terms contained in, the Simplified BSD License
+     set forth in Section 4.c of the IETF Trust's Legal Provisions
+     Relating to IETF Documents
+     (http://trustee.ietf.org/license-info).
+     The IETF version of this YANG module is part of RFC 7223; see
+     the RFC itself for full legal notices.
+
+     The differences between this model and the IETF standard comprise:
+     - changes due to unsupported function
+     - additions required by Metaswitch products.";
+
+  revision 2017-09-27 {
+    description "Initial revision.";
+  }
+
+  /*
+   * Typedefs
+   */
+  typedef interface-ref {
+    type leafref {
+      path "/interface:interfaces/interface/name";
+    }
+    description
+      "This type is used by data models that need to reference
+       configured interfaces.";
+  }
+
+  typedef iface-name
+  {
+    type string {
+      length "1..255";
+    }
+    description
+      "WORD (1-255)";
+  }
+
+  typedef ipv4-address {
+    type string {
+      pattern
+        '(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}'
+      +  '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])';
+    }
+    description
+      "The ipv4-address type represents an IPv4 address in
+       dotted-quad notation.";
+  }
+
+  typedef ipv6-address {
+    type string {
+      pattern '((:|[0-9a-fA-F]{0,4}):)([0-9a-fA-F]{0,4}:){0,5}'
+            + '((([0-9a-fA-F]{0,4}:)?(:|[0-9a-fA-F]{0,4}))|'
+            + '(((25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.){3}'
+            + '(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])))';
+      pattern '(([^:]+:){6}(([^:]+:[^:]+)|(.*\..*)))|'
+            + '((([^:]+:)*[^:]+)?::(([^:]+:)*[^:]+)?)'
+            + '(%.+)?';
+    }
+    description
+      "The ipv6-address type represents an IPv6 address in full,
+       mixed, shortened, and shortened-mixed notation.";
+  }
+
+  typedef interface-state-types {
+    type enumeration {
+      enum vlanSubif;
+      enum other;
+      enum ethernet-csmacd;
+      enum ieee8023adLag;
+      enum tunnel;
+      enum l2vlan;
+      enum l3ipvlan;
+      enum ip-forward;
+      enum mpls-tunnel;
+      enum mpls;
+      enum if-pw-type;
+      enum prop-virtual;
+    }
+    description
+      "Interface types.";
+  }
+
+  typedef interface-oper-status {
+    type enumeration {
+      enum up {
+        value 1;
+        description
+          "Ready to pass packets.";
+      }
+      enum down {
+        value 2;
+        description
+          "The interface does not pass any packets.";
+      }
+      enum testing {
+        value 3;
+        description
+          "In some test mode.  No operational packets can
+           be passed.";
+      }
+      enum unknown {
+        value 4;
+        description
+          "Status cannot be determined for some reason.";
+      }
+      enum dormant {
+        value 5;
+        description
+          "Waiting for some external event.";
+      }
+      enum not-present {
+        value 6;
+        description
+          "Some component (typically hardware) is missing.";
+      }
+      enum lower-layer-down {
+        value 7;
+        description
+          "Down due to state of lower-layer interface(s).";
+      }
+    }
+    description
+      "Interface operational status";
+  }
+
+  /*
+   * IEEE 802.1Q Identity Definitions.
+   *    Defines the supported IEEE 802.1Q types that can be used
+   *    for VLAN tag matching.
+   */
+
+  identity dot1q-vlan-type {
+    description
+      "Base identity from which all 802.1Q VLAN tag types are
+      derived from.";
+  }
+
+  identity c-vlan {
+    base dot1q-vlan-type;
+    description
+      "An 802.1Q Customer VLAN, normally using the 0x8100
+       Ethertype";
+    reference
+      "IEEE 802.1Q-2014, Clause 5.5";
+  }
+
+  identity s-vlan {
+    base dot1q-vlan-type;
+    description
+      "An 802.1Q Service VLAN, using the 0x88a8 Ethertype
+       originally introduced in 802.1ad, and incorporated into
+       802.1Q (2011)";
+    reference
+      "IEEE 802.1Q-2014, Clause 5.6";
+  }
+
+  typedef dot1q-tag-type {
+    type identityref {
+      base "dot1q-vlan-type";
+    }
+    description
+      "Identifies a specific 802.1Q tag type";
+    reference
+      "IEEE 802.1Q (2014)";
+  }
+
+  /*
+   * Identities
+   */
+  identity interface-type {
+    description
+      "Base identity from which specific interface types are
+       derived.";
+  }
+
+  identity vlanSubif {
+    base interface-type;
+    description
+      "VLAN sub-interface.";
+  }
+
+  identity other {
+    base interface-type;
+    description
+      "Interface type is none of the following.";
+  }
+
+  identity ethernet-csmacd {
+    base interface-type;
+    description
+      "For all ethernet-like interfaces, regardless of speed,
+      as per RFC3635.";
+  }
+
+  identity ieee8023adLag {
+    base interface-type;
+    description
+      "IEEE 802.3ad Link Aggregate.";
+  }
+
+  identity tunnel {
+    base interface-type;
+    description
+      "Encapsulation interface.";
+  }
+
+  identity l2vlan {
+    base interface-type;
+    description
+      "VLAN IRB interface.  Currently unused.";
+  }
+
+  identity l3ipvlan {
+    base interface-type;
+    description
+      "VLAN IRB interface.";
+  }
+
+  identity ip-forward {
+    base interface-type;
+    description
+      "IP Forwarding Interface.";
+  }
+
+  identity mpls-tunnel {
+    base interface-type;
+    description
+      "MPLS Tunnel Virtual Interface.";
+  }
+
+  identity mpls {
+    base interface-type;
+    description
+      "MPLS.";
+  }
+
+  identity if-pw-type {
+    base interface-type;
+    description
+      "Pseudowire interface type.";
+  }
+
+  identity sw-loopback {
+    base interface-type;
+    description
+      "Software loopback interface type.";
+  }
+
+  identity evi-irb {
+    base l3ipvlan;
+    description
+      "IRB interface using EVPN bridge domain.";
+  }
+
+  identity direction {
+    description
+      "This is identity of traffic direction";
+  }
+  identity inbound {
+    base direction;
+    description
+      "Direction of traffic coming into the network entry";
+  }
+  identity outbound {
+    base direction;
+    description
+      "Direction of traffic going out of the network entry";
+  }
+
+  typedef tagging-mode-t {
+    type enumeration {
+      enum none;
+      enum customer;
+      enum provider;
+    }
+    description
+      "The tagging modes";
+  }
+
+  typedef tpid-t {
+    type enumeration {
+      enum 8100 {
+        description
+        "C-VLAN, 802.1Q";
+      }
+      enum 88a8 {
+        description
+        "S-VLAN, 802.1ad";
+      }
+      enum 88A8 {
+        description
+        "S-VLAN, 802.1ad";
+      }
+      enum 9100 {
+        description
+        "Non-standard, 0x9100";
+      }
+      enum 9200 {
+        description
+        "Non-standard, 0x9200";
+      }
+    }
+  }
+
+  /*
+   * Features
+   */
+
+  feature interface-qos {
+    description
+      "This feature means that the device supports QOS on interfaces.";
+  }
+
+  feature l3vpn-vrf-bind {
+    description
+      "This feature means that the device supports binding interface to
+       Layer 3 VPN VRFs.";
+  }
+
+  feature flexible-rewrites {
+    description
+      "This feature indicates whether the network element supports
+        specifying flexible rewrite operations.";
+  }
+
+  feature asymmetric-rewrites {
+    description
+      "This feature indicates whether the network element supports
+       specifying different rewrite operations for the ingress
+       rewrite operation and egress rewrite operation.";
+  }
+
+  feature port-stacking {
+    description
+      "This feature indicates whether the node supports port stacking
+       in a distributed system.";
+  }
+
+  feature untagged-flexible-match {
+    description
+      "This feature indicates whether the network element supports
+       defining flexible match criteria based on untagged traffic.";
+  }
+
+  feature priority-tagged-flexible-match {
+    description
+      "This feature indicates whether the network element supports
+       defining flexible match criteria based on priority tagged traffic.";
+  }
+
+  feature second-tag-flexible-match {
+    description
+      "This feature indicates whether the network element supports
+       defining flexible match criteria using a second tag in addition to
+       an outer tag.";
+  }
+
+  feature tag-type-flexible-match {
+    description
+      "This feature indicates whether the network element supports
+       defining flexible match criteria using the VLAN tag type (ethertype)
+       as well as the VLAN ID.";
+  }
+
+  feature pop-tags-symmetric-rewrite {
+    description
+      "This feature indicates whether the network element supports
+       popping tags as part of a symmetric rewrite.";
+  }
+
+  feature second-tag-symmetric-rewrite {
+    description
+      "This feature indicates whether the network element supports
+       pushing a second tag as part of flexible rewrite.";
+  }
+
+  feature clear-counters {
+    // FEATURE-UNDER-DEVELOPMENT: clear-counters
+    description
+      "This feature means that the device supports reseting interface
+       counters to 0.";
+  }
+
+  /*
+   * Metaswitch: Included from module ietf-interfaces-common (revision 2017-03-13).
+   */
+
+  feature sub-interfaces {
+    description
+      "This feature indicates that the device supports the
+       instantiation of sub-interfaces.  Sub-interfaces are defined
+       as logical child interfaces that allow features and forwarding
+       decisions to be applied to a subset of the traffic processed
+       on the specified parent interface.";
+    reference "Section 3.7 Sub-interface";
+  }
+
+  /*
+   * Metaswitch: grouping to report additional interface statistics.
+   */
+  grouping interface-additional-statistics {
+    description "A collection of additional interface-related statistics objects.";
+    // Low-level model info: Corresponds to limInterfaceStatsInOctetsTot
+    leaf in-total-octets {
+      type yang:counter64;
+      description
+        "The total number of octets (including bad packets) received
+         on the interface.";
+    }
+    // Low-level model info: Corresponds to limInterfaceStatsUndersizePkts
+    leaf in-undersize-pkts {
+      type yang:counter64;
+      description
+        "The total number of packets received on the interface
+         that were less than 64 octets in length (excluding framing bits
+         but including Frame Check Sequence octets) and were otherwise
+         well formed.";
+    }
+    // Low-level model info: Corresponds to limInterfaceStatsPkts64O
+    leaf in-64-octet-pkts {
+      type yang:counter64;
+      description
+        "The total number of packets (including bad packets) received
+         on the interface that were 64 octets in length, (excluding
+         framing bits but including Frame Check Sequence octets).";
+    }
+    // Low-level model info: Corresponds to limInterfaceStatsPkts65to127O
+    leaf in-65-127-octet-pkts {
+      type yang:counter64;
+      description
+        "The total number of packets (including bad packets) received
+         on the interface that were between 65 and 127 octets in
+         length (excluding framing bits but including Frame Check
+         Sequence octets).";
+    }
+    // Low-level model info: Corresponds to limInterfaceStatsPkts128to255O
+    leaf in-128-255-octet-pkts {
+      type yang:counter64;
+      description
+        "The total number of packets (including bad packets) received
+         on the interface that were between 128 and 255 octets in
+         length (excluding framing bits but including Frame Check
+         Sequence octets).";
+    }
+    // Low-level model info: Corresponds to limInterfaceStatsPkts256to511O
+    leaf in-256-511-octet-pkts {
+      type yang:counter64;
+      description
+        "The total number of packets (including bad packets) received
+         on the interface that were between 256 and 511 octets in
+         length (excluding framing bits but including Frame Check
+         Sequence octets).";
+    }
+    // Low-level model info: Corresponds to limInterfaceStatsPkts512to1023O
+    leaf in-512-1023-octet-pkts {
+      type yang:counter64;
+      description
+        "The total number of packets (including bad packets) received
+         on the interface that were between 512 and 1023 octets in
+         length (excluding framing bits but including Frame Check
+         Sequence octets).";
+    }
+    // Low-level model info: Corresponds to limInterfaceStatsPkts1024to1518O
+    leaf in-1024-1518-octet-pkts {
+      type yang:counter64;
+      description
+        "The total number of packets (including bad packets) received
+         on the interface that were between 1024 and 1518 octets in
+         length (excluding framing bits but including Frame Check
+         Sequence octets).";
+    }
+    // Low-level model info: Corresponds to limInterfaceStatsPktsOver1518O
+    leaf in-over-1518-octet-pkts {
+      type yang:counter64;
+      description
+        "The total number of packets (including bad packets) received
+         on the interface that were over 1518 octets in
+         length (excluding framing bits but including Frame Check
+         Sequence octets).";
+    }
+    // Low-level model info: Corresponds to limInterfaceStatsInPktsTot
+    leaf in-total-pkts {
+      type yang:counter64;
+      description
+        "The total number of packets (including bad packets) received
+         on the interface.";
+    }
+    // Low-level model info: Corresponds to limInterfaceStatsOutPktsTot
+    leaf out-total-pkts {
+      type yang:counter64;
+      description
+        "The total number of packets transmitted via the interface
+         including those that produced an error.";
+    }
+    // Low-level model info: Corresponds to limInterfaceStatsDropEvents
+    leaf drop-events {
+      type yang:counter64;
+      description
+        "The total number of events in which packets were dropped
+         due to lack of resources.  Note that this number
+         is not necessarily the number of packets dropped, it is
+         just the number of times this condition has been detected.";
+    }
+    // Low-level model info: Corresponds to limInterfaceStatsCollisions
+    leaf collisions {
+      type yang:counter64;
+      description
+        "The best estimate of the total number of collisions on this
+         Ethernet segment.";
+    }
+  }
+
+  rpc counters-clear-all
+  {
+      if-feature interface:clear-counters;
+      description "Clear all interface statistics.";
+
+      user-ext:CLI-root-view;
+      user-ext:CLI-comm-alias "clear counters";
+      user-ext:CLI-ucallback "interfaces_clear_counters_all";
+      user-ext:CLI-comm-help "Clear interface statistics";
+  }
+
+  /*
+   * Configuration data nodes
+   */
+  container interfaces {
+    description
+      "Interface configuration parameters.";
+    list interface {
+      key "name";
+      description
+        "The list of configured interfaces on the device.
+         The operational state of an interface is available in the
+         /interfaces-state/interface list.  If the configuration of a
+         system-controlled interface cannot be used by the system
+         (e.g., the interface hardware present does not match the
+         interface type), then the configuration is not applied to
+         the system-controlled interface shown in the
+         /interfaces-state/interface list.  If the configuration
+         of a user-controlled interface cannot be used by the system,
+         the configured interface is not instantiated in the
+         /interfaces-state/interface list.";
+
+      leaf name {
+        type custom:iface-name;
+        description
+          "The name of the interface.
+           A device MAY restrict the allowed values for this leaf,
+           possibly depending on the type of the interface.
+           For system-controlled interfaces, this leaf is the
+           device-specific name of the interface.  The 'config false'
+           list /interfaces-state/interface contains the currently
+           existing interfaces on the device.
+           If a client tries to create configuration for a
+           system-controlled interface that is not present in the
+           /interfaces-state/interface list, the server MAY reject
+           the request if the implementation does not support
+           pre-provisioning of interfaces or if the name refers to
+           an interface that can never exist in the system.  A
+           NETCONF server MUST reply with an rpc-error with the
+           error-tag 'invalid-value' in this case.
+           If the device supports pre-provisioning of interface
+           configuration, the 'pre-provisioning' feature is
+           advertised.
+           If the device allows arbitrarily named user-controlled
+           interfaces, the 'arbitrary-names' feature is advertised.
+           When a configured user-controlled interface is created by
+           the system, it is instantiated with the same name in the
+           /interface-state/interface list.
+
+           If the interface type is l2vlan then the name must be of type
+           l2vlan-name.";
+
+        must "(((substring-before(.,'.') = '') and (substring-after(.,'.') = '')) or
+               ((../type) and
+                ((../type = 'interface:vlanSubif') or
+                 (../type = 'interface:ieee8023adLag'))))" {
+          error-message "The interface name indicates a VLAN sub interface or bundle but the type does not match";
+        }
+
+        must "((not(../type)) or
+               (../type != 'interface:vlanSubif') or
+               ((substring-before(.,'.') != '') and
+                (number(substring-after(.,'.')) <= 4095) and
+                (substring-after(substring-after(.,'.'),'.') = '')))" {
+          error-message "The interface name must follow the pattern {parent-interface}.ID [0-4095] for a VLAN sub interface";
+        }
+
+        must "((not(../type)) or
+               (../type != 'interface:l3ipvlan') or
+               ((substring-before(.,'vlan') = '') and
+                (number(substring-after(.,'vlan')) >= 1) and
+                (number(substring-after(.,'vlan')) <= 4094)))" {
+          error-message "The interface name must follow the pattern vlan<ID> [1-4094] for an IRB interface";
+        }
+      }
+      leaf description {
+        type string {
+          length "1..255";
+        }
+        description
+          "A textual description of the interface.
+           A server implementation MAY map this leaf to the ifAlias
+           MIB object.  Such an implementation needs to use some
+           mechanism to handle the differences in size and characters
+           allowed between this leaf and ifAlias.  The definition of
+           such a mechanism is outside the scope of this document.
+           Since ifAlias is defined to be stored in non-volatile
+           storage, the MIB implementation MUST map ifAlias to the
+           value of 'description' in the persistently stored
+           datastore.
+           Specifically, if the device supports ':startup', when
+           ifAlias is read the device MUST return the value of
+           'description' in the 'startup' datastore, and when it is
+           written, it MUST be written to the 'running' and 'startup'
+           datastores.  Note that it is up to the implementation to
+           decide whether to modify this single leaf in 'startup' or
+           perform an implicit copy-config from 'running' to
+           'startup'.
+           If the device does not support ':startup', ifAlias MUST
+           be mapped to the 'description' leaf in the 'running'
+           datastore.";
+        reference
+          "RFC 2863: The Interfaces Group MIB - ifAlias";
+      }
+      leaf type {
+        type identityref {
+          base interface-type;
+        }
+        description
+          "The type of the interface.
+           When an interface entry is created, a server MAY
+           initialize the type leaf with a valid value, e.g., if it
+           is possible to derive the type from the name of the
+           interface.
+           If a client tries to set the type of an interface to a
+           value that can never be used by the system, e.g., if the
+           type is not supported or if the type does not match the
+           name of the interface, the server MUST reject the request.
+           A NETCONF server MUST reply with an rpc-error with the
+           error-tag 'invalid-value' in this case.";
+        reference
+          "RFC 2863: The Interfaces Group MIB - ifType";
+      }
+      leaf enabled {
+        type boolean;
+        default "true";
+        description
+          "This leaf contains the configured, desired state of the
+           interface.
+           Systems that implement the IF-MIB use the value of this
+           leaf in the 'running' datastore to set
+           IF-MIB.ifAdminStatus to 'up' or 'down' after an ifEntry
+           has been initialized, as described in RFC 2863.
+           Changes in this leaf in the 'running' datastore are
+           reflected in ifAdminStatus, but if ifAdminStatus is
+           changed over SNMP, this leaf is not affected.";
+        reference
+          "RFC 2863: The Interfaces Group MIB - ifAdminStatus";
+      }
+
+      /*
+       * Metaswitch: Included from module ietf-interfaces-common (revision
+       * 2017-03-13).
+       *
+       * Other Yang changes included from module ietf-interfaces-common appear
+       * below as Yang augments statements.  The parent-interface leaf is
+       * included directly here with its mandatory statement replaced by a
+       * must statement in order to work around an issue in ConfD version
+       * 6.7.1.  This issue is believed to be fixed in ConfD version 6.7.2
+       * (ConfD references: ENG-19462, RT:34679, PS-29745).
+       */
+
+      /*
+       * Add generic support for sub-interfaces.
+       *
+       * This should be extended to cover all interface types that are
+       * child interfaces of other interfaces.
+       */
+      leaf parent-interface {
+        if-feature "sub-interfaces";
+        when "../type = 'interface:vlanSubif'" {
+          description
+            "Parent interface only applies to VLAN sub-interfaces.";
+        }
+        type string;
+        description
+          "This is the reference to the parent interface of this
+           sub-interface.";
+
+        must "not(/interfaces/interface[name = current()][(forwarding-mode = 'interface:network-layer')])" {
+          error-message
+            "A VLAN should not be configured on a parent interface " +
+            "where the forwarding-mode is set to network-layer";
+        }
+      }
+
+     /* Add support for MAC address configuration.
+      *
+      * This should be extended to cover all interface types that are not
+      * hardware defined.
+      */
+      leaf mac-address {
+        when "../type = 'interface:evi-irb'" {
+          description
+            "MAC address configuration only applies to EVI IRB interfaces.";
+        }
+        type meta:mac-address;
+        description
+          "The configured MAC address of the EVI IRB interface.";
+      }
+
+      // Start yang1.1-only
+      action counters-clear {
+        if-feature interface:clear-counters;
+        description "Clear interface counters.";
+
+        user-ext:CLI-param-help "Clear interface counters.";
+      }
+      // End yang1.1-only
+    }
+  }
+
+  /*
+   * Operational state data nodes
+   */
+  container interfaces-state {
+    config false;
+    description
+      "Data nodes for the operational state of interfaces.";
+    list interface {
+      key "name";
+      description
+        "The list of interfaces on the device.
+         System-controlled interfaces created by the system are
+         always present in this list, whether they are configured or
+         not.";
+      leaf name {
+        type string;
+        description
+          "The name of the interface.
+           A server implementation MAY map this leaf to the ifName
+           MIB object.  Such an implementation needs to use some
+           mechanism to handle the differences in size and characters
+           allowed between this leaf and ifName.  The definition of
+           such a mechanism is outside the scope of this document.";
+        reference
+          "RFC 2863: The Interfaces Group MIB - ifName";
+      }
+      leaf type {
+        type interface-state-types;
+        mandatory true;
+        description
+          "The type of the interface.";
+        reference
+          "RFC 2863: The Interfaces Group MIB - ifType";
+      }
+      leaf oper-status {
+        type interface-oper-status;
+        mandatory true;
+        description
+          "The current operational state of the interface.
+           This leaf has the same semantics as ifOperStatus.";
+        reference
+          "RFC 2863: The Interfaces Group MIB - ifOperStatus";
+      }
+      leaf sub-layer-oper-status {
+        type interface-oper-status;
+        mandatory true;
+        description
+          "Operational status of the sub-layer used by this interface.";
+      }
+      leaf if-index {
+        type int32 {
+          range "1..2147483647";
+        }
+        description
+          "The ifIndex value for the ifEntry represented by this
+           interface.";
+        reference
+          "RFC 2863: The Interfaces Group MIB - ifIndex";
+      }
+      leaf phys-address {
+        type meta:mac-address;
+        description
+          "The interface's address at its protocol sub-layer.  For
+           example, for an 802.x interface, this object normally
+           contains a Media Access Control (MAC) address.  The
+           interface's media-specific modules must define the bit
+           and byte ordering and the format of the value of this
+           object.  For interfaces that do not have such an address
+           (e.g., a serial line), this node is not present.";
+        reference
+          "RFC 2863: The Interfaces Group MIB - ifPhysAddress";
+      }
+      leaf speed {
+        type uint32;
+        units "Mbps";
+        description
+            "An estimate of the interface's current bandwidth in Mega-bits
+             per second.  For interfaces that do not vary in
+             bandwidth or for those where no accurate estimation can
+             be made, this node should contain the nominal bandwidth.
+             For interfaces that have no concept of bandwidth, this
+             node is not present.";
+        reference
+          "RFC 2863: The Interfaces Group MIB -
+                     ifSpeed, ifHighSpeed";
+      }
+      container statistics {
+        description
+          "A collection of interface-related statistics objects.";
+        leaf in-octets {
+          type yang:counter64;
+          description
+            "The total number of octets received on the interface,
+             including framing characters.
+             Discontinuities in the value of this counter can occur
+             at re-initialization of the management system, and at
+             other times as indicated by the value of
+             'discontinuity-time'.";
+          reference
+            "RFC 2863: The Interfaces Group MIB - ifHCInOctets";
+        }
+        leaf in-unicast-pkts {
+          type yang:counter64;
+          description
+            "The number of packets, delivered by this sub-layer to a
+             higher (sub-)layer, that were not addressed to a
+             multicast or broadcast address at this sub-layer.
+             Discontinuities in the value of this counter can occur
+             at re-initialization of the management system, and at
+             other times as indicated by the value of
+             'discontinuity-time'.";
+          reference
+            "RFC 2863: The Interfaces Group MIB - ifHCInUcastPkts";
+        }
+        leaf in-broadcast-pkts {
+          type yang:counter64;
+          description
+            "The number of packets, delivered by this sub-layer to a
+             higher (sub-)layer, that were addressed to a broadcast
+             address at this sub-layer.
+             Discontinuities in the value of this counter can occur
+             at re-initialization of the management system, and at
+             other times as indicated by the value of
+             'discontinuity-time'.";
+          reference
+            "RFC 2863: The Interfaces Group MIB -
+                       ifHCInBroadcastPkts";
+        }
+        leaf in-multicast-pkts {
+          type yang:counter64;
+          description
+            "The number of packets, delivered by this sub-layer to a
+             higher (sub-)layer, that were addressed to a multicast
+             address at this sub-layer.  For a MAC-layer protocol,
+             this includes both Group and Functional addresses.
+             Discontinuities in the value of this counter can occur
+             at re-initialization of the management system, and at
+             other times as indicated by the value of
+             'discontinuity-time'.";
+          reference
+            "RFC 2863: The Interfaces Group MIB -
+                       ifHCInMulticastPkts";
+        }
+        leaf in-discards {
+          type yang:counter64;
+          description
+            "The number of inbound packets that were chosen to be
+             discarded even though no errors had been detected to
+             prevent their being deliverable to a higher-layer
+             protocol.  One possible reason for discarding such a
+             packet could be to free up buffer space.
+             Discontinuities in the value of this counter can occur
+             at re-initialization of the management system, and at
+             other times as indicated by the value of
+             'discontinuity-time'.";
+          reference
+            "RFC 2863: The Interfaces Group MIB - ifInDiscards";
+        }
+        leaf in-errors {
+          type yang:counter64;
+          description
+            "For packet-oriented interfaces, the number of inbound
+             packets that contained errors preventing them from being
+             deliverable to a higher-layer protocol.  For character-
+             oriented or fixed-length interfaces, the number of
+             inbound transmission units that contained errors
+             preventing them from being deliverable to a higher-layer
+             protocol.
+             Discontinuities in the value of this counter can occur
+             at re-initialization of the management system, and at
+             other times as indicated by the value of
+             'discontinuity-time'.";
+          reference
+            "RFC 2863: The Interfaces Group MIB - ifInErrors";
+        }
+        leaf in-unknown-protos {
+          type yang:counter64;
+          description
+            "For packet-oriented interfaces, the number of packets
+             received via the interface that were discarded because
+             of an unknown or unsupported protocol.  For
+             character-oriented or fixed-length interfaces that
+             support protocol multiplexing, the number of
+             transmission units received via the interface that were
+             discarded because of an unknown or unsupported protocol.
+             For any interface that does not support protocol
+             multiplexing, this counter is not present.
+             Discontinuities in the value of this counter can occur
+             at re-initialization of the management system, and at
+             other times as indicated by the value of
+             'discontinuity-time'.";
+          reference
+            "RFC 2863: The Interfaces Group MIB - ifInUnknownProtos";
+        }
+        leaf out-octets {
+          type yang:counter64;
+          description
+            "The total number of octets transmitted out of the
+             interface, including framing characters.
+             Discontinuities in the value of this counter can occur
+             at re-initialization of the management system, and at
+             other times as indicated by the value of
+             'discontinuity-time'.";
+          reference
+            "RFC 2863: The Interfaces Group MIB - ifHCOutOctets";
+        }
+        leaf out-unicast-pkts {
+          type yang:counter64;
+          description
+            "The total number of packets that higher-level protocols
+             requested be transmitted, and that were not addressed
+             to a multicast or broadcast address at this sub-layer,
+             including those that were discarded or not sent.
+             Discontinuities in the value of this counter can occur
+             at re-initialization of the management system, and at
+             other times as indicated by the value of
+             'discontinuity-time'.";
+          reference
+            "RFC 2863: The Interfaces Group MIB - ifHCOutUcastPkts";
+        }
+        leaf out-broadcast-pkts {
+          type yang:counter64;
+          description
+            "The total number of packets that higher-level protocols
+             requested be transmitted, and that were addressed to a
+             broadcast address at this sub-layer, including those
+             that were discarded or not sent.
+             Discontinuities in the value of this counter can occur
+             at re-initialization of the management system, and at
+             other times as indicated by the value of
+             'discontinuity-time'.";
+          reference
+            "RFC 2863: The Interfaces Group MIB -
+                       ifHCOutBroadcastPkts";
+        }
+        leaf out-multicast-pkts {
+          type yang:counter64;
+          description
+            "The total number of packets that higher-level protocols
+             requested be transmitted, and that were addressed to a
+             multicast address at this sub-layer, including those
+             that were discarded or not sent.  For a MAC-layer
+             protocol, this includes both Group and Functional
+             addresses.
+             Discontinuities in the value of this counter can occur
+             at re-initialization of the management system, and at
+             other times as indicated by the value of
+             'discontinuity-time'.";
+          reference
+            "RFC 2863: The Interfaces Group MIB -
+                       ifHCOutMulticastPkts";
+        }
+        leaf out-discards {
+          type yang:counter64;
+          description
+            "The number of outbound packets that were chosen to be
+             discarded even though no errors had been detected to
+             prevent their being transmitted.  One possible reason
+             for discarding such a packet could be to free up buffer
+             space.
+             Discontinuities in the value of this counter can occur
+             at re-initialization of the management system, and at
+             other times as indicated by the value of
+             'discontinuity-time'.";
+          reference
+            "RFC 2863: The Interfaces Group MIB - ifOutDiscards";
+        }
+        leaf out-errors {
+          type yang:counter64;
+          description
+            "For packet-oriented interfaces, the number of outbound
+             packets that could not be transmitted because of errors.
+             For character-oriented or fixed-length interfaces, the
+             number of outbound transmission units that could not be
+             transmitted because of errors.
+             Discontinuities in the value of this counter can occur
+             at re-initialization of the management system, and at
+             other times as indicated by the value of
+             'discontinuity-time'.";
+          reference
+            "RFC 2863: The Interfaces Group MIB - ifOutErrors";
+        }
+
+        uses interface-additional-statistics;
+      }
+    }
+  }
+
+  /*
+   * Metaswitch: Included from module ietf-interfaces-common (revision 2017-03-13).
+   */
+
+  /*
+   * Define common identities to help allow interface types to be
+   * assigned properties.
+   */
+  identity sub-interface {
+    description "Base type for generic sub-interfaces.  New or custom
+                 interface types can derive from this type to
+                 inherit generic sub-interface configuration";
+  }
+
+  identity loopback {
+    description "Base identity for interface loopback options";
+  }
+  identity loopback-internal {
+    base loopback;
+    description
+      "All egress traffic on the interface is internally looped back
+       within the interface to be received on the ingress path.";
+  }
+  identity loopback-line {
+    base loopback;
+    description
+      "All ingress traffic received on the interface is internally
+       looped back within the interface to the egress path.";
+  }
+  identity loopback-connector {
+    base loopback;
+    description
+      "The interface has a physical loopback connector attached to
+       that loops all egress traffic back into the interface's
+       ingress path, with equivalent semantics to loopback-internal";
+  }
+
+  identity forwarding-mode {
+    description "Base identity for forwarding-mode options";
+  }
+  identity layer-2-forwarding {
+    base forwarding-mode;
+    description
+      "Layer 2 based forwarding, such as Ethernet/VLAN based
+       switching, or L2VPN services.";
+  }
+  identity network-layer {
+    base forwarding-mode;
+    description
+      "Network layer based forwarding, such as IP, MPLS, or L3VPNs";
+  }
+
+  /*
+   * Augments the IETF interfaces model with optional common
+   * interface level commands that are not formally covered by any
+   * specific standard.
+   */
+  augment "/interfaces/interface" {
+    description
+      "Augments the IETF interface model with optional common
+       interface level commands that are not formally covered by any
+       specific standard";
+
+    /*
+     * Defines standard YANG for the Carrier Delay feature.
+     */
+
+    /*
+     * Augments the IETF interfaces model with a container to hold
+     * generic interface dampening
+     */
+
+    /*
+     * Various types of interfaces support a configurable layer 2
+     * encapsulation, any that are supported by YANG should be
+     * listed here.
+     *
+     * Different encapsulations can hook into the common encaps-type
+     * choice statement.
+     */
+    container encapsulation {
+
+      when "../type = 'interface:vlanSubif'" {
+        description
+          "Encapsulation only applies to sub-interfaces";
+      }
+
+      description
+        "Holds the OSI layer 2 encapsulation associated with an
+         interface";
+
+      choice encaps-type {
+        description "Extensible choice of L2 encapsulations";
+        mandatory true;
+      }
+    }
+
+    /*
+     * Various types of interfaces support loopback configuration,
+     * any that are supported by YANG should be listed here.
+     */
+
+    // MTU HARDWARE NOTE:  The maximum MTU may be different on different
+    // hardware.  If your hardware has a different maximum frame size
+    // supported, then you should change the range here and any corresponding
+    // help text.
+    leaf mtu {
+      type uint16 {
+        range "68 .. 12274";
+      }
+      description
+        "The maximum size of an IP packet that may be transmitted without
+         fragmentation, in bytes. This does not include any layer 2
+         encapsulation, which is instead configured with the
+         ethernet-max-frame-size field.
+         The valid range for IPv4 traffic is 68-12274 bytes.
+         The valid range for IPv6 traffic is 1280-12274 bytes.";
+
+      must "../forwarding-mode = 'interface:network-layer'" {
+        error-message
+          "MTU can only be configured on an interface with forwarding-mode " +
+          "set to network-layer.";
+      }
+
+      must "(not(../ethernet/max-frame-size) and (. <= 1504)) or" +
+           " (../ethernet/max-frame-size >= . + 14)" {
+        error-message
+          "The Ethernet maximum frame size must allow for at least 14 bytes " +
+          "of Ethernet header as well as the maximum size of an IP packet " +
+          "(the MTU).";
+      }
+    }
+
+    /*
+     * Augments the IETF interfaces model with a leaf that indicates
+     * which mode, or layer, is being used to forward the traffic.
+     */
+    leaf forwarding-mode {
+      type identityref {
+        base forwarding-mode;
+      }
+
+      description
+        "The forwarding mode that the interface is operating in";
+    }
+
+    /*
+     * Augments the IETF interfaces model with a leaf that indicates
+     * whether MPLS is enabled on this interface.
+     */
+    leaf mpls-enabled {
+      when "not(../forwarding-mode = 'interface:layer-2-forwarding')";
+      must "(. = 'false') or not(../type = 'interface:l3ipvlan')" {
+        error-message "MPLS not supported on IRB interfaces";
+      }
+
+      type boolean;
+      default "false";
+      description
+        "Whether MPLS is enabled on this interface";
+    }
+
+    /*
+     * Augments the IETF interfaces model with a container that indicates
+     * the total amount of reservable bandwidth on this interface.
+     */
+    container reservable-bandwidth {
+      description "Set the reservable-bandwidth of an interface";
+
+      leaf value {
+        type uint64;
+        must "../units" {
+          description "units must be set";
+        }
+        description "Reservable bandwidth";
+      }
+      leaf units {
+        type meta:bandwidth-units-t;
+        description "Reservable bandwidth units.";
+      }
+    }
+
+    /*
+     * Augments the IETF interfaces model with a container that indicates
+     * whether data on this interface should be mirrored.
+     */
+    container mirror {
+      when "../type = 'interface:ethernet-csmacd'" {
+        description "Mirroring only applies to physical ports";
+      }
+
+      presence "Enables port mirroring";
+      description "Enables port mirroring on an interface";
+
+      must "not(../name = ./interface)" {
+        error-message "Cannot configure an interface to mirror to itself";
+      }
+
+      leaf interface {
+
+        type string;
+        mandatory true;
+
+        must "/interfaces/interface[name = current()][(type = 'interface:ethernet-csmacd')]" {
+          error-message
+            "Can only mirror to a configured physical port";
+        }
+
+        description "The name of the interface to mirror traffic to";
+      }
+
+      leaf direction {
+        type enumeration {
+          enum ingress;
+          enum egress;
+          enum both;
+        }
+        default "both";
+        description "The traffic direction to mirror";
+      }
+    }
+  }
+
+  grouping dot1q-tag-rewrite-grouping {
+    description
+      "A grouping which represents a rewrite for an 802.1Q VLAN, including both
+      the Ethertype and a single VLAN ID.";
+    container dot1q-tag {
+      description
+        "Identifies an 802.1Q VLAN with an explicit EtherType and a
+        single VLAN ID";
+      leaf tag-type {
+        type dot1q-tag-type;
+        mandatory true;
+        description
+          "VLAN type";
+      }
+      leaf vlan-id {
+        type ieee:vlanid;
+        mandatory true;
+        description
+          "VLAN ID";
+      }
+    }
+  }
+
+  grouping dot1q-tag-classifier-grouping {
+    description
+      "A grouping which represents an 802.1Q VLAN, matching both
+      the Ethertype and a single VLAN ID.";
+    container dot1q-tag {
+      description
+        "Identifies an 802.1Q VLAN with an explicit EtherType and a
+        single VLAN ID";
+      leaf tag-type {
+        if-feature tag-type-flexible-match;
+        type dot1q-tag-type;
+        default "c-vlan";
+        description
+          "VLAN type";
+      }
+      leaf vlan-id {
+        type ieee:vlanid;
+        mandatory true;
+        description
+          "VLAN ID";
+      }
+    }
+  }
+
+  grouping dot1q-tag-or-any-classifier-grouping {
+    description
+      "A grouping which represents an 802.1Q VLAN, matching both
+      the  Ethertype and a single VLAN ID or 'any' to match on
+      any VLAN ID.";
+    container dot1q-tag {
+      description
+        "Identifies an 802.1Q VLAN with an explicit
+        EtherType and a single VLAN ID, or 'any' VLAN ID.";
+      leaf tag-type {
+        if-feature tag-type-flexible-match;
+        type dot1q-tag-type;
+        default "c-vlan";
+        description
+          "VLAN type";
+      }
+      leaf vlan-id {
+        type ieee:vlanid;
+        mandatory true;
+        description
+          "VLAN ID";
+      }
+    }
+  }
+
+  grouping dot1q-tag-ranges-or-any-classifier-grouping {
+    description
+      "A grouping which represents an 802.1Q VLAN, matching
+      both the Ethertype and a single VLAN ID, a single range of
+      VLAN IDs, or 'any' to match on any VLAN ID.";
+    container dot1q-tag {
+      description
+        "Identifies an 802.1Q VLAN with an explicit EtherType,
+        a VLAN ID, a VLAN ID range, or 'any' VLAN ID.";
+      leaf tag-type {
+        if-feature tag-type-flexible-match;
+        type dot1q-tag-type;
+        default "c-vlan";
+        description
+          "VLAN type";
+      }
+      leaf vlan-id {
+          type meta:vid-range-type;
+        mandatory true;
+        description
+          "VLAN IDs";
+
+        must "((substring-after(., '-') = '') or
+               (number(substring-before(., '-')) < number(substring-after(., '-'))))" {
+          error-message "If specifying a VLAN ID range, the first Id must be less than the second Id";
+        }
+      }
+    }
+  }
+
+  /*
+   * Metaswitch: Included from module ietf-flexible-encapsulation (revision 2017-07-03).
+   */
+
+  /*
+   * flexible-match grouping.
+   *
+   * This grouping represents a flexible match.
+   *
+   * The rules for a flexible match are:
+   *     1. default, untagged, priority tag, or a stack of tags.
+   *   - Each tag in the stack of tags matches:
+   *      1. tag type (802.1Q or 802.1ad) +
+   *      2. tag value:
+   *        i. single tag
+   *        ii. set of tag ranges/values.
+   *        iii. "any" keyword
+   */
+  grouping flexible-match {
+    description "Flexible match";
+    choice match-type {
+      description
+        "Provides a choice of how the frames may be
+        matched";
+      mandatory true;
+      case default {
+        description "Default match";
+        leaf default {
+          type empty;
+          description
+            "Default match.  Matches all traffic not matched to any
+             other peer sub-interface by a more specific
+             encapsulation.";
+        } // leaf default
+      } // case default
+
+      case untagged {
+        if-feature untagged-flexible-match;
+        description "Match untagged Ethernet frames only.  This includes frames
+                     with no tag and frames that are only inner tagged";
+        leaf untagged {
+          type empty;
+          description
+            "Untagged match (untagged and inner-tagged).";
+        } // leaf untagged
+      } // case untagged
+
+      case dot1q-priority-tagged {
+        if-feature priority-tagged-flexible-match;
+        description
+          "Match 802.1Q priority tagged Ethernet frames only";
+
+        container dot1q-priority-tagged {
+          description "802.1Q priority tag match";
+          leaf tag-type {
+            type dot1q-tag-type;
+            description "The 802.1Q tag type of matched priority
+                         tagged packets";
+          }
+        }
+      }
+
+      case dot1q-vlan-tagged {
+        container dot1q-vlan-tagged {
+          description "Matches VLAN tagged frames";
+
+          container outer-tag {
+            presence "The outermost VLAN tag exists";
+
+            description
+              "Classifies traffic using the outermost VLAN tag on the
+               frame.";
+
+            // Allows a single VLAN ID, a single range of VLAN IDs or 'any'.
+            uses dot1q-tag-ranges-or-any-classifier-grouping;
+          }
+
+          container second-tag {
+            if-feature second-tag-flexible-match;
+            must
+              '../outer-tag/dot1q-tag/tag-type = "interface:s-vlan" and ' +
+              'dot1q-tag/tag-type = "interface:c-vlan"' {
+
+              error-message
+                "When matching two tags, the outermost tag must be
+                 specified and of S-VLAN type and the second
+                 outermost tag must be of C-VLAN tag type";
+
+              description
+                "For IEEE 802.1Q interoperability, when matching two
+                 tags, it is required that the outermost tag exists
+                 and is an S-VLAN, and the second outermost tag is a
+                 C-VLAN";
+            }
+
+            presence "The second outermost VLAN tag exists";
+
+            description
+              "Classifies traffic using the second outermost VLAN tag
+               on the frame.";
+
+            // Allows a single VLAN ID or 'any'.
+            uses dot1q-tag-or-any-classifier-grouping;
+          }
+        }
+      }
+    } // match-type
+  }
+
+  /*
+   * Grouping for tag-rewrite that can be expressed either
+   * symmetrically, or in the ingress and/or egress directions
+   * independently.
+   */
+  grouping dot1q-tag-rewrite {
+    description "Flexible rewrite";
+    leaf pop-tags {
+      if-feature pop-tags-symmetric-rewrite;
+      type uint8 {
+        range 0..2;
+      }
+      description
+        "The number of tags to pop (or translate if used in
+         conjunction with push-tags)";
+    }
+
+    container push-tags {
+      description
+        "The 802.1Q tags to push (or translate if used in
+         conjunction with pop-tags)";
+
+      container outer-tag {
+        presence
+          "Indicates existence of the outermost VLAN tag to
+           push/rewrite";
+
+        description
+          "The outermost VLAN tag to push onto the frame.";
+
+        uses dot1q-tag-rewrite-grouping;
+      }
+
+      container second-tag {
+        if-feature second-tag-symmetric-rewrite;
+        presence
+          "Indicates existence of a second outermost VLAN tag to
+           push/rewrite.";
+
+        description
+          "The second outermost VLAN tag to push onto the frame.";
+
+        uses dot1q-tag-rewrite-grouping;
+      }
+    }
+  }
+
+  /*
+   * Grouping for all flexible rewrites of fields in the L2 header.
+   *
+   * This currently only includes flexible tag rewrites, but is
+   * designed to be extensible to cover rewrites of other fields in
+   * the L2 header if required.
+   */
+  grouping flexible-rewrite {
+    description "Flexible rewrite";
+
+    /*
+     * Tag rewrite.
+     *
+     * All tag rewrites are formed using a combination of pop-tags
+     * and push-tags operations.
+     */
+    container dot1q-tag-rewrite {
+      description "Tag rewrite.  Translate operations are expressed
+                   as a combination of tag push and pop operations.";
+      uses dot1q-tag-rewrite;
+    }
+  }
+
+  augment "/interfaces/interface/encapsulation/encaps-type" {
+
+    description
+      "Add flexible match and rewrite for VLAN sub-interfaces";
+
+    when
+      "(not(../forwarding-mode)) or (../forwarding-mode != 'interface:network-layer')" {
+      description
+        "Flexible encapsulation is for L2 sub-interfaces only.";
+    }
+
+    /*
+     * A flexible encapsulation allows for the matching of ranges and
+     * sets of VLAN IDs.  The structure is also designed to be
+     * extended to allow for matching/rewriting other fields within
+     * the L2 frame header if required.
+     */
+    case flexible {
+
+      description "Flexible encapsulation and rewrite";
+      container flexible {
+
+        description "Flexible encapsulation and rewrite";
+
+        container match {
+          description
+            "The match used to classify frames to this interface";
+          uses flexible-match;
+        }
+
+        container rewrite {
+          if-feature flexible-rewrites;
+          description "L2 frame rewrite operations";
+
+          presence "Rewrite operation exists";
+
+          choice direction {
+            description
+              "Whether the rewrite policy is symmetrical or
+               asymmetrical";
+
+            mandatory true;
+
+            case symmetrical {
+              container symmetrical {
+                uses flexible-rewrite;
+                description
+                  "Symmetrical rewrite.  Expressed in the ingress
+                   direction, but the reverse operation is applied to
+                   egress traffic";
+              }
+            }
+
+            /*
+             * Allow asymmetrical rewrites to be specified.
+             */
+            case asymmetrical {
+              if-feature asymmetric-rewrites;
+              description "Asymmetrical rewrite";
+              container ingress {
+                uses flexible-rewrite;
+
+                description "Ingress rewrite";
+              }
+              container egress {
+                uses flexible-rewrite;
+                description "Egress rewrite";
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+
+  /*
+   * Metaswitch: Included from module ietf-if-l3-vlan (revision 2017-07-03).
+   */
+
+  /*
+   * Add support for the 802.1Q VLAN encapsulation syntax on layer 3
+   * terminated VLAN sub-interfaces.
+   */
+  augment "/interfaces/interface/encapsulation/encaps-type" {
+
+    description
+      "Augment the generic interface encapsulation with an
+       basic 802.1Q VLAN encapsulation for sub-interfaces.";
+
+    when "../forwarding-mode = 'interface:network-layer'" {
+      description
+        "VLAN encapsulation is for L3 sub-interfaces only.";
+    }
+
+    /*
+     * Matches a single VLAN ID, or pair of VLAN IDs to classify
+     * traffic into an L3 service.
+     */
+    case dot1q-vlan {
+
+      container dot1q-vlan {
+
+        description
+          "Match VLAN tagged frames with specific VLAN IDs";
+        container outer-tag {
+          presence "The outermost VLAN tag exists";
+
+          description
+            "Classifies traffic using the outermost VLAN tag on the
+             frame.";
+
+          uses dot1q-tag-classifier-grouping;
+        }
+
+        container second-tag {
+          //must
+          //  '../outer-tag/dot1q-tag/tag-type = "interface:s-vlan" and ' +
+          //  'dot1q-tag/tag-type = "interface:c-vlan"' {
+          //  error-message
+          //    "When matching two tags, the outermost tag must be
+          //     specified and of S-VLAN type and the second outermost
+          //     tag must be of C-VLAN tag type";
+
+          //  description
+          //    "For IEEE 802.1Q interoperability, when matching two
+          //     tags, it is required that the outermost tag exists and
+          //     is an S-VLAN, and the second outermost tag is a
+          //     C-VLAN";
+          //}
+          if-feature second-tag-flexible-match;
+
+          presence "The second outermost VLAN tag exists";
+
+          description
+            "Classifies traffic using the second outermost VLAN tag
+             on the frame.";
+
+          uses dot1q-tag-classifier-grouping;
+        }
+      }
+    }
+  }
+
+
+  /*
+   * Metaswitch: Included from module ietf-ip (revision 2014-06-16).
+   */
+
+  /*
+   * Features
+   */
+
+  /*
+   * Typedefs
+   */
+
+  typedef ip-address-origin {
+    type enumeration {
+      enum other {
+        description
+          "None of the following.";
+      }
+      enum static {
+        description
+          "Indicates that the address has been statically
+           configured - for example, using NETCONF or a Command Line
+           Interface.";
+      }
+      enum dhcp {
+        description
+          "Indicates an address that has been assigned to this
+           system by a DHCP server.";
+      }
+      enum link-layer {
+        description
+          "Indicates an address created by IPv6 stateless
+           autoconfiguration that embeds a link-layer address in its
+           interface identifier.";
+      }
+      enum random {
+        description
+          "Indicates an address chosen by the system at
+
+           random, e.g., an IPv4 address within 169.254/16, an
+           RFC 4941 temporary address, or an RFC 7217 semantically
+           opaque address.";
+        reference
+          "RFC 4941: Privacy Extensions for Stateless Address
+                     Autoconfiguration in IPv6
+           RFC 7217: A Method for Generating Semantically Opaque
+                     Interface Identifiers with IPv6 Stateless
+                     Address Autoconfiguration (SLAAC)";
+      }
+    }
+    description
+      "The origin of an address.";
+  }
+
+  /*
+   * Configuration data nodes
+   */
+
+  augment "/interfaces/interface" {
+    description
+      "Parameters for configuring IP on interfaces.
+
+       If an interface is not capable of running IP, the server
+       must not allow the client to configure these parameters.";
+
+    container ipv4 {
+
+      when "not(../forwarding-mode = 'interface:layer-2-forwarding')";
+
+      presence
+        "Enables IPv4 unless the 'enabled' leaf
+         (which defaults to 'true') is set to 'false'";
+
+      description
+        "Parameters for the IPv4 address family.";
+
+      leaf enabled {
+        type boolean;
+        default true;
+        description
+          "Controls whether IPv4 is enabled or disabled on this
+           interface.  When IPv4 is enabled, this interface is
+           connected to an IPv4 stack, and the interface can send
+           and receive IPv4 packets.";
+      }
+      leaf forwarding {
+        type boolean;
+        default false;
+        description
+          "Controls IPv4 packet forwarding of datagrams received by,
+           but not addressed to, this interface.  IPv4 routers
+           forward datagrams.  IPv4 hosts do not (except those
+           source-routed via the host).";
+      }
+      list address {
+        key "ip";
+        description
+          "The list of configured IPv4 addresses on the interface.";
+
+        leaf ip {
+          type ipv4-address;
+          description
+            "The IPv4 address on the interface.";
+        }
+
+        choice subnet {
+          mandatory true;
+          description
+            "The subnet can be specified as a prefix-length, or,
+             if the server supports non-contiguous netmasks, as
+             a netmask.";
+          leaf prefix-length {
+            type uint8 {
+              range "0..32";
+            }
+            description
+              "The length of the subnet prefix.";
+          }
+        }
+      }
+
+    } // ipv4
+
+    container ipv6 {
+
+      when "not(../forwarding-mode = 'interface:layer-2-forwarding')";
+      presence
+        "Enables IPv6 unless the 'enabled' leaf
+         (which defaults to 'true') is set to 'false'";
+
+      description
+        "Parameters for the IPv6 address family.";
+
+      leaf enabled {
+        type boolean;
+        default true;
+        description
+          "Controls whether IPv6 is enabled or disabled on this
+           interface.  When IPv6 is enabled, this interface is
+           connected to an IPv6 stack, and the interface can send
+           and receive IPv6 packets.";
+      }
+      leaf forwarding {
+        type boolean;
+        default false;
+        description
+          "Controls IPv6 packet forwarding of datagrams received by,
+           but not addressed to, this interface.  IPv6 routers
+           forward datagrams.  IPv6 hosts do not (except those
+           source-routed via the host).";
+        reference
+          "RFC 4861: Neighbor Discovery for IP version 6 (IPv6)
+                     Section 6.2.1, IsRouter";
+      }
+
+      list address {
+        key "ip";
+        description
+          "The list of configured IPv6 addresses on the interface.";
+
+        leaf ip {
+          type ipv6-address;
+          description
+            "The IPv6 address on the interface.";
+        }
+        leaf prefix-length {
+          type uint8 {
+            range "0..128";
+          }
+          mandatory true;
+          description
+            "The length of the subnet prefix.";
+        }
+      }
+
+    } // ipv6
+
+    // Metaswitch extension to support unnumbered interfaces.
+    container ip-unnumbered {
+
+      presence
+        "Configure interface as an unnumbered interface";
+
+      must "not(../ipv4/address)" {
+        error-message "Cannot configure an IPv4 address on an unnumbered interface";
+      }
+
+      must "not(../ipv6/address)" {
+        error-message "Cannot configure an IPv6 address on an unnumbered interface";
+      }
+
+      must "not(../name = ./borrow-from)" {
+        error-message "Cannot configure an interface to borrow from itself";
+      }
+
+      leaf borrow-from {
+        type interface-ref;
+        description
+          "Name of interface to borrow IP address from.  The borrowed IP
+          address is used as the source IP address for protocols such as OSPF
+          and ISIS.";
+      }
+
+    } // ip-unnumbered
+  }
+
+  /*
+   * Operational state data nodes
+   */
+
+  augment "/interfaces-state/interface" {
+    description
+      "Data nodes for the operational state of IP on interfaces.";
+
+    container ipv4 {
+      presence "Present if IPv4 is enabled on this interface";
+      config false;
+      description
+        "Interface-specific parameters for the IPv4 address family.";
+
+      list address {
+        description
+          "The list of IPv4 addresses on the interface.";
+
+        leaf ip {
+          type ipv4-address;
+          description
+            "The IPv4 address on the interface.";
+        }
+        choice subnet {
+          description
+            "The subnet can be specified as a prefix-length, or,
+             if the server supports non-contiguous netmasks, as
+             a netmask.";
+          leaf prefix-length {
+            type uint8 {
+              range "0..32";
+            }
+            description
+              "The length of the subnet prefix.";
+          }
+        }
+
+        leaf origin {
+          type ip-address-origin;
+          description
+            "The origin of this address.";
+        }
+      }
+
+    }
+
+    container ipv6 {
+      presence "Present if IPv6 is enabled on this interface";
+      config false;
+      description
+        "Parameters for the IPv6 address family.";
+
+      list address {
+        description
+          "The list of IPv6 addresses on the interface.";
+
+        leaf ip {
+          type ipv6-address;
+          description
+            "The IPv6 address on the interface.";
+        }
+        leaf prefix-length {
+          type uint8 {
+            range "0..128";
+          }
+          mandatory true;
+          description
+            "The length of the subnet prefix.";
+        }
+        leaf origin {
+          type ip-address-origin;
+          description
+            "The origin of this address.";
+        }
+
+      }
+    }
+  }
+
+
+  /*
+   * Metaswitch: Included from module openconfig-if-ethernet (revision 2016-12-22).
+   */
+
+  // extension statements
+
+  // feature statements
+
+  // identity statements
+
+  identity ETHERNET_SPEED {
+    description "base type to specify available Ethernet link
+    speeds";
+  }
+
+  identity SPEED_10MB {
+    base ETHERNET_SPEED;
+    description "10 Mbps Ethernet";
+  }
+
+  identity SPEED_100MB {
+    base ETHERNET_SPEED;
+    description "100 Mbps Ethernet";
+  }
+
+  identity SPEED_1GB {
+    base ETHERNET_SPEED;
+    description "1 Gbps Ethernet";
+  }
+
+  identity SPEED_2.5GB {
+    base ETHERNET_SPEED;
+    description "2.5 Gbps Ethernet";
+  }
+
+  identity SPEED_10GB {
+    base ETHERNET_SPEED;
+    description "10 Gbps Ethernet";
+  }
+
+  identity SPEED_25GB {
+    base ETHERNET_SPEED;
+    description "25 Gbps Ethernet";
+  }
+
+  identity SPEED_40GB {
+    base ETHERNET_SPEED;
+    description "40 Gbps Ethernet";
+  }
+
+  identity SPEED_50GB {
+    base ETHERNET_SPEED;
+    description "50 Gbps Ethernet";
+  }
+
+  identity SPEED_100GB {
+    base ETHERNET_SPEED;
+    description "100 Gbps Ethernet";
+  }
+
+  // typedef statements
+
+
+  // grouping statements
+
+  grouping ethernet-interface-config {
+    description "Configuration items for Ethernet interfaces";
+
+    leaf auto-negotiate {
+      type boolean;
+      default true;
+      description
+        "Set to TRUE to request the interface to auto-negotiate
+        transmission parameters with its peer interface.  When
+        set to FALSE, the transmission parameters are specified
+        manually.";
+      reference
+        "IEEE 802.3-2012 auto-negotiation transmission parameters";
+    }
+
+    leaf duplex-mode {
+      when "../auto-negotiate = 'false'";
+      type enumeration {
+        enum full {
+          description "Full duplex mode";
+        }
+        enum half {
+          description "Half duplex mode";
+        }
+      }
+      description
+        "When auto-negotiate is TRUE, this optionally sets the
+        duplex mode that will be advertised to the peer.  If
+        unspecified, the interface should negotiate the duplex mode
+        directly (typically full-duplex).  When auto-negotiate is
+        FALSE, this sets the duplex mode on the interface directly.";
+    }
+
+    leaf port-speed {
+      when "../auto-negotiate = 'false'";
+      type identityref {
+        base ETHERNET_SPEED;
+      }
+      description
+        "When auto-negotiate is TRUE, this optionally sets the
+        port-speed mode that will be advertised to the peer for
+        negotiation.  If unspecified, it is expected that the
+        interface will select the highest speed available based on
+        negotiation.  When auto-negotiate is set to FALSE, sets the
+        link speed to a fixed value -- supported values are defined
+        by ETHERNET_SPEED identities";
+    }
+
+    leaf enable-flow-control {
+      type boolean;
+      default false;
+      description
+        "Enable or disable flow control for this interface.
+        Ethernet flow control is a mechanism by which a receiver
+        may send PAUSE frames to a sender to stop transmission for
+        a specified time.
+
+        This setting should override auto-negotiated flow control
+        settings.  If left unspecified, and auto-negotiate is TRUE,
+        flow control mode is negotiated with the peer interface.";
+      reference
+        "IEEE 802.3x";
+    }
+
+    // MAX FRAME SIZE HARDWARE NOTE:  The maximum frame size may be different
+    // on different hardware.  If your hardware has a different maximum frame
+    // size supported, then you should change the range here and any
+    // corresponding help text.
+    leaf max-frame-size {
+      type uint16 {
+        range "60 .. 12288";
+      }
+      description
+        "The maximum size of layer 2 frames that may be transmitted
+        or received on the interface.";
+
+      must "(not(../../forwarding-mode)) or" +
+           " (../../forwarding-mode != 'interface:network-layer') or" +
+           " (../../mtu)" {
+        error-message
+          "If the Ethernet max frame size is set for a network layer " +
+          "interface, the MTU should also be set";
+      }
+    }
+  }
+
+  grouping ethernet-interface-state-counters {
+    description
+      "Ethernet-specific counters and statistics";
+
+    // ingress counters
+
+    leaf in-oversize-frames {
+      type yang:counter64;
+      description
+        "Number of oversize frames received on the interface";
+    }
+
+    leaf in-jabber-frames {
+      type yang:counter64;
+      description
+        "Number of jabber frames received on the
+        interface.  Jabber frames are typically defined as oversize
+        frames which also have a bad CRC.  Implementations may use
+        slightly different definitions of what constitutes a jabber
+        frame.  Often indicative of a NIC hardware problem.";
+    }
+
+    leaf in-fragment-frames {
+      type yang:counter64;
+      description
+        "Number of fragment frames received on the interface.";
+    }
+
+    leaf in-crc-errors {
+      type yang:counter64;
+      description
+        "Number of receive error events due to FCS/CRC check
+        failure";
+    }
+
+    // egress counters
+
+  }
+
+  grouping ethernet-interface-state {
+    description
+      "Grouping for defining Ethernet-specific operational state";
+
+    leaf hw-mac-address {
+      type meta:mac-address;
+      description
+        "Represenets the 'burned-in',  or system-assigned, MAC
+        address for the Ethernet interface.";
+    }
+
+    leaf negotiated-duplex-mode {
+      type enumeration {
+        enum full {
+          description "Full duplex mode";
+        }
+        enum half {
+          description "Half duplex mode";
+        }
+        enum unknown {
+          description "Unknown duplex mode";
+        }
+      }
+      description
+        "When auto-negotiate is set to TRUE, and the interface has
+        completed auto-negotiation with the remote peer, this value
+        shows the duplex mode that has been negotiated.";
+    }
+
+    leaf negotiated-port-speed {
+      type uint32;
+      units "Mbps";
+      description
+        "When auto-negotiate is set to TRUE, and the interface has
+        completed auto-negotiation with the remote peer, this value
+        shows the interface speed that has been negotiated.";
+    }
+
+    container counters {
+      description "Ethernet interface counters";
+
+      uses ethernet-interface-state-counters;
+
+    }
+
+  }
+
+  grouping bind-vrf-notification-id {
+    leaf name {
+      type string;
+      mandatory true;
+      description
+        "Contains the interface name associated with the notification.";
+    }
+    container interface {
+      description
+        "Generic interface type.";
+      leaf bind-vrf-name {
+        type string;
+        description
+          "Contains the bind-vrf-name associated with the notification.";
+      }
+    }
+  }
+
+  // data definition statements
+
+  grouping ethernet-top {
+    description "top-level Ethernet config containers";
+
+    container ethernet {
+      description
+        "Top-level container for ethernet configuration.";
+
+        uses ethernet-interface-config;
+    }
+  }
+
+  grouping ethernet-state-top {
+    description "top-level Ethernet state containers";
+
+    container ethernet {
+      description
+        "Top-level container for ethernet state";
+
+        uses ethernet-interface-state;
+    }
+  }
+
+
+  // augment statements
+
+  augment "/interfaces/interface" {
+    description "Adds additional Ethernet-specific configuration to
+    interfaces model";
+
+    uses ethernet-top;
+  }
+
+  augment "/interfaces-state/interface" {
+    description "Adds additional Ethernet-specific state to
+    interfaces model";
+
+    uses ethernet-state-top;
+  }
+
+
+  augment "/interfaces/interface" {
+    if-feature "port-stacking";
+
+    description
+      "Augments interface with stacking port configuration";
+
+    container stacking-port {
+      presence "Indicates that the interface is a stacking port";
+      description "Configure the interface as a stacking port.";
+
+      leaf remote-module-id {
+        type uint32;
+        mandatory true;
+
+        description "Remote module ID";
+      }
+    }
+  }
+
+  // rpc statements
+
+  // notification statements
+  notification bind-vrf-name-failed {
+    description
+      "Indicates an error in the association of an interface to an L3VPN
+       VRF. Only generated after success is initially returned when
+       bind-vrf-name is set.";
+
+    uses bind-vrf-notification-id;
+
+    leaf error-info {
+      type string;
+      description
+        "Optionally, indicates the source of the assignment failure.";
+    }
+  }
+
+  notification bind-vrf-fail-resolved {
+    description
+      "Indicates that an earlier error in the association of an interface to an
+       L3VPN VRF has now been resolved and the binding has been formed.  Only
+       generated after a bind-vrf-name-failed notification has been sent for
+       a bind-vrf-name configuration.";
+
+    uses bind-vrf-notification-id;
+  }
+
+  notification interface-status-change {
+    description
+      "Indicates that the operational state of an interface has changed.";
+
+    leaf name {
+      type string;
+      description
+        "The name of the interface.";
+    }
+
+    leaf oper-status {
+      type interface-oper-status;
+      description
+        "The new operational status of the interface.";
+    }
+
+    leaf sub-layer-oper-status {
+      type interface-oper-status;
+      description
+        "The new operational status of the sub-layer used by this interface.";
+    }
+  }
+
+  /*
+   * Metaswitch: Extensions for L2CP, based on draft-ietf-l2sm-l2vpn-service-model.
+   */
+
+  typedef l2cp-action {
+    type enumeration {
+      enum peer {
+        description
+          "Peer";
+      }
+      enum forward {
+        description
+          "Forward";
+      }
+      enum tunnel {
+        description
+          "Tunnel";
+      }
+      enum discard {
+        description
+          "Discard";
+      }
+    }
+      description
+        "Define action for L2CP protocols.";
+  }
+
+  typedef l2cp-dest-mac-t {
+    type string {
+      pattern "01:00:0[cC]:[cC][dD]:[cC][dD]:[dD][0-9a-fA-F]";
+    }
+    description
+      "Destination MAC to use when tunneling L2CP frames (01:00:0c:cd:cd:dX)";
+  }
+
+  grouping l2cp-actions {
+    description
+      "A grouping which represents the actions to be taken for L2CP.";
+    leaf action {
+      type l2cp-action;
+      description
+          "L2CP action to take (forward/discard/tunnel/peer)";
+    }
+    leaf dest-mac {
+      type l2cp-dest-mac-t;
+      when "../action = 'tunnel'";
+      default "01:00:0c:cd:cd:d0";
+      description
+        "The MAC address to use for tunneling L2CP frames";
+    }
+  }
+
+  augment "/interfaces/interface" {
+
+    when
+      "(interface:type = 'interface:ethernet-csmacd') or
+       (interface:type = 'interface:ieee8023adLag') or
+       (interface:type = 'interface:vlanSubif')" {
+      description
+        "This applies only to Bundles, Ethernet-like interfaces and
+        sub-interfaces";
+    }
+
+    container l2cp-control {
+
+      description
+        "Handling of L2CP frames (peer/forward/tunnel/discard)";
+
+      container pause {
+        uses l2cp-actions;
+        description
+          "Pause protocol";
+      }
+
+      container lacp {
+        uses l2cp-actions;
+        description
+          "Link Aggregation Control Protocol";
+      }
+
+      container link-oam {
+        uses l2cp-actions;
+        description
+          "Link OAM protocol";
+      }
+
+      container port-auth {
+        uses l2cp-actions;
+        description
+          "Port Authentication (802.1X)";
+      }
+
+      container elmi {
+        uses l2cp-actions;
+        description
+          "Ethernet Local Management Interface";
+      }
+
+      container lldp {
+        uses l2cp-actions;
+        description
+          "Link Layer Discovery Protocol";
+      }
+
+      container garp-mrp {
+        uses l2cp-actions;
+        description
+          "GARP/MRP";
+      }
+
+      container udld {
+        uses l2cp-actions;
+        description
+          "Unidirectional Link Detection";
+      }
+
+      container cdp {
+        uses l2cp-actions;
+        description
+          "Cisco Discovery Protocol (CDP)";
+      }
+
+      container mvrp {
+        uses l2cp-actions;
+        description
+          "MVRP VLAN Registration protocol";
+      }
+
+      container mmrp {
+        uses l2cp-actions;
+        description
+          "Multiple MAC Registration Protocol";
+      }
+
+      container vstp {
+        uses l2cp-actions;
+        description
+          "VLAN Spanning Tree Protocol (VSTP)";
+      }
+
+      container vtp {
+        uses l2cp-actions;
+        description
+          "VLAN Trunking Protocol (VTP)";
+      }
+
+      container customer-bpdu {
+        uses l2cp-actions;
+        description
+          "Customer Bridge Protocol Data Unit (BPDU)";
+      }
+
+      container provider-bpdu {
+        uses l2cp-actions;
+        description
+          "Provider Bridge Protocol Data Unit (BPDU)";
+      }
+
+      container lamp {
+        uses l2cp-actions;
+        description
+          "Link Aggregation Marker Protocol (LAMP)";
+      }
+
+      container garp-vrp {
+        uses l2cp-actions;
+        description
+          "GARP VLAN Registraton Protocol (GVRP)";
+      }
+
+    } // l2cp-control
+  }
+
+  augment "/interfaces/interface" {
+
+    when
+      "(interface:type = 'interface:ethernet-csmacd') or
+       (interface:type = 'interface:ieee8023adLag')" {
+      description
+        "Tagging configuration only applies only to Bundles and physical ports.";
+    }
+    leaf tag-protocol-id {
+      type tpid-t;
+      default "8100";
+      description
+        "Outer VLAN Tag Protocol ID (TPID)";
+    }
+
+    leaf tagging-mode {
+      type tagging-mode-t;
+      description
+        "Tagging Mode";
+    }
+  }
+}
