@@ -5,10 +5,12 @@
     <config>
 
       <!-- NOKIA -->
-      <configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf">
+      <?if-ned-id
+        nokia_sros_20_2_r1-nc-1.0:nokia_sros_20_2_r1-nc-1.0?>
+      <configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf" tags="merge">
         <service>
           <epipe>
-            <service-name>{$VPN_NAME}</service-name>
+            <service-name>{$PW_ID}</service-name>
             <service-id>{$PW_ID}</service-id>
             <customer>1</customer>
             <admin-state>enable</admin-state>
@@ -33,6 +35,87 @@
         </service>
       </configure>
       <!-- NOKIA -->
+
+      <!-- METASWITCH -->
+      <?elif-ned-id
+        meta_134_l2-nc-1.0:meta_134_l2-nc-1.0?>
+      <interfaces xmlns="http://metaswitch.com/yang/nbu/interface/201709270000Z" tags="merge">
+        <interface>
+          <name>{$PHYS_INTERFACE}.{$VPN_NAME}</name>
+          <type>vlanSubif</type>
+          <enabled>true</enabled>
+          <parent-interface>{$PHYS_INTERFACE}</parent-interface>
+          <encapsulation>
+            <flexible>
+              <match>
+                <dot1q-vlan-tagged>
+                  <outer-tag>
+                    <dot1q-tag>
+                      <tag-type>c-vlan</tag-type>
+                      <vlan-id>{$VPN_NAME}</vlan-id>
+                    </dot1q-tag>
+                  </outer-tag>
+                </dot1q-vlan-tagged>
+              </match>
+            </flexible>
+          </encapsulation>
+          <forwarding-mode>layer-2-forwarding</forwarding-mode>
+        </interface>
+      </interfaces>
+      <l2vpn xmlns="http://metaswitch.com/yang/nbu/l2vpn/201601200000Z" tags="merge">
+        <xconnect-group>
+          <name>xc_gr1</name>
+          <p2p>
+            <name>vpws1</name>
+            <interfaces>
+              <interface>
+                <if-name>{$PHYS_INTERFACE}.{$VPN_NAME}</if-name>
+              </interface>
+            </interfaces>
+          </p2p>
+        </xconnect-group>
+      </l2vpn>
+      <!-- METASWITCH -->
+
+      <!-- JUNIPER -->
+      <?elif-ned-id
+        juniper-junos-18_4R1-nc-1.0:juniper-junos-18_4R1-nc-1.0?>
+      <configuration xmlns="http://yang.juniper.net/junos/conf/root" tags="merge">
+          <routing-instances xmlns="http://yang.juniper.net/junos/conf/routing-instances">
+            <instance>
+              <name>L2VPN-1</name>
+              <instance-type>l2vpn</instance-type>
+              <interface>
+                <name>{$PHYS_INTERFACE}.{$VPN_NAME}</name>
+              </interface>
+              <route-distinguisher>
+                <rd-type>100.0.0.105:{$PW_ID}</rd-type>
+              </route-distinguisher>
+              <vrf-target>
+                <community>target:65000:{$PW_ID}</community>
+              </vrf-target>
+              <protocols>
+                <l2vpn>
+                  <encapsulation-type>ethernet</encapsulation-type>
+                  <interface>
+                    <name>{$PHYS_INTERFACE}.{$VPN_NAME}</name>
+                  </interface>
+                  <site>
+                    <name>S1</name>
+                    <site-identifier>1</site-identifier>
+                    <interface>
+                      <name>{$PHYS_INTERFACE}{$VPN_NAME}</name>
+                      <remote-site-id>2</remote-site-id>
+                    </interface>
+                  </site>
+                </l2vpn>
+              </protocols>
+            </instance>
+          </routing-instances>
+        </configuration>
+      <!-- JUNIPER -->
+
+      <?end?>
 
       <!-- ERICSSON -->
       <!--?ned-id eri0-nc-1.0:eri0-nc-1.0?>

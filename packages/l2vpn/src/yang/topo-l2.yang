@@ -22,9 +22,9 @@ module topo-l2 {
     leaf interface {
       type string;
     }
-    leaf locator {
-      type string;
-    }
+    //leaf locator {
+    //  type string;
+    //}
     leaf router-id {
       type inet:ipv4-address;
     }

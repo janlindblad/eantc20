@@ -11,6 +11,14 @@ from ncs.application import Service
 # ----------------
 class ServiceCallbacks(Service):
 
+    def get_pw_id(self, device):
+        if device == 'meta134':
+            return 4145
+        elif device == 'juniper105':
+            return 4046
+        else:
+            return 0
+
     def get_others(self, root, our_site, our_vpn_id):
         others = []
         for site in root.l2vpn_svc__l2vpn_svc.sites.site:
@@ -18,7 +26,7 @@ class ServiceCallbacks(Service):
                 continue
             for pol in site.vpn_policies.vpn_policy:
                 for ent in pol.entries:
-                    for vpn in ent.vpn: 
+                    for vpn in ent.vpn:
                         if vpn.vpn_id == our_vpn_id:
                             self.log.info('otherside site: ', site.site_id)
                             others += [site]
@@ -39,7 +47,7 @@ class ServiceCallbacks(Service):
                 self.log.info('policy: ', pol_entry.id)
                 for vpn in pol_entry.vpn:
                     vpn_name = vpn.vpn_id
-                    self.log.info('vpn: ', vpn_name)
+                    self.log.info('vpn_name: ', vpn_name)
                     topo_this = root.topo_l2__topo_l2[vpn_name,device_name]
                     interface_name = topo_this.interface
                     self.log.info('device_name: ', device_name)
@@ -52,13 +60,21 @@ class ServiceCallbacks(Service):
                             other_pol_id = other_site_network_access.vpn_attachment.vpn_policy_id
                             other_device_name = other_site_network_access.device_reference
                             other_device = root.topo_l2__topo_l2[vpn_name,other_device_name]
+                            #pw_id = self.get_pw_id(device_name)
+                            pw_id = 4046
+
+                            self.log.info('DEVICE: ', device_name)
+                            self.log.info('PHYS_INTERFACE: ', interface_name)
+                            self.log.info('VPN_NAME: ', vpn_name)
+                            self.log.info('REM_ROUTER_ID: ', other_device.router_id)
+                            self.log.info('PW_ID: ', pw_id)
 
                             vars = ncs.template.Variables()
                             vars.add('DEVICE',        device_name)
-                            vars.add('PHYS_INTERFACE',interface_name) 
+                            vars.add('PHYS_INTERFACE',interface_name)
                             vars.add('VPN_NAME',      vpn_name)
                             vars.add('REM_ROUTER_ID', other_device.router_id)
-                            vars.add('PW_ID',         50)
+                            vars.add('PW_ID',         pw_id)
 
                             template = ncs.template.Template(service)
                             template.apply('l2vpn-svc-create', vars)
@@ -93,7 +109,7 @@ class ServiceCallbacks(Service):
 
                             vars = ncs.template.Variables()
                             vars.add('DEVICE',       device_name)
-                            vars.add('INTERFACE',    interface_name) 
+                            vars.add('INTERFACE',    interface_name)
                             vars.add('VPN_NAME',     vpn_name)
 
                             #UTSTARCOM
