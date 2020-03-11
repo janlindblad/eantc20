@@ -1,0 +1,536 @@
+
+module metaswitch-mpls {
+
+  namespace "http://metaswitch.com/yang/nbu/metaswitch-mpls/201901010000Z";
+
+  prefix mpls;
+
+  import interfaces { prefix "interfaces"; }
+  import user-extensions { prefix "user-ext"; }
+  import metaswitch-yang-types { prefix meta; }
+  import ietf-inet-types { prefix inet; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "General MPLS concepts";
+
+  revision 2019-06-06 {
+    description "Addition of cross connect state.";
+  }
+
+  revision 2019-01-01 {
+    description "Initial revision.";
+  }
+
+
+  typedef mpls-fec-type-t {
+    type enumeration {
+      enum unknown                          { value 1; }
+      enum ldp                              { value 2; }
+      enum mldp                             { value 3; }
+      enum rsvp-te                          { value 4; }
+      enum pw                               { value 5; }
+      enum generalized-pw                   { value 6; }
+      enum static-lsp                       { value 7; }
+      enum l3vpn                            { value 8; }
+      enum evpn                             { value 9; }
+      enum sr-prefix                        { value 10; }
+    }
+    description
+      "LSP FEC type.";
+  }
+
+  typedef label-subspace-reservation-status-t {
+    type enumeration {
+      enum reserved {
+        description
+          "The label subspace is reserved.";
+      }
+      enum not-reserved {
+        description
+          "The label subspace is not reserved.";
+      }
+    }
+    description "Label subspace reservation status";
+  }
+
+  typedef label-subspace-reservation-reason-t {
+    type enumeration {
+      enum ok {
+        description
+          "No error has occurred.";
+      }
+      enum label-space-collision {
+        description
+          "The label subspace is not active because it overlaps with " +
+          "another label subspace in the same VRF.";
+      }
+      enum label-value-collision {
+        description
+          "The label subspace is not active because it contains a label " +
+          "that has already been assigned to an MPLS user.";
+      }
+      enum label-space-not-valid {
+        description
+          "The label subspace is not active because it has been " +
+          "configured incorrectly.";
+      }
+    }
+    description "Reasons for label subspace reservation status";
+  }
+
+  typedef mpls-label-range-type-t {
+    type enumeration {
+      enum static {
+        description
+          "The label range for statically allocated labels.";
+      }
+      enum dynamic {
+        description
+          "The label range for dynamically allocated labels.";
+      }
+    }
+  }
+
+
+  grouping fec-state {
+
+    description
+      "The FEC used to identify an LSP or cross connect.";
+
+    // Low-level model info: Corresponds to mplsXCSegFecType.
+    container fec {
+
+      description
+        "Forwarding Equivalence Class (FEC) used to identify an LSP or XC.";
+
+      choice fec {
+
+        container ldp {
+
+          description
+            "LDP FEC identifier.";
+
+          // Low-level model info: Corresponds to mplsXCSegFecPrefix*.
+          leaf ip-prefix {
+            type interfaces:iface-ip-prefix-t;
+            description
+              "The LDP FEC prefix.";
+          }
+
+        } // ldp
+
+        container mldp {
+
+          description
+            "MLDP FEC identifier.";
+
+          // Low-level model info: Corresponds to mplsXCSegFecMldpRootAddr(Type).
+          leaf root-address {
+            type inet:ipv4-address;
+            description
+              "Root address for the LSP.";
+          }
+
+          // Low-level model info: Corresponds to mplsXCSegFecMldpLspId.
+          leaf lsp-id {
+            type uint32;
+            description "ID to identify the LSP.";
+          }
+
+        } // mldp
+
+        container rsvp {
+
+          description
+            "The 4-tuple used to identify an RSVP LSP.";
+
+          // Low-level model info: Corresponds to mplsXCSegFecRsvpSourceAddr(Type).
+          leaf source {
+            type interfaces:iface-ip-address-t;
+            description
+              "The source address of the LSP.";
+          }
+
+          // Low-level model info: Corresponds to mplsXCSegFecRsvpDestAddr(Type).
+          leaf destination {
+            type interfaces:iface-ip-address-t;
+            description
+              "The destination address of the LSP.";
+          }
+
+          // Low-level model info: Corresponds to mplsXCSegFecRsvpTunnelId.
+          leaf tunnel-id {
+            type meta:tunnel-lsp-id-t;
+            description
+              "The identifier of the owning tunnel.";
+          }
+
+          // Low-level model info: Corresponds to mplsXCSegFecRsvpTunnelLspId.
+          leaf lsp-id {
+            type meta:tunnel-lsp-id-t;
+            description
+              "The identifier of this LSP.";
+          }
+
+        } // rsvp
+
+        container pw {
+
+          description
+            "PW identifier.";
+
+          // Low-level model info: Corresponds to mplsXCSegFecPwType.
+          leaf pw-type {
+            type meta:l2vpn-pw-type-t;
+            description
+              "Indicates the service carried over this pseudowire.";
+          }
+
+          // Low-level model info: Corresponds to mplsXCSegFecPwId.
+          leaf pw-id {
+            type meta:l2vpn-pw-id-t;
+            description
+              "The PW ID for the pseudowire.";
+          }
+
+          // Low-level model info: Corresponds to mplsXCSegFecPwPeerAddr(Type).
+          leaf peer-addr {
+            type interfaces:iface-ip-address-t;
+            description
+              "The pseudowire peer address.";
+          }
+
+        } // pw
+
+        container generalized-pw {
+
+          description
+            "Generalized PW identifier.";
+
+          // Low-level model info: Corresponds to mplsXCSegFecPwAGIType.
+          leaf pw-agi-type {
+            type meta:l2vpn-pw-gen-id-type-t;
+            description
+              "The generalized PW AGI type.";
+          }
+
+          // Low-level model info: Corresponds to mplsXCSegFecPwGroupAttachmentID.
+          leaf pw-group-attachment-id {
+            type meta:l2vpn-pw-attachment-id-t;
+            description
+              "The generalized PW Group Attachment ID.";
+          }
+
+          // Low-level model info: Corresponds to mplsXCSegFecPwLocalAIIType.
+          leaf pw-local-aii-type {
+            type meta:l2vpn-pw-gen-id-type-t;
+            description
+              "The generalized PW Local AII type.";
+          }
+
+          // Low-level model info: Corresponds to mplsXCSegFecPwLocalAttachmentID.
+          leaf pw-local-attachment-id {
+            type meta:l2vpn-pw-attachment-id-t;
+            description
+              "The generalized PW Local Attachment ID.";
+          }
+
+          // Low-level model info: Corresponds to mplsXCSegFecPwRemoteAIIType.
+          leaf pw-remote-aii-type {
+            type meta:l2vpn-pw-gen-id-type-t;
+            description
+              "The generalized PW Remote AII type.";
+          }
+
+          // Low-level model info: Corresponds to mplsXCSegFecPwRemoteAttachmentID.
+          leaf pw-remote-attachment-id {
+            type meta:l2vpn-pw-attachment-id-t;
+            description
+              "The generalized PW Remote Attachment ID.";
+          }
+
+          // Low-level model info: Corresponds to mplsXCSegFecPwPeerAddr(Type).
+          leaf peer-addr {
+            type interfaces:iface-ip-address-t;
+            description
+              "The pseudowire peer address.";
+          }
+
+        } // generalized-pw
+
+        container static-lsp {
+
+          description
+            "Static LSP identifier.";
+
+          // Low-level model info: Corresponds to mplsXCSegXcIndex.
+          leaf name {
+            type meta:mpls-lsp-name-string;
+            description
+              "Static LSP name.";
+          }
+
+        } // static-lsp
+
+        container sr-prefix {
+
+          description
+            "Segment Routing FEC identifier and info.";
+
+          // Low-level model info: Corresponds to mplsXCSegFecPrefix*.
+          leaf ip-prefix {
+            type interfaces:iface-ip-prefix-t;
+            description
+              "The Segment Routing FEC prefix.";
+          }
+
+          // Low-level model info: Corresponds to mplsXCSegOutSegIsSecondary.
+          leaf out-seg-is-secondary {
+            type boolean;
+            description
+              "Indicates whether or not the out-segment in this
+              cross-connect is a secondary out-segment which provides
+              protection for a specific primary out-segment in the same
+              cross-connect.";
+          }
+
+        } // sr-prefix
+
+      } // fec (choice)
+
+    } // fec (container)
+
+  } // fec-state
+
+
+  container mpls {
+
+    description "MPLS configuration.";
+
+    user-ext:CLI-comm-help "Configure MPLS";
+    user-ext:CLI-no-comm-help "Remove MPLS configuration";
+
+    // Low-level model info: Corresponds to dcLmgrLsrEntityLsrId
+    leaf router-id {
+      type meta:router-id;
+
+      description
+        "MPLS router ID.
+
+         This is used to uniquely identify the Label Switched Router (LSR).
+
+         For LDP, it is used to create the LSR ID.
+
+         For RSVP, it is used to identify the router in RSVP objects such as
+         the hop object and record route object.
+
+         If the router ID is changed, any existing MPLS sessions are torn down.
+         This releases label bindings and interrupts MPLS forwarding
+         associated with the bindings.";
+
+      must "(. != '0.0.0.0')" {
+          error-message "A non-zero router-id must be configured for MPLS";
+      }
+
+      user-ext:CLI-comm-help "Set router id in dotted-quad format";
+      user-ext:CLI-no-comm-help "Clear router id";
+      user-ext:CLI-param-help "Set router id in dotted-quad format";
+    }
+
+    // Low-level model info: Corresponds to dcLmgrLsrEntityTranAddr
+    leaf transport-address {
+      type interfaces:iface-ip-address-t;
+      description
+        "The router transport address.
+
+        For LDP, this is used as the transport address for LDP Hello messages
+        in the global label space.
+
+        For RSVP this is used as the source address for messages on unnumbered
+        interfaces.
+
+        If a transport address is not specified, the MPLS router ID is used.";
+
+      user-ext:CLI-comm-help "Set transport address for LDP Hello messages in the global label space";
+      user-ext:CLI-no-comm-help "Set transport address for LDP Hello messages in the global label space to default";
+      user-ext:CLI-param-help "Set transport address for LDP Hello messages";
+    }
+
+    container label-range {
+
+      description "Label range configuration.";
+
+      user-ext:CLI-comm-help "Configure MPLS label-space range";
+      user-ext:CLI-no-comm-help "Remove MPLS label-space range configuration";
+
+      container dynamic {
+        user-ext:CLI-comm-help "Configure dynamic MPLS label-space range";
+        user-ext:CLI-no-comm-help "Remove dynamic MPLS label-space range configuration";
+
+        uses label-range-params;
+      }
+
+      container static {
+        user-ext:CLI-comm-help "Configure static MPLS label-space range";
+        user-ext:CLI-no-comm-help "Remove static MPLS label-space range configuration";
+
+        uses label-range-params;
+      }
+    }
+
+    container label-range-state {
+
+      description "Label range state.";
+      config false;
+
+      container dynamic {
+        uses label-range-state;
+        config false;
+      }
+
+      container static {
+        uses label-range-state;
+        config false;
+      }
+    }
+
+    grouping label-range-params {
+      // Low-level model info: Corresponds to mplsLabelSubspaceMinLabel
+      leaf min {
+        type meta:mpls-label-integer-t;
+        description "The minimum MPLS label";
+
+        user-ext:CLI-param-help "Set minimum MPLS label";
+        user-ext:CLI-comm-help "Set minimum MPLS label";
+        user-ext:CLI-no-comm-help "Remove minimum MPLS label";
+
+        must "((not(../max)) or
+               (number(.) <= number(../max)))" {
+              error-message "Minimum label must be less than or equal to maximum label";
+        }
+      }
+
+      // Low-level model info: Corresponds to mplsLabelSubspaceMaxLabel
+      leaf max {
+        type meta:mpls-label-integer-t;
+        description "The maximum MPLS label";
+
+        user-ext:CLI-param-help "Set maximum MPLS label";
+        user-ext:CLI-comm-help "Set maximum MPLS label";
+        user-ext:CLI-no-comm-help "Remove maximum MPLS label";
+      }
+    }
+
+    grouping label-range-state {
+      // Low-level model info: Corresponds to mplsLabelSubspaceMinLabelInUse
+      leaf min {
+        type meta:mpls-label-integer-t;
+        description "The minimum MPLS label currently in use";
+        config false;
+      }
+
+      // Low-level model info: Corresponds to mplsLabelSubspaceMaxLabelInUse
+      leaf max {
+        type meta:mpls-label-integer-t;
+        description "The maximum MPLS label currently in use";
+        config false;
+      }
+    }
+
+    container mpls-in-segment-list {
+
+      description
+        "MPLS in-segment state.  Note that this does not include GMPLS
+        in-segments or upstream assigned labels";
+
+      config false;
+
+      list mpls-in-segment {
+
+        description
+          "List of all in-segments that have been created for multipoint LSPs.";
+
+        key "label";
+
+        // Low-level model info: Corresponds to mplsXCSegInSegLabel.
+        leaf label {
+          type meta:mpls-label-state-integer-t;
+          description
+            "32 bit MPLS label.";
+        }
+
+        uses fec-state;
+
+        container out-segment-list {
+
+          description
+            "MPLS out-segment state for this in-segment.";
+
+          list out-segment {
+
+            description
+              "List of all out-segments that have been created for LSPs.";
+
+            // Low-level model info: Corresponds to mplsXCSegOutSegInterface.
+            leaf interface {
+              type interfaces:iface-name;
+              description
+                "Interface connecting to next-hop.";
+            }
+
+            // Low-level model info: Corresponds to mplsXCSegOutSegNextHopAddr(Type).
+            leaf next-hop-address {
+              type interfaces:iface-ip-address-t;
+              description
+                "The address of the downstream next hop.";
+            }
+
+            // Low-level model info: Corresponds to mplsXCSegOutSegLabel.
+            leaf label {
+              type meta:mpls-label-state-integer-t;
+              description
+                "32 bit MPLS label.";
+            }
+
+          } // out-segment
+
+        } // out-segment-list
+
+      } // mpls-in-segment
+
+    } // mpls-in-segment-list
+
+  } // mpls
+
+  notification label-range-reservation-status {
+    description
+      "This notification is sent to inform the management agent of a change " +
+      "in the reservation status of an MPLS label range.";
+    leaf label-range-type {
+      type mpls-label-range-type-t;
+      description
+        "The label range being reserved.";
+    }
+    leaf reservation-status {
+      type mpls:label-subspace-reservation-status-t;
+      description
+        "The reservation status of the label range.";
+    }
+    leaf reason {
+      type mpls:label-subspace-reservation-reason-t;
+      description
+        "The reason for this reservation status.";
+    }
+  } // label-range-reservation-status
+
+} // metaswitch-mpls

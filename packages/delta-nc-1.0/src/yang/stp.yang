@@ -1,0 +1,2307 @@
+
+module stp {
+
+  // Actions require Yang version 1.1.
+  // Start yang1.1-only
+  yang-version 1.1;
+  // End yang1.1-only
+
+  namespace "http://metaswitch.com/yang/nbu/stp/201511100000Z";
+
+  prefix stp;
+
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix "interfaces"; }
+  import metaswitch-yang-types { prefix meta; }
+  import metaswitch-custom-yang-types { prefix "custom"; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Spanning Tree Protocol";
+
+  revision 2015-11-10 {
+    description "Minor formatting changes.";
+  }
+
+  revision 2015-10-07 {
+    description "Fixed formatting.";
+  }
+
+  revision 2015-10-05 {
+    description "Added basic / full interfaces style.";
+  }
+
+  revision 2015-10-01 {
+    description "Customer: Seperate STP, MSTP and RSTP containers.";
+  }
+
+  revision 2015-09-30 {
+    description "Customer: Extra MSTP parms deleted, augment replaced by interface container.";
+  }
+
+  revision 2015-09-18 {
+    description "Initial revision.";
+  }
+
+  typedef stp-mst-id {
+    type uint32 {
+      range "1..4094";
+    }
+    description
+      "MSTI identifier (1-4094)";
+  }
+
+  typedef stp-port-priority {
+    type enumeration {
+      enum 0                                { value 0; }
+      enum 16                               { value 16; }
+      enum 32                               { value 32; }
+      enum 48                               { value 48; }
+      enum 64                               { value 64; }
+      enum 80                               { value 80; }
+      enum 96                               { value 96; }
+      enum 112                              { value 112; }
+      enum 128                              { value 128; }
+      enum 144                              { value 144; }
+      enum 160                              { value 160; }
+      enum 176                              { value 176; }
+      enum 192                              { value 192; }
+      enum 208                              { value 208; }
+      enum 224                              { value 224; }
+      enum 240                              { value 240; }
+    }
+    description
+      "PORT-PRIORITY (0/16/32/48/64/../240)";
+  }
+
+  typedef stp-bridge-priority {
+    type enumeration {
+      enum 0                                { value 0; }
+      enum 4096                             { value 4096; }
+      enum 8192                             { value 8192; }
+      enum 12288                            { value 12288; }
+      enum 16384                            { value 16384; }
+      enum 20480                            { value 20480; }
+      enum 24576                            { value 24576; }
+      enum 28672                            { value 28672; }
+      enum 32768                            { value 32768; }
+      enum 36864                            { value 36864; }
+      enum 40960                            { value 40960; }
+      enum 45056                            { value 45056; }
+      enum 49152                            { value 49152; }
+      enum 53248                            { value 53248; }
+      enum 57344                            { value 57344; }
+      enum 61440                            { value 61440; }
+    }
+    description
+      "BRIDGE-PRIORITY (0/4096/8192/12288/16384/../61440)";
+  }
+
+  typedef stp-port-state {
+    type enumeration {
+      enum disabled                         { value 1; }
+      enum learning                         { value 2; }
+      enum forwarding                       { value 3; }
+      enum blocked                          { value 4; }
+    }
+    description
+      "PORT STATE (disabled/learning/forwarding/blocked)";
+  }
+
+  typedef stp-port-role {
+    type enumeration {
+      enum root                             { value 1; }
+      enum alternate                        { value 2; }
+      enum designated                       { value 3; }
+      enum backup                           { value 4; }
+      enum master                           { value 5; }
+      enum disabled                         { value 6; }
+    }
+    description
+      "PORT ROLE (root/alternate/designated/backup/master/disabled)";
+  }
+
+  typedef stp-version {
+    type enumeration {
+      enum stp                              { value 1; }
+      enum rstp                             { value 2; }
+      enum mstp                             { value 3; }
+    }
+    description
+      "STP VERSION (stp/rstp/mstp)";
+  }
+
+  typedef stp-bridge-id {
+    type string {
+      length "0..16";
+    }
+    description
+      "Bridge identifier.";
+  }
+
+  typedef stp-config-digest {
+    type string {
+      length "0..32";
+    }
+    description
+      "In an MSTP Bridge, the Configuration Digest part of the
+      MST Configuration Identifier.";
+  }
+
+  typedef link-type-t {
+    type enumeration {
+      enum multilink                        { value 1; description "Multilink interface"; }
+      enum point-to-point                   { value 2; description "Point-to-point interface"; }
+    }
+    description
+      "Link type";
+  }
+
+  typedef stp-path-cost-t {
+    type uint32 {
+      range "0..200000000";
+    }
+    description
+      "(0-200000000)";
+  }
+
+  typedef stp-hello-time-t {
+    type uint32 {
+      range "1..2";
+    }
+    description
+      "SECS (1-2)";
+  }
+
+  typedef stp-region-t {
+    type meta:ascii-string {
+      length "0..32";
+    }
+    description
+      "WORD (0-32)";
+  }
+
+  typedef stp-revision-t {
+    type uint32 {
+      range "0..65535";
+    }
+    description
+      "(0-65535)";
+  }
+
+  typedef stp-maximum-age-t {
+    type uint32 {
+      range "6..28";
+    }
+    description
+      "SECS (6-28)";
+  }
+
+  typedef stp-maximum-hops-t {
+    type uint32 {
+      range "6..40";
+    }
+    description
+      "(6-40)";
+  }
+
+  typedef stp-bpdu-guard-timeout-t {
+    type uint32 {
+      range "0 | 300..86400";
+    }
+    description
+      "SECS (0 | 300-86400)";
+  }
+
+
+  grouping param-path-cost-port-priority {
+
+    // Low-level model info: Corresponds to either AMB_STP_IF_CFG (stpIfCfgTable) or AMB_STP_IF_MSTI_CFG (stpIfMstiCfgTable) depending on grouping use.
+
+    leaf path-cost {
+      type stp-path-cost-t;
+      default "0";
+      user-ext:CLI-comm-help "Set path cost";
+      user-ext:CLI-no-comm-help "Set path cost to default";
+      user-ext:CLI-param-help "Set path cost";
+      description
+        "The path cost configured for a port.
+
+        A value of '0' indicates that STP should select the path
+        cost for the port, using a value based on the port's
+        bandwidth.";
+    }
+
+    leaf port-priority {
+      type stp-port-priority;
+      default 128;
+      user-ext:CLI-comm-help "Set port priority";
+      user-ext:CLI-no-comm-help "Set port priority to default";
+      user-ext:CLI-param-help "Set port priority";
+      description
+        "The configured priority for the port.
+
+        A lower numerical value corresponds to a higher priority.";
+    }
+
+  } // param-path-cost-port-priority
+
+  grouping xstp-base-interface-config-fields {
+
+    leaf link-type {
+      // Low-level model info: Corresponds to stpIfCfgAdminP2p.
+      type link-type-t;
+      default point-to-point;
+      user-ext:CLI-comm-help "Set link type";
+      user-ext:CLI-no-comm-help "Set link type to default";
+      user-ext:CLI-param-help "Set link type";
+      description
+        "Indicates whether STP should consider the interface to be
+         multilink or point-to-point.";
+    }
+
+    container guard {
+
+      user-ext:CLI-comm-help "Configure guard parameters";
+      user-ext:CLI-no-comm-help "Configure guard parameters";
+
+      description "Guard parameters";
+
+      leaf root {
+        // Low-level model info: Corresponds to stpIfCfgRestrictedRole.
+        type empty;
+        user-ext:CLI-comm-help "Enable guard against switch to root role";
+        user-ext:CLI-no-comm-help "Disable guard against switch to root role";
+        description "Guard root enable";
+      }
+
+      leaf topology-change {
+        // Low-level model info: Corresponds to stpIfCfgRestrictedTcn.
+        type empty;
+        user-ext:CLI-comm-help "Enable guard against propagating topology change notifications";
+        user-ext:CLI-no-comm-help "Disable guard against propagating topology change notifications";
+        description "Guard topology change notifications receive enable";
+      }
+
+    } // guard
+
+  }  // xstp-base-interface-config-fields
+
+  grouping xstp-interface-config-fields {
+
+    uses xstp-base-interface-config-fields;
+
+    container portfast {
+
+      // Low-level model info: Corresponds to stpIfCfgAdminEdge.
+      user-ext:CLI-comm-help "Enable portfast mode";
+      user-ext:CLI-no-comm-help "Disable portfast mode";
+      description
+        "Enable portfast mode";
+
+      presence "Portfast mode enabled";
+
+      leaf bpduguard {
+        // Low-level model info: Corresponds to stpIfCfgEnableBpduGuard.
+        type empty;
+        user-ext:CLI-comm-help "Enable BPDU receive guard";
+        user-ext:CLI-no-comm-help "Disable BPDU receive guard";
+        description
+         "Enable BPDU receive guard";
+      }
+
+      // Start yang1.1-only
+      action clear-bpduguard-fault {
+        // Low-level model info: Corresponds to stpIfTriggerClearBpduGuardFault = true.
+        user-ext:CLI-param-help "Clear a fault detected by the BPDU guard.";
+
+        description
+          "Clear a fault detected by the BPDU guard.
+
+          If the BDPU guard has disabled the interface because the interface has
+          received a BPDU, then setting this will re-enable the interface, unless
+          still disabled by another configuration.";
+      }
+      // End yang1.1-only
+
+    } // portfast
+
+  }  // xstp-interface-config-fields
+
+  grouping xstp-interface-config-fields-no-act {
+
+    uses xstp-base-interface-config-fields;
+
+    container portfast {
+
+      // Low-level model info: Corresponds to stpIfCfgAdminEdge.
+      user-ext:CLI-comm-help "Enable portfast mode";
+      user-ext:CLI-no-comm-help "Disable portfast mode";
+      description
+        "Enable portfast mode";
+
+      presence "Portfast mode enabled";
+
+      leaf bpduguard {
+        // Low-level model info: Corresponds to stpIfCfgEnableBpduGuard.
+        type empty;
+        user-ext:CLI-comm-help "Enable BPDU receive guard";
+        user-ext:CLI-no-comm-help "Disable BPDU receive guard";
+        description
+         "Enable BPDU receive guard";
+      }
+
+    } // portfast
+
+  }  // xstp-interface-config-fields-no-act
+
+  grouping xstp-interface-state-fields {
+
+    leaf port-number {
+      type uint32 {
+        range "0..4095";
+      }
+      description
+        "The port number of this interface within the bridge, or 0
+        if this is not known.";
+      config false;
+    }
+
+    leaf oper-status {
+      type meta:oper-status;
+      description
+        "The current status of STP protocol operation on this
+        interface.";
+      config false;
+    }
+
+    leaf oper-stp-version {
+      type stp-version;
+      description
+        "The current version of spanning tree protocol in operation
+        on this interface.";
+      config false;
+    }
+
+    leaf oper-path-cost {
+      type uint32;
+      description
+        "The current path cost in use for this interface for
+        STP/RSTP, or the CIST path cost for MSTP.
+
+        If a non-zero value is configured for path-cost,
+        then that is used as the path cost.  Otherwise, STP
+        selects the path cost for the port according to the port's
+        bandwidth.";
+      config false;
+    }
+
+    leaf port-priority {
+      type stp-port-priority;
+      description
+        "The port priority in use for this interface for STP/RSTP,
+        or the CIST port priority for MSTP.";
+      config false;
+    }
+
+    leaf port-state {
+      type stp-port-state;
+      description
+        "The current forwarding state of this port for STP/RSTP, or
+        the CIST forwarding state for MSTP.";
+      config false;
+    }
+
+    leaf port-role {
+      type stp-port-role;
+      description
+        "The current role of this port for STP/RSTP, or the CIST
+        port role for MSTP.";
+      config false;
+    }
+
+    leaf oper-p2p {
+      type boolean;
+      description
+        "Indicates whether or not STP is operating as though this
+        interface is point-to-point.";
+      config false;
+    }
+
+    leaf hello-time {
+      type uint32;
+      units "centi-seconds";
+      description
+        "The hello time in use on this port.";
+      config false;
+    }
+
+    leaf designated-root {
+      type stp-bridge-id;
+      description
+        "The root bridge identifier advertised by the designated
+        bridge on the LAN segment to which this interface is
+        attached.
+
+        For MSTP, this is the designated root for the CIST.";
+      config false;
+    }
+
+    leaf designated-root-cost {
+      type uint32;
+      description
+        "The root path cost of the designated port of the LAN
+        segment to which this interface is attached.
+
+        For MSTP, this is the designated root cost for the CIST.";
+      config false;
+    }
+
+    leaf designated-bridge {
+      type stp-bridge-id;
+      description
+        "The bridge identifier of the designated bridge on the LAN
+        segment to which this interface is attached.
+
+        For MSTP, this is the designated bridge identifier for the
+        CIST.
+
+        This is set to all zeros if there is no designated bridge
+        to report, for example, if the interface is oper down.";
+      config false;
+    }
+
+    leaf designated-port {
+      type uint32 {
+        range "0..4095";
+      }
+      description
+        "The port number of the designated port on the designated
+        bridge on the LAN segment to which this interface is
+        attached.
+
+        For MSTP, this is the designated port for the CIST.
+
+        This is zero if there is no designated port to report, for
+        example, if the interface is oper down.";
+      config false;
+    }
+
+    leaf uptime {
+      type uint32;
+      units "centi-seconds";
+      description
+        "The time elapsed since STP operation on the interface was
+        last reset or initialized.";
+      config false;
+    }
+
+    leaf forward-transitions {
+      type uint32;
+      description
+        "The number of times this port has transitioned from the
+        learning to the forwarding state.";
+      config false;
+    }
+
+    leaf disputed {
+      type boolean;
+      description
+        "Whether there is a dispute on the LAN segment to which the
+        interface is attached.
+
+        A value of true indicates that more than one bridge on
+        the LAN segment believes it is the designated bridge,
+        which may indicate a problem with connectivity between the
+        bridges on the LAN.";
+      config false;
+    }
+
+    leaf oper-edge {
+      type boolean;
+      description
+        "Indicates whether this interface is acting as an edge port
+        - in other words, as though there are no other STP bridges
+        on the LAN segment to which this interface is attached.
+
+        For a Provider Edge Port this value is always false.";
+      config false;
+    }
+
+    leaf bpdu-guard-fault {
+      type boolean;
+      description
+        "Indicates whether BPDU guard has detected a fault on this
+        interface.  A fault is detected when a BPDU is received
+        and BPDU guard is enabled.
+
+        A value of true indicates that a fault has been
+        detected, and so the interface is blocked and the line
+        protocol is disabled.  A value of false indicates that
+        STP is running on the interface as normal.";
+      config false;
+    }
+
+  } // xstp-interface-state-fields
+
+  grouping mstp-interface-state-fields {
+
+    uses xstp-interface-state-fields;
+
+    leaf cist-regional-root {
+      type stp-bridge-id;
+      description
+        "The bridge identifier of the CIST regional root advertised
+        by the CIST designated bridge on the LAN segment to which
+        this interface is attached.
+
+        If the CIST designated bridge is not running MSTP, then it
+        always advertises its own bridge ID as the CIST regional
+        root.
+
+        This is zero if there is no regional root to report, for
+        example, if the interface is oper down.";
+      config false;
+    }
+
+    leaf cist-internal-cost {
+      type uint32;
+      description
+        "The path cost to the CIST regional root advertised by the
+        CIST designated bridge on the LAN segment to which this
+        interface is attached.
+
+        This is zero if there is no regional root to report, and
+        so no internal cost, for example if the interface is oper
+        down; or if the CIST designated bridge is not running
+        MSTP, and so does not advertise an internal cost.";
+      config false;
+    }
+
+  } // mstp-interface-state-fields
+
+  grouping interface-parameters-for-xstp {
+
+    // Low-level model info: Corresponds to AMB_STP_IF_CFG (stpIfCfgTable).
+
+    uses param-path-cost-port-priority;
+    uses xstp-interface-config-fields;
+
+  } // interface-parameters-for-xstp
+
+  grouping interface-parameters-for-xstp-no-act {
+
+    // Low-level model info: Corresponds to AMB_STP_IF_CFG (stpIfCfgTable).
+
+    uses param-path-cost-port-priority;
+    uses xstp-interface-config-fields-no-act;
+
+  } // interface-parameters-for-xstp-no-act
+
+  grouping interface-parameters-for-mstp {
+
+    // Low-level model info: Corresponds to AMB_STP_IF_CFG (stpIfCfgTable).
+
+    uses interface-parameters-for-xstp;
+
+    list if-msti {
+
+      // Low-level model info: Corresponds to AMB_STP_IF_MSTI_CFG (stpIfMstiCfgTable).
+
+      description
+        "Spanning-tree parameters on interface for a single MSTI";
+
+      user-ext:CLI-comm-help "Configure MST instance";
+      user-ext:CLI-no-comm-help "Remove MST instance";
+
+      key "mst-id";
+
+      leaf mst-id {
+        type stp-mst-id;
+        description
+          "Identifier for the MSTI.";
+
+        user-ext:CLI-param-help "MSTI identifier";
+      }
+
+      uses param-path-cost-port-priority;
+
+    } // if-msti
+
+  } // interface-parameters-for-mstp
+
+  grouping interface-state-for-xstp {
+
+    // Low-level model info: Corresponds to read-only fields in AMB_STP_IF (stpIfTable).
+
+    container config {
+
+      description "The interface configuration reported as state.";
+
+      config false;
+
+      uses interface-parameters-for-xstp-no-act;
+    }
+
+    container state {
+
+      description "The interface state.";
+
+      config false;
+
+      uses xstp-interface-state-fields;
+    }
+
+  } // interface-state-for-xstp
+
+  grouping interface-state-for-mstp {
+
+    // Low-level model info: Corresponds to read-only fields in AMB_STP_IF (stpIfTable).
+
+    container config {
+
+      description "The interface configuration reported as state.";
+
+      config false;
+
+      uses interface-parameters-for-xstp-no-act;
+    }
+
+    container state {
+
+      description "The interface state.";
+
+      config false;
+
+      uses mstp-interface-state-fields;
+    }
+
+    list if-msti {
+
+      // Low-level model info: Corresponds to AMB_STP_IF_MSTI (stpIfMstiTable).
+
+      config false;
+
+      leaf mst-id {
+        type stp-mst-id;
+        description
+          "Identifier for the MSTI.";
+        config false;
+      }
+
+      container config {
+
+        description "The interface MSTI configuration reported as state.";
+
+        config false;
+
+        uses param-path-cost-port-priority;
+      }
+
+      container state {
+
+        description "The interface MSTI state.";
+
+        config false;
+
+        leaf oper-status {
+          type meta:oper-status;
+          description
+            "The current operational status of the MSTI on this
+            interface.";
+          config false;
+        }
+
+        leaf oper-path-cost {
+          type uint32;
+          description
+            "The current path cost in use for this interface for this
+            MSTI.
+
+            If a non-zero value is configured for
+            path-cost,  then that is used as the path cost.
+            Otherwise, STP selects the path cost for the port
+            according to the port's bandwidth.";
+          config false;
+        }
+
+        leaf port-priority {
+          type stp-port-priority;
+          description
+            "The port priority in use for this interface and MSTI.";
+          config false;
+        }
+
+        leaf port-state {
+          type stp-port-state;
+          description
+            "The current forwarding state of this port in this MSTI.";
+          config false;
+        }
+
+        leaf port-role {
+          type stp-port-role;
+          description
+            "The current role of this port in this MSTI.";
+          config false;
+        }
+
+        leaf designated-root {
+          type stp-bridge-id;
+          description
+            "The bridge identifier of the MSTI regional root advertised
+            by the designated bridge on the LAN segment to which this
+            interface is attached.";
+          config false;
+        }
+
+        leaf designated-root-cost {
+          type uint32;
+          description
+            "The path cost to the MSTI regional root advertized by the
+            designated port of the LAN segment to which this interface
+            is attached.";
+          config false;
+        }
+
+        leaf designated-bridge {
+          type stp-bridge-id;
+          description
+            "The bridge identifier of the designated bridge for this
+            MSTI on the LAN segment to which this interface is
+            attached.";
+          config false;
+        }
+
+        leaf designated-port {
+          type uint32 {
+            range "0..4095";
+          }
+          description
+            "The port number of the designated port on the designated
+            bridge for this MSTI on the LAN segment to which this
+            interface is attached.
+
+            This is zero if there is no designated port to report, for
+            example, if the interface is oper down.";
+          config false;
+        }
+
+        leaf uptime {
+          type uint32;
+          units "centi-seconds";
+          description
+            "The time elapsed since STP operation on the interface was
+            last reset or initialized.";
+          config false;
+        }
+
+        leaf disputed {
+          type boolean;
+          description
+            "Whether there is a dispute on the LAN segment to which the
+            interface is attached.
+
+            A value of true indicates that more than one bridge on
+            the LAN segment believes it is the designated bridge,
+            which  may indicate a problem with connectivity between
+            the bridges on the LAN.";
+          config false;
+        }
+
+      } // state
+
+    } // if-msti
+
+  } // interface-state-for-mstp
+
+  grouping xstp-global-config-fields {
+
+    leaf bridge-priority {
+      type stp-bridge-priority;
+      default 32768;
+      user-ext:CLI-comm-help "Set bridge priority";
+      user-ext:CLI-no-comm-help "Set bridge priority to default";
+      user-ext:CLI-param-help "Set bridge priority";
+      description
+        "The bridge priority.  A lower numerical value indicates a
+        higher priority.
+
+        The value is concatenated with the bridge address to
+        generate the bridge identifier.  The bridge with the
+        numerically lowest bridge identifier becomes the root of
+        the tree.";
+    }
+
+    leaf provider-bridge {
+      // Low-level model info: Corresponds to stpPmEntGroupAddress.
+      type empty;
+      user-ext:CLI-comm-help "Enable STP mode for provider bridges";
+      user-ext:CLI-no-comm-help "Disable STP mode for provider bridges";
+      description
+        "Enable STP mode for provider bridges/802.1ad (BPDU MAC 01:80:C2:00:00:08)";
+    }
+
+    leaf hello-time {
+      // The standard range for hello-time is 1-10s.
+      // However, the hello-time must also be consistent with the STP
+      // maximum-age parameter.  For STP and RSTP the maximum-age parameter
+      // is not configurable and defaults to 6s.
+      // The requirement that
+      //   maximum-age >= 2 * hello-time + 1
+      // means that the effective hello-time range is 1-2s rather than the
+      // full 1-10s.
+      type stp-hello-time-t;
+      default 2;
+      user-ext:CLI-comm-help "Set spanning tree hello time in seconds";
+      user-ext:CLI-no-comm-help "Set spanning tree hello time to default";
+      user-ext:CLI-param-help "Set time in seconds";
+      description
+        "Set STP hello-time";
+    }
+
+    leaf bpdu-guard-timeout {
+      // Low-level model info: Corresponds to stpPmEntBpduGuardTimeout
+      type stp-bpdu-guard-timeout-t;
+      default 0;
+      user-ext:CLI-comm-help "Set bpdu guard timeout in seconds";
+      user-ext:CLI-no-comm-help "Set bpdu guard timeout to default";
+      user-ext:CLI-param-help "Set bdpu guard timeout in seconds";
+      description
+        "The length of time to wait after a port is disabled by BPDU guard
+        before re-enabling the port.
+
+        A value of 0 means the port will remain disabled until BDPU
+        guard is disabled, or the port is deactivated.";
+    }
+
+  } // xstp-global-config-fields
+
+  grouping mstp-global-config-fields {
+
+    uses xstp-global-config-fields;
+
+    leaf region {
+      // Low-level model info: Corresponds to stpPmEntCfgConfigIdName.
+      type stp-region-t;
+      default "";
+      user-ext:CLI-comm-help "Set region name";
+      user-ext:CLI-no-comm-help "Remove region name";
+      user-ext:CLI-param-help "Set name";
+      description
+        "In an MSTP Bridge, the Configuration Name part of the MST
+        Configuration Identifier.
+
+        If the configured name is less than 32 characters long,
+        the value is stored with the remaining space padded with
+        null characters.
+
+        The MST Configuration Identifier consists of a name, a
+        revision level and a configuration digest.  Bridges using
+        the same MST Configuration Identifier may be considered to
+        be part of the same MST region.
+
+        Any change to this value causes the STP instance to
+        deactivate and reactivate.";
+    }
+
+    leaf revision {
+      type stp-revision-t;
+      default "0";
+      user-ext:CLI-comm-help "Set revision level";
+      user-ext:CLI-no-comm-help "Set revision level to default";
+      user-ext:CLI-param-help "Set revision level";
+      description
+        "In an MSTP Bridge, the Revision Level part of the MST
+        Configuration Identifier.
+
+        The MST Configuration Identifier consists of a name, a
+        revision level and a configuration digest.  Bridges using
+        the same MST Configuration Identifier may be considered to
+        be part of the same MST region.
+
+        Any change to this value causes the STP instance to
+        deactivate and reactivate.";
+    }
+
+    leaf maximum-age {
+      // The standard range for maximum-age is 6-40s.
+      // However, the maximum-age must also be consistent with the STP
+      // forward-delay parameter, which is not configurable and defaults to
+      // 15s.
+      // The requirement that
+      //   2 x (forward-delay - 1) >= maximum-age
+      // means that the effective hello-time range is 6-28s rather than the
+      // full 6-40s.
+      //
+      // Also hello-time and maximum-age must be consistent - the container
+      // using this group should enforce consistency.
+      type stp-maximum-age-t;
+      default 6;
+
+      user-ext:CLI-comm-help "Set maximum age time in seconds";
+      user-ext:CLI-no-comm-help "Set maximum age time to default";
+      user-ext:CLI-param-help "Set time in seconds";
+    }
+
+    // Low-level model info: Corresponds to stpPmEntCfgMaxHops, different default here (6, not 20).
+    leaf maximum-hops {
+      type stp-maximum-hops-t;
+      default 6;
+
+      user-ext:CLI-comm-help "Set maximum hops count";
+      user-ext:CLI-no-comm-help "Set maximum hops count to default";
+      user-ext:CLI-param-help "Set maximum hops count";
+    }
+
+  } // mstp-global-config-fields
+
+  grouping xstp-global-state-fields {
+
+    leaf bridge-address {
+      type interfaces:iface-mac-t;
+      description
+        "The MAC address used as the STP bridge address.
+
+        STP uses the system MAC address as the bridge address if one is available.
+
+        STP operation will not start until a bridge address is
+        provided.";
+      config false;
+    }
+
+    leaf oper-max-age {
+      type uint32;
+      units "centi-seconds";
+      description
+        "The max age in use by this STP instance.  The value is
+        learnt from the tree root.";
+      config false;
+    }
+
+    leaf oper-hello-time {
+      type uint32;
+      units "centi-seconds";
+      description
+        "The hello time in use by this STP instance.  The value is
+        learnt from the tree root.";
+      config false;
+    }
+
+    leaf oper-forward-delay {
+      type uint32;
+      units "centi-seconds";
+      description
+        "The forward delay time in use by this STP instance.  The
+        value is learnt from the tree root.";
+      config false;
+    }
+
+    leaf cst-root {
+      type stp-bridge-id;
+      description
+        "The bridge identifier of the spanning tree root for
+        STP/RSTP or the CST root for MSTP.";
+      config false;
+    }
+
+    leaf cst-root-path-cost {
+      type uint32;
+      description
+        "The path cost to the spanning tree root for STP/RSTP, or
+        the external path cost to the CST root for MSTP.
+
+        The CST path cost does not include the internal path cost
+        across MST regions.";
+      config false;
+    }
+
+    leaf cst-root-interface {
+      type meta:ro-if-index-or-zero;
+      description
+        "If the local bridge is not the root bridge, this is the
+        interface index of the port on the local bridge that
+        provides the preferred path to the root bridge for
+        STP/RSTP or CST root for MSTP.  Otherwise, this is zero.";
+      config false;
+    }
+
+    container cst-root-if {
+
+      description
+        "CST root interface name and extended ID.";
+
+      config false;
+
+      uses interfaces:iface-id;
+
+    } // cst-root-if
+
+    leaf time-since-top-change {
+      type uint32;
+      units "centi-seconds";
+      description
+        "Time in centi-seconds since the last topology change, or 0
+        if there have been no topology changes.
+
+        Note that the value may wrap.";
+      config false;
+    }
+
+    leaf topology-changes {
+      type uint32;
+      description
+        "Number of topology changes detected since the most recent
+        reinitialization of STP on this bridge.";
+      config false;
+    }
+
+    leaf cst-root-hops {
+      type uint32;
+      description
+        "This indicates the number of STP/RSTP hops from the local
+        bridge to CST Root.  This is derived from the
+        Message Age value in the CIST rootTimes.
+
+        This value does not include internal hops across MST
+        regions.  Hence if the local bridge is in the same MST
+        region as the CIST root bridge (or the local bridge is the
+        CIST root bridge), this value will be zero.";
+      config false;
+    }
+
+  } // xstp-global-state-fields
+
+  grouping mstp-global-state-fields {
+
+    uses xstp-global-state-fields;
+
+    leaf cist-regional-root {
+      type stp-bridge-id;
+      description
+        "Within an MST region, the bridge identifier of the CIST
+        regional root.
+
+        If the protocol version is not MSTP, then this is the
+        local bridge ID.";
+      config false;
+    }
+
+    leaf cist-reg-root-path-cost {
+      type uint32;
+      description
+        "Within an MST region, the internal path cost to the CIST
+        regional root.
+
+        This is only non-zero if the protocol version is MSTP.";
+      config false;
+    }
+
+    leaf config-digest {
+      type stp-config-digest;
+      description
+        "In an MSTP Bridge, the Configuration Digest part of the
+        MST Configuration Identifier.
+
+        This is a read-only value that is calculated based on the
+        set of VLANs assigned to each MSTI.
+
+        The MST Configuration Identifier consists of a name, a
+        revision level and a configuration digest.  Bridges using
+        the same MST Configuration Identifier may be considered to
+        be part of the same MST region.";
+      config false;
+    }
+
+  } // mstp-global-state-fields
+
+  grouping global-parameters-for-xstp {
+
+    // Low-level model info: Corresponds to AMB_STP_PM_ENT (stpPmEntTable).
+
+    uses xstp-global-config-fields;
+
+    container state {
+
+      // Low-level model info: Corresponds to read-only fields in AMB_STP_PM_ENT (stpPmEntTable).
+
+      config false;
+
+      uses xstp-global-state-fields;
+
+    } // state
+
+  } // global-parameters-for-xstp
+
+  grouping global-parameters-for-mstp {
+
+    // Low-level model info: Corresponds to MSTP-specific fields in AMB_STP_PM_ENT (stpPmEntTable).
+
+    uses mstp-global-config-fields;
+
+    container state {
+
+      // Low-level model info: Corresponds to read-only MSTP-specific fields in AMB_STP_PM_ENT (stpPmEntTable).
+
+      config false;
+
+      uses mstp-global-state-fields;
+
+    } // state
+
+  } // global-parameters-for-mstp
+
+  container spanning-tree {
+
+    user-ext:CLI-comm-help "Configure Spanning Tree Protocol";
+    user-ext:CLI-no-comm-help "Remove Spanning Tree Protocol";
+
+    description
+      "Spanning Tree Protocol configuration and state";
+
+    container stp {
+
+      // Low-level model info: Corresponds to AMB_STP_PM_ENT (stpPmEntTable).
+
+      must "not(../rstp)" {
+        error-message "stp and rstp cannot be configured at the same time";
+      }
+
+      must "not(../mstp)" {
+        error-message "stp and mstp cannot be configured at the same time";
+      }
+
+      presence "Enable STP version of spanning-tree protocol";
+
+      user-ext:CLI-comm-help "Configure STP parameters";
+      user-ext:CLI-no-comm-help "Configure STP parameters";
+
+      description
+        "Spanning Tree Protocol configuration";
+
+      uses global-parameters-for-xstp;
+
+      container interfaces {
+
+        if-feature interfaces:standard-interfaces;
+        user-ext:CLI-not-command;
+
+        list interface {
+
+          description "Spanning-tree parameters on interface";
+          user-ext:CLI-comm-help "Configure spanning tree protocol on interface";
+          user-ext:CLI-no-comm-help "Configure spanning tree protocol on interface";
+
+          key "if-name";
+
+          leaf if-name {
+            type custom:iface-name;
+            description
+              "A unique identifier identifying the interface.";
+
+            user-ext:CLI-comm-help "Set interface name";
+            user-ext:CLI-param-help "Set interface name";
+          }
+
+          uses interface-parameters-for-xstp;
+
+        } // interface
+
+      } // interfaces
+
+      container custom-interfaces {
+
+        if-feature interfaces:custom-interfaces;
+        user-ext:CLI-not-command;
+
+        container interface {
+
+          description "Spanning tree parameters on interface";
+          user-ext:CLI-comm-help "Configure spanning tree protocol on interface";
+          user-ext:CLI-no-comm-help "Configure spanning tree protocol on interface";
+
+          container oneGE {
+
+            user-ext:CLI-not-command;
+
+            list gigabitethernet {
+
+              description "1G interface";
+
+              user-ext:CLI-comm-help "Add spanning tree configuration to 1G interface";
+              user-ext:CLI-no-comm-help "Remove spanning-tree configuration from 1G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "1G interface name";
+              }
+
+              uses interface-parameters-for-xstp;
+            }
+
+          } // oneGE
+
+          container tenGE {
+
+            user-ext:CLI-not-command;
+
+            list tengigabitethernet {
+
+              description "10G interface";
+
+              user-ext:CLI-comm-help "Add spanning tree configuration to 10G interface";
+              user-ext:CLI-no-comm-help "Remove spanning-tree configuration from 10G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "10G interface name";
+              }
+
+              uses interface-parameters-for-xstp;
+            }
+
+          } // tenGE
+
+          container fortyGE {
+
+            user-ext:CLI-not-command;
+
+            list fortygigabitethernet {
+
+              description "40G interface";
+
+              user-ext:CLI-comm-help "Add spanning tree configuration to 40G interface";
+              user-ext:CLI-no-comm-help "Remove spanning-tree configuration from 40G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "40G interface name";
+              }
+
+              uses interface-parameters-for-xstp;
+            }
+
+          } // fortyGE
+
+          container hundredGE {
+
+            user-ext:CLI-not-command;
+
+            list hundredgigabitethernet {
+
+              description "100G interface";
+
+              user-ext:CLI-comm-help "Add spanning tree configuration to 100G interface";
+              user-ext:CLI-no-comm-help "Remove spanning-tree configuration from 100G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "100G interface name";
+              }
+
+              uses interface-parameters-for-xstp;
+            }
+
+          } // hundredGE
+
+          container bundle-ifaces {
+
+            user-ext:CLI-not-command;
+
+            list bundle-ether {
+
+              description "Specify the attachment bundle-ether interface";
+
+              user-ext:CLI-comm-help "Configure attachment bundle-ether interface";
+              user-ext:CLI-no-comm-help "Remove attachment bundle-ether interface";
+
+              key "bundle-id";
+
+              leaf bundle-id {
+                type interfaces:bundle-id-t;
+                description "Bundle-ether id";
+                user-ext:CLI-param-help "Bundle-ether interface";
+              }
+
+              uses interface-parameters-for-xstp;
+            }
+
+          } // bundle-ifaces
+
+        } // interface
+
+      } // custom-interfaces
+
+      container interface-state-list {
+
+        if-feature interfaces:standard-interfaces;
+
+        description "Container to hold spanning-tree interface state.";
+
+        config false;
+
+        user-ext:CLI-not-command;
+
+        list interface-state {
+
+          description "Interfaces state";
+
+          uses interfaces:iface-id;
+
+          config false;
+
+          uses interface-state-for-xstp;
+
+        } // interface-state
+
+      } // interface-state-list
+
+      container interface-state-tree {
+
+        if-feature interfaces:custom-interfaces;
+
+        description "Container to hold spanning-tree interface state.";
+
+        config false;
+
+        user-ext:CLI-not-command;
+
+        container oneGE {
+
+          user-ext:CLI-not-command;
+
+          list gigabitethernet {
+
+            description "1G interface state";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+            }
+
+            config false;
+
+            uses interface-state-for-xstp;
+          }
+
+        } // oneGE
+
+        container tenGE {
+
+          user-ext:CLI-not-command;
+
+          list tengigabitethernet {
+
+            description "10G interface state";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+            }
+
+            config false;
+
+            uses interface-state-for-xstp;
+          }
+
+        } // tenGE
+
+        container fortyGE {
+
+          user-ext:CLI-not-command;
+
+          list fortygigabitethernet {
+
+            description "40G interface state";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+            }
+
+            config false;
+
+            uses interface-state-for-xstp;
+          }
+
+        } // fortyGE
+
+        container hundredGE {
+
+          user-ext:CLI-not-command;
+
+          list hundredgigabitethernet {
+
+            description "100G interface state";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+            }
+
+            config false;
+
+            uses interface-state-for-xstp;
+          }
+
+        } // hundredGE
+
+        container bundle-ifaces {
+
+          user-ext:CLI-not-command;
+
+          list bundle-ether {
+
+            description "Bundle-ether interface state";
+
+            key "bundle-id";
+
+            leaf bundle-id {
+              type interfaces:bundle-id-t;
+              description "Bundle-ether id";
+            }
+
+            config false;
+
+            uses interface-state-for-xstp;
+          }
+
+        } // bundle-ifaces
+
+      } // interface-state-tree
+
+    } // stp
+
+    container rstp {
+
+      // Low-level model info: Corresponds to AMB_STP_PM_ENT (stpPmEntTable).
+
+      presence "Enable RSTP version of spanning-tree protocol";
+
+      must "not(../mstp)" {
+        error-message "rstp and mstp cannot be configured at the same time";
+      }
+
+      user-ext:CLI-comm-help "Configure RSTP parameters";
+      user-ext:CLI-no-comm-help "Configure RSTP parameters";
+
+      description
+        "Spanning Tree Protocol configuration";
+
+      uses global-parameters-for-xstp;
+
+      container interfaces {
+
+        // Low-level model info: Corresponds to AMB_STP_IF (stpIfTable).
+
+        if-feature interfaces:standard-interfaces;
+        user-ext:CLI-not-command;
+
+        list interface {
+
+          description "Spanning-tree parameters on interface";
+          user-ext:CLI-comm-help "Configure spanning-tree protocol on interface";
+          user-ext:CLI-no-comm-help "Configure spanning-tree protocol on interface";
+
+          key "if-name";
+
+          leaf if-name {
+            type custom:iface-name;
+            description
+              "A unique identifier identifying the interface.";
+
+            user-ext:CLI-comm-help "Set interface name";
+            user-ext:CLI-param-help "Set interface name";
+          }
+
+          uses interface-parameters-for-xstp;
+
+        } // interface
+
+      } // interfaces
+
+      container custom-interfaces {
+
+        // Low-level model info: Corresponds to AMB_STP_IF (stpIfTable).
+
+        if-feature interfaces:custom-interfaces;
+        user-ext:CLI-not-command;
+
+        container interface {
+
+          description "Spanning-tree parameters on interface";
+
+          user-ext:CLI-comm-help "Configure spanning-tree protocol on interface";
+          user-ext:CLI-no-comm-help "Configure spanning-tree protocol on interface";
+
+          container oneGE {
+
+            user-ext:CLI-not-command;
+
+            list gigabitethernet {
+
+              description "1G interface";
+
+              user-ext:CLI-comm-help "Add spanning tree configuration to 1G interface";
+              user-ext:CLI-no-comm-help "Remove spanning-tree configuration from 1G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "1G interface name";
+              }
+
+              uses interface-parameters-for-xstp;
+            }
+
+          } // oneGE
+
+          container tenGE {
+
+            user-ext:CLI-not-command;
+
+            list tengigabitethernet {
+
+              description "10G interface";
+
+              user-ext:CLI-comm-help "Add spanning tree configuration to 10G interface";
+              user-ext:CLI-no-comm-help "Remove spanning-tree configuration from 10G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "10G interface name";
+              }
+
+              uses interface-parameters-for-xstp;
+            }
+
+          } // tenGE
+
+          container fortyGE {
+
+            user-ext:CLI-not-command;
+
+            list fortygigabitethernet {
+
+              description "40G interface";
+
+              user-ext:CLI-comm-help "Add spanning tree configuration to 40G interface";
+              user-ext:CLI-no-comm-help "Remove spanning-tree configuration from 40G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "40G interface name";
+              }
+
+              uses interface-parameters-for-xstp;
+            }
+
+          } // fortyGE
+
+          container hundredGE {
+
+            user-ext:CLI-not-command;
+
+            list hundredgigabitethernet {
+
+              description "100G interface";
+
+              user-ext:CLI-comm-help "Add spanning tree configuration to 100G interface";
+              user-ext:CLI-no-comm-help "Remove spanning-tree configuration from 100G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "100G interface name";
+              }
+
+              uses interface-parameters-for-xstp;
+            }
+
+          } // hundredGE
+
+          container bundle-ifaces {
+
+            user-ext:CLI-not-command;
+
+            list bundle-ether {
+
+              description "Specify the attachment bundle-ether interface";
+
+              user-ext:CLI-comm-help "Configure attachment bundle-ether interface";
+              user-ext:CLI-no-comm-help "Remove attachment bundle-ether interface";
+
+              key "bundle-id";
+
+              leaf bundle-id {
+                type interfaces:bundle-id-t;
+                description "Bundle-ether id";
+                user-ext:CLI-param-help "Bundle-ether interface";
+              }
+
+              uses interface-parameters-for-xstp;
+            }
+
+          } // bundle-ifaces
+
+        } // interface
+
+      } // custom-interfaces
+
+      container interface-state-list {
+
+        if-feature interfaces:standard-interfaces;
+
+        description "Container to hold spanning-tree interface state.";
+
+        config false;
+
+        user-ext:CLI-not-command;
+
+        list interface-state {
+
+          description "Interfaces state";
+
+          uses interfaces:iface-id;
+
+          config false;
+
+          uses interface-state-for-xstp;
+
+        } // interface-state
+
+      } // interface-state-list
+
+      container interface-state-tree {
+
+        if-feature interfaces:custom-interfaces;
+
+        description "Container to hold spanning-tree interface state.";
+
+        config false;
+
+        user-ext:CLI-not-command;
+
+        container oneGE {
+
+          user-ext:CLI-not-command;
+
+          list gigabitethernet {
+
+            description "1G interface state";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+            }
+
+            config false;
+
+            uses interface-state-for-xstp;
+          }
+
+        } // oneGE
+
+        container tenGE {
+
+          user-ext:CLI-not-command;
+
+          list tengigabitethernet {
+
+            description "10G interface state";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+            }
+
+            config false;
+
+            uses interface-state-for-xstp;
+          }
+
+        } // tenGE
+
+        container fortyGE {
+
+          user-ext:CLI-not-command;
+
+          list fortygigabitethernet {
+
+            description "40G interface state";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+            }
+
+            config false;
+
+            uses interface-state-for-xstp;
+          }
+
+        } // fortyGE
+
+        container hundredGE {
+
+          user-ext:CLI-not-command;
+
+          list hundredgigabitethernet {
+
+            description "100G interface state";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+            }
+
+            config false;
+
+            uses interface-state-for-xstp;
+          }
+
+        } // hundredGE
+
+        container bundle-ifaces {
+
+          user-ext:CLI-not-command;
+
+          list bundle-ether {
+
+            description "Bundle-ether interface state";
+
+            key "bundle-id";
+
+            leaf bundle-id {
+              type interfaces:bundle-id-t;
+              description "Bundle-ether id";
+            }
+
+            config false;
+
+            uses interface-state-for-xstp;
+          }
+
+        } // bundle-ifaces
+
+      } // interface-state-tree
+
+    } // rstp
+
+    container mstp {
+
+      // Low-level model info: Corresponds to AMB_STP_PM_ENT (stpPmEntTable).
+
+      presence "Enable MSTP version of spanning-tree protocol";
+
+      user-ext:CLI-comm-help "Configure MSTP parameters";
+      user-ext:CLI-no-comm-help "Configure MSTP parameters";
+
+      description
+        "Multiple Spanning Tree Protocol configuration";
+
+      uses global-parameters-for-mstp;
+
+      // Check that maximum-age >= 2 * (hello-time + 1).
+      // The default value for maximum-age is 30 seconds.
+      // The default value for hello-time is 2 seconds.
+      must "((not(maximum-age)) and (not(hello-time)))" +
+           " or ((not(maximum-age)) and (6 >= hello-time * 2 + 2))" +
+           " or ((not(hello-time)) and (maximum-age >= 2 * 2 + 2))" +
+           " or (maximum-age >= hello-time * 2 + 2)" {
+        error-message "MSTP maximum-age must be at least 2 * (hello-time + 1)";
+      }
+
+      list msti {
+
+        // Low-level model info: Corresponds to AMB_STP_MSTI (stpMstiTable).
+
+        description
+          "Configure properties of an MST instance.";
+
+        user-ext:CLI-comm-help "Configure MST instance";
+        user-ext:CLI-no-comm-help "Remove MST instance";
+
+        key "mst-id";
+
+        leaf mst-id {
+          type stp-mst-id;
+          description
+            "Identifier for the MSTI.";
+
+          user-ext:CLI-param-help "MSTI identifier";
+        }
+
+        leaf bridge-priority {
+          type stp-bridge-priority;
+          default 32768;
+          user-ext:CLI-comm-help "Set bridge-priority";
+          user-ext:CLI-no-comm-help "Set bridge-priority to default";
+          user-ext:CLI-param-help "Set priority";
+          description
+            "The bridge priority for the local bridge in this MSTI.  A
+            lower numerical value indicates a higher priority.
+
+            The value is concatenated with the bridge address to
+            generate the bridge identifier.  The bridge in the MST
+            region with the numerically lowest bridge identifier
+            becomes the MSTI regional root.";
+        }
+
+        leaf vlans {
+          type string {
+            length "0..8191";
+          }
+          user-ext:CLI-comm-help "Set VLANs list by range string";
+          user-ext:CLI-no-comm-help "Delete VLANs list range string";
+          user-ext:CLI-param-help "Set VLANs list by range string";
+
+          description
+            "String identifying the set of VLANs whose active topology
+            is determined by this MSTI.
+
+            For example 1,10-20 indicates that the active topology of
+            VLAN 1 and VLANs 10 through 20 are determined by this
+            MSTI.
+
+            Any change to this value causes the STP instance to
+            deactivate and reactivate.";
+          }
+
+        container state {
+
+          // Low-level model info: Corresponds to read-only fields in AMB_STP_MSTI (stpMstiTable).
+
+          config false;
+
+          leaf oper-status {
+            type meta:oper-status;
+            description
+              "The current operational status of the MSTI.";
+            config false;
+          }
+
+          leaf bridge-id {
+            type stp-bridge-id;
+            description
+              "The bridge identifier for this bridge within the MSTI.
+
+              This is derived from the MSTI bridge priority, the MST ID and
+              the bridge MAC address.";
+            config false;
+          }
+
+          leaf regional-root {
+            type stp-bridge-id;
+            description
+              "The bridge identifier of the MSTI regional root.";
+            config false;
+          }
+
+          leaf regional-root-path-cost {
+            type uint32;
+            description
+              "The internal path cost towards the MSTI regional root.";
+            config false;
+          }
+
+          leaf regional-root-interface {
+            type meta:ro-if-index-or-zero;
+            description
+              "The interface index of the port that provides the
+              preferred path to the MSTI regional root.";
+            config false;
+          }
+
+          leaf regional-root-if-name {
+            type interfaces:iface-name;
+            description
+              "The regional root interface name";
+            config false;
+          }
+
+          leaf time-since-top-change {
+            type uint32;
+            units "centi-seconds";
+            description
+              "Time in centi-seconds since the last topology change for
+              this MSTI.
+
+              Note that the value may wrap.";
+            config false;
+          }
+
+          leaf topology-changes {
+            type uint32;
+            description
+              "Number of topology changes detected since the most recent
+              reinitialization of spanning tree protocol operation on
+              this MSTI.";
+            config false;
+          }
+
+        } // state
+
+      } // msti
+
+      container interfaces {
+
+        if-feature interfaces:standard-interfaces;
+        user-ext:CLI-not-command;
+
+        list interface {
+
+          description "Spanning-tree parameters on interface";
+          user-ext:CLI-comm-help "Configure spanning tree protocol on interface";
+          user-ext:CLI-no-comm-help "Configure spanning tree protocol on interface";
+
+          key "if-name";
+
+          leaf if-name {
+            type custom:iface-name;
+            description
+              "A unique identifier identifying the interface.";
+
+            user-ext:CLI-comm-help "Set interface name";
+            user-ext:CLI-param-help "Set interface name";
+          }
+
+          uses interface-parameters-for-mstp;
+
+        } // interface
+
+      } // interfaces
+
+
+      container custom-interfaces {
+
+        if-feature interfaces:custom-interfaces;
+        user-ext:CLI-not-command;
+
+        container interface {
+
+          description "Spanning-tree parameters on interface";
+
+          user-ext:CLI-comm-help "Configure spanning tree protocol on interface";
+          user-ext:CLI-no-comm-help "Configure spanning tree protocol on interface";
+
+          container oneGE {
+
+            user-ext:CLI-not-command;
+
+            list gigabitethernet {
+
+              description "1G interface";
+
+              user-ext:CLI-comm-help "Add spanning tree configuration to 1G interface";
+              user-ext:CLI-no-comm-help "Remove spanning tree configuration from 1G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "1G interface name";
+              }
+
+              uses interface-parameters-for-mstp;
+            }
+
+          } // oneGE
+
+          container tenGE {
+
+            user-ext:CLI-not-command;
+
+            list tengigabitethernet {
+
+              description "10G interface";
+
+              user-ext:CLI-comm-help "Add spanning tree configuration to 10G interface";
+              user-ext:CLI-no-comm-help "Remove spanning tree configuration from 10G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "10G interface name";
+              }
+
+              uses interface-parameters-for-mstp;
+            }
+
+          } // tenGE
+
+          container fortyGE {
+
+            user-ext:CLI-not-command;
+
+            list fortygigabitethernet {
+
+              description "40G interface";
+
+              user-ext:CLI-comm-help "Add spanning tree configuration to 40G interface";
+              user-ext:CLI-no-comm-help "Remove spanning tree configuration from 40G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "40G interface name";
+              }
+
+              uses interface-parameters-for-mstp;
+            }
+
+          } // fortyGE
+
+          container hundredGE {
+
+            user-ext:CLI-not-command;
+
+            list hundredgigabitethernet {
+
+              description "100G interface";
+
+              user-ext:CLI-comm-help "Add spanning tree configuration to 100G interface";
+              user-ext:CLI-no-comm-help "Remove spanning tree configuration from 100G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "100G interface name";
+              }
+
+              uses interface-parameters-for-mstp;
+            }
+
+          } // hundredGE
+
+          container bundle-ifaces {
+
+            user-ext:CLI-not-command;
+
+            list bundle-ether {
+
+              description "Specify the attachment bundle-ether interface";
+
+              user-ext:CLI-comm-help "Configure attachment bundle-ether interface";
+              user-ext:CLI-no-comm-help "Remove attachment bundle-ether interface";
+
+              key "bundle-id";
+
+              leaf bundle-id {
+                type interfaces:bundle-id-t;
+                description "Bundle-ether id";
+                user-ext:CLI-param-help "Bundle-ether interface";
+              }
+
+              uses interface-parameters-for-mstp;
+            }
+
+          } // bundle-ifaces
+
+        } // interface
+
+      } // custom-interfaces
+
+      container interface-state-list {
+
+        if-feature interfaces:standard-interfaces;
+
+        description "Container to hold spanning-tree interface state.";
+
+        config false;
+
+        user-ext:CLI-not-command;
+
+        list interface-state {
+
+          description "Interfaces state";
+
+          uses interfaces:iface-id;
+
+          config false;
+
+          uses interface-state-for-mstp;
+
+        } // interface-state
+
+      } // interface-state-list
+
+      container interface-state-tree {
+
+        if-feature interfaces:custom-interfaces;
+
+        description "Container to hold spanning-tree interface state.";
+
+        config false;
+
+        user-ext:CLI-not-command;
+
+        container oneGE {
+
+          user-ext:CLI-not-command;
+
+          list gigabitethernet {
+
+            description "1G interface state";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+            }
+
+            config false;
+
+            uses interface-state-for-mstp;
+          }
+
+        } // oneGE
+
+        container tenGE {
+
+          user-ext:CLI-not-command;
+
+          list tengigabitethernet {
+
+            description "10G interface state";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+            }
+
+            config false;
+
+            uses interface-state-for-mstp;
+          }
+
+        } // tenGE
+
+        container fortyGE {
+
+          user-ext:CLI-not-command;
+
+          list fortygigabitethernet {
+
+            description "40G interface state";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+            }
+
+            config false;
+
+            uses interface-state-for-mstp;
+          }
+
+        } // fortyGE
+
+        container hundredGE {
+
+          list hundredgigabitethernet {
+
+            description "100G interface state";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+            }
+
+            config false;
+
+            uses interface-state-for-mstp;
+          }
+
+        } // hundredGE
+
+        container bundle-ifaces {
+
+          user-ext:CLI-not-command;
+
+          list bundle-ether {
+
+            description "Bundle-ether interface state";
+
+            key "bundle-id";
+
+            leaf bundle-id {
+              type interfaces:bundle-id-t;
+              description "Bundle-ether id";
+            }
+
+            config false;
+
+            uses interface-state-for-mstp;
+          }
+
+        } // bundle-ifaces
+
+      } // interface-state-tree
+
+    } // mstp
+
+  } // spanning-tree
+
+} // stp

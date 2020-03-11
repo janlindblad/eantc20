@@ -1,0 +1,893 @@
+module adva-dnos-oam {
+
+  namespace "http://www.advaoptical.com/cim/adva-dnos-oam";
+
+  prefix "oam";
+
+  import adva-dnos-types { prefix adva-types; }
+  import openconfig-interfaces { prefix oc-if; }
+  import openconfig-yang-types { prefix oc-yang; }
+
+  organization
+    "Adva Optical Networking";
+
+  contact
+    "For technical support, please contact your service channel";
+
+  description
+    "Definitions for OP-X OAM commands in enable mode.";
+
+  revision "2019-09-05" {
+    description
+      "Integrating to ADVA YANG models.";
+  }
+
+  revision "2017-01-19" {
+    description
+      "0.7 draft version.";
+  }
+  revision "2015-10-15" {
+   description
+     "0.6 draft version.";
+  }
+
+  typedef rfc2544-test-type {
+    type enumeration {
+      enum DEFAULT {
+        value 1;
+        description "Test Type - Default";
+      }
+      enum THROUGHPUT {
+        value 2;
+        description "Test Type - Throughput";
+      }
+    }
+    description "Test type. 1 - Default, 2 - Throughput";
+  }
+
+  typedef y1564-rate-type {
+    type uint32 {
+      range "0 .. 100000000";
+    }
+    description "Rate in Kbps. From 25kbps till 10Gbps";
+  }
+
+  rpc oam-clear-rmep {
+    description
+           "clear oam remote mep";
+    input {
+      leaf md-level {
+        mandatory true;
+        type adva-types:oam-md-level;
+        description "Maintenance Domain level";
+      }
+      leaf ma-name {
+        mandatory true;
+        type adva-types:oam-ma-name;
+        description "Maintenance Association";
+      }
+      leaf rmep {
+        type adva-types:oam-mep-id;
+        description "Remote MEP ID";
+      }
+    }
+    output {
+      leaf status {
+        type string;
+      }
+    }
+  }
+
+  rpc oam-get-status-rmep {
+    description
+           "show oam status";
+    input {
+      leaf md-level {
+        mandatory true;
+        type adva-types:oam-md-level;
+        description "Maintenance Domain level";
+      }
+      leaf ma-name {
+        mandatory true;
+        type adva-types:oam-ma-name;
+        description "Maintenance Association";
+      }
+      leaf rmep {
+        type adva-types:oam-mep-id;
+        description "Remote MEP ID";
+      }
+    }
+    output {
+      container oam-status-rmep {
+        list rmep {
+          key "md-name md-level ma-name rmep-id";
+          leaf md-name {
+            type adva-types:oam-ma-name;
+            description "Maintenance Domain";
+          }
+          leaf md-level {
+            type adva-types:oam-md-level;
+            description "Maintenance Domain level";
+          }
+          leaf ma-name {
+            type adva-types:oam-ma-name;
+            description "Maintenance Association";
+          }
+          leaf rmep-id {
+            type adva-types:oam-mep-id;
+            description "Remote MEP ID";
+          }
+          leaf mac {
+            type oc-yang:mac-address;
+            description "Remote MEP MAC";
+          }
+          leaf events {
+            type bits {
+              bit ccm-early-timeout {
+                position 0;
+              }
+              bit ccm-timeout {
+                position 1;
+              }
+              bit ccm-timeout-clear {
+                position 2;
+              }
+              bit rdi-detection {
+                position 3;
+              }
+              bit rdi-detection-clear {
+                position 4;
+              }
+              bit port-tlv-up {
+                position 5;
+              }
+              bit port-tlv-down {
+                position 6;
+              }
+              bit port-interface-up {
+                position 7;
+              }
+              bit port-interface-down {
+                position 8;
+              }
+              bit ccm-interval-miss {
+                position 9;
+              }
+              bit ccm-ma-id-miss {
+                position 10;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  rpc oam-test-start-stop {
+    description
+           "test oam start/stop";
+    input {
+      leaf ac {
+        mandatory true;
+        type leafref {
+          path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+        }
+        description "AC interface's name";
+      }
+      leaf md-level {
+        mandatory true;
+        type adva-types:oam-md-level;
+        description "Maintenance Domain level";
+      }
+      leaf ma-name {
+        mandatory true;
+        type adva-types:oam-ma-name;
+        description "Maintenance Association";
+      }
+      leaf measurement-type {
+        mandatory true;
+        type adva-types:oam-measurement-type;
+        description "Measurement type";
+      }
+      leaf test {
+        mandatory true;
+        type string {
+          length "1 .. 20";
+        }
+        description "Test name";
+      }
+      leaf action {
+        mandatory true;
+        type enumeration {
+          enum START;
+          enum STOP;
+        }
+      }
+    }
+    output {
+      leaf status {
+        type string;
+      }
+    }
+  }
+
+  rpc oam-responder-test-start-stop {
+    description
+      "responder test oam start/stop";
+    input {
+      leaf ac {
+        mandatory true;
+        type leafref {
+          path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+        }
+        description "AC interface's name";
+      }
+      leaf action {
+        mandatory true;
+        type enumeration {
+          enum START;
+          enum STOP;
+        }
+      }
+    }
+    output {
+      leaf status {
+        type string;
+      }
+    }
+  }
+
+  rpc oam-y1564-perf-test-start-stop {
+    description
+           "y1564 performance test oam start/stop";
+    input {
+      leaf ac {
+        mandatory true;
+        type leafref {
+          path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+        }
+        description "AC interface's name";
+      }
+      leaf md-level {
+        mandatory true;
+        type adva-types:oam-md-level;
+        description "Maintenance Domain level";
+      }
+      leaf ma-name {
+        mandatory true;
+        type adva-types:oam-ma-name;
+        description "Maintenance Association";
+      }
+      leaf duration {
+        type uint32 {
+          range "1 .. 900";
+        }
+        description "Test duration in seconds (10sec-900hours)";
+      }
+      
+      leaf unit-period {
+        type enumeration {
+          enum HOUR;
+          enum MINUTE;
+          enum SECOND;
+        }
+       description "Test duration units";
+      }
+ 
+      uses adva-types:test-destination;
+
+      leaf action {
+        mandatory true;
+        type enumeration {
+          enum START;
+          enum STOP;
+        }
+      }
+    }
+    output {
+      leaf status {
+        type string;
+      }
+    }
+  }
+
+  grouping test-oam-access {
+    leaf ac-name {
+      mandatory true;
+      type leafref {
+        path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+      }
+      description "AC interface name";
+    }
+    leaf md-level {
+      mandatory true;
+      type adva-types:oam-md-level;
+      description "Level value";
+    }
+
+    leaf ma {
+      mandatory true;
+      type adva-types:oam-ma-name;
+      description "Maintenance Association";
+    }
+  }
+  
+  grouping y1564-test-results {
+    container y1564-test-result-data {
+      list y1564-test-result-entry {
+        key "test-id";
+        leaf test-id {
+          type uint8 {
+              range "0 .. 8";
+          }
+          description "Performance id: outer priority 0 - 7.
+                       Configuration id: A1,A2,B2,C2  0 - 3.";
+        }
+        leaf test-title {
+          type string {
+            length "1 .. 50";
+          }
+          description "Test title";
+        }
+        // status leafs
+        leaf is-execute {
+          type boolean;
+          description "Test execution status";
+        }
+        leaf is-pass {
+          type boolean;
+          description "Test pass status";
+        }
+        leaf start-time {
+          type string {
+            length "1 .. 30";
+          }
+          description "Test start time";
+        }
+        // profile leafs
+        leaf cir {
+          type y1564-rate-type;
+          description "Committed information rate";
+        }
+        
+        leaf eir {
+          type uint32 {
+            range "0 .. 100000000";
+          }
+          description "Excess information rate (for configuration only)";
+        }
+        leaf flr {
+          type uint32 {
+            range "0 .. 100000000";
+          }
+          description "Frame Loss Rate in micro percents, from 0.000001 till 100 (for configuration only)";
+        }
+        leaf outer-priority {
+          type adva-types:pcp;
+          description "Outer tag Packet priority, same for res[0-3] configuration";
+        }
+
+        leaf inner-priority {
+          type adva-types:pcp;
+          description "Inner tag Packet priority, same for res[0-3] configuration";
+        }
+        leaf packet-size {
+          type uint32 {
+            range "68 .. 16200";
+          }
+          description "Packet size in bytes, same for res[0-3] configuration";
+        }
+        leaf outer-vid {
+          type int16;
+          description "Outer VID, same for res[0-3] configuration";
+        }
+        leaf inner-vid {
+          type int16;
+          description "Inner VID, same for res[0-3] configuration";
+        }
+        leaf period {
+          type uint32;
+          description "Period in seconds, same for res[0-3] configuration";
+        }
+        // counters
+        leaf l2-eir {
+          type oc-yang:counter32;
+          description "L2 excess information rate (for configuration only)";
+        }
+        leaf l2-cir {
+          type oc-yang:counter32;
+          description "L2 committed information rate";
+        }
+        
+        leaf tx-pkt {
+          type oc-yang:counter64;
+          description "Transmitted frames";
+        }
+        leaf rx-pkt {
+          type oc-yang:counter64;
+          description "Recieved frames";
+        }
+        leaf rx-rate {
+          type oc-yang:counter32;
+          description "Recieved rate";
+        }
+        leaf l2-rx-rate {
+          type oc-yang:counter32;
+          description "L2 recieved rate";
+        }
+        leaf loss {
+          type oc-yang:counter64;
+          description "Loss frames";
+        }
+        leaf flr-result {
+          type oc-yang:counter32;
+          description "Frame loss ratio";
+        }
+        leaf min-delay {
+          type oc-yang:counter32;
+          description "Minimum frame transfer delay";
+        }
+        leaf avg-delay {
+          type oc-yang:counter32;
+          description "Average frame transfer delay";
+        }
+        leaf max-delay {
+          type oc-yang:counter32;
+          description "Maximum frame transfer delay";
+        }
+        leaf min-jitter-ds {
+          type oc-yang:counter32;
+          description "Minimum Rx Frame Delay Variation";
+        }
+        leaf avg-jitter-ds {
+          type oc-yang:counter32;
+          description "Average Rx Frame Delay Variation";
+        }
+        leaf max-jitter-ds {
+          type oc-yang:counter32;
+          description "Maximum Rx Frame Delay Variation";
+        }
+        leaf min-jitter-sd {
+          type oc-yang:counter32;
+          description "Minimum Tx Frame Delay Variation";
+        }
+        leaf avg-jitter-sd {
+          type oc-yang:counter32;
+          description "Average Tx Frame Delay Variation";
+        }
+        leaf max-jitter-sd {
+          type oc-yang:counter32;
+          description "Maximum Tx Frame Delay Variation";
+        }
+      }
+    } // y1564-test-result-data
+  } // grouping y1564-test-results 
+
+  rpc oam-show-y1564-config-test-result {
+    description
+      "Show OAM Y1564 configuration test results";
+    input {
+      uses test-oam-access;
+      leaf test-name {
+        mandatory true;
+        type string {
+          length "1 .. 20";
+        }
+      }
+    }
+    output {
+      uses y1564-test-results;
+    }
+  }
+
+  rpc oam-show-y1564-perf-test-result {
+    description
+      "Show OAM Y1564 configuration test results";
+    input {
+      uses test-oam-access;
+      uses adva-types:test-destination;
+    }
+    output {
+      uses y1564-test-results;
+    }
+  }
+  
+  grouping rfc2544-test-results {
+    container rfc2544-test-result-data {
+      list rfc2544-test-result-entry {
+        key "test-id";
+        leaf test-id {
+          type uint8 {
+            range "0 .. 20";
+          }
+          description "Test ID of RFC2544 test";
+        }
+        leaf test-title {
+          type string {
+            length "1 .. 50";
+          }
+          description "Test title";
+        }
+        // status leafs
+        leaf is-execute {
+          type boolean;
+          description "Test execution status";
+        }
+        leaf is-pass {
+          type boolean;
+          description "Test pass status";
+        }
+        leaf start-time {
+          type string {
+            length "1 .. 30";
+          }
+          description "Test start time";
+        }
+        // profile leafs
+        leaf cir {
+          type y1564-rate-type;
+          description "Committed information rate";
+        }
+        
+        leaf outer-priority {
+          type adva-types:pcp;
+          description "Outer tag Packet priority, same for res[0-3] configuration";
+        }
+
+        leaf inner-priority {
+          type adva-types:pcp;
+          description "Inner tag Packet priority, same for res[0-3] configuration";
+        }
+        leaf packet-size {
+          type uint32 {
+            range "68 .. 16200";
+          }
+          description "Packet size in bytes, same for res[0-3] configuration";
+        }
+        leaf outer-vid {
+         type int16;
+          description "Outer VID, same for res[0-3] configuration";
+        }
+        leaf inner-vid {
+         type int16;
+          description "Inner VID, same for res[0-3] configuration";
+        }
+        leaf period {
+         type uint32;
+          description "Period in seconds, same for res[0-3] configuration";
+        }
+        // counters
+        leaf l1-rate {
+          type y1564-rate-type;
+          description "L1 committed information rate";
+        }
+        
+        leaf tx-pkt {
+          type oc-yang:counter64;
+          description "Transmitted frames";
+        }
+        leaf rx-pkt {
+          type oc-yang:counter64;
+          description "Recieved frames";
+        }
+        leaf l1-rx-rate {
+          type oc-yang:counter32;
+          description "L1 recieved rate";
+        }
+        leaf rx-rate {
+          type oc-yang:counter32;
+          description "Recieved rate";
+        }
+        leaf loss {
+          type oc-yang:counter64;
+          description "Loss frames";
+        }
+        leaf flr-result {
+          type oc-yang:counter32;
+          description "Frame loss ratio";
+        }
+        leaf min-delay {
+          type oc-yang:counter32;
+          description "Minimum frame transfer delay";
+        }
+        leaf avg-delay {
+          type oc-yang:counter32;
+          description "Average frame transfer delay";
+        }
+        leaf max-delay {
+          type oc-yang:counter32;
+          description "Maximum frame transfer delay";
+        }
+        leaf min-jitter-ds {
+          type oc-yang:counter32;
+          description "Minimum Rx Frame Delay Variation";
+        }
+        leaf avg-jitter-ds {
+          type oc-yang:counter32;
+          description "Average Rx Frame Delay Variation";
+        }
+        leaf max-jitter-ds {
+          type oc-yang:counter32;
+          description "Maximum Rx Frame Delay Variation";
+        }
+        leaf min-jitter-sd {
+          type oc-yang:counter32;
+          description "Minimum Tx Frame Delay Variation";
+        }
+        leaf avg-jitter-sd {
+          type oc-yang:counter32;
+          description "Average Tx Frame Delay Variation";
+        }
+        leaf max-jitter-sd {
+          type oc-yang:counter32;
+          description "Maximum Tx Frame Delay Variation";
+        }
+      }
+    } // test-result-data
+  } // grouping rfc2544-test-results
+  
+  rpc oam-show-rfc2544-test-result {
+    description
+      "Show OAM RFC2544 test results";
+    input {
+      uses test-oam-access;
+      leaf test-name {
+        mandatory true;
+        type string {
+          length "1 .. 20";
+        }
+      }
+    }
+    output {
+      uses rfc2544-test-results;
+    }
+  }
+ 
+  grouping link-trace-test-results {
+    container link-trace-test-result-data {
+      container link-trace-test-result-entry {
+        leaf is-execute {
+          type boolean;
+          description "Test execution status";
+        }
+        leaf is-pass {
+          type boolean;
+          description "Test result status: TEST-OK=true, TEST-FAILED=false";
+        }
+        leaf start-time {
+          type string {
+            length "1 .. 30";
+          }
+          description "Test start time";
+        }
+        leaf rmep {
+          type adva-types:oam-mep-id;
+          description "LTM Target RMEP ID";
+        }
+        leaf mac {
+          type oc-yang:mac-address;
+          description "LTM Target RMEP MAC";
+        }
+      } // container link-trace-result-entry
+      
+      list link-trace-test-result-info {
+        key "result-id";
+        leaf result-id {
+          type int16 {
+            range "1 .. 255";
+          }
+          description "Entry index of linktrace test result";
+        }
+        leaf mac {
+          type oc-yang:mac-address;
+          description "MAC address of response sender";
+        }
+        leaf ttl {
+          type int16 {
+            range "1 .. 255";
+          }
+          description "Received TTL value in LTR response";
+        }
+        leaf flags {
+          type bits {
+            bit terminated {
+              position 0;
+            }
+          }
+        }
+      } // list link-trace-result-info
+    } // link-trace-test-result-data
+  } // grouping link-trace-test-results 
+
+  rpc oam-show-linktrace-test-result {
+    description
+      "Show OAM link-trace test results";
+    input {
+      uses test-oam-access;    
+      leaf test-name {
+        mandatory true;
+        type string {
+          length "1 .. 20";
+        }
+      }
+     }
+    output {
+      uses link-trace-test-results;
+    }
+  }
+
+  container oam_objects {
+    container config-oam {
+
+      description
+        "OAM - Operation Administration and Maintenance";
+
+      list profiles {
+        key "name measurement-type";
+
+        description "OAM test profile";
+
+        leaf name {
+          type string {
+            length "1 .. 20";
+          }
+          description "Profile name";
+        }
+
+        leaf measurement-type {
+          type adva-types:oam-measurement-type;
+          description "Measurement type";
+        }
+
+        leaf tx-interval {
+          type adva-types:oam-timeout-type;
+          description "Interval between transmitted packets in msec";
+        }
+
+        leaf outer-priority {
+          type adva-types:pcp;
+          default 0;
+          description "Outer tag Packet priority";
+        }
+
+        leaf inner-priority {
+          type adva-types:pcp;
+          default 0;
+          description "Inner tag Packet priority";
+        }
+
+        leaf cir {
+          type y1564-rate-type;
+          description "Committed information rate";
+        }
+        
+        leaf eir {
+          type y1564-rate-type;
+          default 0;
+          description "Excess information rate";
+        }
+        
+        leaf packet-size {
+          type uint32 {
+            range "64 .. 9216";
+          }
+          default 100;
+          description "Packet size in bytes, default is 100 bytes";
+        }
+
+        leaf flr {
+          type uint32 {
+            range "0 .. 100000000";
+          }
+          default 0;
+          description "Frame Loss Rate in micro percents, from 0.000001 till 100";
+        }
+        
+        leaf period {
+          type uint32 {
+            range "1 .. 900";
+          }
+          description "Configuration test period in seconds for one test step, from 1sec till 15min (default is 1sec)";
+        }
+
+        leaf rate-layer {
+          type enumeration {
+            enum L1 {
+              description "Test rate layer 1";
+            }
+            enum L2 {
+              description "Test rate layer 2 (default)";
+            }
+          }
+          default L2;
+          description "Test rate layer";
+        }
+
+        leaf packet-type {
+          type enumeration {
+            enum STD {
+              description "Standard FL packets (default)";
+            }
+            enum LB {
+              description "LBM/LBR packets";
+            }
+          }
+          default STD;
+          description "Test packet type";
+        }    
+      }
+
+      list md-levels {
+        key "md-name md-level";
+
+        leaf md-name {
+          type adva-types:oam-ma-name;
+          description "Maintenance Domain";
+        }
+
+        leaf md-level {
+          type adva-types:oam-md-level;
+          description "Maintenance Domain level";
+        }
+
+        list ma {
+          key "ma-name";
+          unique "ma-id";
+
+          leaf ma-name {
+            type adva-types:oam-ma-name;
+            description "Maintenance Association";
+          }
+
+          leaf ma-id {
+            type uint32 {
+              range "1 .. 65535";
+            }
+            mandatory true;
+            description "Maintenance Association ID";
+          }
+
+          leaf ccm-interval {
+            type adva-types:oam-timeout-type;
+            default 1SEC;
+            description "Time interval between sending CCM packets";
+          }
+          
+          leaf ccm-format {
+            type enumeration {
+              enum ID {
+                value 1;
+                description "CCM messages with MA ID(default)";
+              }
+              enum ICC {
+                value 3;
+                description "CCM messages ICC with MA string";
+              }
+              enum BYTE {
+                value 5;
+                description "CCM messages ICC with byte array hex";
+              }
+            }
+            default ID;
+            description "Format of CCM messages";
+          }
+
+          leaf icc-string {
+            type string {
+              length "3 .. 40";
+            }
+            description "For ICC with MA string (3...13 chars).
+                         For ICC with byte array hex - byte array string separated by -, 'AB-01-f4' for example, (3...13 bytes).";
+          }
+        } // ma list
+      } // md-levels list
+
+      leaf enable {
+        type boolean;
+        description "Enable OAM configuration on interfaces";
+      }
+
+    } // config-oam
+  } // oam_objects
+
+}

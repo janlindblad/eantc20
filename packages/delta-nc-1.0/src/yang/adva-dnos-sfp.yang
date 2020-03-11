@@ -1,0 +1,506 @@
+
+module adva-dnos-sfp {
+
+  namespace "http://www.advaoptical.com/cim/adva-dnos-sfp";
+
+  prefix "sfp";
+
+  import adva-dnos-extensions { prefix adva-ext; }
+  import openconfig-interfaces { prefix "oc-if"; }
+
+  organization
+    "Adva Optical Networking";
+
+  contact
+    "For technical support, please contact your service channel";
+
+  description
+    "Definitions for static and diagnostic information of pluggable modules.";
+
+  revision "2019-08-19" {
+    description
+      "Integrating to ADVA YANG models.";
+  }
+  revision "2016-06-05" {
+    description
+      "First draft version.";
+  }
+
+  grouping sfp-cfp-info-response {
+    container sfp-info-data {
+        leaf identifier {
+          type string;
+          description "The type of serial transceiver";
+        }
+      
+        leaf vendor-specific-identifier {
+          type string;
+          description "The vendor specific identifier";
+        }
+      
+        leaf connector {
+          type string;
+          description "The type of external connector provided";
+        }
+      
+        leaf tranceiver-subtype {
+          type string;
+          description "The Transceiver subtype";
+        }
+      
+        leaf encoding {
+          type string;
+          description "Serial encoding mechanism";
+        }
+        
+        leaf bit-rate {
+          type string;
+          description "The nominal bit rate";
+        }
+        
+        leaf length-9m {
+          type string;
+          description "Link length using single mode (9 micron)";
+        }
+        
+        leaf length-50m {
+          type string;
+          description "Link length using 50 micron multi-mode fiber";
+        }
+        
+        leaf length-62-5m {
+          type string;
+          description "Link length using 62.5 micron multi-mode fiber";
+        }
+        
+        leaf length-cooper {
+          type string;
+          description "Link length using copper cable";
+        }
+        
+        leaf vendor-name {
+          type string;
+          description "The sfp vendor name which is the full name, a commonly accepted abbreviation, 
+                       the SCSI company code or the stock exchange code for the corporation.";
+        }
+      
+        leaf vendor-pn {
+          type string;
+          description "The sfp vendor part number (Vendor PN) or product name if the
+                       Vendor PN is unspecified, the null string will be returned";     
+        }
+      
+        leaf vendor-sn {
+          type string;
+          description "The Sfp vendor serial number (Vendor SN) if the Vendor SN is
+                       unspecified, the null string will be returned";
+        }
+      
+        leaf vendor-revision {
+          type string;
+          description "The transceiver vendor's product revision number (Vendor Rev) if the
+                       Vendor Rev is unspecified, the null string will be returned";
+        }
+      
+        leaf laser-wavelength {
+          type string;
+          description "Nominal Transmitter output wavelength at room temperature. Units: 0.01 Nano Meter(nm)";
+        }
+      
+        leaf vendor-specific-connector {
+          type string;
+          description "The type of vendor specific Connector";
+        }
+      
+        leaf tunability {
+          type boolean;
+          description "The tunability of SFP/XFP transceiver";
+        }
+      
+        leaf first-freq {
+          type string;
+          description "First Frequency setting supported by the Tunable XFP port 
+                       as defined in the factory prior shipment. Units: 0.001 Terahertz(THz)";
+        }
+      
+        leaf last-freq {
+          type string;
+          description "Last Frequency setting supported by the Tunable XFP port
+                       as defined in the factory prior shipment. Units: 0.001 Terahertz(THz)";
+        }
+      
+        leaf channel-spacing {
+          type string;
+          description "The Tunable XFP port spacing.";
+        }
+      
+        leaf channel-tuning {
+          type string;
+          description "ITU Channel number of the Tunable XFP port * 1000";
+        }
+      
+        leaf vendor-specific-lot-code {
+          type string;
+          description "The Vendor Specific Lot code";
+        }
+      
+        leaf vendor-specific-data-ascii {
+          type string;
+          description "Vendor Specific Information which can be read from the SFP transceiver
+                      (Reference: SFF-8472, revision 9.3 -  Registers 96-127 in ASCII view)";
+        }
+      
+        leaf vendor-specific-data-hex {
+          type string;
+          description "Vendor Specific Information which can be read from the SFP transceiver
+                      (Reference: SFF-8472, revision 9.3 -  Registers 96-127 in hexadecimal view)";
+        }
+      
+        leaf vendor-oui {
+          type string;
+          description "The sfp vendor organizationally unique identifier field (vendor OUI),
+                       that contains the IEEE company identifier for the vendor. A value of
+                       all zero in the 3 octet field indicates that the vendor OUI is unspecified";
+        }
+      
+        leaf vendor-date {
+          type string;
+          description "The Vendor's date. Formated: YY MM DD ";
+        }
+      
+        leaf diagnostic-power-type {
+          type string;
+          description "The diagnostic monitoring receive power type in the SFP transceiver";
+        }
+       
+        leaf digital-diagnostic {
+          type boolean;
+          description "The diagnostic monitoring implemented in the SFP transceiver";
+        }       
+     
+        leaf diagnostic-calibration {
+          type boolean;
+          description "The diagnostic calibration in the SFP transceiver";
+        }       
+     
+        leaf installed {
+          type boolean;
+          description "The current installed status of the sfp transceiver";
+        }       
+     
+        leaf power-class {
+          type string;
+          description "The power class of the CFP";
+        }
+       
+        leaf wdm-type {
+          type string;
+          description "The WDM Type of the CFP";
+        }
+       
+        leaf decision-tunability {
+          type boolean;
+          description "The Decision Threshold Voltage control function of FEC (Amplitude Adjustment) tunability of CFP transceiver.";
+        }
+      
+        leaf phase-tunability {
+          type boolean;
+          description "The Decision Phase control function of FEC (Phase Adjustment) tunability of CFP transceiver";
+        }
+
+        leaf first-wavelength {
+          type string;
+          description "First Wavelength setting supported by the CFP transceiver. Units: 0.01 Nano Meter(nm)";
+        }
+      
+        leaf last-wavelength {
+          type string;
+          description "Last Wavelength setting supported by the CFP transceiver. Units: 0.01 Nano Meter(nm)";
+        }
+    } // container sfp-info-data
+  } // grouping sfp-cfp-info-response
+
+  grouping sfp-diag-response {
+    container sfp-diag-data {
+        leaf temperature {
+          type string;
+          description "Internaly measured module temperature. Units: 1/10 degrees Celsius (C)";
+        }
+      
+        leaf vcc {
+          type string;
+          description "Internaly measured supply voltage in transceiver. Units: 100 micro Volts (V)";
+        }
+
+        leaf number-of-channels {
+          type string;
+          description "The SFP number of channels";
+        }
+    } // container sfp-diag-data
+  } // grouping sfp-diag-response
+
+  grouping cfp-diag-response {
+    container cfp-diag-data {
+        leaf temperature {
+          type string;
+          description "Internaly measured module temperature. Units: 1/10 degrees Celsius (C)";
+        }
+      
+        leaf voltage-3-3 {
+          type string;
+          description "Internally measured supply voltage in CFP transceiver. Units: 100 micro Volts (V)";
+        }
+
+        leaf number-of-lanes {
+          type string;
+          description "The CFP number of network lanes";
+        }
+
+        description "All CFP digital diagnostics for port";
+    } // container cfp-diag-data
+  } // grouping cfp-diag-response
+
+  grouping sfp-diag-channel-response {
+    container sfp-diag-channel-data {
+      list sfp-diag-channel {
+        key "sfp-channel";
+        leaf sfp-channel {
+          type int8;
+          description "SFP channel index";
+        }
+         
+        leaf tx-bias {
+          type string;
+          description "Internaly measured Tx Bias current. Units: 1 micro Amperes (A)";
+        }
+
+        leaf tx-power {
+          type string;
+          description "Internaly measured Tx output power. Units: 0.01 decibel (dBm)";
+        }
+
+        leaf rx-power {
+          type string;
+          description "Internaly measured Rx input power. Units: 0.01 decibel (dBm)";
+        }
+       } // list sfp-diag-channel
+        description "All SFP digital diagnostics for port";
+    } // container sfp-diag-channel-data
+  } // grouping sfp-diag-channel-response
+  
+  grouping cfp-diag-net-lane-response {
+    container cfp-diag-net-lane-data {
+      list cfp-diag-net-lane {
+        key "cfp-net-lane";
+        leaf cfp-net-lane {
+          type int8;
+          description "CFP net lane index";
+        }
+        
+        leaf tx-frequence {
+          type string;
+          description "Network Lane TX frequency. Units: 0.001 Terahertz(THz)";
+        }
+        
+        leaf tx-power {
+          type string;
+          description "Internally measured Tx output power. Units: 0.01 decibel (dBm)";
+        }
+        
+        leaf rx-power {
+          type string;
+          description "Internally measured Rx input power. Units: 0.01 decibel (dBm)";
+        }
+        
+        leaf alarm-and-warning {
+          type string;
+          description "Network Lane Alarm and Warning.
+                       Alarm and warning bits in this object remain in the alarmed state until a read 
+                       of this register occurs.
+                       This object is organised as a bit map. Each bit represents an alarm.
+                       If the object is zero - no alarm is active.
+                       0x0000 ('0000 0000 0000 0000'B) - Normal (No alarm)
+                       0x0001 ('0000 0000 0000 0001'B) - Rx Power Low Alarm
+                       0x0002 ('0000 0000 0000 0010'B) - Rx Power Low Warning
+                       0x0004 ('0000 0000 0000 0100'B) - Rx Power High Warning
+                       0x0008 ('0000 0000 0000 1000'B) - Rx Power High Alarm
+                       0x0010 ('0000 0000 0001 0000'B) - Laser Temperature Low Alarm
+                       0x0020 ('0000 0000 0010 0000'B) - Laser Temperature Low Warning
+                       0x0040 ('0000 0000 0100 0000'B) - Laser Temperature High Warning
+                       0x0080 ('0000 0000 1000 0000'B) - Laser Temperature High Alarm
+                       0x0100 ('0000 0001 0000 0000'B) - Tx Power Low Alarm
+                       0x0200 ('0000 0010 0000 0000'B) - Tx Power Low Warning
+                       0x0400 ('0000 0100 0000 0000'B) - Tx Power High Warning
+                       0x0800 ('0000 1000 0000 0000'B) - Tx Power High Alarm
+                       0x1000 ('0001 0000 0000 0000'B) - Bias Low Alarm
+                       0x2000 ('0010 0000 0000 0000'B) - Bias Low Warning
+                       0x4000 ('0100 0000 0000 0000'B) - Bias High Warning
+                       0x8000 ('1000 0000 0000 0000'B) - Bias High Alarm
+                       Any combination of the bits represent the combination of the alarms and warnings";
+        }
+        
+        leaf fault-and-status {
+          type string;
+          description "Network Lane Fault ans Status.
+                       Fault and Status bits in this object remain in the alarmed state until a read 
+                       of this register occurs.
+                       This object is organised as a bit map. Each bit represents a fault or status.
+                       If the object is zero - no alarm is active.
+                       0x0000 ('0000 0000 0000 0000'B) - Normal (No alarm)
+                       0x0001 ('0000 0000 0000 0001'B) - Reserved
+                       0x0002 ('0000 0000 0000 0010'B) - Reserved
+                       0x0004 ('0000 0000 0000 0100'B) - Lane Rx FIFO error
+                       0x0008 ('0000 0000 0000 1000'B) - Lane RX_LOL
+                       0x0010 ('0000 0000 0001 0000'B) - Lane RX_LOS
+                       0x0020 ('0000 0000 0010 0000'B) - Reserved
+                       0x0040 ('0000 0000 0100 0000'B) - Lane TX_LOL
+                       0x0800 ('0000 0000 1000 0000'B) - Lane TX_LOSF
+                       0x0100 ('0000 0001 0000 0000'B) - Reserved 
+                       0x0200 ('0000 0010 0000 0000'B) - Reserved 
+                       0x0400 ('0000 0100 0000 0000'B) - Reserved 
+                       0x0800 ('0000 1000 0000 0000'B) - Reserved 
+                       0x1000 ('0001 0000 0000 0000'B) - Reserved 
+                       0x2000 ('0010 0000 0000 0000'B) - Lane APD power Supply Fault 
+                       0x4000 ('0100 0000 0000 0000'B) - Lane Wavelength Unlocked Fault  
+                       0x8000 ('1000 0000 0000 0000'B) - Lane TEC Fault
+                       Any combination of the bits represent the combination of the faults and statuses";
+        }
+        
+        leaf decision-threshold {
+          type string;
+          description "Network Lane decision threshold Voltage of FEC (Amplitude Adjustment)";
+        }
+        
+        leaf phase {
+          type string;
+          description "Network Lane decision phase of FEC (Phase Adjustment)";
+        }
+      } // list cfp-diag-net-lane
+    } // container cfp-diag-net-lane-data
+  } // grouping cfp-diag-net-lane-response
+
+  grouping dd-response {
+    container dd-info {
+      uses sfp-cfp-info-response;
+      uses sfp-diag-response;
+      uses cfp-diag-response;
+    }
+  }
+   
+  rpc show-sfp-info {
+    description
+      "Show static SFP information for done port";
+    input {
+      leaf sfp-port {
+        mandatory true;
+        type leafref {
+          path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+        }
+        description
+          "Contains the interface identifier of the SFP transceiver.";
+      }
+    }
+    output {
+      uses dd-response;
+    }
+  } // show-sfp-info
+
+  rpc show-sfp-diag {
+    description
+      "Show SFP diagnostics for done port";
+    input {
+      leaf sfp-port {
+        mandatory true;
+        type leafref {
+          path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+        }
+        description
+          "Contains the interface identifier of the SFP transceiver.";
+      }
+    }
+    output {
+      uses dd-response;
+    }
+  } // show-sfp-diag
+
+  rpc show-cfp-info {
+    description
+      "Show static CFP information for done port";
+    input {
+      leaf cfp-port {
+        mandatory true;
+        type leafref {
+          path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+        }
+        description
+          "Contains the interface identifier of the CFP transceiver.";
+      }
+    }
+    output {
+      uses dd-response;
+    }
+  } // show-cfp-info
+
+  rpc show-cfp-diag {
+    description
+      "Show CFP diagnostics for done port";
+    input {
+      leaf cfp-port {
+        mandatory true;
+        type leafref {
+          path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+        }
+        description
+          "Contains the interface identifier of the CFP transceiver.";
+      }
+    }
+    output {
+      uses dd-response;
+    }
+  } // show-cfp-diag
+
+  rpc show-cfp-net-lane-diag {
+    description
+      "Show CFP Net Lanes diagnostics for done port";
+    input {
+      leaf cfp-port {
+        type leafref {
+          path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+        }
+        description
+          "Contains the interface identifier of the CFP transceiver.";
+      }
+      leaf cfp-net-lane {
+        type int8;
+        description "CFP net lane index. Put 0 for all lanes diagnostic.";
+        adva-ext:agema-default "0";
+      }
+    }
+    output {
+      uses cfp-diag-net-lane-response;
+    }
+  } // show-cfp-net-lane-diag
+
+  rpc show-sfp-channel-diag {
+    description
+      "Show SFP Channels diagnostics for done port";
+    input {
+      leaf sfp-port {
+        type leafref {
+          path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+        }
+        description
+          "Contains the interface identifier of the SFP transceiver.";
+      }
+      leaf sfp-channel {
+        type int8;
+        description "SFP channel index. Put 0 for all lanes diagnostic.";
+        adva-ext:agema-default "0";
+      }
+    }
+    output {
+      uses sfp-diag-channel-response;
+    }
+  } // show-sfp-channel-diag
+
+}

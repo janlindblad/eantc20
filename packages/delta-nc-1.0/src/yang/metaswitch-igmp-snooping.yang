@@ -1,0 +1,315 @@
+
+module metaswitch-igmp-snooping {
+
+  namespace "http://metaswitch.com/yang/nbu/metaswitch-igmp-snooping/201803230000Z";
+
+  prefix metaswitch-igmp-snooping;
+
+  import metaswitch-yang-types { prefix meta; }
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix "interfaces"; }
+  import igmp-router { prefix igmp; }
+  import ieee802-types { prefix ieee802; }
+  import metaswitch-custom-yang-types { prefix "custom"; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Internet Group Management Protocol (Snooping)";
+
+  revision 2018-03-23 {
+    description "Initial revision.";
+  }
+
+  typedef mcast-router-conditions-t {
+    type enumeration {
+      enum always                { value 1; }
+      enum learn                 { value 2; }
+      enum never                 { value 3; }
+    }
+    description
+      " always     - always treat this interface as a multicast router
+                     interface.
+        learn      - learn whether this interface is a multicast router
+                     interface by snooping IGMP Query messages.
+        never      - never treat this interface as a multicast router
+                     interface.";
+  }
+
+  feature igmp-snooping {
+    description
+      "This feature means that the device supports IGMP Snooping";
+  }
+
+  grouping global-igmp-mld-parameters {
+
+    // Low-level model info: Corresponds to AMB_IGRT_ENT (mgmdRouterEntTable).
+
+    description
+      "DC-IGMP/MLD profile parameters.";
+
+    leaf name {
+      type meta:name-string;
+      description
+        "The name of this IGMP/MLD Snooping Profile.";
+
+      user-ext:CLI-comm-help "Set IGMP/MLD Snooping Profile name";
+      user-ext:CLI-no-comm-help "Remove IGMP/MLD Snooping Profile name";
+      user-ext:CLI-param-help "Set IGMP/MLD Snooping Profile name";
+    }
+
+    leaf querier-source {
+
+      // Low-level model info: Corresponds to
+      // mgmdHostEntSnoopSrcAddrIpv4 or mgmdHostEntSnoopSrcAddrIpv6
+
+      type interfaces:iface-ip-address-t;
+      description
+        "The source IP address for all types of query message that this IGMP
+         or MLD Snooping node originates.";
+
+      user-ext:CLI-comm-help "Set the source IP address for query messages";
+      user-ext:CLI-no-comm-help "Remove the source IP address for query messages";
+      user-ext:CLI-param-help "Set the source IP address for query messages";
+    }
+
+    leaf snoop-querier {
+
+      // Low-level model info: Corresponds to mgmdRouterEntSnoopQuerier
+
+      type boolean;
+      default "false";
+      description
+        "Whether origination of periodic General Query messages is enabled.";
+
+      user-ext:CLI-comm-help "Enable origination of periodic General Query messages";
+      user-ext:CLI-no-comm-help "Disable origination of periodic General Query messages";
+      user-ext:CLI-param-help "Enable origination of periodic General Query messages";
+    }
+
+  } // global-igmp-mld-parameters
+
+  grouping vlan-igmp-snooping-interfaces {
+
+    container interfaces {
+
+      if-feature interfaces:standard-interfaces;
+      user-ext:CLI-not-command;
+
+      list interface {
+
+        description "IGMP parameters on interface.";
+
+        user-ext:CLI-comm-help "Configure IGMP member parameters on interface";
+        user-ext:CLI-no-comm-help "Remove IGMP member parameters on interface";
+
+        key "if-name";
+
+        leaf if-name {
+          type custom:iface-name;
+          description
+            "The interface name.";
+
+          user-ext:CLI-comm-help "Set interface name";
+          user-ext:CLI-no-comm-help "Remove interface name";
+          user-ext:CLI-param-help "Set interface name";
+        }
+
+        leaf multicast-router-conditions {
+          type mcast-router-conditions-t;
+          description
+            "The conditions that need to be satisfied for this interface
+             to be considered a multicast router interface.";
+
+          user-ext:CLI-comm-help "Set multicast router conditions";
+          user-ext:CLI-no-comm-help "Remove multicast router conditions";
+          user-ext:CLI-param-help "Set multicast router conditions";
+        }
+
+      } // interface
+
+    } // interfaces
+
+  } // vlan-igmp-snooping-interfaces
+
+  grouping vlan-igmp-snooping-parameters {
+
+    description
+      "IGMP Snooping parameters for VLANs.";
+
+    user-ext:CLI-comm-help "Configure IGMP snooping profile";
+    user-ext:CLI-no-comm-help "Configure IGMP snooping profile";
+
+    leaf profile-name {
+      type leafref {
+        path "/metaswitch-igmp-snooping:igmp-snooping/metaswitch-igmp-snooping:igmp-snooping-profile-list/metaswitch-igmp-snooping:igmp-snooping-profile/metaswitch-igmp-snooping:name";
+      }
+      description
+        "The IGMP Profile to use for this VLAN.";
+
+      user-ext:CLI-comm-help "Set IGMP Snooping Profile name";
+      user-ext:CLI-no-comm-help "Remove IGMP Snooping Profile name";
+      user-ext:CLI-param-help "Set IGMP Snooping Profile name";
+    }
+
+    uses vlan-igmp-snooping-interfaces;
+
+  } // vlan-igmp-snooping-parameters
+
+  grouping vlan-mld-snooping-parameters {
+
+    description
+      "MLD Snooping parameters for VLANs.";
+
+    user-ext:CLI-comm-help "Configure MLD snooping profile";
+    user-ext:CLI-no-comm-help "Configure MLD snooping profile";
+
+    leaf profile-name {
+      type leafref {
+        path "/metaswitch-igmp-snooping:igmp-snooping/metaswitch-igmp-snooping:mld-snooping-profile-list/metaswitch-igmp-snooping:mld-snooping-profile/metaswitch-igmp-snooping:name";
+      }
+      description
+        "The MLD Profile to use for this VLAN.";
+
+      user-ext:CLI-comm-help "Set MLD Snooping Profile name";
+      user-ext:CLI-no-comm-help "Remove MLD Snooping Profile name";
+      user-ext:CLI-param-help "Set MLD Snooping Profile name";
+    }
+
+    uses vlan-igmp-snooping-interfaces;
+
+  } // vlan-mld-snooping-parameters
+
+  grouping vlan-mgmd-snooping-state {
+
+    description
+      "IGMP/MLD Snooping state for VLANs.";
+
+    list vlan {
+        leaf vlan-id {
+          // Low-level model info: Corresponds to vlanMgrVlanId.
+          type ieee802:vlanid;
+          description
+            "VLAN identifier for the VLAN.";
+        }
+
+        uses igmp:global-igmp-mld-stats {
+          if-feature metaswitch-igmp-snooping:igmp-snooping;
+        }
+
+        uses igmp:interface-igmp-mld-state-list{
+          if-feature metaswitch-igmp-snooping:igmp-snooping;
+        }
+
+    }
+
+  } // vlan-mgmd-snooping-state
+
+  container igmp-snooping {
+
+    if-feature metaswitch-igmp-snooping:igmp-snooping;
+
+    user-ext:CLI-not-command;
+
+    container igmp-snooping-profile-list {
+
+      user-ext:CLI-not-command;
+
+      list igmp-snooping-profile {
+
+        description
+          "Configure IGMP Snooping profile";
+
+        key "name";
+
+        user-ext:CLI-comm-help "Configure IGMP Snooping profile";
+        user-ext:CLI-no-comm-help "Remove IGMP Snooping profile";
+
+        // Low-level model info: Corresponds to AMB_IGRT_ENT (mgmdRouterEntTable) with mgmdRouterEntAddressType set to ipv4.
+
+        uses global-igmp-mld-parameters;
+
+        container interface-configuration {
+
+          description "IGMP member parameters on all interfaces.";
+          user-ext:CLI-comm-help "Configure IGMP member parameters on all interfaces";
+          user-ext:CLI-no-comm-help "Configure IGMP member parameters on all interfaces";
+
+          uses igmp:interface-igmp-parameters;
+
+          // The query interval must be greater that the query response interval.
+          // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+          // The default value of the query interval is 125; the default value of the query response interval is 100.
+          // The intervals are converted to milliseconds to compare them.
+          // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+          must "((not(query-interval)) and (not(query-response-interval)))" +
+               " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+               " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+               " or ((query-interval * 1000) > (query-response-interval * 100))" {
+            error-message "IGMP interface query interval must be greater than query response interval";
+          }
+
+        } // interface-configuration
+
+      } //igmp-snooping-profile
+
+    } // igmp-snooping-profile-list
+
+    container mld-snooping-profile-list {
+
+      user-ext:CLI-not-command;
+
+      list mld-snooping-profile {
+
+        key name;
+
+        description
+          "Configure MLD Snooping profile";
+
+        user-ext:CLI-comm-help "Configure MLD Snooping profile";
+        user-ext:CLI-no-comm-help "Configure MLD Snooping profile";
+
+        // Low-level model info: Corresponds to AMB_IGRT_ENT (mgmdRouterEntTable) with mgmdRouterEntAddressType set to ipv6.
+
+        uses global-igmp-mld-parameters;
+
+        container interface-configuration {
+
+          description "IGMP member parameters on all interfaces.";
+          user-ext:CLI-comm-help "Configure IGMP member parameters on all interfaces";
+          user-ext:CLI-no-comm-help "Configure IGMP member parameters on all interfaces";
+
+          uses igmp:interface-mld-parameters;
+
+          // The query interval must be greater that the query response interval.
+          // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+          // The default value of the query interval is 125; the default value of the query response interval is 100.
+          // The intervals are converted to milliseconds to compare them.
+          // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+          must "((not(query-interval)) and (not(query-response-interval)))" +
+               " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+               " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+               " or ((query-interval * 1000) > (query-response-interval * 100))" {
+            error-message "IGMP interface query interval must be greater than query response interval";
+          }
+
+        } // interface-configuration
+
+      } // mld-snooping-profile
+
+    } // mld-snooping-profile-list
+
+  } // igmp-snooping
+
+} // metaswitch-igmp-snooping
+

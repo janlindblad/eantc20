@@ -1,0 +1,282 @@
+module adva-dnos-elan {
+
+  namespace "http://www.advaoptical.com/cim/adva-dnos-elan";
+
+  prefix "mplslan";
+
+  import openconfig-interfaces { prefix "oc-if"; }
+  import adva-dnos-types { prefix "adva-types"; }
+  import adva-dnos-extensions { prefix "adva-ext"; }
+
+  organization
+    "Adva Optical Networking";
+
+  contact
+    "For technical support, please contact your service channel";
+
+  description
+    "Definitions for ADVA E-LAN services.";
+
+  revision "2019-07-30" {
+    description
+      "Integrating to ADVA YANG models.";
+  }
+  revision "2015-03-09" {
+    description
+      "Third draft version.";
+  }
+
+  container mpls_elan_objects {
+
+    container config-elans {
+
+      list config-elan {
+        key "name";
+        unique "service-id";
+
+        description "";
+
+        leaf name {
+          type string {
+            length "1..15";
+          }
+          description "Service name";
+        }
+
+        leaf service-id {
+          type adva-types:eservice-id;
+          mandatory true;
+          description "Service ID";
+        }
+
+        leaf description {
+          type string {
+            length "1..255";
+          }
+          description "Service description";
+        }
+
+        leaf encapsulation {
+          type adva-types:ether_encap;
+          default ethernet;
+          description "Encapsulation for the service";
+          adva-ext:agema-default "ethernet";
+        }
+
+        leaf mtu {
+          type uint32;
+          default 1500;
+          description "MTU size";
+          adva-ext:agema-default "1500";
+        }
+
+        leaf lt-limit {
+          type uint32 {
+            range "0..250000";
+          }
+          default 1000;
+          description "Define MAC learning limit for the service";
+          adva-ext:agema-default "1000";
+        }
+
+        list acs {
+          key "ac";
+
+          leaf ac {
+            type leafref {
+              path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+            }
+            description "Attachment circuit name";
+          }
+
+          leaf group {
+            type uint32 {
+              range "0..255";
+            }
+            description "AC split horizon group ID";
+          }
+        }
+
+        list vcs {
+          key "name";
+
+          leaf name {
+            type string {
+              length "1..15";
+            }
+            description "Virtual circuit name";
+          }
+
+          leaf enable {
+            type boolean;
+            default true;
+            description "Enable VC";
+            adva-ext:agema-default "true";
+          }
+
+          leaf encapsulation {
+            type adva-types:ether_encap;
+            default ethernet;
+            description "VC encapsulation type";
+            adva-ext:agema-default "ethernet";
+          }
+
+          leaf peer {
+            type adva-types:mpls-lsr-id;
+            mandatory true;
+            description "VC remote PE IP address";
+          }
+
+          choice te {
+
+            case te {
+              leaf tunnel-id {
+                type int32 {
+                  range "1 .. 65535";
+                }
+                description "TE MPLS tunnel id";
+              }
+              description "VC over TE MPLS tunnel";
+            }
+
+            case non-te {
+              leaf out-if {
+                type string;
+                description "Outbound interface name";
+              }
+              description "VC over non-TE MPLS tunnel";
+            }
+
+          } // choice te;
+
+          leaf vccv {
+            type boolean;
+            default false;
+            description "PW VCCV enable";
+            adva-ext:agema-default "false";
+          }
+
+          choice vc-type {
+            case root {
+              leaf root-id {
+                type uint32;
+                description "VC group ID";
+              }
+              leaf group {
+                type uint32 {
+                  range "0..255";
+                }
+                description "Root VC split horizon group ID";
+              }
+            }
+            case leaf {
+              leaf leaf-id {
+                type uint32;
+                description "VC group ID";
+              }
+            }
+          } // choice vc-type;
+
+        } // list vcs
+
+        leaf enable {
+          type boolean;
+          default false;
+          description "Set service admin state";
+          adva-ext:agema-default "false";
+        }
+
+      } // list config-elan
+    } // container config-elans
+
+    container runtime-elans {
+      config false;
+      list runtime-elan {
+        key "name";
+
+        leaf name {
+	        type string;
+        }
+
+        leaf service-id {
+	        type uint32;
+        }
+
+        leaf description {
+	        type string;
+        }
+
+        leaf encapsulation {
+	        type adva-types:ether_encap;
+        }
+
+        leaf mtu {
+	        type uint32;
+        }
+
+        leaf lt-limit {
+	        type uint32;
+        }
+
+        leaf admin-status {
+          type adva-types:generic-state-val;
+        }
+
+        leaf oper-status {
+          type adva-types:generic-state-val;
+        }
+
+        list acs {
+          key "ac";
+          uses adva-types:eservice_ac_data_runtime;
+        }
+
+        list vcs {
+          key "name";
+          uses adva-types:eservice_vc_data_runtime;
+        }
+
+      } // list runtime-elan
+    } // container runtime-elans
+
+  }
+
+  rpc lt-flush {
+    description
+      "Flush MAC Table for the service";
+    input {
+      leaf e-lan-name {
+        type leafref {
+          path "/mplslan:mpls_elan_objects/mplslan:config-elans/mplslan:config-elan/mplslan:name";
+        }
+        mandatory true;
+        description "Service name";
+      }
+    }
+    output {
+      leaf status {
+        type string;
+      }
+    }
+  } // rpc lt-flush
+
+  rpc mac-withdraw {
+    description
+      "Send wildcard MAC withdraw";
+    input {
+      leaf e-lan-name {
+        type leafref {
+          path "/mplslan:mpls_elan_objects/mplslan:config-elans/mplslan:config-elan/mplslan:name";
+        }
+        mandatory true;
+        description "Service name";
+      }
+    }
+    output {
+      leaf status {
+        type string;
+      }
+    }
+  } // rpc mac-withdraw
+
+}

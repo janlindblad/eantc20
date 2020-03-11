@@ -1,0 +1,219 @@
+module adva-dnos-eline {
+
+  namespace "http://www.advaoptical.com/cim/adva-dnos-eline";
+
+  prefix "mplslin";
+
+  import openconfig-interfaces { prefix "oc-if"; }
+  import adva-dnos-types { prefix "adva-types"; }
+  import adva-dnos-extensions { prefix "adva-ext"; }
+
+  organization
+    "Adva Optical Networking";
+
+  contact
+    "For technical support, please contact your service channel";
+
+  description
+    "Definitions for ADVA E-LINE services.";
+
+  revision "2019-07-30" {
+    description
+      "Integrating to ADVA YANG models.";
+  }
+
+  revision "2015-03-09" {
+    description
+      "Third draft version.";
+  }
+
+  container mpls_eline_objects {
+
+    container config-elines {
+
+      list config-eline {
+        key "name";
+        unique "service-id";
+
+        description "";
+
+        leaf name {
+          type string {
+            length "1..15";
+          }
+          description "Service name";
+        }
+
+        leaf service-id {
+          type adva-types:eservice-id;
+          mandatory true;
+          description "Service ID";
+        }
+
+        leaf description {
+          type string {
+            length "1..255";
+          }
+          description "Service description";
+        }
+
+        leaf encapsulation {
+          type adva-types:ether_encap;
+          default ethernet;
+          description "Encapsulation for the service";
+          adva-ext:agema-default "ethernet";
+        }
+
+        leaf mtu {
+          type uint32;
+          default 1500;
+          description "MTU size";
+          adva-ext:agema-default "1500";
+        }
+
+        list vcs {
+          key "ac";
+
+          leaf ac {
+            type leafref {
+              path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+            }
+            description "Attachment circuit name";
+          }
+
+          choice attachment-type {
+
+            case vc {
+              container vc {
+                leaf name {
+                  type string {
+                    length "1..15";
+                  }
+                  mandatory true;
+                  description "Virtual circuit name";
+                }
+
+                leaf enable {
+                  type boolean;
+                  default true;
+                  description "Enable VC";
+                  adva-ext:agema-default "true";
+                }
+
+                leaf encapsulation {
+                  type adva-types:ether_encap;
+                  default ethernet;
+                  description "VC encapsulation type";
+                  adva-ext:agema-default "ethernet";
+                }
+
+                leaf peer {
+                  type adva-types:mpls-lsr-id;
+                  mandatory true;
+                  description "VC remote PE IP address";
+                }
+
+                choice te {
+
+                  case te {
+                    leaf tunnel-id {
+                      type int32 {
+                        range "1 .. 65535";
+                      }
+                      description "TE MPLS tunnel id";
+                    }
+                    description "VC over TE MPLS tunnel";
+                  }
+
+                  case non-te {
+                    leaf out-if {
+                      type string;
+                      description "Outbound interface name";
+                    }
+                    description "VC over non-TE MPLS tunnel";
+                  }
+
+                } // choice te;
+
+                leaf vccv {
+                  type boolean;
+                  default false;
+                  description "PW VCCV enable";
+                  adva-ext:agema-default "false";
+                }
+              } // container vc;
+            } // case vc;
+
+            case hairpin {
+              container hairpin {
+                leaf ac-hairpin {
+                  type leafref {
+                    path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+                  }
+                  description "Hairpin attachment circuit name";
+                }
+              } // container hairpin
+            } // case hairpin
+
+          } // choice attachment-type
+
+        } // list vcs
+
+        leaf enable {
+          type boolean;
+          default false;
+          description "Set service state admin state";
+          adva-ext:agema-default "false";
+        }
+
+      } // list config-eline
+    } // container config-elines
+
+    container runtime-elines {
+      config false;
+      list runtime-eline {
+        key "name";
+
+        leaf name {
+	  type string;
+        }
+
+        leaf service-id {
+	  type uint32;
+        }
+
+        leaf description {
+	  type string;
+        }
+
+        leaf encapsulation {
+	  type adva-types:ether_encap;
+        }
+
+        leaf mtu {
+	  type uint32;
+        }
+
+        leaf admin-status {
+          type adva-types:generic-state-val;
+        }
+
+        leaf oper-status {
+          type adva-types:generic-state-val;
+        }
+
+        list acs {
+          key "ac";
+          uses adva-types:eservice_ac_data_runtime;
+        }
+
+        list vcs {
+          key "name";
+          uses adva-types:eservice_vc_data_runtime;
+        }
+
+      } // list runtime-elan
+    } // container runtime-elans
+
+  }
+}

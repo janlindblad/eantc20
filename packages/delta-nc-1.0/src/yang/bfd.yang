@@ -1,0 +1,547 @@
+
+module bfd {
+
+  namespace "http://metaswitch.com/yang/nbu/bfd/201512110000Z";
+
+  prefix bfd;
+
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix "interfaces"; }
+  import metaswitch-yang-types { prefix meta; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Bidirectional Forwarding Detection";
+
+  revision 2015-12-11 {
+    description
+      "Initial revision.";
+  }
+
+  typedef bfd-min-interval-t {
+    type uint32 {
+      range "3..30000";
+    }
+    description
+      "(3-30000)";
+  }
+
+  typedef bfd-min-interval-or-zero-t {
+    type uint32 {
+      range "0..30000";
+    }
+    description
+      "(0-30000)";
+  }
+
+  typedef bfd-multiplier-t {
+    type uint32 {
+      range "2..50";
+    }
+    description
+      "(2-50)";
+  }
+
+  typedef bfd-name-string {
+    type string {
+      length "1..64";
+    }
+    description
+      "WORD (1-64)";
+  }
+
+  typedef bfd-name-string-or-empty {
+    type string {
+      length "0..64";
+    }
+    description
+      "BFD Session name used for state fields where the length may be zero";
+  }
+
+  typedef bfd-state {
+    type enumeration {
+      enum admin-down                       { value 1; }
+      enum down                             { value 2; }
+      enum init                             { value 3; }
+      enum up                               { value 4; }
+    }
+    description
+      "BFD state values.";
+  }
+
+  typedef bfd-diag {
+    type enumeration {
+      enum no-diagnostic                    { value 0; }
+      enum control-detection-time           { value 1; }
+      enum echo-function-failed             { value 2; }
+      enum nbr-signaled-sess-down           { value 3; }
+      enum forwarding-plane-reset           { value 4; }
+      enum path-down                        { value 5; }
+      enum concatenated-path-down           { value 6; }
+      enum administratively-down            { value 7; }
+      enum rev-cnctntd-path-down            { value 8; }
+      enum misconnectivity                  { value 16; }
+      enum no-contact                       { value 255; }
+    }
+    description
+      "BFD diagnostic values.";
+  }
+
+
+  grouping bfd-global-config-fields {
+
+    // Low-level model info: Corresponds to bfdDesiredMinTxInterval.  Note the yang field is in milliseconds while the MIB field is in microseconds.
+    leaf tx-interval {
+      type bfd-min-interval-t;
+      default 100;
+      units "milliseconds";
+
+      user-ext:CLI-comm-help "Set transmission interval for BFD protocol in milliseconds";
+      user-ext:CLI-no-comm-help "Set transmission interval for BFD protocol to default";
+      user-ext:CLI-param-help "Set transmission interval in milliseconds";
+
+      description
+        "The default minimum interval, in milliseconds, that the local system
+        would like to use when transmitting BFD Control packets.  This value
+        is used for BFD sessions that do not have a specific value configured
+        for the session.";
+    }
+
+    // Low-level model info: Corresponds to bfdReqMinRxInterval.  Note the yang field is in milliseconds while the MIB field is in microseconds.
+    leaf rx-interval {
+      type bfd-min-interval-t;
+      default 100;
+      units "milliseconds";
+
+      user-ext:CLI-comm-help "Set receive interval for BFD protocol in milliseconds";
+      user-ext:CLI-no-comm-help "Set receive interval for BFD protocol to default";
+      user-ext:CLI-param-help "Set interval in milliseconds";
+
+      description
+        "The default minimum interval (in milliseconds) between received BFD
+        control packets that the local system will advertise itself as capable
+        of receiving.  This value is used for BFD sessions that do not have
+        a specific value configured for the session.";
+    }
+
+  } // bfd-global-config-fields
+
+  grouping bfd-session-config-fields {
+
+    // Low-level model info: Corresponds to dcBfdSessConfigDesiredMinTxIntvl.  Note the yang field is in milliseconds while the MIB field is in microseconds.
+    leaf tx-interval {
+      type bfd-min-interval-t;
+      default 100;
+      units "milliseconds";
+
+      user-ext:CLI-comm-help "Set minimal transmission interval in milliseconds";
+      user-ext:CLI-no-comm-help "Set minimal transmission interval to default";
+      user-ext:CLI-param-help "Set transmission interval in milliseconds";
+
+      description
+        "The minimum interval, in milliseconds, that the local system would
+        like to use when transmitting BFD Control packets.";
+    }
+
+    // Low-level model info: Corresponds to dcBfdSessConfigReqMinRxInterval.  Note the yang field is in milliseconds while the MIB field is in microseconds.
+    leaf rx-interval {
+      type bfd-min-interval-t;
+      default 100;
+      units "milliseconds";
+
+      user-ext:CLI-comm-help "Set minimal receive interval in milliseconds";
+      user-ext:CLI-no-comm-help "Set minimal receive interval to default";
+      user-ext:CLI-param-help "Set receive interval in milliseconds";
+
+      description
+        "The minimum interval, in milliseconds, between received BFD Control
+        packets that the local system is willing to accept.";
+    }
+
+    // Low-level model info: Corresponds to dcBfdSessConfigDetectMult.
+    leaf multiplier {
+      type bfd-multiplier-t;
+      default 2;
+
+      user-ext:CLI-comm-help "Set multiplier for BFD session";
+      user-ext:CLI-no-comm-help "Set multiplier interval for BFD session to default";
+      user-ext:CLI-param-help "Set multiplier";
+
+      description
+        "The Detect time multiplier.";
+    }
+
+    // Note: Configuration of simultaneous IPv4 and IPv6 addresses is not supported in the MIBs.
+    // Low-level model info: The destination address and interface specified below correspond to the MIB indices in dcBfdSessConfigTable.
+
+    container address-family {
+
+      user-ext:CLI-comm-help "Address family configuration for session";
+      user-ext:CLI-no-comm-help "Address family configuration for session";
+
+      choice address-type {
+
+        mandatory true;
+
+        case ipv4 {
+
+          container ipv4 {
+
+            user-ext:CLI-comm-help "Configure IPv4 parameters for session";
+            user-ext:CLI-no-comm-help "Configure IPv4 parameters for session";
+
+            // Low-level model info: Corresponds to dcBfdSessConfigAddr and dcBfdSessConfigAddrType.
+            leaf destination {
+              type interfaces:iface-ipv4-address-t;
+
+              user-ext:CLI-comm-help "Set destination IPv4 address";
+              user-ext:CLI-no-comm-help "Remove destination IPv4 address";
+              user-ext:CLI-param-help "Set IPv4 address";
+
+              mandatory true;
+
+              description
+                "The address of the peer associated with this BFD session
+                parameter configuration.";
+            }
+
+          } // ipv4
+
+        } // ipv4
+
+        case ipv6 {
+
+          container ipv6 {
+
+            user-ext:CLI-comm-help "Configure IPv6 parameters for session";
+            user-ext:CLI-no-comm-help "Configure IPv6 parameters for session";
+
+            // Low-level model info: Corresponds to dcBfdSessConfigAddr and dcBfdSessConfigAddrType.
+            leaf destination {
+              type interfaces:iface-ipv6-address-t;
+
+              user-ext:CLI-comm-help "Set destination IPv6 address";
+              user-ext:CLI-no-comm-help "Remove destination IPv6 address";
+              user-ext:CLI-param-help "Set IPv6 address";
+
+              mandatory true;
+
+              description
+                "The address of the peer associated with this BFD session
+                parameter configuration.";
+            }
+
+          } // ipv6
+
+        } // ipv6
+
+      } // address-type
+
+    } // address-family
+
+    // Low-level model info: Corresponds to dcBfdSessConfigIfIndex.
+    uses interfaces:all-ifaces-service-use;
+
+  } // bfd-session-config-fields
+
+  grouping bfd-session-state-fields {
+
+    // Low-level model info: Corresponds to bfdSessStateRemoteDiscr.
+    leaf discriminator {
+      type uint32;
+      description
+        "The session discriminator chosen by the remote system for
+        this BFD session.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to dcBfdSessMapEntityType from dcBfdSessMapTable.
+    leaf protocols {
+      type string;
+      description
+        "Comma separated list of control protocols which are using this
+        BFD session.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to bfdSessState.
+    leaf state {
+      type bfd-state;
+      description
+        "The perceived state of the BFD session.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to bfdSessDiag.
+    leaf diag {
+      type bfd-diag;
+      description
+        "A diagnostic code specifying the local system's reason for
+        the last transition of the session from up to some
+        other state.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to bfdSessStateOperIfIndex.
+    leaf if-name {
+      type interfaces:iface-name;
+      description
+        "The interface on which BFD packets for this session are currently
+        being sent, if any.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to bfdSessStateTxIntvl.
+    leaf tx-interval {
+      type bfd-min-interval-or-zero-t;
+      units "milliseconds";
+      description
+        "The negotiated minimum transmit interval currently in use for this session";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to bfdSessStateRxInterval.
+    leaf rx-interval {
+      type bfd-min-interval-or-zero-t;
+      units "milliseconds";
+      description
+        "The negotiated minimum receive interval currently in use for this session";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to bfdSessStateRemoteDetectMult.
+    leaf remote-detect-mult {
+      type uint32;
+      description
+        "The multiplier advertised by the remote peer: how many packets must be missed
+        before the BFD session is considered failed.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to bfdSessStateLocalDiscr.
+    leaf local-discriminator {
+      type uint32;
+      description
+        "The discriminator in use by the local router for this session.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to bfdSessStateNumControlTx.
+    leaf num-control-tx {
+      type uint32;
+      description
+        "Number of BFD packets sent on this session";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to bfdSessStateNumControlRx.
+    leaf num-control-rx {
+      type uint32;
+      description
+        "Number of BFD packets received from the remote for this session";
+      config false;
+    }
+
+  } // bfd-session-state-fields
+
+  grouping bfd-instance {
+
+    uses bfd-global-config-fields;
+
+    list session {
+
+      // Low-level model info: Corresponds to AMB_BFD_SESS_CONFIG (dcBfdSessConfigTable).
+
+      description
+        "BFD session configuration.";
+
+      user-ext:CLI-comm-help "Configure BFD session";
+      user-ext:CLI-no-comm-help "Remove BFD session";
+
+      key "name";
+
+      leaf name {
+        type bfd-name-string;
+
+        user-ext:CLI-param-help "BFD Session name";
+        description
+          "BFD Session name";
+      }
+
+      must "((address-family/ipv4/destination) or (address-family/ipv6/destination))" {
+        error-message "An ipv4 or ipv6 destination address must be defined for a BFD session";
+      }
+
+      uses bfd-session-config-fields;
+
+    } // session
+
+    container ipv4-state {
+
+      description
+        "IPv4 state";
+
+      config false;
+
+      container session-state-list {
+
+        description
+          "Container to hold BFD Session state.";
+
+        config false;
+
+        list session-state {
+
+          // Low-level model info: Corresponds to AMB_BFD_SESS (bfdSessStateTable).
+
+          description
+            "BFD session state.";
+
+          leaf name {
+            type bfd-name-string-or-empty;
+
+            description
+              "Session name";
+            config false;
+          }
+
+          // Low-level model info: Corresponds to bfdSessStatePeerAddr and bfdSessStatePeerAddrType.
+          leaf destination {
+            type interfaces:iface-ipv4-address-t;
+
+            description
+              "The address of the peer associated with this BFD protocol
+              session.";
+            config false;
+          }
+
+          // Low-level model info: Corresponds to bfdSessStateOperLocalAddr and bfdSessStateOperLocalAddrType.
+          leaf local {
+            type interfaces:iface-ipv4-address-t;
+
+            description
+              "The local IP address associated with this BFD protocol
+               session.";
+            config false;
+          }
+
+          uses bfd-session-state-fields;
+
+        } // session-state
+
+      } // session-state-list
+
+    } // ipv4-state
+
+    container ipv6-state {
+
+      description
+        "IPv6 state";
+
+      config false;
+
+      container session-state-list {
+
+        description
+          "Container to hold BFD Session state.";
+
+        config false;
+
+        list session-state {
+
+          // Low-level model info: Corresponds to AMB_BFD_SESS (bfdSessStateTable).
+
+          description
+            "BFD session state.";
+
+          leaf name {
+            type bfd-name-string-or-empty;
+
+            description
+              "Session name";
+            config false;
+          }
+
+          // Low-level model info: Corresponds to bfdSessStatePeerAddr and bfdSessStatePeerAddrType.
+          leaf destination {
+            type interfaces:iface-ipv6-address-t;
+
+            description
+              "The address of the peer associated with this BFD protocol
+              session.";
+            config false;
+          }
+
+          // Low-level model info: Corresponds to bfdSessStateLocalAddr and bfdSessStateLocalAddrType.
+          leaf local {
+            type interfaces:iface-ipv6-address-t;
+
+            description
+              "The local IP address associated with this BFD protocol
+               session.";
+            config false;
+          }
+
+          uses bfd-session-state-fields;
+
+        } // session-state
+
+      } // session-state-list
+
+    } // ipv6-state
+
+  } // bfd-instance
+
+  container bfd {
+
+    // Low-level model info: Corresponds to AMB_BFD_ENTITY (bfdEntityTable).
+
+    description
+      "Global BFD configuration.";
+
+    user-ext:CLI-comm-help "Configure BFD";
+    user-ext:CLI-no-comm-help "Remove BFD";
+
+    container global {
+
+      user-ext:CLI-not-command;
+      uses bfd-instance;
+
+    } // global
+
+    list vrf {
+
+      description
+        "VRF BFD configuration";
+
+      user-ext:CLI-comm-help "Configure BFD in VRF";
+      user-ext:CLI-no-comm-help "Remove BFD in VRF";
+
+      key "vrf-name";
+
+      leaf vrf-name {
+        type meta:l3vpn-vrf-name;
+        description
+          "The name of this VRF.";
+
+        user-ext:CLI-comm-help "Associate configuration with VRF";
+        user-ext:CLI-no-comm-help "Clear VRF association";
+      }
+
+      uses bfd-instance;
+
+    } // vrf
+
+  } // bfd
+
+} // bfd
+

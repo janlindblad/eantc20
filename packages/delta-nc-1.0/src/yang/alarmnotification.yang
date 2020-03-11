@@ -1,0 +1,65 @@
+module alarmnotification {
+
+  namespace "http://metaswitch.com/yang/nbu/alarmnotification";
+
+  prefix alarmnotification;
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  // notification statements
+  notification alarm {
+    description
+      "An alarm notification.";
+    leaf process-id {
+      type int32;
+      description
+        "Component process ID of the sender.";
+    }
+    leaf process-type {
+      type int32;
+      description
+        "Component process type of the sender.";
+    }
+
+    leaf alarm-resource {
+      type string;
+      description
+        "Alarm resource.";
+    }
+
+    leaf alarm-type-id {
+      type string;
+      description
+        "Alarm type ID.";
+    }
+
+    leaf alarm-type-qualifier {
+      type string;
+      description
+        "Alarm type qualifier";
+    }
+    leaf is_cleared {
+      type int32;
+      description
+        "Whether the alarm is being raised or cleared";
+    }
+    leaf alarm-severity {
+      type string;
+      description
+        "The severity of the alarm";
+    }
+    leaf alarm-text {
+      type string;
+      description
+        "Text describing alarm";
+    }
+  }
+}

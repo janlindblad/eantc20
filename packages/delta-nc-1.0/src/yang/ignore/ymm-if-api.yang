@@ -1,0 +1,868 @@
+module ymm-if-api {
+
+  yang-version 1.1;
+
+  namespace "http://metaswitch.com/yang/nbu/ymm-if-api/201720080000Z";
+
+  prefix ymm-if-api;
+
+  import ietf-yang-types {
+    prefix yang;
+  }
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+
+  import metaswitch-api-common {
+    prefix api-common;
+  }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    '
+    The YMM Interface Discovery API (IDI)
+    =====================================
+
+    Overview
+    --------
+
+    The YMM interface Discovery API is a message-based API between YMM and the
+    customer local interface manager (LIM).
+
+    The messages are encoded as JSON objects according to RFC 7951.  They are
+    sent over a TCP connection using HTTP chunked transfer encoding to
+    distinguish message boundaries (see RFC 2616 section 3.6.1).
+
+    The LIM must connect to YMM on a well-known port.  Only a single connection
+    is supported.
+
+    The information flow across the API is bi-directional, so the API does not
+    follow request/response (RPC), NetConf or RestConf semantics.
+
+    The information flows on the API are:
+    - LIM -> YMM
+      - global device parameters
+      - interfaces
+      - fecs
+    - YMM -> LIM
+      - required interfaces
+      - required FECs.
+
+    The API consists of the following messages:
+    - update-device-parms     LIM -> YMM
+    - update-interfaces       LIM -> YMM
+    - update-fecs             LIM -> YMM
+    - update-req-interfaces   YMM -> LIM
+    - update-req-fecs         YMM -> LIM
+
+    Operation
+    ---------
+
+    LIM is responsible for:
+    - managing global device parameters
+    - managing interfaces
+    - tracking FECs
+    - assigning interface index values to interfaces and FECs
+    - reporting the primary IPv4 address (if any) assigned to each interface
+      (needed for DC-OSPF configuration because DC-OSPF configuration
+      identifies interfaces by IPv4 address instead of interface index)
+    - sending update-interfaces messages to YMM so that YMM can track
+      interfaces, interface indexes, primary IPv4 addresses and bandwidths
+    - sending update-fecs messages to YMM so that YMM can track interface
+      indexes for FECs.
+
+    YMM is responsible for:
+    - tracking required interfaces that are referenced in the high level
+      configuration
+    - sending update-req-interfaces messages to LIM so that LIM can assign
+      interface index values in a timely fashion
+    - sending update-req-fecs messages to LIM so that LIM can assign
+      interface index values for FECs.
+
+    LIM must assign interface index values for required interfaces and send
+    immediate updates to YMM.
+    - If a required interface is unavailable then LIM must assign an interface
+      index and send an immediate update to YMM, but the interface remains down
+      until it becomes available.
+    - If a required interface is invalid then LIM must track the invalid
+      interface and send an immediate update to YMM reporting it as invalid.
+
+    LIM and YMM track and report FECs separately from interfaces but using the
+    same overall approach.
+
+    Messages:
+    - Each update-device-parms message reports global device parameters.
+    - Each update-interfaces message reports a list of replace and remove
+      operations on individual interfaces.
+    - Each update-req-interfaces message reports a list of replace and remove
+      operations on individual required interfaces.
+    - Each update-fecs message reports a list of replace and remove
+      operations on individual FECs.
+    - Each update-req-fecs message reports a list of replace and remove
+      operations on individual required FECs.
+
+    Required device parameters
+    --------------------------
+
+    YMM typically requires the global device parameters to perform any system
+    configuration.  Therefore LIM should send an update-device-parms message
+    YMM early in system initialization.
+
+    Required Interfaces
+    -------------------
+
+    In some cases YMM requires interface indexes for interfaces that are not
+    yet known to LIM.  For example, in case of a static route over a
+    bundle-ether interface there is no interface configuration for the
+    bundle-ether interface so initially the interface is unknown to LIM.
+    However YMM still needs an interface index for the bundle-ether interface
+    to configure the ICP with the static route.  Although the ICP will
+    eventually program stubs with the bundle-ether interface, and the stubs
+    will then notify LIM, this occurs too late for initial static route
+    configuration.
+
+    To handle such cases YMM notifies LIM of all interfaces that are referenced
+    in the configuration.  This serves two purposes:
+    - It ensures that LIM allocates interface indexes for all required
+      interfaces.
+    - It ensures that LIM keeps all required interfaces while they are still
+      referenced by the configuration.
+
+    In case of a configuration with a static route over a bundle-ether
+    interfaces the flow is:
+
+      Management   YMM         LIM         ICP         Stubs
+        |           |           |           |           |
+        | config    |           |           |           |
+        |---------->|           |           |           |
+        |           | update-req-interfaces |           |
+        |           |---------->|           |           |
+        |           | update-interfaces     |           |
+        |           |<----------|           |           |
+        |           | config    |           |           |
+        |           |---------------------->|           |
+        |           |           |           | program route
+        |           |           |           |---------->|
+        |           |           |           | program bundle-ether
+        |           |           |           |---------->|
+        |           |           | program bundle-ether  |
+        |           |           |<----------------------|
+        |           |           |           |           |
+
+    LIM keeps the bundle-ether interface until it is no longer referenced by
+    YMM and no longer programmed in the stubs.
+
+    If the static route is deconfigured the flow is:
+
+      Management   YMM         LIM         ICP         Stubs
+        |           |           |           |           |
+        | config    |           |           |           |
+        |---------->|           |           |           |
+        |           | config    |           |           |
+        |           |---------------------->|           |
+        |           |           |           | deprogram route
+        |           |           |           |---------->|
+        |           | update-req-interfaces |           |
+        |           |---------->|           |           |
+        |           |           |           |           |
+
+    If after that the bundle-ether interface is deconfigured the flow is:
+
+      Management   YMM         LIM         ICP         Stubs
+        |           |           |           |           |
+        | config    |           |           |           |
+        |---------->|           |           |           |
+        |           | config    |           |           |
+        |           |---------------------->|           |
+        |           |           |           | deprogram bundle-ether
+        |           |           |           |---------->|
+        |           |           | deprogram bundle-ether|
+        |           |           |<----------------------|
+        |           | update-interfaces     |           |
+        |           |<----------|           |           |
+        |           |           |           |           |
+
+    YMM sends update-req-interfaces messages for all interfaces that are
+    referenced in the configuration, not just bundle-ether interfaces.
+
+    Required FECs
+    ----------------
+
+    In some cases YMM requires interface indexes for FECs as well as for
+    interfaces.  For example, in case of an OAM function across an RSVP LSP,
+    the OAM configuration just specifies the RSVP LSP name, and YMM needs the
+    interface index of the FEC provided by the RSVP LSP to configure the
+    OAM function.
+
+    In this context a FEC is a route provided by a signaling protocol.
+
+    To handle such cases YMM notifies LIM of all FECs that are required
+    by the configuration.  This serves two purposes:
+    - It ensures that LIM allocates interface indexes for all required FECs.
+    - It ensures that LIM keeps all the FECs while they are still
+      required by the configuration.
+
+    In case of a configuration with an MPLS tunnel the flow is:
+
+      Management   YMM         LIM         ICP         Stubs
+        |           |           |           |           |
+        | config    |           |           |           |
+        |---------->|           |           |           |
+        |           | update-req-fecs       |           |
+        |           |---------->|           |           |
+        |           | update-fecs           |           |
+        |           |<----------|           |           |
+        |           | config    |           |           |
+        |           |---------------------->|           |
+        |           |           |           | program tunnel
+        |           |           |           |---------->|
+        |           |           | [program tunnel]      |
+        |           |           |<--------------------->|
+        |           |           | [program FEC]         |
+        |           |           |<--------------------->|
+        |           |           |           |           |
+
+    LIM keeps the FEC until it is no longer referenced by YMM and no
+    longer programmed in the stubs.
+
+    If the FEC is no longer required the flow is:
+
+      Management   YMM         LIM         ICP         Stubs
+        |           |           |           |           |
+        | config    |           |           |           |
+        |---------->|           |           |           |
+        |           | config    |           |           |
+        |           |---------------------->|           |
+        |           | update-req-fecs       |           |
+        |           |---------->|           |           |
+        |           |           |           |           |
+
+    If after that the tunnel is deconfigured the flow is:
+
+      Management   YMM         LIM         ICP         Stubs
+        |           |           |           |           |
+        | config    |           |           |           |
+        |---------->|           |           |           |
+        |           | config    |           |           |
+        |           |---------------------->|           |
+        |           |           |           | deprogram tunnel
+        |           |           |           |---------->|
+        |           |           | deprogram tunnel      |
+        |           |           |<----------------------|
+        |           |           | deprogram FEC         |
+        |           |           |<----------------------|
+        |           |           |           |           |
+
+    Interface identification
+    ------------------------
+
+    Interfaces are identified by a combination of base name (if-base-name) and
+    extended ID (if-ext-id).
+
+    FEC identification
+    ------------------
+
+    FECs are identified by a combination of FEC type and FEC parameters.
+    The FEC parameters depend on the FEC type.
+
+    update-device-parms [LIM -> YMM]
+    --------------------------------
+
+    The message below replaces the global device parameters.
+
+        {
+          "message": "update-device-parms",
+          "device-parms": {
+            "router-id": "192.0.2.1",
+            "ipv4-addr": "192.0.2.1",
+            "ipv6-addr": "2001:db8::1",
+          }
+        }
+
+    update-interfaces [LIM -> YMM]
+    ------------------------------
+
+    The message below adds or replaces interface eth0.
+
+        {
+          "message": "update-interfaces",
+          "updates": [
+            {
+              "operation": "replace",
+              "interface": {
+                "if-base-name": "eth1",
+                "if-ext-id": "",
+                "if-index": 31,
+                "ipv4-addr": "192.0.2.1",
+                "unnumbered": false,
+                "bandwidth": 100000
+              }
+            }
+          ]
+        }
+
+    The message below removes interface eth0.
+
+        {
+          "message": "update-interfaces",
+          "updates": [
+            {
+              "operation": "remove",
+              "interface": {
+                "if-base-name": "eth1",
+                "if-ext-id": ""
+              }
+            }
+          ]
+        }
+
+
+    update-req-interfaces [YMM -> LIM]
+    ----------------------------------
+
+    The message below adds or replaces required interface eth1.
+
+        {
+          "message": "update-req-interfaces",
+          "updates": [
+            {
+              "operation": "replace",
+              "req-interface": {
+                "if-base-name": "eth1",
+                "if-ext-id": ""
+              }
+            }
+          ]
+        }
+
+    The message below removes required interface eth1.
+
+        {
+          "message": "update-req-interfaces",
+          "updates": [
+            {
+              "operation": "remove",
+              "req-interface": {
+                "if-base-name": "eth1",
+                "if-ext-id": ""
+              }
+            }
+          ]
+        }
+
+    update-fecs [LIM -> YMM]
+    ------------------------
+
+    The message below adds or replaces LDP FEC 192.0.2.0/24.
+
+        {
+          "message": "update-fecs",
+          "updates": [
+            {
+              "operation": "replace",
+              "fec": {
+                "fec": {
+                  "ldp": {
+                    "ip-prefix": "192.0.2.0/24"
+                  }
+                },
+                "if-index": 31
+              }
+            }
+          ]
+        }
+
+    The message below removes LDP FEC 192.0.2.0/24.
+
+        {
+          "message": "update-fecs",
+          "updates": [
+            {
+              "operation": "remove",
+              "fec": {
+                "fec": {
+                  "ldp": {
+                    "ip-prefix": "192.0.2.0/24"
+                  }
+                }
+              }
+            }
+          ]
+        }
+
+    The message below adds or replaces PW FEC with PW ID 1 and peer address
+    192.0.2.1.
+
+        {
+          "message": "update-fecs",
+          "updates": [
+            {
+              "operation": "replace",
+              "fec": {
+                "fec": {
+                  "pw": {
+                    "pw-id": 1,
+                    "peer-addr": "192.0.2.1"
+                  }
+                },
+                "if-index": 32
+              }
+            }
+          ]
+        }
+
+    The message below adds or replaces an RSVP FEC.
+
+        {
+          "message": "update-fecs",
+          "updates": [
+            {
+              "operation": "replace",
+              "fec": {
+                "fec": {
+                  "rsvp": {
+                    "source": "192.168.0.1",
+                    "destination": "192.168.0.2",
+                    "tunnel-id": 1,
+                    "lsp-id": 1
+                  }
+                },
+                "if-index": 31
+              }
+            }
+          ]
+        }
+
+    The message below adds or replaces a static LSP FEC.
+
+        {
+          "message": "update-fecs",
+          "updates": [
+            {
+              "operation": "replace",
+              "fec": {
+                "fec": {
+                  "static-lsp": {
+                    "source-global-id": 500,
+                    "source-node-id": "192.168.0.1",
+                    "destination-global-id": 600,
+                    "destination-node-id": "192.168.0.2",
+                    "tunnel-id": 1,
+                    "lsp-id": 1
+                  }
+                },
+                "if-index": 31
+              }
+            }
+          ]
+        }
+
+    update-req-fecs [YMM -> LIM]
+    -------------------------------
+
+    The message below adds or replaces a required RSVP FEC.
+
+        {
+          "message": "update-req-fecs",
+          "updates": [
+            {
+              "operation": "replace",
+              "req-fec": {
+                "fec": {
+                "rsvp": {
+                    "source": "192.168.0.1",
+                    "destination": "192.168.0.2",
+                    "tunnel-id": 1,
+                    "lsp-id": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+
+    This is similar to the update-fecs message except that it uses
+    req-fec instead of fec and if-index is omitted.
+
+    The message below removes a required static LSP FEC.
+
+        {
+          "message": "update-req-fecs",
+          "updates": [
+            {
+              "operation": "remove",
+              "req-fec": {
+                "fec": {
+                  "static-lsp": {
+                    "source-global-id": 500,
+                    "source-node-id": "192.168.0.1",
+                    "destination-global-id": 600,
+                    "destination-node-id": "192.168.0.2",
+                    "tunnel-id": 1,
+                    "lsp-id": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+
+    This is similar to the message above.
+    ';
+
+  revision 2017-02-08 {
+    description "Initial revision.";
+  }
+
+  typedef message-type-t {
+  	description "A message type.";
+  	type enumeration {
+      enum update-device-parms;
+      enum update-interfaces;
+      enum update-req-interfaces;
+      enum update-fecs;
+  	}
+  }
+
+  grouping message-header {
+  	description
+      "The message header for all YMM Interface Discovery API messages.";
+    leaf message {
+    	description "The message type.";
+      type message-type-t;
+      mandatory true;
+    }
+  }
+
+  typedef if-index-t {
+    description "An interface index value.";
+    type uint32;
+  }
+
+  typedef operation-t {
+    description "An update operation.";
+    type enumeration {
+      enum replace;
+      enum remove;
+    }
+  }
+
+  grouping operation {
+    description "An update operation.";
+    leaf operation {
+      description "The update operation.";
+      type operation-t;
+      mandatory true;
+    }
+  }
+
+  grouping device-parms {
+    description "Global device parameters.";
+    leaf router-id {
+      description
+        "The router ID.
+        This is a unique identifier for the router.
+        It may be based on an IPv4 address assigned to the device but is not
+        required to be a routable IPv4 address.
+        It is omitted if the device does not have a valid router ID.";
+      type api-common:router-id;
+    }
+    leaf ipv4-addr {
+      description
+        "The primary IPv4 address for the device.
+        This should be a stable routable IPv4 address.
+        It is omitted if the device does not have a primary IPv4 address.";
+      type inet:ipv4-address-no-zone;
+    }
+    leaf ipv6-addr {
+      description
+        "The primary IPv6 address for the device.
+        This should be a stable routable IPv6 address.
+        It is omitted if the device does not have a primary IPv6 address.";
+      type inet:ipv6-address-no-zone;
+    }
+  }
+
+  grouping interface-name {
+    description
+      "An interface name consisting of a base name and an extended ID.";
+    leaf if-base-name {
+      description "The base name.";
+      type api-common:ascii-string;
+      mandatory true;
+    }
+    leaf if-ext-id {
+      description "The extended ID.";
+      type api-common:ascii-string;
+      mandatory true;
+    }
+  }
+
+  grouping interface {
+    description "An interface reported from LIM to YMM.";
+    container interface {
+      uses interface-name;
+      leaf if-index {
+        description "The interface index.";
+        type if-index-t;
+      }
+      leaf ipv4-addr {
+        description
+          "The primary IPv4 address for the interface.
+          This is omitted if the interface does not have a primary IPv4
+          address.";
+        type inet:ipv4-address-no-zone;
+      }
+      leaf unnumbered {
+        description
+          "True if the interface is an IP unnumbered interface, false if it
+          isn't an IP unnumbered interface.  This may be omitted if the
+          interface is not an IP interface.";
+        type boolean;
+      }
+      leaf bandwidth {
+        description
+          "The bandwidth of the interface in kbits per second.";
+          type uint32;
+      }
+    }
+  }
+
+  grouping req-interface {
+    description "A required interface reported from YMM to LIM.";
+    container req-interface {
+      uses interface-name;
+    }
+  }
+
+  grouping req-fec {
+    description "A required FEC reported from YMM to LIM.";
+    container req-fec {
+      uses fec-id;
+    }
+  }
+
+  typedef pw-id-t {
+    description "A pseudowire ID.";
+    type uint32 {
+      range "1..1073741823";
+    }
+  }
+
+  grouping fec-id {
+    description "A FEC identifier.";
+    container fec {
+      choice fec {
+        mandatory true;
+        container ldp {
+          description "An LDP FEC.";
+          leaf ip-prefix {
+            description "The IP address prefix.";
+            type inet:ip-prefix;
+            mandatory true;
+          }
+        }
+        container pw {
+          description "A statically-provisioned pseudowire FEC.";
+          leaf pw-id {
+            description "The pseudowire ID.";
+            type pw-id-t;
+            mandatory true;
+          }
+          leaf peer-addr {
+            description "The peer address.";
+            type inet:ip-address-no-zone;
+            mandatory true;
+          }
+        }
+        container rsvp {
+          description "An RSVP LSP FEC.";
+          leaf source {
+            description "The LSP source address.";
+            type inet:ip-address-no-zone;
+            mandatory true;
+          }
+          leaf destination {
+            description "The LSP destination address.";
+            type inet:ip-address-no-zone;
+            mandatory true;
+          }
+          leaf tunnel-id {
+            description "The LSP tunnel ID.";
+            type uint16 {
+              range "1..65535";
+            }
+            mandatory true;
+          }
+          leaf lsp-id {
+            description "The LSP ID.";
+            type uint16;
+            mandatory true;
+          }
+        }
+        container static-lsp {
+          description "A statically-provisioned LSP FEC.";
+          leaf source-global-id {
+            description
+              "The LSP source global ID for an MPLS-TP LSP, omitted for an
+              MPLS LSP.";
+            type uint32;
+          }
+          leaf source-node-id {
+            description
+              "The LSP source node ID for an MPLS-TP LSP, or source address
+              for an MPLS LSP.";
+            mandatory true;
+            type yang:dotted-quad;
+          }
+          leaf destination-global-id {
+            description
+              "The LSP destination global ID for an MPLS-TP, omitted for an
+              MPLS LSP.";
+            type uint32;
+          }
+          leaf destination-node-id {
+            description
+              "The LSP destination node ID for an MPLS-TP LSP, or destination
+              address for an MPLS LSP.";
+            mandatory true;
+            type yang:dotted-quad;
+          }
+          leaf tunnel-id {
+            description "The LSP tunnel ID.";
+            type uint16 {
+              range "1..65535";
+            }
+            mandatory true;
+          }
+          leaf lsp-id {
+            description "The LSP ID.";
+            type uint16;
+            mandatory true;
+          }
+        }
+      }
+    }
+  }
+
+  grouping fec {
+    description "A FEC reported from LIM to YMM.";
+    container fec {
+      uses fec-id;
+      leaf if-index {
+        description "The interface index.";
+        type if-index-t;
+      }
+    }
+  }
+
+  // The YMM Interface Discovery API message formats follow.
+  //
+  // Yang does not itself support specification of JSON message formats - it
+  // only supports configuration, state, RPCs and notifications.
+  // We therefore use Yang notifications statements to define message formats.
+  // The messages are NOT intended to be Yang notifications, and the line
+  // formats of the messages do NOT include an outer <notification> element
+  // or an <eventTime> element.
+  //
+  // It would be possible to define a Yang extension for message formats,
+  // but then tools such as Pyang would ignore them.  For example,
+  // "pyang -f tree ymm-if-api.yang" would output nothing.
+
+  notification update-device-parms {
+    description
+      "An update-device-parms message sent from LIM to YMM.";
+    uses message-header {
+      refine message {
+        must ". = 'update-device-parms'";
+      }
+    }
+    container device-parms {
+      description
+        "The global device parameters.
+        Any parameters that are undefined are omitted.
+        An update-device-parms message that omits a parameter effectively
+        sets that parameter to undefined, removing any previous value.";
+
+      uses device-parms;
+    }
+  }
+
+  notification update-interfaces {
+    description
+      "An update-interfaces message sent from LIM to YMM.";
+    uses message-header {
+      refine message {
+        must ". = 'update-interfaces'";
+      }
+    }
+    list updates {
+      // The JSON updates list is required but can be empty.
+      description "The interface updates.";
+      // interface/if-index is required for replace operations.
+      must "(operation != 'replace') or interface/if-index";
+      uses operation;
+      uses interface;
+    }
+  }
+
+  notification update-req-interfaces {
+    description
+      "An update-req-interfaces message sent from YMM to LIM.";
+    uses message-header {
+      refine message {
+        must ". = 'update-req-interfaces'";
+      }
+    }
+    list updates {
+      // The JSON updates list is required but can be empty.
+      description "The updates to required interfaces.";
+      uses operation;
+      uses req-interface;
+    }
+  }
+
+  notification update-fecs {
+    description
+      "An update-fecs message sent from LIM to YMM.";
+    uses message-header {
+      refine message {
+        must ". = 'update-fecs'";
+      }
+    }
+    list updates {
+      // The JSON updates list is required but can be empty.
+      description "The FEC updates.";
+      // fec/if-index is required for replace operations.
+      must "(operation != 'replace') or fec/if-index";
+      uses operation;
+      uses fec;
+    }
+  }
+
+  notification update-req-fecs {
+    description
+      "An update-req-fecs message sent from YMM to LIM.";
+    uses message-header {
+      refine message {
+        must ". = 'update-req-fecs'";
+      }
+    }
+    list updates {
+      // The JSON updates list is required but can be empty.
+      description "The updates to required FECs.";
+      uses operation;
+      uses req-fec;
+    }
+  }
+}

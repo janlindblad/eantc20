@@ -1,0 +1,201 @@
+module adva-dnos-l2cp {
+
+  namespace "http://www.advaoptical.com/cim/adva-dnos-l2cp";
+
+  prefix "l2cp";
+
+  import adva-dnos-types { prefix adva-types; }
+  import adva-dnos-extensions { prefix adva-ext; }
+  import openconfig-yang-types { prefix oc-yang; }
+
+  organization 
+    "Adva Optical Networking";
+
+  contact
+    "For technical support, please contact your service channel";
+
+  description
+    "Definitions for OP-X Layer 2 control protocol tunneling related configuration";
+
+  revision "2019-07-15" {
+    description
+      "Integrating to ADVA YANG models.";
+  }
+
+  revision "2016-05-05" {
+    description
+      "First draft version";
+  }
+
+  typedef protocol-name {
+    type enumeration {
+      enum stp {
+        value 1;
+        description "Spanning Tree (M/R/S)";
+      }
+      enum lacp {
+        value 3;
+        description "Link Aggregation Control Protocol";
+      }
+      enum  lamp{
+        value 4;
+        description "Link Aggregation Marker Protocol";
+      }
+      enum efm {
+        value 5;
+        description "Link OAM (802.3ah)";
+      }
+      enum esmc {
+        value 6;
+        description "Ethernet Sync Messaging Channel";
+      }
+      enum dot1x {
+        value 7;
+        description "Port Based Network Access Control";
+      }
+      enum r4 {
+        value 8;
+        description "Reserved Protocol Using DA 01:80:C2:00:00:04";
+      }
+      enum r5 {
+        value 9;
+        description "Reserved Protocol Using DA 01:80:C2:00:00:05";
+      }
+      enum r6 {
+        value 10;
+        description "Reserved Protocol Using DA 01:80:C2:00:00:06";
+      }
+      enum elmi {
+        value 11;
+        description "Ethernet Local Management Interface";
+      }
+      enum r8 {
+        value 12;
+        description "Reserved Protocol Using DA 01:80:C2:00:00:08";
+      }
+      enum r9 {
+        value 13;
+        description "Reserved Protocol Using DA 01:80:C2:00:00:09";
+      }
+      enum rA {
+        value 14;
+        description "Reserved Protocol Using DA 01:80:C2:00:00:0A";
+      }
+      enum rB {
+        value 15;
+        description "Reserved Protocol Using DA 01:80:C2:00:00:0B";
+      }
+      enum rC {
+        value 16;
+        description "Reserved Protocol Using DA 01:80:C2:00:00:0C";
+      }
+      enum mvrp {
+        value 17;
+        description "Multiple VLAN Registration Protocol";
+      }
+      enum lldp {
+        value 18;
+        description "Link Layer Discovery Protocol";
+      }
+      enum ptp {
+        value 19;
+        description "PTP Using DA 01:80:C2:00:00:0E";
+      }
+      enum rF {
+        value 20;
+        description "Reserved Protocol Using DA 01:80:C2:00:00:0F";
+      }
+      enum garp {
+        value 21;
+        description "Generic Attribute Registration Protocol";
+      }
+      enum cdp {
+        value 22;
+        description "Cisco Discovery Protocol";
+      }
+      enum dtp {
+        value 23;
+        description "Cisco Dynamic Trunking Protocol";
+      }
+      enum pagp {
+        value 24;
+        description "Cisco Port Aggregation Protocol";
+      }
+      enum  vstp+ {
+        value 25;
+        description "Cisco Per VLAN Spanning Tree";
+      }
+      enum udld {
+        value 26;
+        description "Cisco Unidirectional Link Detection";
+      }
+      enum vtp {
+        value 27;
+        description "Cisco VLAN Trunking Protocol";
+      }
+    }
+
+    description "Layer 2 Control Protocols";
+  } // typedef protocol-name
+
+  typedef action {
+    type enumeration {
+      enum forward {
+        value 1;
+        description "forward action";
+      }
+      enum drop {
+        value 2;
+        description "drop action";
+      }
+      enum tunnel {
+        value 3;
+        description "tunnel action";
+      }
+
+    }
+  } //typedef action
+
+  container l2cp-profile-object {
+    description 
+      "L2CP profiles.";
+    list l2cp-profile {
+      key "name";
+      description
+        "L2cp profile configuration.";
+
+      leaf name {
+        type adva-types:profile-name;
+        description "L2CP Profile Name";
+      }
+      leaf enable {
+        type boolean;
+        default false;
+        description "Administrative status of L2CP Profile";
+        adva-ext:agema-default "false";
+      }    
+      list protocol-action {
+        key "protocol";
+        description
+          "L2cp protocol name";
+
+        leaf protocol {
+          type protocol-name;
+          description "l2 protocol";
+        }
+        leaf action {
+          type action;
+          mandatory true;
+          description "l2 protocol action";
+        }
+      } //list protocol-action
+    } // list l2cp-profile
+
+    leaf tunnel-mac {
+      type oc-yang:mac-address;
+      default "01:00:0C:CD:CD:D0";
+      description "tunnel mac address";
+      adva-ext:agema-default "01:00:0C:CD:CD:D0";
+    }
+  } // container l2cp-profile-object
+}

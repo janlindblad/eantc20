@@ -1,0 +1,659 @@
+
+module adva-dnos-mpls-tunnel {
+
+  namespace "http://www.advaoptical.com/cim/adva-dnos-mpls-tunnel";
+
+  prefix "mplst";
+
+  import adva-dnos-types    { prefix "adva-types"; }
+  import adva-dnos-extensions { prefix adva-ext; }
+
+  organization
+    "Adva Optical Networking";
+
+  contact
+    "For technical support, please contact your service channel";
+
+  description
+    "Definitions for MPLS Traffic Engineering (TE).";
+
+  revision "2019-07-22" {
+    description
+      "Integrating to ADVA YANG models.";
+  }
+  revision "2015-03-09" {
+    description
+      "Third draft version.";
+  }
+
+  grouping mpls_tunnel_data {
+    leaf name {
+      type string {
+        length "1..255";
+      }
+      description "The canonical name assigned to the tunnel";
+    }
+
+    leaf to {
+      type adva-types:mpls-lsr-id;
+      mandatory true;
+      description "Identity of the egress LSR associated with this tunnel instance";
+    }
+
+    leaf from {
+      type adva-types:mpls-lsr-id;
+      description "Identity of the ingress LSR associated with this tunnel instance";
+    }
+
+
+    leaf tunnel-id {
+      type int32 {
+        range "1 .. 65535";
+      }
+      description "Uniquely identifies the tunnel between the ingress and egress LSRs";
+      default 1;
+      adva-ext:agema-default "1";
+    }
+
+    leaf instance {
+      type uint32 {
+        range "1 .. 65535";
+      }
+      description "Uniquely identifies an instance of a tunnel";
+      default 1;
+      adva-ext:agema-default "1";
+    }
+
+    leaf include-any {
+      type uint32;
+      description
+        "A link satisfies the include-any constraint if and
+        only if the constraint is zero, or the link and the
+        constraint have a resource class in common";
+    }
+
+    leaf include-all {
+      type uint32;
+      description
+        "A link satisfies the include-all constraint if and
+        only if the link contains all of the administrative
+        groups specified in the constraint";
+    }
+
+    leaf exclude-any {
+      type uint32;
+      description
+        "A link satisfies the exclude-any constraint if and
+        only if the link contains none of the
+        administrative groups specified in the constraint.";
+    }
+
+    leaf protection {
+      type enumeration {
+        enum UNPROTECTED {
+          value 0;
+          description "no protection";
+        }
+        enum 1+1 {
+          value 1;
+          description "1+1 protection";
+        }
+        enum 1:1 {
+          value 2;
+          description "1:1 protection";
+        }
+        enum LINK {
+          value 3;
+          description "Tunnel over protected links only";
+        }
+        enum LINK-UNPROTECTED {
+          value 4;
+          description "Tunnel over unprotected links only";
+        }
+        enum DYNAMIC {
+          value 5;
+          description "Dynamic protection";
+        }
+      }
+      description "MPLS tunnel protection type.";
+      adva-ext:agema-default "UNPROTECTED";
+    }
+
+    leaf path {
+      type string;
+      description "MPLS tunnel path configuration";
+    }
+
+    leaf path-lock {
+      type boolean;
+      description "Lock MPLS tunnel path";
+      default false;
+      adva-ext:agema-default "false";
+    }
+
+    leaf bandwidth {
+      type adva-types:bandwidth;
+      description "Set tunnel bandwidth";
+    }
+
+    leaf retry-limit {
+      type uint32 {
+        range "0 .. 255";
+      }
+      description "Set maximum number of attemps before MPLS tunnel is deemed inoperable";
+      adva-ext:agema-default "infinite";
+    }
+
+    leaf retry-timer {
+      type uint32 {
+        range "1 .. 60";
+      }
+      description "Set the interval between MPLS tunnel failure and the first attempt to re-establish it";
+      default 30;
+      adva-ext:agema-default "30";
+    }
+
+    leaf secondary {
+      type boolean;
+      description "Indicates that the requested LSP is a secondary LSP (protection secondary path)";
+      default false;
+      adva-ext:agema-default "false";
+    }
+
+    leaf no-cspf {
+      type boolean;
+      description "Set AMB_MPLS_COMP_EXPLICIT (TODO)";
+      default false;
+      adva-ext:agema-default "false";
+    }
+
+    leaf ero-expansion {
+      type boolean;
+      description "Set AMB_MPLS_COMP_DYNAMIC_PARTIAL (TODO)";
+      default false;
+      adva-ext:agema-default "false";
+    }
+
+    leaf label-record {
+      type boolean;
+      description "Set AMB_MPLS_TNNL_RECORD_LABELS (TODO)";
+      default false;
+      adva-ext:agema-default "false";
+    }
+
+    leaf record {
+      type boolean;
+      description "Set AMB_MPLS_TNNL_RECORD_ROUTE (TODO)";
+      default false;
+      adva-ext:agema-default "false";
+    }
+
+    container fast-reroute {
+      leaf mode {
+        type enumeration {
+          enum DETOUR {
+            value 1;
+            description "FRR detour protection";
+          }
+          enum FACILITY {
+            value 2;
+            description "FRR facility protection";
+          }
+        }
+        description "FRR protection type";
+      }
+
+      leaf bypass-protecting-interface {
+        type adva-types:mpls-lsr-id;
+        description "Set FRR bypass protected interface";
+      }
+
+      leaf bandwidth {
+        type adva-types:bandwidth;
+        description "Set FRR tunnel bandwidth";
+      }
+
+      leaf bandwidth-protection {
+        type boolean;
+        description "Set FRR bandwidth protection";
+        default false;
+        adva-ext:agema-default "false";
+      }
+
+      leaf hop-limit {
+        type uint32 {
+          range "1.. 255";
+        }
+        description "Set FRR hop limit";
+        default 255;
+        adva-ext:agema-default "255";
+      }
+
+      leaf include-any {
+        type uint32;
+        description "Set FRR include-any administrative group";
+      }
+
+      leaf include-all {
+        type uint32;
+        description "Set FRR include-all administrative group";
+      }
+
+      leaf exclude-any {
+        type uint32;
+        description "Set FRR exclude-any administrative group";
+      }
+
+      leaf node-protection {
+        type boolean;
+        description "Set FRR node protection";
+        default false;
+        adva-ext:agema-default "false";
+      }
+    }
+
+    leaf enable {
+      type boolean;
+      description "Set MPLS tunnel admin state";
+      default false;
+      adva-ext:agema-default "false";
+    }
+  }
+
+  grouping mpls_tunnel_data_runtime {
+    leaf name {
+      type leafref {
+        path "/mplst:mpls_tunnel_objects/mplst:config-tunnels/mplst:config-tunnel/mplst:name";
+      }
+    }
+
+    leaf index {
+      type leafref {
+        path "/mplst:mpls_tunnel_objects/mplst:config-tunnels/mplst:config-tunnel/mplst:tunnel-id";
+      }
+    }
+
+    leaf instance {
+      type leafref {
+        path "/mplst:mpls_tunnel_objects/mplst:config-tunnels/mplst:config-tunnel/mplst:instance";
+      }
+    }
+
+    leaf ingress-lsrid {
+      type leafref {
+        path "/mplst:mpls_tunnel_objects/mplst:config-tunnels/mplst:config-tunnel/mplst:from";
+      }
+    }
+
+    leaf egress-lsrid {
+      type leafref {
+        path "/mplst:mpls_tunnel_objects/mplst:config-tunnels/mplst:config-tunnel/mplst:to";
+      }
+    }
+
+    leaf is-if {
+      type boolean;
+      description "Denotes whether or not this tunnel corresponds to an
+                  interface represented in the interfaces group table.";
+    }
+
+    leaf if-index {
+      type int32;
+      description "If mplsTunnelIsIf is set to true then this value contains
+                  the LSR-assigned ifIndex which corresponds to an entry in
+                  the interfaces table.";
+    }
+
+    leaf role {
+      type enumeration {
+        enum OTHER;
+        enum HEAD;
+        enum TRANSIT;
+        enum TAIL;
+        enum HEADTAIL;
+      }
+      description "Signifies the role that this tunnel entry/instance represents.";
+    }
+
+    leaf setup-prio {
+      type int32 {
+        range "0 .. 7";
+      }
+      description "Indicates the setup priority of this tunnel.";
+    }
+
+    leaf holding-prio {
+       type int32 {
+         range "0 .. 7";
+       }
+       description "Indicates the holding priority for this tunnel.";
+    }
+
+    leaf path-lock {
+      type leafref {
+        path "/mplst:mpls_tunnel_objects/mplst:config-tunnels/mplst:config-tunnel/mplst:path-lock";
+      }
+    }
+
+    leaf primary-instance {
+      type uint32;
+      description "Specifies the instance index of the primary instance of this tunnel.";
+    }
+
+    leaf hop-table-index {
+      type uint32;
+      description "Index into the mplsTunnelHopTable entry that specifies the explicit route hops for this tunnel.";
+    }
+
+    leaf path-in-use {
+      type uint32;
+      description "This value denotes the configured path that was chosen for
+                  this tunnel.  This value reflects the secondary index into
+                  mplsTunnelHopTable.";
+    }
+
+    leaf arhop-table-index {
+      type uint32;
+      description "Index into the mplsTunnelARHopTable entry that specifies
+                  the actual hops traversed by the tunnel.";
+    }
+
+    leaf chop-table-index {
+      type uint32;
+      description "Index into the mplsTunnelCHopTable entry that specifies
+                  the computed hops traversed by the tunnel.";
+    }
+
+    leaf include-any-affinity {
+      type leafref {
+        path "/mplst:mpls_tunnel_objects/mplst:config-tunnels/mplst:config-tunnel/mplst:include-any";
+      }
+    }
+
+    leaf include-all-affinity {
+      type leafref {
+        path "/mplst:mpls_tunnel_objects/mplst:config-tunnels/mplst:config-tunnel/mplst:include-all";
+      }
+    }
+
+    leaf exclude-any-affinity {
+      type leafref {
+        path "/mplst:mpls_tunnel_objects/mplst:config-tunnels/mplst:config-tunnel/mplst:exclude-any";
+      }
+    }
+
+    leaf total-up-time {
+      type uint32;
+    }
+
+    leaf instance-up-time {
+      type uint32;
+    }
+
+    leaf primary-time-up {
+      type uint32;
+    }
+
+    leaf path-changes {
+      type uint32;
+    }
+
+    leaf last-path-change {
+      type uint32;
+    }
+
+    leaf creation-time {
+      type uint32;
+    }
+
+    leaf state-transitions {
+      type uint32;
+    }
+
+    leaf admin-status {
+      type adva-types:up-down-val;
+      description "Indicates the desired operational status of this tunnel";
+    }
+
+    leaf oper-status {
+      type adva-types:up-down-val;
+      description "Indicates the actual operational status of this tunnel";
+    }
+
+    leaf switching-type {
+      type enumeration {
+        enum OTHER;
+        enum ANY;
+        enum PSC1;
+        enum PSC2;
+        enum PSC3;
+        enum PSC4;
+        enum L2SC;
+        enum TDM;
+        enum OTN-TDM;
+        enum DCSC;
+        enum LSC;
+        enum FSC;
+      }
+      description "Switching type.";
+    }
+
+    leaf link-protection {
+      type bits {
+        bit extra;
+        bit unprotected;
+        bit shared;
+        bit ded-1-to-1;
+        bit ded-1-plus-1;
+        bit enhanced;
+      }
+      description "This bitmask indicates the level of link protection required.";
+    }
+
+    leaf direction {
+      type enumeration {
+        enum OUT;
+        enum OUT-BI;
+        enum IN;
+        enum IN-OUT;
+        enum IN-BI;
+        enum TR-UNI;
+        enum TR-BI;
+        enum TR-BIH;
+      }
+      description "Tunnel direction.";
+    }
+
+    leaf path-comp {
+      type enumeration {
+        enum OTHER;
+        enum DYNAMIC-FULL;
+        enum EXPLICIT;
+        enum DYNAMIC-PARTIAL;
+      }
+      description "This value instructs the source node on how to perform
+                  path computation on the explicit route specified by the
+                  associated entries in the mplsTunnelHopTable.";
+    }
+
+    leaf admin-status-flags {
+      type uint32;
+      description "Determines the setting of the Admin Status flags in the
+                  Admin Status object or TLV, as described in RFC 3471.";
+    }
+
+    leaf lsp-protection {
+      type enumeration {
+        enum OTHER;
+        enum UNPROT;
+        enum FULL-REROUTE;
+        enum RROUTE-NO-EX;
+        enum 1-TO-N-EX;
+        enum 1-PLUS-1-UNI;
+        enum 1-PLUS-1-BI;
+      }
+      description "This field indicates the level of end-to-end protection for this LSP.";
+    }
+
+    leaf associated-lsp-id {
+      type uint32;
+      description "An identifier for an associated LSP.";
+    }
+
+    leaf use-working-lsp {
+      type boolean;
+      description "When set to TRUE, this flag indicates that this working
+                  LSP should be used for normal traffic.";
+    }
+
+    leaf protecting-operational {
+      type boolean;
+      description "When set to TRUE, this bit indicates that the protecting
+                  or alternate LSP is carrying the normal traffic after
+                  protection switching or restoration.";
+    }
+
+    leaf hop-table-restore-index {
+      type uint32;
+      description "Index into the mplsTunnelHopTable that specifies a list of hops to be used for this tunnel.";
+    }
+
+    leaf path-admin-status-flags {
+      type uint32;
+      description "The Admin Status flag setting on the most recent RSVP Path message,
+                  as described in RFC 3471.";
+    }
+
+    leaf resv-admin-status-flags {
+      type uint32;
+      description "The Admin Status flag setting on the most recent RSVP Resv message,
+                  as described in RFC 3471.";
+    }
+
+    leaf bandwidth {
+      type leafref {
+        path "/mplst:mpls_tunnel_objects/mplst:config-tunnels/mplst:config-tunnel/mplst:bandwidth";
+      }
+    }
+
+    leaf secondary {
+      type leafref {
+        path "/mplst:mpls_tunnel_objects/mplst:config-tunnels/mplst:config-tunnel/mplst:secondary";
+      }
+    }
+
+    leaf frr-mode {
+      type leafref {
+        path "/mplst:mpls_tunnel_objects/mplst:config-tunnels/mplst:config-tunnel/mplst:fast-reroute/mode";
+      }
+    }
+
+    leaf frr-bypass-protecting-interface {
+      type leafref {
+        path "/mplst:mpls_tunnel_objects/mplst:config-tunnels/mplst:config-tunnel/mplst:fast-reroute/bypass-protecting-interface";
+      }
+    }
+  }
+
+  container mpls_tunnel_objects {
+
+    container config-tunnels {
+      list config-tunnel {
+        key "name";
+
+        description
+          "An entry in this table represents an MPLS tunnel.
+           An entry can be created by a network administrator
+           or by an SNMP agent as instructed by an MPLS
+           signaling protocol.";
+
+        uses mpls_tunnel_data;
+      }
+    }
+
+    container runtime-tunnels {
+      config false;
+      list runtime-tunnel {
+        key "name";
+
+        description
+          "An entry in this table represents an MPLS tunnel.
+           An entry can be created by a network administrator
+           or by an SNMP agent as instructed by an MPLS
+           signaling protocol.";
+
+        uses mpls_tunnel_data_runtime;
+      }
+    }
+  }
+
+  notification mpls_tunnel_notification {
+
+    leaf event-type {
+      type enumeration {
+        enum UP {
+          description
+            "This notification is generated when a mplsTunnelOperStatus
+            object for one of the configured tunnels is about to leave
+            the down state and transition into some other state (but not
+            into the notPresent state).";
+
+        }
+        enum DOWN {
+          description
+            "This notification is generated when a oper-status
+            object for one of the configured tunnels is about to enter
+            the down state from some other state (but not from the
+            notPresent state).";
+        }
+        enum REROUTED {
+          description
+            "Description: This notification is generated when a tunnel is rerouted.
+            If the actual path is used, then this object MAY contain the
+            new path for this tunnel some time after this trap is issued
+            by the agent.";
+
+        }
+        enum REOPTIMIZED {
+          description
+            "This notification is generated when a tunnel is reoptimized.
+            If the mplsTunnelARHopTable is used, then this tunnel instance's
+            entry in the mplsTunnelARHopTable MAY contain the new path for
+            this tunnel some time after this trap is issued by the agent.";
+        }
+        enum PROT-SWITCH {
+          description "Protection switch.";
+        }
+        enum LSP-FAILURE {
+          description "LSP failure.";
+        }
+      }
+      description "MPLS tunnel notification event type.";
+    }
+
+    leaf name {
+      type leafref {
+        path "/mplst:mpls_tunnel_objects/mplst:runtime-tunnels/mplst:runtime-tunnel/mplst:name";
+      }
+    }
+
+    leaf admin-status {
+      type leafref {
+        path "/mplst:mpls_tunnel_objects/mplst:runtime-tunnels/mplst:runtime-tunnel/mplst:admin-status";
+      }
+    }
+
+    leaf oper-status {
+      type leafref {
+        path "/mplst:mpls_tunnel_objects/mplst:runtime-tunnels/mplst:runtime-tunnel/mplst:oper-status";
+      }
+    }
+
+    leaf details {
+      type string {
+        length "0..255";
+      }
+      description "Notification details.";
+    }
+  }
+}

@@ -1,0 +1,106 @@
+module metaswitch-location {
+
+  namespace "http://metaswitch.com/yang/nbu/metaswitch-location/201901140000Z";
+
+  prefix location;
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Metaswitch Location YANG model";
+
+  revision 2019-01-14 {
+    description
+      "Initial revision.";
+  }
+
+  typedef location-index-t {
+    type uint32 {
+      range "1..4294967295";
+    }
+    description
+      "Location index";
+  }
+
+  typedef location-role-t {
+    type enumeration {
+      enum none                { value 1; description "Location is not fault tolerant";}
+      enum backup              { value 2; description "Location is backup";}
+      enum active              { value 3; description "Location is active";}
+    }
+    description
+      "Location role";
+  }
+
+  typedef location-status-t {
+    type enumeration {
+      enum unavailable         { value 1; description "Location is not available for use";}
+      enum available           { value 2; description "Location is not active but is available for use";}
+      enum active              { value 3; description "Location is running normally";}
+      enum connected           { value 4; description "Location is activated, but is not itself reporting location state";}
+      enum synchronizing       { value 5; description "Location is activated and is reporting itself as coming up";}
+
+    }
+    description
+      "Location status";
+  }
+
+  container location {
+
+    description
+      "Location state";
+
+    config false;
+
+      container location-state-list {
+
+        description
+          "Container to hold Location state.";
+
+
+        list location-state {
+
+          description
+            "Location state";
+
+          // Actions in state lists require keyed lists.
+          key "location-index";
+
+          leaf location-index {
+            // Low-level model info: Corresponds to dcSMLocationIndex and dfmLocnId
+            type location-index-t;
+            description
+              "The index of the location.";
+          }
+
+          leaf location-status {
+            // Low-level model info: Corresponds to dcSMLocationLocationStatus & dfmLocnConnected
+            type location-status-t;
+            description
+              "The hardware status of the location.";
+          }
+
+          leaf location-role {
+            // Low-level model info: Corresponds to dcSMLocationLocationRole.
+            type location-role-t;
+            description
+              "The current role of this location.  During transient periods,
+              this field describes the target state for the location.";
+          }
+
+        } // location-state
+
+      } // location-state-list
+
+  } // location
+
+} // metaswitch-location
+

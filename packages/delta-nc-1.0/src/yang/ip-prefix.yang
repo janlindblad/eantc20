@@ -1,0 +1,234 @@
+
+module ip-prefix {
+
+  namespace "http://metaswitch.com/yang/nbu/ip-prefix/201602250000Z";
+
+  prefix ip-prefix;
+
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix "interfaces"; }
+  import metaswitch-yang-types { prefix meta; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "IP Prefix List Configuration";
+
+  revision 2016-02-25 {
+    description "Initial revision.";
+  }
+
+  typedef ip-prefix-seq-num {
+    type uint32 {
+      range "1..4294967295";
+    }
+    description
+      "(1-4294967295)";
+  }
+
+  typedef ip-prefix-len {
+    type uint32 {
+      range "0..128";
+    }
+    description
+      "(0-128)";
+  }
+
+
+  grouping ip-prefix-config {
+
+    // Low-level model info: Corresponds to AMB_AALL_PRE_ACCESS_LIST (aallPreAccessListTable).
+
+    description
+      "IP prefix access list configuration.";
+
+    // Low-level model info: Corresponds to aallPreAccessListAddress(Type/Len).
+    // Low-level model info: This field is mandatory.
+    leaf prefix {
+      type interfaces:iface-ip-prefix-t;
+      description
+        "The prefix that specifies the range of addresses that this rule
+        matches.";
+
+      user-ext:CLI-comm-help "Set the prefix for this rule";
+      user-ext:CLI-no-comm-help "Remove the prefix for this rule";
+      user-ext:CLI-param-help "Set the prefix for this rule";
+    }
+
+    // Low-level model info: Corresponds to aallPreAccessListIncluded (set to true if the action is permit).
+    leaf action {
+      type meta:route-map-action;
+      default "permit";
+      description
+        "Include or exclude any matching routes.";
+
+      user-ext:CLI-comm-help "Permit or deny routes matching this prefix";
+      user-ext:CLI-no-comm-help "Permit or deny routes matching this prefix";
+      user-ext:CLI-param-help "Permit or deny routes matching this prefix";
+    }
+
+    // Low-level model info: Corresponds to aallPreAccessListAddrPrefGe.
+    leaf ge {
+      type ip-prefix-len;
+      default "0";
+      description
+        "The minimum prefix length in bits that, in conjunction
+        with le, specifies the range of prefix lengths that this rule matches.
+
+        The range is assumed to be from ge to the address length of the
+        family if only ge is specified.
+
+        A specified ge and/or le must satisfy the  following
+        condition:
+        length of prefix <= ge <= le <= address length of family.";
+
+      user-ext:CLI-comm-help "Set the minimum prefix length in bits";
+      user-ext:CLI-no-comm-help "Set the default minimum prefix length";
+      user-ext:CLI-param-help "Set the minimum prefix length in bits";
+
+      must "(. = 0) or (number(substring-after(../prefix,'/')) <= number(.))" {
+        error-message "ge should be at least prefix length for an IP prefix sequence entry";
+      }
+
+      must "(substring-after(../prefix,':') != '') or (. <= 32)" {
+        error-message "prefix is IPv4 therefore ge must be less than 32 for an IP prefix sequence entry";
+      }
+
+    }
+
+    // Low-level model info: Corresponds to aallPreAccessListAddrPrefLe.
+    leaf le {
+      type ip-prefix-len;
+      default "0";
+      description
+        "The maximum prefix length in bits that, in conjunction with ge,
+        specifies the range of prefix lengths that this rule matches.
+
+        The range is assumed to be from
+        length of prefix to le if only le is specified.
+
+        A specified ge and/or le must satisfy the  following
+        condition:
+        length of prefix <= ge <= le <= address length of family.";
+
+      user-ext:CLI-comm-help "Set the maximum prefix length in bits";
+      user-ext:CLI-no-comm-help "Set the default maximum prefix length";
+      user-ext:CLI-param-help "Set the maximum prefix length in bits";
+
+      must "(. = 0) or (number(substring-after(../prefix,'/')) <= number(.))" {
+        error-message "le should be at least prefix length for an IP prefix sequence entry";
+      }
+
+      must "(substring-after(../prefix,':') != '') or (. <= 32)" {
+        error-message "prefix is IPv4 therefore le must be less than 32 for an IP prefix sequence entry";
+      }
+
+    }
+
+  } // ip-prefix-config
+
+  list prefix-list {
+
+    // Low-level model info: Corresponds to AMB_AALL_PRE_ACCESS_LIST (aallPreAccessListTable).
+
+    description
+      "This list is used to create and manage IP prefix access lists.  An
+      entry this list corresponds to a single rule within an IP prefix access
+      list.
+
+      An IP prefix access list defines an address and prefix
+      length space.  By itself, configuring an IP prefix access list has
+      no effect - the corresponding list must also be configured
+      as the value of an object in another list, to specify the
+      address and prefix length space that the behavior configured
+      by the other object applies to.
+
+      The description of the other object specifies whether
+      addresses and prefixes ranges included in the IP prefix
+      access list are permitted or denied the corresponding
+      behavior.
+
+      Note that the same list can be configured for
+      more than one of these other objects.  This is useful if
+      more than one configurable behavior should be applied to the
+      same address and prefix length space.
+
+      Each IP prefix access list consists of zero or more rules
+      which together specify all, or a subset of, the total address and
+      prefix length space for all address families.
+
+      For a particular IP prefix access list, rules are tested in
+      increasing order of rule index, until the address and prefix
+      length under test falls within the address respectively
+      prefix length range specified by the rule, then the address
+      and prefix length under test are included in or excluded
+      from the list according to value of action for that rule.  If no
+      rule matches the address and prefix length under test, then it is
+      excluded from the list.
+
+      Note that it follows from the above that, if there are no
+      rules configured within a particular list, then that
+      list contains no addresses.  In other words, it corresponds
+      to an 'exclude all' IP prefix access list.
+
+      Note that a single IP prefix access list can contain rules
+      for different address families.";
+
+    user-ext:CLI-comm-help "Define a prefix list";
+    user-ext:CLI-no-comm-help "Remove a prefix list";
+
+    key "name";
+
+    // Low-level model info: Generate unique aallPreAccessListListIndex for each name.
+    leaf name {
+      type meta:ip-prefix-name;
+      description
+        "The name of the IP prefix access list that this rule is a part of.";
+
+      user-ext:CLI-param-help "Set IP prefix name";
+    }
+
+    list seq-num {
+
+      user-ext:CLI-comm-help "Configure IP prefix sequence entry";
+      user-ext:CLI-no-comm-help "Remove IP prefix sequence entry";
+
+      key "number";
+
+      // Low-level model info: Corresponds to aallPreAccessListRuleIndex.
+      leaf number {
+        type ip-prefix-seq-num;
+        description
+          "An index value identifying this rule within the IP prefix
+          access list.  Rules are tested in order of increasing rule
+          index.";
+
+        user-ext:CLI-param-help "IP prefix sequence number";
+      }
+
+      // Low-level model info: Check this condition within the Mapper code - "When ge is non-zero, the prefix length should be at least ge."
+
+      must "not(ge) or not(le) or (le = 0) or (number(ge) <= number(le))" {
+        error-message "ge should be at most le for an IP prefix sequence entry";
+      }
+
+      must "(prefix)" {
+        error-message "prefix must be defined for an IP prefix sequence entry";
+      }
+
+      uses ip-prefix-config;
+
+    } //seq-num
+
+  } // prefix-list
+
+} // ip-prefix
+

@@ -1,0 +1,1033 @@
+module erps {
+
+  namespace "http://metaswitch.com/yang/nbu/erps/201704200000Z";
+
+  prefix erps;
+
+  import metaswitch-custom-yang-types { prefix "custom"; }
+  import user-extensions { prefix "user-ext"; }
+  import metaswitch-yang-types { prefix meta; }
+  import ietf-yang-types { prefix yang; }
+
+  import ieee802-types  {
+    prefix "ieee802";
+  }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+
+  description
+     "This YANG module describes configuration and operational
+     data model for ITU.T G.8032 Ethernet Ring Protocol (ERP).
+     G.8032 provides a loop avoidance and protection switching
+     mechanism in ethernet ring network.
+            -----                 -----
+           |  A  |---------------|  B  |
+            -----                 -----
+              |                     |
+              |        Ring         |
+              |                     |
+            -----                 -----
+           |  D  |---------------|  C  |
+            -----                 -----
+     A Ethernet ring node is connected to adjacent Ethernet ring
+     nodes participating in the same Ethernet ring, using two
+     independent links. A ring link is bounded by two adjacent
+     Ethernet ring nodes and a port for a ring link is called a
+     ring port. The minimum number of Ethernet ring nodes in
+     an Ethernet ring is two.
+     An Automatic Protection Switching(APS) protocol is used to
+     coordinate the protection actions over the ring.
+      APS:   Automatic Protection Switching
+      CCM:   Continuity Check Message
+      DNF:   Do Not Flush
+      ERP:   Ethernet Ring Protection
+      PDU:   Protocol Data Unit
+      R-APS: Ring APS
+      RPL:   Ring Protection Link
+      STP:   Spanning Tree Protocol
+      VLAN:  Virtual LAN
+      VPLS:  Virtual Private LAN Service
+      WTB:   Wait To Block
+      WTR:   Wait To Restore";
+
+  revision 2017-04-20 {
+    description "Initial revision.  Partially based on ietf-erp.";
+  }
+
+  feature sub-ring {
+    description
+      "This feature represents ability to support G.8032 sub-ring
+      without R-APS virtual channel";
+    reference
+      "Rec. ITU-T G.8032/Y.1344 (02/2012), Section 9.7.3";
+  }
+
+  feature sub-ring-virtual-channel {
+    description
+      "This feature represents ability to support G.8032 ring with
+       R-APS virtual channel.";
+    reference
+      "Rec. ITU-T G.8032/Y.1344 (02/2012), Section 9.7.3";
+  }
+
+  feature ring-profile-template {
+    description
+      "This feature represents ability to support profile
+       templates.";
+  }
+
+  typedef ring-type {
+    type enumeration {
+      enum major-ring {
+        description
+          "G.8032 major ring. All nodes connected in full circular topology.";
+      }
+      enum sub-ring {
+        description
+          "Sub-ring with no support for R-APS virtual channel.";
+      }
+      enum sub-ring-with-vc {
+        description
+          "Sub-ring with support for R-APS virtual channel.";
+      }
+    }
+    description
+      "Supported ring topologies.";
+  }
+
+  typedef reversion-mode {
+    type enumeration {
+      enum revertive {
+        description
+          "Represents revertive mode operation of a G.8032
+           ethernet ring.";
+      }
+      enum non-revertive {
+        description
+          "Represents non-revertive mode operation of a G.8032
+           ethernet ring.";
+      }
+    }
+    description
+      "This typedef defines G.8032 ring protection operation mode.";
+    reference
+      "Rec. ITU-T G.8032/Y.1344 (02/2012), Section 9.2";
+  }
+
+  typedef rpl-port-type {
+    type enumeration {
+      enum normal {
+        description
+          "Represents a node in the ring that is not the RPL or RPL neighbor.";
+      }
+      enum owner {
+        description
+          "This port is the RPL owner.";
+      }
+      enum neighbor {
+        description
+          "This port is the RPL neighbor.";
+      }
+    }
+    description
+      "Ring port role types.";
+  }
+
+  typedef ring-state {
+    type enumeration {
+      enum initializing {
+        description
+          "Ring protocol state machine is initializing and it is not
+           yet operational.";
+      }
+      enum idle {
+        description
+          "Ring is operational in normal state, RPL link is blocked
+           and no failure or administrative condition exists. Owner
+           node is transmitting R-APS (NR, RB) PDUs.";
+      }
+      enum pending {
+        description
+          "Ring does not have any failure or administrative condition
+           however RPL is blocked. In case of revertive mode
+           operation wait-to-restore timer is running.";
+      }
+      enum protection {
+        description
+          "One or more failure condition exists on the ring. Failed
+           nodes are transmitting R-APS (SF) PDUs. Upon reaching to
+           protection state ring unblocks RPL link to allow user
+           traffic.";
+      }
+      enum manual-switch {
+        description
+          "User has manually switched ring. This is usually done to
+           perform maintenance operation on the ring node.";
+      }
+      enum force-switch {
+        description
+          "User has force-switched ring. This state overrides
+           protection state.";
+      }
+    }
+    description
+      "Protocol states for a ring instance.";
+  }
+
+  typedef ring-error-types {
+    type enumeration {
+      // Low-level model info: Corresponds to erpsRingOperRsnNone
+      enum none {
+        description
+          "Ring is operational or activating.";
+      }
+      // Low-level model info: Corresponds to erpsRingOperRsnEntityNotUp
+      enum entity-not-up {
+        description
+          "Ring is not operational due to ERPS not being active.";
+      }
+      // Low-level model info: Corresponds to and erpsRingOperRsnAdminConfig
+      enum admin-config {
+        description
+          "Ring is not operational due to the ring's configuration.";
+      }
+      // Low-level model info: Corresponds to erpsRingOperRsnInconsistentRpl
+      enum inconsistent-rpl {
+        description
+          "Ring is not operational because the RPL configuration is inconsistent.";
+      }
+      // Low-level model info: Corresponds to erpsRingOperRsnInconsistentIf
+      enum inconsistent-ports {
+        description
+          "Ring is not operational because the same port has been configured for both ring ports.";
+      }
+      // Low-level model info: Corresponds to erpsRingOperRsnNoProtVlans
+      enum vlan-protection-not-configured {
+        description
+          "Ring is not operational because there are no VLANs configured for protection.";
+      }
+      // Low-level model info: Corresponds to erpsRingOperRsnNoIfInfo
+      enum no-port-info {
+        description
+          "Ring is not operational because information for one of the logical ports is not present.
+          If you receive this error check that both ring ports exist and if the ring uses a virtual
+          control channel that the parent ring has been specified and is operational.";
+      }
+      // Low-level model info: Corresponds to erpsRingOperRsnIfVlanType
+      enum bad-port-vlan-type {
+        description
+          "Ring is not operational because one or more of the ring ports has an incorrect VLAN
+          type.";
+      }
+      // Low-level model info: Corresponds to erpsRingOperRsnResourceFailure
+      enum resource-failure {
+        description
+          "Ring is not operational becuase of a resource failure.";
+      }
+      // Low-level model info: Corresponds to erpsRingOperRsnRingIDVlanClash
+      enum ring-id-vlan-clash {
+        description
+          "Ring is not operational becuase the ring ID and APS VLAN ID or
+          virtual channel VLAN ID is already in use on one or more of the
+          ports in the ring.";
+      }
+      // Low-level model info: Corresponds to erpsRingOperRsnCtrlPortStateFail
+      enum control-port-state-failure {
+        description
+          "Ring is not operational becuase the port state for the protected
+          VLANs or APS VLAN on one or more of the ring ports was already
+          being controlled by another protocol.  This is most likely caused
+          by another ERPS ring or another protocol such as MSTP already
+          setting port state for the port and VLAN combination.";
+      }
+      enum other {
+        description
+          "Ring is not operational for an unspecified reason.";
+      }
+    }
+  }
+
+  typedef raps-type {
+    type enumeration {
+      enum none {
+        description
+          "No R-APS has been received.";
+      }
+      enum no-request {
+        description
+          "R-APS, No Request.";
+      }
+      enum no-request-rpl-blocked {
+        description
+          "R-APS, No Request, RPL Blocked.";
+      }
+      enum signal-fail {
+        description
+          "R-APS, Signal Fail.";
+      }
+      enum force-switch {
+        description
+          "R-APS, Force Switch.";
+      }
+      enum manual-switch {
+        description
+          "R-APS, Manual Switch.";
+      }
+    }
+    description
+      "The type of R-APS message received.";
+  }
+
+  typedef ring-id-type {
+    type uint32 {
+      range "1..239";
+    }
+    description
+      "G.8032 Ring ID";
+  }
+
+  typedef tx-interval-type {
+    type uint32 {
+      range "1..255";
+    }
+    units "seconds";
+    description
+      "R-APS transmission interval";
+  }
+
+  typedef guard-interval-type {
+    type uint32 {
+      range "1..200";
+    }
+    units "tens of milliseconds";
+    description
+      "Guard interval";
+  }
+
+  typedef wtr-interval-type {
+    type uint32 {
+      range "0..12";
+    }
+    description
+      "Wait-to-restore interval";
+  }
+
+  typedef hold-off-interval-type {
+    type uint32 {
+      range "0..100";
+    }
+    units "hundreds of milliseconds";
+    description
+      "Hold-off interval";
+  }
+
+  typedef port-id-type {
+    type enumeration {
+      enum port0 {
+        description
+          "Port 0 of the ring node.";
+      }
+      enum port1 {
+        description
+          "Port 1 of the ring node.";
+      }
+    }
+    description
+      "Each ring instance has a maximum of two ports. This definition
+       labels these ports as port0 and port1 for identification.";
+  }
+
+  identity port-state {
+    description
+      "Base identity for the current state of a port in an ERPS ring.";
+  }
+
+  identity local-failure {
+    base port-state;
+    description
+        "A local failure has been detected.";
+  }
+
+  identity data-blocked {
+    base port-state;
+    description
+        "The protected VLANs are blocked.";
+  }
+
+  identity aps-blocked {
+    base port-state;
+    description
+        "The APS channel is blocked.";
+  }
+
+  grouping ring-identifier {
+    description
+      "This grouping defines ring name, ring id and APS VLAN combination.";
+      user-ext:CLI-comm-help "Set Ring identifiers";
+
+    leaf ring-name {
+      type meta:name-string;
+      mandatory true;
+      description
+        "G.8032 ring name.";
+      user-ext:CLI-comm-help "Set Ring name";
+    }
+
+    leaf ring-id {
+      type ring-id-type;
+      mandatory true;
+      description
+        "G.8032 Ring instance id.";
+      user-ext:CLI-comm-help "Set Ring instance id";
+    }
+
+    leaf aps-vlan {
+      type ieee802:vlanid;
+      mandatory true;
+      description
+        "APS channel VLAN-ID";
+      user-ext:CLI-comm-help "Set channel VLAN-ID";
+    }
+  }
+
+  grouping ring-profile-config {
+    description
+      "This grouping defines configuration parameters for ring
+      instance.";
+      user-ext:CLI-comm-help "Configuration parameters for ring instance";
+
+    // Low-level model info: Corresponds to erpsRingRevertiveMode
+    leaf mode {
+      type reversion-mode;
+      description
+        "This leaf defines G.8032 ring protection mode. A ring
+         may operate in revertive or non-revertive mode.
+         In revertive operation, after the condition(s) causing a
+         switch has cleared, the traffic channel is restored to
+         the working transport entity, i.e., blocked on the RPL.
+         In non-revertive operation, the traffic channel
+         continues to use the RPL, if it has not failed, after a
+         switch condition has cleared.";
+      reference
+        "Rec. ITU-T G.8032/Y.1344 (02/2012), Section 9.2";
+      user-ext:CLI-comm-help "Ring protection mode";
+    }
+
+    container timers {
+      description
+        "This container defines G.8032 timers.";
+      user-ext:CLI-comm-help "G.8032 timers";
+
+      // Low-level model info: Corresponds to erpsRingRapsTxInterval
+      leaf tx {
+        type tx-interval-type;
+        units "seconds";
+        description
+          "R-APS transmission interval.
+           The G.8032 standard specifies an interval of 5 seconds for
+           the periodic transmission of R-APS messages.";
+        user-ext:CLI-comm-help "Transmission interval";
+      }
+
+      // Low-level model info: Corresponds to erpsRingGuardInterval
+      leaf guard {
+        type guard-interval-type;
+        units "tens of milliseconds";
+        description
+          "The guard timer is used to prevent Ethernet ring nodes
+           from acting upon outdated R-APS messages and prevents
+           the possibility of forming a closed loop.
+           This timer period SHOULD be greater than the maximum
+           expected forwarding delay in which an R-APS message
+           traverses the entire ring.
+           The period of the guard timer MAY be configured by the
+           operator in 10 ms steps between 10 ms and 2 seconds";
+        reference
+          "Rec. ITU-T G.8032/Y.1344 (02/2012), Section 10.1.5";
+        user-ext:CLI-comm-help "Guard timer";
+      }
+
+      // Low-level model info: erpsRingWaitToRestoreInterval
+      leaf wtr {
+        type wtr-interval-type;
+        units "minutes";
+        description
+          "In revertive mode the 'wait to restore' (WTR) timer
+           is used to prevent frequent operation of the
+           protection switching due to intermittent signal
+           failure defects.
+           When recovering from a Signal fail, the delay timer
+           must be long enough to allow the recovering network to
+           become stable.
+           WTR timer is activated on the RPL owner node. When the WTR
+           timer is expired the RPL owner node initiates the
+           reversion process by transmitting an R-APS (NR, RB)
+           message.";
+        reference
+          "Rec. ITU-T G.8032/Y.1344 (02/2012), Section 10.1.4";
+        user-ext:CLI-comm-help "Wait to restore timer";
+      }
+
+      // Low-level model info: Corresponds to erpsRingHoldOffInterval
+      leaf hold-off {
+        type hold-off-interval-type;
+        units "hundreds of milliseconds";
+        description
+          "The hold-off timer is used to coordinate the timing of
+           protection switches.
+           When a new defect or more severe defect occurs
+           (new SF), this event is not to be reported immediately
+           to protection switching if the provisioned hold-off
+           timer value is non-zero. Instead, the hold-off timer
+           is started. When the hold-off timer expires, the link
+           that started the timer is checked as to whether a
+           defect still exists. If one does exist, that defect is
+           reported to protection switching.";
+        reference
+          "Rec. ITU-T G.8032/Y.1344 (02/2012), Section 10.1.8";
+        user-ext:CLI-comm-help "Hold-off timer";
+      }
+    }
+  }
+
+  //config container
+  container erps {
+    description
+      "This container defines configuration and state for G.8032 rings.";
+    user-ext:CLI-comm-help "Ring configuration";
+
+    container profiles {
+      if-feature ring-profile-template;
+      description
+        "This container defines G.8032 ring profiles.";
+      user-ext:CLI-comm-help "Ring profiles";
+      list profile {
+        key "name";
+        description
+          "G.8032 ring profile name.";
+
+        leaf name {
+          type string {
+            length "1..32";
+          }
+          description
+            "Name of a ring profile.";
+          user-ext:CLI-comm-help "Profile name";
+        }
+
+        // Add default timer values to the profiles list.  A ring uses timer values
+        // based on the following preferences.
+        //
+        //  - Its own profile-parameters timer values if they exist.
+        //  - An entry in this profiles list if the the ring is configured to use
+        //    that entry.
+        //  - A default value (tx: 5, guard:50, wtr:5, hold-off: 0).
+        //
+        uses ring-profile-config {
+          description
+            "Ring mode and timer configurations";
+          refine timers/tx {
+            default 5;
+          }
+          refine timers/guard {
+            default 50;
+          }
+          refine timers/wtr {
+            default 5;
+          }
+          refine timers/hold-off {
+            default 0;
+          }
+        }
+      }
+    }
+
+    container rings {
+      description
+        "This container defines the configuration model of G.8032
+         rings.";
+      user-ext:CLI-comm-help "G.8032 rings configuration";
+      list ring {
+        key "ring-name";
+        unique "ring-id aps-vlan";
+        description
+          "Collection of G.8032 rings configurations on a device.";
+        user-ext:CLI-comm-help "G.8032 ring";
+
+        uses ring-identifier {
+          description
+            "Uniquely identifies a ring instance.";
+        }
+
+        // Low-level model info: Corresponds to erpsRingType
+        leaf ring-type {
+          type ring-type;
+          default major-ring;
+          description
+            "This leaf defines the type of an ethernet ring. A ring can be
+             configured as a complete ring where ring nodes are
+             connected in a closed loop. In another configuration
+             variation a ring may not have a complete closed loop,
+             such a ring is defined as open-ring or sub-ring.";
+          user-ext:CLI-comm-help "Ethernet ring type";
+        }
+
+        // Low-level model info: Corresponds to erpsRingCCOpenRing
+        leaf cc-open-ring {
+          type boolean;
+          default false;
+          description
+            "Indicates whether the control channel is an open or closed
+             ring.
+
+             If the ring is a sub-ring that has interconnection nodes that are
+             not connected by a virtual control channel set this field to 'true'.";
+          user-ext:CLI-comm-help "Set control channel open";
+        }
+
+        // Low-level model info: Corresponds to erpsRingProtectedVlans
+        leaf vlan-ids {
+          type meta:vlan-id-ranges;
+          mandatory true;
+          description
+            "List of VLAN-IDs, protected by ring instance. For
+            example '2, 3-7, 9, 10-100'
+            VLAN-IDs MUST not overlap with VLAN-IDs of any other
+            instance of the same physical ring.";
+          user-ext:CLI-comm-help "List of VLAN IDs";
+        }
+
+        must "(vlan-ids)" {
+          error-message "An ERPS ring must specify a set of protected VLANs";
+        }
+
+        // Low-level model info: Corresponds to erpsRingLevel
+        leaf aps-level {
+          type uint32 {
+            range "0..7";
+          }
+          default 0;
+          description
+            "Maintainance Endpoint Level (MEL) at which R-APS
+             PDU is transmitted.  All nodes in the ring must be
+             configured with same APS level value.  Any received
+             R-APS with a level that does not match this level
+             is dropped.";
+          reference
+            "Rec. ITU-T G.8032/Y.1344 (02/2012), Section 10.3";
+          user-ext:CLI-comm-help "Maintenance endpoint level";
+        }
+
+        container sub-ring {
+          user-ext:CLI-comm-help "Sub-ring interconnection nodes configuration";
+          description
+            "Parameters for sub-ring interconnection nodes.";
+
+          // Low-level model info: Corresponds to erpsRingVccVlanId
+          leaf virtual-channel-vlan {
+            type ieee802:vlanid;
+            description
+              "The VLAN ID of the virtual control channel.  This only needs to be
+              set for interconnection nodes of a sub-ring that uses a virtual control channel";
+            user-ext:CLI-comm-help "Virtual control channel VLAN ID";
+          }
+
+          container tc-prop {
+            description
+              "Parameters for propagating topology change notifications from sub-ring to parent ring.";
+            user-ext:CLI-comm-help "Topology change parameters";
+
+            // Low-level model info: Corresponds to erpsRingPropagateTc
+            leaf enable {
+              type boolean;
+              default false;
+              description
+                "Whether topology changes should be propagated from sub-ring to main ring.";
+              user-ext:CLI-comm-help "Propagate topology changes";
+            }
+
+            // Low-level model info: Maps to erpsRingParentRingId and erpsRingParentRingCcVlanId
+            leaf parent-ring-name {
+              type leafref {
+                path "/erps/rings/ring/ring-name";
+              }
+              description
+                "The name of the parent ring.";
+              user-ext:CLI-comm-help "Parent ring name";
+            }
+          }
+        }
+
+        container ring-ports {
+          description
+            "Ring port configurations.";
+          user-ext:CLI-comm-help "Ring port configuration";
+          list port {
+            key "port-id";
+            max-elements 2;
+
+            description
+              "List of the ring ports. This list should have at least
+              one port (in the case of a sub-ring) and at most two ports.";
+            user-ext:CLI-comm-help "Ring port";
+
+            // Low-level model info: This and the following "interface" leaf correspond to erpsRingInterface0 and erpsRingInterface1
+            leaf port-id {
+              type port-id-type;
+              description
+                "Port identifier (port0 or port1).";
+              user-ext:CLI-comm-help "Port ID";
+            }
+
+            leaf interface {
+              type custom:iface-name;
+              mandatory true;
+              description
+                "Name of interface protected by this ERPS ring instance.";
+              user-ext:CLI-comm-help "Interface name";
+            }
+
+            must "(interface)" {
+              error-message "Must specify an interface name for a ring port";
+            }
+
+            // Low-level model info: Corresponds to erpsRingInterface0Type / erpsRingInterface1Type
+            leaf rpl-port-role {
+              type rpl-port-type;
+              default normal;
+              description
+                "RPL port role for the ring instance.";
+              user-ext:CLI-comm-help "Port role";
+            }
+
+            // Low-level model info: Corresponds to erpsRingInterface0Monitor / erpsRingInterface1Monitor
+            leaf monitor-interface {
+              type custom:iface-name;
+              description
+                "The sub-interface to monitor in order to trigger protection switching.";
+              user-ext:CLI-comm-help "Sub interface to monitor";
+            }
+          }
+        }
+
+        leaf profile-name {
+          if-feature ring-profile-template;
+          type string {
+            length "1..32";
+          }
+          description
+            "G.8032 ring profile name. If this profile exists
+             in the profile configuration list, profile
+             parameters will be imported from it; default
+             values will be used otherwise.
+             Profile parameters imported by this template can
+             be overridden by directly configured parameters
+             under the 'profile-parameters' container.  Only
+             values configured under this container will
+             override the template values.";
+          user-ext:CLI-comm-help "Ring profile name";
+        }
+
+        container profile-parameters {
+          description
+            "Ring profile parameters configurations.";
+          user-ext:CLI-comm-help "Profile parameters";
+          uses ring-profile-config {
+            description
+              "Ring mode and timer configurations.";
+          }
+        }
+
+      } // end ring
+    } // end container rings
+
+    container rings-state-list {
+      config false;
+      description
+        "This container defines operations data for G.8032 rings.";
+
+      list ring-state {
+        description
+          "The operations data for G.8032 rings on a device.";
+
+        uses ring-identifier {
+          description
+            "Uniquely identifies a ring instance.";
+        }
+
+        // Low-level model info: Corresponds to erpsRingStatus
+        leaf state {
+          type ring-state;
+          description
+            "Ring instance state. This represent protocol state
+             machine state.";
+        }
+
+        // Low-level model info: Corresponds to erpsRingOperReason
+        leaf error-diagnostic {
+          type ring-error-types;
+          description
+            "If the ring is not operational this field indicates why.";
+        }
+
+        // Low-level model info: Corresponds to erpsRingTimeToRevert
+        leaf time-to-revert {
+          type uint32;
+          units "seconds";
+          description
+            "The time remaining until the ring initiates reversion.";
+        }
+
+        container ring-ports {
+          description
+            "Operational state for ring instance ports.";
+          list port {
+            max-elements 2;
+            description
+              "Collection of ring port states";
+
+            leaf port-id {
+              type port-id-type;
+              description
+                "Port id of the ring instance. This leaf identifies
+                 one of the two ring ports.";
+            }
+
+            leaf interface {
+              type custom:iface-name;
+              description
+                "Interface name of the ring port.";
+            }
+
+            // Low-level model info: Corresponds to erpsRingInterface0Status / erpsRingInterface1Status
+            leaf-list state {
+              type identityref {
+                base port-state;
+              }
+              description
+                "The state of the port in the ERPS ring (whether it is failed and/or blocked).";
+            }
+
+            container remote {
+              description
+                "Remote node-id, bpr values, used by flush
+                 logic of the ERP control process.";
+
+              reference
+                "Rec. ITU-T G.8032/Y.1344 (02/2012),
+                 Section 10.1.10";
+
+              // Low-level model info: Corresponds to erpsRingIfStatsNodeId
+              leaf node-id {
+                type meta:mac-address;
+                description
+                  "Node ID of the last R-APS message received
+                   over the ring port.
+                   During initialization this value is set to
+                   00:00:00:00:00:00 by ERP control process.";
+              }
+
+              // Low-level model info: Corresponds to erpsRingIfStatsBpr
+              leaf bpr {
+                type uint32 {
+                  range "0 | 1";
+                }
+                description
+                  "Blocked port reference (BPR) of the last R-APS
+                   message received over the ring port.
+                   During initialization this value is set to 0
+                   by ERP control process.";
+              }
+
+              // Low-level model info: Corresponds to erpsRingIfStatsRequestState
+              leaf request-state {
+                type raps-type;
+                description
+                  "The type of the last R-APS message received over the ring port.";
+              }
+            }
+
+            // Low-level model info: Corresponds to erpsRingIfStatsTxNrs etc.
+            container aps-statistics {
+              description
+                "R-APS packet statistics";
+
+              leaf tx-raps-nr {
+                type yang:counter64;
+                description
+                  "Number of R-APS (NR) messages transmitted";
+              }
+              leaf tx-raps-nr-rb {
+                type yang:counter64;
+                description
+                  "Number of R-APS (NR, RB) messages transmitted";
+              }
+              leaf tx-raps-sf {
+                type yang:counter64;
+                description
+                  "Number of R-APS (SF) messages transmitted";
+              }
+              leaf tx-raps-fs {
+                type yang:counter64;
+                description
+                  "Number of R-APS (FS) messages transmitted";
+              }
+              leaf tx-raps-ms {
+                type yang:counter64;
+                description
+                  "Number of R-APS (MS) messages transmitted";
+              }
+              leaf rx-raps-nr {
+                type yang:counter64;
+                description
+                  "Number of R-APS (NR) messages received";
+              }
+              leaf rx-raps-nr-rb {
+                type yang:counter64;
+                description
+                  "Number of R-APS (NR RB) messages received";
+              }
+              leaf rx-raps-sf {
+                type yang:counter64;
+                description
+                  "Number of R-APS (SF) messages received";
+              }
+              leaf rx-raps-fs {
+                type yang:counter64;
+                description
+                  "Number of R-APS (FS) messages received";
+              }
+              leaf rx-raps-ms {
+                type yang:counter64;
+                description
+                  "Number of R-APS (MS) messages received";
+              }
+            }
+          }
+        }
+      } // end ring-state
+    } // end rings-state-list
+  }
+// -- end erps --
+// -- start notifications --
+
+  // Low-level model info:  Corresponds to erpsFopPm and erpsFopTo
+  notification fop-event {
+    description
+      "Failure of Protocol (FOP) events.";
+    uses ring-identifier {
+      description
+        "Uniquely identifies a ring instance.";
+    }
+
+    leaf event-type {
+      type enumeration {
+        enum fop-pm {
+          description
+            "Failure of Protocol, Provisioning Mismatch (FOP-PM)
+             event.
+            This event is generated when a node ID mismatch is
+            detected by ERP control process by comparing the node
+            ID of the RPL owner and the node ID in a received
+            R-APS(NR, RB) frame.";
+        }
+        enum fop-to {
+          description
+            "Failure of Protocol, Timeout (FOP-TO) event.
+            This event is generated when ERP control process does
+            not receive periodic R-APS frame for a defined timeout
+            interval (5 times R-APS interval)";
+        }
+      }
+      mandatory true;
+      description
+        "G.8032 Failure of Protocol event types.";
+    }
+
+    reference
+      "Rec. ITU-T G.8021/Y.1341 (04/2015), Section 6.1.4.3";
+  }
+// -- end notifications --
+// -- start rpcs --
+
+  // Low-level model info: Corresponds to erpsRingClearStats
+  rpc erps-clear-statistics {
+    description
+      "Clear ring statistics.";
+    input {
+      leaf ring-name {
+        type meta:name-string;
+        mandatory true;
+        description
+          "G.8032 ring name.";
+      }
+    }
+  }
+
+  // Low-level model info: Corresponds to erpsRingClearLocalAction
+  rpc erps-clear-ring {
+    description
+      "Clear an existing Forced-Switch (FS) or Manual-Switch (MS)
+       condition on the ring port.";
+    input {
+      leaf ring-name {
+        type meta:name-string;
+        mandatory true;
+        description
+          "G.8032 ring name.";
+      }
+    }
+  }
+
+  // Low-level model info: Corresponds to erpsRingInterface0Action / erpsRingInterface1Action
+  rpc erps-switch-ring {
+    description
+      "Perform administrative action on the ring (instance).";
+    input {
+      leaf ring-name {
+        type meta:name-string;
+        mandatory true;
+        description
+          "G.8032 ring name.";
+      }
+
+      leaf port-id {
+        type port-id-type;
+        mandatory true;
+        description
+          "Ring port to perform switch operation.";
+      }
+
+      leaf operation {
+        type enumeration {
+          enum manual {
+            description
+              "Trigger manual switch. This operation is allowed only
+               when a ring instance is in idle or pending state.
+               This action allows administrator to temporarily block
+               another ring port and unblock RPL link to perform
+               maintenance operation in the ring.";
+          }
+          enum forced {
+            description
+              "Trigger force switch. This operation overrides all
+               other state of the ring.";
+          }
+        }
+        mandatory true;
+        description
+          "G.8032 administrative operation types.";
+      }
+    }
+  }
+  // -- end rpcs --
+}

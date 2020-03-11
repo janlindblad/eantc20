@@ -1,0 +1,4001 @@
+
+module isis {
+
+  namespace "http://metaswitch.com/yang/nbu/isis/201512220000Z";
+
+  prefix isis;
+
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix "interfaces"; }
+  import interface { prefix "interface"; }
+  import metaswitch-yang-types { prefix meta; }
+  import redist { prefix redist; }
+  import lfa { prefix lfa; }
+//  import metaswitch-custom-yang-types { prefix "custom"; }
+  import metaswitch-features { prefix features; }
+  import openconfig-interfaces { prefix oc-if; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Intermediate System to Intermediate System Protocol Configuration and State";
+
+  revision 2015-12-22 {
+    description "Initial revision.";
+  }
+
+  typedef isis-area-address {
+    type string {
+      pattern
+        '[0-9A-Fa-f]{2}(\.[0-9A-Fa-f]{4}){0,3}';
+    }
+    description
+     "IS-IS area address (XX.XXXX)";
+  }
+
+  typedef isis-system-id {
+    type string {
+      pattern
+        '[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}';
+    }
+    description
+     "IS-IS system id (XXXX.XXXX.XXXX)";
+  }
+
+  typedef isis-system-id-or-empty {
+    type string {
+      pattern
+        '([0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}){0,1}';
+    }
+    description
+     "IS-IS system id (XXXX.XXXX.XXXX)";
+  }
+
+  typedef isis-nsap-address {
+    type string {
+      pattern
+        '[0-9A-Fa-f]{2}(\.[0-9A-Fa-f]{4}){0,3}' +
+        '\.[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\.00';
+    }
+    description
+//    "An IS-IS NSAP address of the form area-address.system-id.
+//    An NSAP address looks something like '49.0001.0143.0438.AeF0.00'.;
+      "NSAP (XX.XXXX.XXXX.XXXX.XXXX.00)";
+  }
+
+  typedef isis-host-name {
+    type meta:ascii-string {
+      length "1..255";
+    }
+    description
+      "WORD (1-255)";
+  }
+
+  typedef isis-host-name-or-empty {
+    type meta:ascii-string {
+      length "0..255";
+    }
+    description
+      "ISIS host name used for state fields where the length may be zero";
+  }
+
+  typedef isis-name {
+    type meta:ascii-string {
+      length "1..255";
+    }
+    description
+      "WORD (1-255)";
+  }
+
+  typedef isis-bfd-status {
+    type enumeration {
+      enum none {
+        description
+          "A BFD session is not required with the peer";
+        value 0;
+      }
+      enum up {
+        description
+          "All required BFD sessions are active with the peer";
+        value 1;
+      }
+      enum down {
+        description
+          "A BFD session has not made contact with the remote peer or has
+           lost contact with the remote peer";
+        value 2;
+      }
+    }
+    description
+      "IS-IS adjacency BFD status";
+  }
+
+  typedef isis-system-level {
+    type enumeration {
+      enum level-1                          { value 1; description "IS-IS level 1"; }
+      enum level-2                          { value 2; description "IS-IS level 2"; }
+      enum levels-1-and-2                   { value 3; description "IS-IS both levels"; }
+    }
+
+    description
+      "IS-IS level";
+  }
+
+  typedef isis-adjacency-state {
+    type enumeration {
+      enum down                             { value 1; }
+      enum initializing                     { value 2; }
+      enum up                               { value 3; }
+      enum failed                           { value 4; }
+    }
+    description
+      "IS-IS adjacency state (down/initializing/up/failed)";
+  }
+
+  typedef isis-xor-level-type {
+    type enumeration {
+      enum level-1                          { value 1; description "IS-IS level 1"; }
+      enum level-2                          { value 2; description "IS-IS level 2"; }
+    }
+    description
+      "IS-IS level";
+  }
+
+  typedef isis-ipv4-te-level {
+    type enumeration {
+      enum none                             { value 1; description "Disable IPv4 TE"; }
+      enum level-1                          { value 2; description "IS-IS level 1"; }
+      enum level-2                          { value 3; description "IS-IS level 2"; }
+    }
+    description
+      "IS-IS level supporting IPv4 TE, or none";
+  }
+
+  typedef isis-restart-type {
+    type enumeration {
+      enum none                             { value 1; description "No starting or restarting node procedures"; }
+      enum start                            { value 2; description "Follow starting node procedures"; }
+      enum restart                          { value 3; description "Follow restarting node procedures"; }
+    }
+    description
+      "Restart type";
+  }
+
+  typedef isis-lsp-full-suppress {
+    type enumeration {
+      enum external                         { value 1; description "All static and redistributed routes will be removed"; }
+      enum none                             { value 2; description "No routes are removed"; }
+    }
+    description
+      "LSP full suppression type";
+  }
+
+  typedef isis-metric-style {
+    type enumeration {
+      enum narrow                           { value 1; description "Use narrow metrics"; }
+      enum wide                             { value 2; description "Use wide metrics"; }
+      enum both                             { value 3; description "Use both narrow and wide metrics"; }
+    }
+    description
+      "Metric style";
+  }
+
+  typedef isis-overload-state {
+    type enumeration {
+      enum off                              { value 1; }
+      enum on                               { value 2; }
+      enum waiting                          { value 3; }
+      enum overloaded                       { value 4; }
+    }
+    description
+      "IS-IS protocol state (off/on/waiting/overloaded)";
+  }
+
+  typedef isis-manual-or-automatic {
+    type enumeration {
+      enum manual                           { value 1; }
+      enum automatic                        { value 2; }
+      enum manual-automatic                 { value 3; }
+    }
+    description
+      "Whether this circuit has been configured (manual), discovered
+       (automatic) or both.";
+  }
+
+  typedef isis-spf-interval {
+    type uint32 {
+      range "0..120000";
+    }
+    description
+      "(0-120000)";
+  }
+
+  typedef router-isis-spf {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "(0-4294967295)";
+  }
+
+  typedef isis-lsp-refresh-interval {
+    type uint32 {
+      range "1..65235";
+    }
+    description
+      "(1-65235)";
+  }
+
+  typedef isis-lsp-max-lifetime {
+    type uint32 {
+      range "350..65535";
+    }
+    description
+      "(350-65535)";
+  }
+
+  typedef max-path-splits {
+    type uint32 {
+      range "1..32";
+    }
+    description
+      "(1-32)";
+  }
+
+  typedef circuit-csnp-interval {
+    type uint32 {
+      range "1..600";
+    }
+    description
+      "(1-600)";
+  }
+
+  typedef isis-tag {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "(0-4294967295)";
+  }
+
+  typedef isis-set-attached {
+    type enumeration {
+      enum attached-no-ovlp-or-rdst     { value 1; description "IS can reach other areas or is redistributing routes into AS"; }
+      enum attached-no-ovlp-only        { value 2; description "IS can reach other areas"; }
+      enum set-attached                 { value 3; description "Attached bit should always be set"; }
+      enum attached-clear               { value 4; description "Attached bit should never be set"; }
+    }
+    description
+      "Attached bit action";
+  }
+
+  typedef isis-redist-type {
+    type enumeration {
+      enum l1-to-l2                     { value 1; description "Redistribution from level 1 to level 2"; }
+      enum l2-to-l1                     { value 2; description "Redistribution from level 2 to level 1"; }
+    }
+    description
+      "Redistribution type";
+  }
+
+  typedef isis-adjacency-wait {
+    type uint32 {
+      range "1..3600";
+    }
+    description
+      "(1-3600)";
+  }
+
+  typedef isis-max-recovery-interval {
+    type uint32 {
+      range "1..65535";
+    }
+    description
+      "(1-65535)";
+  }
+
+  typedef isis-startup-overload-time {
+    type uint32 {
+      range "0 | 5..86400";
+    }
+    description
+      "(0 or 5-86400)";
+  }
+
+  typedef isis-metric-value {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "(0-4294967295)";
+  }
+
+  typedef isis-narrow-metric {
+    type uint32 {
+      range "1..63";
+    }
+    description
+      "(1-63)";
+  }
+
+  typedef isis-wide-metric {
+    type uint32 {
+      range "1..16777215";
+    }
+    description
+      "(1-16777215)";
+  }
+
+  typedef isis-priority {
+    type uint32 {
+      range "0..127";
+    }
+    description
+      "(0-127)";
+  }
+
+  typedef isis-hello-multiplier {
+    type uint32 {
+      range "2..100";
+    }
+    description
+      "(2-100)";
+  }
+
+  typedef isis-hello-interval {
+    type uint32 {
+      range "1..120";
+    }
+    description
+      "(1-120)";
+  }
+
+  typedef isis-hello-timer {
+    type uint32 {
+      range "1..600";
+    }
+    description
+      "(1-600)";
+  }
+
+  typedef isis-lsp-interval {
+    type uint32 {
+      range "1..65535";
+    }
+    description
+      "(1-65535)";
+  }
+
+  typedef isis-retransmit-interval {
+    type uint32 {
+      range "0..300";
+    }
+    description
+      "(0-300)";
+  }
+
+  typedef isis-min-arrival-interval {
+    type uint32 {
+      range "0..65535";
+    }
+    description
+      "(0-65535)";
+  }
+
+  typedef isis-admin-tag {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "(0-4294967295)";
+  }
+
+  typedef isis-admin-status {
+    type enumeration {
+      enum on                               { value 1; }
+      enum off                              { value 2; }
+    }
+    description
+      "Admin status";
+  }
+
+  typedef isis-lsp-id {
+    type string {
+      pattern
+       '[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\.[0-9A-Fa-f]'
+             +'{4}\.[0-9A-Fa-f][0-9A-Fa-f]-[0-9A-Fa-f][0-9A-Fa-f]';
+    }
+    description
+     "This type defines ISIS LSP ID using pattern, consisting of
+      the SystemID, CircuitID and Fragment Number.  The pattern
+      looks like : 0143.0438.AeF0.02-01";
+  }
+
+  typedef isis-auth-types{
+    type enumeration {
+      enum none                             { value 1; description "No authentication, by default"; }
+      enum simple-password                  { value 2; description "Authentication simple password"; }
+      enum hmacsha1                         { value 3; description "Authentication HMAC-SHA1"; }
+      enum hmacsha256                       { value 4; description "Authentication HMAC-SHA256"; }
+      enum hmacsha384                       { value 5; description "Authentication HMAC-SHA384"; }
+      enum hmacsha512                       { value 6; description "Authentication HMAC-SHA512"; }
+      enum hmac-md5                         { value 7; description "Authentication HMAC-MD5"; }
+    }
+    description
+     "ISIS authentication type";
+  }
+
+  typedef isis-authentication-key {
+    type meta:ascii-string {
+     length "1..20";
+    }
+    description
+     "WORD (1-20)";
+  }
+
+  typedef isis-tlv-value {
+    type string {
+      length 0..510;
+    }
+    description
+      "IS-IS TLV value.";
+  }
+
+  typedef isis-microloop-avoidance-delay {
+    type uint32 {
+      range "1..4294967295";
+    }
+    description
+      "(1-4294967295)";
+  }
+
+  typedef isis-orig-lsp-size {
+    type uint32 {
+      range "512..1500";
+    }
+    description
+      "(512-1500)";
+  }
+
+  grouping authentication-config {
+
+    // Low-level model info: Corresponds to fields in AMB_ISIS_SYS_LEVEL (isisSysLevelTable) and AMB_ISIS_CIRC_LEVEL (isisCircLevelTable).
+
+    description
+      "IS-IS authentication configuration.";
+
+    // Low-level model info: Corresponds to isisSysLevelAuthUser or isisCircLevelAuthUser.
+    leaf authentication-key {
+      type isis-authentication-key;
+      description
+        "The cleartext password used as an ISIS Authentication key
+        when simple-password security is enabled.";
+
+      user-ext:CLI-comm-help "Set authentication key";
+      user-ext:CLI-no-comm-help "Set authentication key to default";
+      user-ext:CLI-param-help "Set authentication key";
+    }
+
+    // Low-level model info: Corresponds to isisSysLevelAuthUser or isisCircLevelAuthUser.
+    leaf authentication-type {
+      type isis-auth-types;
+      default "none";
+      description
+        "The authentication type specified for an interface.
+        Additional authentication types may be assigned locally.
+
+        Note that this can be used to engage in significant
+        attacks against an ISIS router.";
+
+      user-ext:CLI-comm-help "Set authentication type";
+      user-ext:CLI-no-comm-help "Set authentication type to default";
+      user-ext:CLI-param-help "Set authentication type";
+    }
+
+  } // authentication-config
+
+  grouping global-config-for-isis {
+
+    // Low-level model info: Corresponds to AMB_ISIS_SYS (isisSysTable).
+
+    description
+      "IS-IS protocol configuration.";
+
+    // Low-level model info: Corresponds to isisSysType.
+    leaf is-level {
+      type isis-system-level;
+      default levels-1-and-2;
+      description
+        "At which levels is the Intermediate System running?";
+
+      user-ext:CLI-comm-help "Set IS-IS level";
+      user-ext:CLI-no-comm-help "Set IS-IS level to default";
+      user-ext:CLI-param-help "Set level";
+    }
+
+    // Low-level model info: Corresponds to isisManAreaAddr taken from the configured NSAP address.
+    leaf area-address {
+      type isis-area-address;
+      description
+        "The area address part of the NSAP address.";
+
+      user-ext:CLI-comm-help "Set Network entity title (NET) and ISO routing area";
+      user-ext:CLI-no-comm-help "Remove Network Entity Title and ISO routing area";
+      user-ext:CLI-param-help "Set area address";
+    }
+
+    // Low-level model info: Corresponds to isisSysID taken from the configured NSAP address.
+    leaf system-id {
+      type isis-system-id;
+      description
+        "The system id part of the NSAP address.";
+        
+      user-ext:CLI-comm-help "Set system ID for the IS";
+      user-ext:CLI-no-comm-help "Reset system ID for the IS";
+      user-ext:CLI-param-help "IS-IS system ID in hex numbers";
+    }
+
+    // Low-level model info: Corresponds to isisManAreaAddr (isisManAreaAddrTable) and isisSysID (isisSysTable) combined with the form <area address><system id>.
+    // Low-level model info: This creates a row in the isisManAreaAddrTable + a row in the isisSysTable.
+//    leaf net {
+//      type isis-nsap-address;
+//      description
+//        "A combination of the System ID for this instance of the
+//        Integrated IS-IS protocol and the area address.  This is
+//        the Network Entity Title.";
+
+//      user-ext:CLI-comm-help "Set the Network Entity Title";
+//      user-ext:CLI-no-comm-help "Remove Network Entity Title";
+//      user-ext:CLI-param-help "Set NSAP address";
+//    }
+
+    // Low-level model info: Corresponds to isisSysMaxPathSplits
+    leaf ecmp {
+      type max-path-splits;
+      default 4;
+      description
+        "Maximum number of paths with equal routing metric value
+        which it is permitted to split between.
+
+        Note that, when IGP shortcut interfaces are in use, this
+        maximum applies individually to IGP shortcut paths and
+        non-IGP shortcut paths.  That is, there may be a total of
+        2 * max-path-splits paths for a single route.";
+
+      user-ext:CLI-comm-help "Set the maximum number of paths to split";
+      user-ext:CLI-no-comm-help "Set maximum number of paths to split to default";
+      user-ext:CLI-param-help "Set maximum number of paths to split";
+    }
+
+    // Low-level model info: Corresponds to isisSysHostName
+    leaf host-name {
+      type isis-host-name;
+      description
+        "The string that this instance of IS-IS will use as the
+        local hostname.
+
+        This is advertised to other Intermediate Systems in the
+        Dynamic Hostname TLV.";
+
+      user-ext:CLI-comm-help "Set the local hostname";
+      user-ext:CLI-no-comm-help "Set local hostname to default";
+      user-ext:CLI-param-help "Set local hostname";
+    }
+
+    container restart {
+
+      user-ext:CLI-comm-help "Configure restart parameters";
+      user-ext:CLI-no-comm-help "Configure restart parameters";
+
+      container activation {
+
+        user-ext:CLI-comm-help "Configure activation parameters";
+        user-ext:CLI-no-comm-help "Configure activation parameters";
+
+        // Low-level model info: Corresponds to isisSysRestartActivationType.
+        leaf type {
+          type isis-restart-type;
+          default start;
+          description
+            "This object is only used when ISIS is manually
+            activated or deactivated and indicates which restart procedures
+            (if any) are followed.
+
+            During the activation period, ISIS will use the value
+            that was configured at the start of activation.  The value
+            may be changed at any time, but the new value will only
+            take effect the next time that manual activation takes
+            place.
+
+            During deactivation, ISIS will purge the local LSP from
+            remote nodes if this object is set to 'none' or 'start'.
+            Setting the object to 'restart' before deactivation will
+            prevent the local LSP from being purged.";
+
+          user-ext:CLI-comm-help "Set the IS-IS activation restart procedure";
+          user-ext:CLI-no-comm-help "Set the IS-IS activation restart procedure to default";
+          user-ext:CLI-param-help "Set the IS-IS activation restart procedure";
+        }
+
+      } // activation
+
+      container auto-reset {
+
+        user-ext:CLI-comm-help "Configure automatic reset parameters";
+        user-ext:CLI-no-comm-help "Configure automatic reset parameters";
+
+        // Low-level model info: Corresponds to isisSysRestartAutoResetType.
+        leaf type {
+          type isis-restart-type;
+          default start;
+          description
+            "There are cases where the IS-IS protocol requires the
+            local node to automatically deactivate and later
+            reactivate.  This object indicates which restart
+            procedures (if any) are followed during such an automatic
+            reset.
+
+            During the activation period, ISIS will use the value
+            that was configured at the start of activation.  The value
+            may be changed at any time, but the new value will only
+            take effect the next time that automatic re-activation
+            takes place.";
+
+          user-ext:CLI-comm-help "Set the IS-IS automatic reset procedure";
+          user-ext:CLI-no-comm-help "Set IS-IS automatic reset procedure to default";
+          user-ext:CLI-param-help "Set IS-IS automatic reset procedure";
+        }
+
+      } // auto-reset
+
+      // Low-level model info: Corresponds to isisSysRestartAdjacencyWait.
+      leaf adjacency-wait {
+        type isis-adjacency-wait;
+        default "10";
+        units "seconds";
+        description
+          "This is only used when ISIS activates with the
+          activation type set to 'start' or 'restart'.
+
+          It defines how long ISIS will wait to establish
+          adjacencies before completing the start/restart.";
+
+        user-ext:CLI-comm-help "Set the adjacency wait time in seconds";
+        user-ext:CLI-no-comm-help "Set adjacency wait time to default";
+        user-ext:CLI-param-help "Set adjacency wait time in seconds";
+      }
+
+      container recovery-time {
+
+        user-ext:CLI-comm-help "Configure recovery time parameters";
+        user-ext:CLI-no-comm-help "Configure recovery time parameters";
+
+        // Low-level model info: Corresponds to isisSysMaxRecoveryTime.
+        leaf max {
+          type isis-max-recovery-interval;
+          default "65535";
+          units "seconds";
+          description
+            "This object is only used when ISIS activates with the
+            activation type set to 'restart'.
+
+            It defines the maximum time that ISIS will take before
+            completing restart procedures.
+
+            The value specified puts an upper bound on the duration of
+            the T3 timer described in the IS-IS restart RFC (3847).
+            The actual duration of the timer is the minimum of the
+            value specified and the minimum remaining holding time
+            received on an adjacency.";
+
+          user-ext:CLI-comm-help "Set the maximum recovery time in seconds";
+          user-ext:CLI-no-comm-help "Set the maximum recovery time to default";
+          user-ext:CLI-param-help "Set the maximum recovery time in seconds";
+        }
+
+      } // recovery-time
+
+      container help-peer {
+
+        user-ext:CLI-comm-help "Configure whether to enable peer restart help support";
+        user-ext:CLI-no-comm-help "Configure whether to enable peer restart help support";
+
+        // Low-level model info: Corresponds to isisSysRestartHelpPeer.
+        leaf disable {
+          type empty;
+          description
+            "Indicates whether ISIS implements the procedures
+            defined in the IS-IS restart RFC (3847) for helping a
+            peer to restart.
+
+            Note that this object has no effect on the local restart
+            behavior, and so may be set independently of activation type.";
+
+          user-ext:CLI-comm-help "Disable peer restart help support";
+          user-ext:CLI-no-comm-help "Enable peer restart help support";
+        }
+
+      } // help-peer
+
+    } // restart
+
+    container lsp {
+
+      user-ext:CLI-comm-help "Configure LSP parameters";
+      user-ext:CLI-no-comm-help "Configure LSP parameters";
+
+      // Low-level model info: Corresponds to isisSysLspFullSuppress.
+      leaf full-suppress {
+        type isis-lsp-full-suppress;
+        default external;
+        description
+          "The set of routes (if any) that will be removed from the
+          local LSP by ISIS when the local LSP becomes full at
+          either level.";
+
+        user-ext:CLI-comm-help "Configure the set of routes to be removed when LSP goes full";
+        user-ext:CLI-no-comm-help "Set routes to be removed when LSP goes full to default";
+        user-ext:CLI-param-help "Set routes to be removed when LSP goes full";
+      }
+
+      // Low-level model info: Corresponds to isisSysMaxLSPGenInt.
+      leaf refresh-interval {
+        type isis-lsp-refresh-interval;
+        units "seconds";
+        default "900";
+        description
+          "Maximum interval between LSPs generated by this IS-IS instance.";
+
+        user-ext:CLI-comm-help "Set the LSP refresh interval time in seconds";
+        user-ext:CLI-no-comm-help "Set default LSP refresh interval time";
+        user-ext:CLI-param-help "Set time in seconds";
+      }
+
+      // Low-level model info: Corresponds to isisSysMaxAge.
+      leaf max-lifetime {
+        type isis-lsp-max-lifetime;
+        units "seconds";
+        default "1200";
+        description
+          "The initial lifetime of LSPs generated by this IS-IS instance.";
+
+        user-ext:CLI-comm-help "Set the LSP maximum lifetime in seconds";
+        user-ext:CLI-no-comm-help "Set default LSP maximum lifetime";
+        user-ext:CLI-param-help "Set time in seconds";
+      }
+
+      must "max-lifetime >= refresh-interval + 300" {
+        error-message "IS-IS LSP max-lifetime must be at least refresh-interval + 300";
+      }
+
+    } // lsp
+
+    container set-overload-bit {
+
+      user-ext:CLI-comm-help "Configure set overload flag parameters";
+      user-ext:CLI-no-comm-help "Configure set overload bit parameters";
+
+      container full-db {
+
+        user-ext:CLI-comm-help "Configure whether to set the LSP database overload flag when the local LSP is full";
+        user-ext:CLI-no-comm-help "Configure LSP database overload flag when full";
+
+        // Low-level model info: Corresponds to isisSysLspFullSetDBOL.
+        leaf disable {
+          type empty;
+          description
+            "If set, ISIS will set the database overload
+            flag in the local LSP (at all active levels) when the
+            local LSP becomes full (at either level).
+
+            The administrator can clear the database overload flag for
+            a level by disabling set-overload-bit for that level.";
+
+          user-ext:CLI-comm-help "Disable setting the LSP database overload flag when full";
+          user-ext:CLI-no-comm-help "Enable setting the LSP database overload flag when full";
+        }
+
+      } // full-db
+
+    } // set-overload-bit
+
+    // Low-level model info: Corresponds to isisSysSetAttached.
+    leaf set-attached-bit {
+      type isis-set-attached;
+      default "attached-clear";
+      description
+        "If ISIS is operating at both level 1 and level 2, this
+        field indicates how ISIS should decide whether to set
+        the attached bit in its level 1 LSP.";
+
+      user-ext:CLI-comm-help "Set the decision method for attached bit in level LSP";
+      user-ext:CLI-no-comm-help "Set decision method for attached bit in level LSP to default";
+      user-ext:CLI-param-help "Set decision method for attached bit in level LSP";
+    }
+
+    // Low-level model info: Corresponds to isisSysIgnoreRcvdAttachedBit.
+    leaf ignore-attached-bit {
+      type empty;
+      description
+        "Whether to ignore the attached bit in received level 1 LSPs.  If set,
+        DC-ISIS will not install a default route to the nearest L1L2 router.";
+
+      user-ext:CLI-comm-help "Configure whether to ignore the attached bit in received LSPs";
+      user-ext:CLI-no-comm-help "Do not ignore attached bit in received LSPs";
+    }
+
+    container duplicate-ids {
+
+      user-ext:CLI-comm-help "Configure duplicate id parameters";
+      user-ext:CLI-no-comm-help "Configure duplicate id parameters";
+
+      container stop-adjacency {
+
+        user-ext:CLI-comm-help "Configure whether to stop adjacencies forming to a neighbor with the same id";
+        user-ext:CLI-no-comm-help "Configure whether to stop adjacencies to neighbor with same id";
+
+        // Low-level model info: Corresponds to isisSdEntStopAdjDuplIDs.
+        leaf disable {
+          type empty;
+          description
+            "Allow adjacencies to neighbors with the same system ID.";
+
+          user-ext:CLI-comm-help "Enable adjacency forming to a neighbor with same id";
+          user-ext:CLI-no-comm-help "Disable adjacency forming to a neighbor with same id";
+        }
+
+      } // stop-adjacency
+
+    } // duplicate-ids
+
+    container spf {
+
+      user-ext:CLI-comm-help "Configure SPF parameters";
+      user-ext:CLI-no-comm-help "Configure SPF parameters";
+
+      container interval {
+
+        user-ext:CLI-comm-help "Configure interval parameters";
+        user-ext:CLI-no-comm-help "Configure interval parameters";
+
+        // Low-level model info: Corresponds to isisSysCalcMaxDelay.
+        leaf maximum-wait {
+          type isis-spf-interval;
+          units "milliseconds";
+          default "5000";
+          description
+            "The maximum delay before the Routing Table is recalculated
+            following a change to the Link State Database.";
+
+          user-ext:CLI-comm-help "Set the maximum wait interval in milliseconds";
+          user-ext:CLI-no-comm-help "Set maximum wait interval to default";
+          user-ext:CLI-param-help "Set interval in milliseconds";
+        }
+
+        // Low-level model info: Corresponds to isisSysCalcPauseFreq.
+        leaf pause-frequency {
+          type router-isis-spf;
+          default 10000;
+          description
+            "This value determines how regularly a Routing Calculation
+            is paused.  It is measured in points.  The points scale
+            roughly maps to a time scale, so that the larger this
+            value is, the longer the Routing Calculation runs before
+            pausing.";
+
+          user-ext:CLI-comm-help "Set how regularly a routing calculation is paused";
+          user-ext:CLI-no-comm-help "Set the routing calculations pause frequency to default";
+          user-ext:CLI-param-help "Set how regularly a routing calculation is paused";
+        }
+
+      } // interval
+
+      container threshold {
+
+        user-ext:CLI-comm-help "Configure threshold parameters";
+        user-ext:CLI-no-comm-help "Configure threshold parameters";
+
+        // Low-level model info: Corresponds to isisSysCalcThrshUpdStart.
+        leaf updates-start {
+          type router-isis-spf;
+          default 4294967295;
+          description
+            "This parameter can be used to override the routing calculation
+            delay indicated by maximum-wait when the number of updates to the
+            Link State Database reaches a threshold value.
+
+            This parameter specifies the threshold number of updates
+            that can be made to the Link State Database such that any
+            subsequent update to the database causes a full routing
+            calculation to start immediately.";
+
+          user-ext:CLI-comm-help "Set the LSDB update count above which a routing calculation will start";
+          user-ext:CLI-no-comm-help "Set to default the LSDB update count above which a routing calculation will start";
+          user-ext:CLI-param-help "Set the threshold number of updates";
+        }
+
+        // Low-level model info: Corresponds to isisSysCalcThrshUpdRestart.
+        leaf updates-restart {
+          type router-isis-spf;
+          default 4294967295;
+          description
+            "This parameter specifies the threshold number of updates
+            that can  be made to the Link State Database such that any
+            subsequent update to the database causes the current
+            routing calculation to be interrupted, and a new
+            calculation to start using an up-to-date Link State
+            Database.";
+
+          user-ext:CLI-comm-help "Set the LSDB update count above which a routing calculation will restart";
+          user-ext:CLI-no-comm-help "Set to default the LSDB update count above which a routing calculation will restart";
+          user-ext:CLI-param-help "Set the threshold number of updates";
+        }
+
+        // Low-level model info: Corresponds to isisSysCalcThrshRestartLimit.
+        leaf restart-limit {
+          type router-isis-spf;
+          default 10;
+          description
+            "This parameter limits the number of consecutive times a
+            routing calculation can be interrupted by new updates.";
+
+          user-ext:CLI-comm-help "Limit the number of consecutive times a routing calculation can be interrupted by new updates";
+          user-ext:CLI-no-comm-help "Set the default limit of consecutive times a routing calculation can be interrupted by new updates ";
+          user-ext:CLI-param-help "Limit the number of consecutive times a routing calculation can be interrupted by new updates";
+        }
+
+      } // threshold
+
+    } // spf
+
+    container microloop-avoidance {
+
+      // Low-level model info: Corresponds to isisSysMicroloopAvoidance
+      description "Enable microloop avoidance procedures in ISIS.";
+
+      user-ext:CLI-comm-help "Enable microloop avoidance";
+      user-ext:CLI-no-comm-help "Disable microloop avoidance";
+
+      presence "Enable microloop avoidance";
+
+      // Low-level model info: Corresponds to isisSysMicroloopAvoidDelay
+      leaf rib-update-delay {
+        type isis-microloop-avoidance-delay;
+        units "milliseconds";
+        default 5000;
+        description "Set microloop avoidance delay";
+
+        user-ext:CLI-comm-help "Set the microloop avoidance delay in milliseconds";
+        user-ext:CLI-no-comm-help "Set microloop avoidance delay to default";
+        user-ext:CLI-param-help "Set microloop avoidance delay in milliseconds";
+      }
+
+    } // microloop-avoidance
+
+  } // global-config-for-isis
+
+  augment "/isis:router/isis:isis/isis:global" {
+
+    // Low-level model info: Corresponds to isisSysLevelTEEnabled.
+    leaf ipv4-te-level {
+      type isis-ipv4-te-level;
+      default none;
+      description
+        "At which level is Traffic Engineering for IPv4 supported?
+
+        If Traffic Engineering is enabled, 'metric-style' must be set to
+        'wide' or 'both' at the specified level.";
+
+      user-ext:CLI-comm-help "Set the IS-IS level(s) which support IPv4 TE";
+      user-ext:CLI-no-comm-help "Set IPv4 TE as not supported";
+      user-ext:CLI-param-help "Set level supporting IPv4 TE";
+    }
+
+  } // augment - IS-IS global TE parameters
+
+  grouping global-state-for-isis {
+
+    // Low-level model info: Corresponds to read-only fields in AMB_ISIS_SYS (isisSysTable).
+
+    description
+      "IS-IS protocol state.";
+
+    leaf version {
+      type uint32;
+      description
+        "The version number of the IS-IS protocol that is
+        implemented.";
+      config false;
+    }
+
+    leaf number-updates-pending {
+      type uint32;
+      description
+        "The number of updates that are pending addition to the
+        Link State Database.";
+      config false;
+    }
+
+    leaf number-updates-merged {
+      type uint32;
+      description
+        "The number of updates that have been merged into the Link
+        State Database since the last routing calculation.";
+      config false;
+    }
+
+    leaf number-checksum-pending {
+      type uint32;
+      description
+        "The number of LSPs in the Link State Database which are
+        now due to have their checksum checked.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to isisManAreaAddr taken from the configured NSAP address.
+    leaf area-address {
+      type isis-area-address;
+      description
+        "The area address part of the NSAP address.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to isisSysID taken from the configured NSAP address.
+    leaf system-id {
+      type isis-system-id;
+      description
+        "The system id part of the NSAP address.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to isisAreaAddrInLSP in the isisAreaAddrTable.
+    leaf in-lsp {
+      type boolean;
+      description
+        "Following ISO10589 section 7.1.5, we advertise the three
+        numerically lowest level 1 area addresses in the level 2
+        LSP fragment zero.
+
+        If 'true', then this area address is one of the three
+        numerically lowest area addresses, and if this router is
+        active at level 2, it is therefore one of those area
+        addresses advertised in the level 2 LSP fragment 0.";
+      config false;
+    }
+
+  } // global-state-for-isis
+
+  grouping system-level-config {
+
+    // Low-level model info: Corresponds to AMB_ISIS_SYS_LEVEL (isisSysLevelTable).
+
+    description
+      "Level specific config about an instance of IS-IS.";
+
+    user-ext:CLI-comm-help "Configure system level parameters";
+    user-ext:CLI-no-comm-help "Configure system level parameters";
+
+    container set-overload-bit {
+
+      description
+        "Configure overload bit";
+
+      user-ext:CLI-comm-help "Configure the overload bit";
+      user-ext:CLI-no-comm-help "Configure overload bit";
+
+      // Low-level model info: Corresponds to isisSysLevelSetOverload.
+      leaf enable {
+        type empty;
+
+        description
+          "Administratively set the overload bit for the level.  The
+          overload bit will continue to be set if the implementation
+          runs out of memory, independent of this variable.";
+
+        user-ext:CLI-comm-help "Set the overload bit that signals other routers to not use us in SPF";
+        user-ext:CLI-no-comm-help "Remove overload bit that signal other routers to not use us in SPF";
+      }
+
+      // Low-level model info: Corresponds to isisSysLevelSetOverloadUntil.
+      // Low-level model info: Note that the yang field uses seconds while the MIB field uses hundredths of a second.
+      leaf on-startup {
+        type isis-startup-overload-time;
+        default "0";
+        units "seconds";
+
+        description
+          "The overload bit should be set on startup and cleared after the specified
+          time interval.";
+
+        user-ext:CLI-comm-help "Set the wait time in seconds before clearing overload after setting on startup";
+        user-ext:CLI-no-comm-help "Set default wait time in seconds before clearing overload after setting on startup";
+        user-ext:CLI-param-help "Set wait time in seconds before clearing overload after setting on startup";
+      }
+
+    } // set-overload-bit
+
+    // Low-level model info: Corresponds to isisSysLevelMetricStyle.
+    leaf metric-style {
+      type isis-metric-style;
+      default "both";
+      description
+        "Which style of Metric do we generate in our LSPs at this
+        level?";
+
+      // Metric style cannot be 'narrow' if IPV6 or Traffic Engineering is supported for ISIS.
+//      must "(not((. = 'narrow') and " +
+//           "     ((../../address-family/ipv6) or ((ancestor::global)/ipv4-te-level != 'none'))))" {
+//        error-message "IS-IS metric style cannot be 'narrow' if IPv6 or Traffic Engineering is enabled";
+//      }
+
+      user-ext:CLI-comm-help "Set the LSP metric style";
+      user-ext:CLI-no-comm-help "Set LSP metric style to default";
+      user-ext:CLI-param-help "Set LSP metric style";
+    }
+
+    // Low-level model info: Corresponds to isisSysLevelOrigLSPBuffSize.
+    leaf max-lsp-size {
+      type isis-orig-lsp-size;
+      description
+        "The maximum size of packets originated at this level";
+
+      user-ext:CLI-comm-help "Set maximum LSP packet size";
+      user-ext:CLI-no-comm-help "Set maximum LSP packet size to default";
+      user-ext:CLI-param-help "Set maximum LSP packet size";
+    }
+
+    uses authentication-config;
+
+  } // system-level-config
+
+  grouping system-counter-stats {
+
+    leaf corrupted-lsps {
+      type uint32;
+      description
+        "Number of corrupted in-memory LSPs detected.";
+      config false;
+    }
+
+    leaf authentication-type-failures {
+      type uint32;
+      description
+        "The number of authentication type mismatches recognized by this
+        instance of the protocol.";
+      config false;
+    }
+
+    leaf authentication-failures {
+      type uint32;
+      description
+        "The number of authentication failures recognized by this
+        instance of the protocol.";
+      config false;
+    }
+
+    leaf database-overloads {
+      type uint32;
+      description
+        "Number of times the LSP database has become overloaded.";
+      config false;
+    }
+
+     leaf manual-address-drop-from-areas {
+      type uint32;
+      description
+        "Number of times a manual address has been dropped from the area.";
+      config false;
+    }
+
+    leaf attempts-to-exceed-max-sequence-num {
+      type uint32;
+      description
+        "Number of times the IS has attempted to exceed the maximum sequence number.";
+      config false;
+    }
+
+    leaf sequence-number-skips {
+      type uint32;
+      description
+        "Number of times a sequence number skip has occurred.";
+      config false;
+    }
+
+    leaf own-lsp-purges {
+      type uint32;
+      description
+        "Number of times a zero-aged copy of the system's own LSP is received from some other node.";
+      config false;
+    }
+
+    leaf id-field-length-mismatches {
+      type uint32;
+      description
+        "Number of times a PDU is received with a different value
+        for ID field length to that of the receiving system.";
+      config false;
+    }
+
+    leaf partition-changes {
+      type uint32;
+      description
+        "Partition changes.";
+      config false;
+    }
+
+    leaf spf-runs {
+      type uint32;
+      description
+        "Number of times we ran SPF at this level.";
+      config false;
+    }
+
+    leaf lsp-errors {
+      type uint32;
+      description
+        "The count of badly formed LSPs discarded by ISIS";
+      config false;
+    }
+
+    leaf csnp-errors {
+      type uint32;
+      description
+        "The count of badly formed CSNPs discarded by ISIS";
+      config false;
+    }
+
+    leaf psnp-errors {
+      type uint32;
+      description
+        "The count of badly formed PSNPs discarded by ISIS";
+      config false;
+    }
+
+    leaf lsp-queue-length {
+      type uint32;
+      description
+        "The count of received LSPs that are queued internally
+        in ISIS, awaiting processing.";
+      config false;
+    }
+
+    leaf lsp-fragments-rebuilt {
+      type uint32;
+      description
+        "Number of LSP fragments that the local system has generated.";
+      config false;
+    }
+
+    leaf lsp-retransmissions {
+      type uint32;
+      description
+        "umber of LSPs that have been retransmitted.";
+      config false;
+    }
+
+    leaf lsp-regenerations {
+      type uint32;
+      description
+        "Number of LSPs that have been regenerated.  An LSP is
+        regenerated when it is nearing the end of its lifetime and
+        it has not changed.";
+      config false;
+    }
+
+    leaf purges-initiated {
+      type uint32;
+      description
+        "Number of LSP purges that have been initiated by this
+        instance of IS-IS.";
+      config false;
+    }
+
+    leaf lsp-count {
+      type uint32;
+      description
+        "The number of LSPs in the database at this level.";
+      config false;
+    }
+
+    leaf purges-initiated-local {
+      type uint32;
+      description
+        "Number of LSP purges initiated by this instance of IS-IS,
+        of LSPs that were originated locally.
+
+        This field behaves like an SNMP counter.  It only
+        increases, never decreases, and is subject to wrap.
+
+        The absolute value of an SNMP counter has no meaning.
+        Applications use the difference between counter values at
+        different times to display count changes.  The absolute
+        value of this counter does have meaning, until it first
+        wraps.";
+      config false;
+    }
+
+    leaf purges-initiated-remote {
+      type uint32;
+      description
+        "Number of LSP purges initiated by this instance of IS-IS,
+        of LSPs that were originated remotely.
+
+        This field behaves like an SNMP counter.  It only
+        increases, never decreases, and is subject to wrap.
+
+        The absolute value of an SNMP counter has no meaning.
+        Applications use the difference between counter values at
+        different times to display count changes.  The absolute
+        value of this counter does have meaning, until it first
+        wraps.";
+      config false;
+    }
+
+    leaf purges-initiated-remote-snp {
+      type uint32;
+      description
+        "Number of LSP purges initiated by this instance of IS-IS,
+        of LSPs that were originated remotely, due to receiving a
+        SNP.
+
+        This field behaves like an SNMP counter.  It only
+        increases, never decreases, and is subject to wrap.
+
+        The absolute value of an SNMP counter has no meaning.
+        Applications use the difference between counter values at
+        different times to display count changes.  The absolute
+        value of this counter does have meaning, until it first
+        wraps.";
+      config false;
+    }
+
+    leaf purges-initiated-remote-exp {
+      type uint32;
+      description
+        "Number of LSP purges initiated by this instance of IS-IS,
+        of LSPs that were originated remotely, because they have
+        expired.
+
+        This field behaves like an SNMP counter.  It only
+        increases, never decreases, and is subject to wrap.
+
+        The absolute value of an SNMP counter has no meaning.
+        Applications use the difference between counter values at
+        different times to display count changes.  The absolute
+        value of this counter does have meaning, until it first
+        wraps.";
+      config false;
+    }
+
+    leaf purges-initiated-remote-prs {
+      type uint32;
+      description
+        "Number of LSP purges initiated by this instance of IS-IS,
+        of LSPs that were originated remotely, due to peer
+        restart.
+
+        This field behaves like an SNMP counter.  It only
+        increases, never decreases, and is subject to wrap.
+
+        The absolute value of an SNMP counter has no meaning.
+        Applications use the difference between counter values at
+        different times to display count changes.  The absolute
+        value of this counter does have meaning, until it first
+        wraps.";
+      config false;
+    }
+
+  } // system-counter-stats
+
+  grouping system-level-state {
+
+    // Low-level model info: Corresponds to read-only fields in AMB_ISIS_SYS_LEVEL (isisSysLevelTable).
+
+    description
+      "Level specific state about an instance of IS-IS.";
+
+    leaf overload-state {
+      type isis-overload-state;
+      description
+        "The Overload state of the database at this level.";
+      config false;
+    }
+
+    container system-counters {
+
+      // Low-level model info: Corresponds to read-only fields in AMB_ISIS_SYSTEM_COUNTER (isisSystemCounterTable).
+
+      description
+        "IS-IS system wide counters.";
+
+      config false;
+
+      uses system-counter-stats;
+
+    } // system-counters
+
+  } // system-level-state
+
+  grouping reachable-address-state {
+
+    // Low-level model info: Corresponds to AMB_ISIS_IP_RA_TABLE (isisIPRATable).
+
+    leaf type {
+      type isis-manual-or-automatic;
+      description
+        "The type of this IP Reachable Address.  Those of type
+        manual are created by the network manager.  Those of type
+        automatic are created through propagation of routing
+        information from another routing protocol.
+
+        ISIS only supports automatic entries in this table.
+        These are learnt from an Address Family Manager or the Local
+        Interface Manager";
+      config false;
+    }
+
+    leaf next-hop-index {
+      type uint32 {
+        range "1..65535";
+      }
+      description
+        "Index of next hop.  Used when there are multiple Equal
+        Cost Multipath alternatives for the same destination.";
+      config false;
+    }
+
+  } // reachable-address-state
+
+  grouping ipv4-reachable-address-state {
+
+    // Low-level model info: Corresponds to AMB_ISIS_IP_RA_TABLE (isisIPRATable).
+
+    leaf dest-prefix {
+      type interfaces:iface-ipv4-prefix-t;
+      description
+        "The address prefix or this IPv4 Reachable Address.  This is
+         either a network address, subnetwork address or host
+         address.";
+      config false;
+    }
+
+    uses reachable-address-state;
+
+  } // ipv4-reachable-address-state
+
+  grouping ipv6-reachable-address-state {
+
+    // Low-level model info: Corresponds to AMB_ISIS_IP_RA_TABLE (isisIPRATable).
+
+    leaf dest-prefix {
+      type interfaces:iface-ipv6-prefix-t;
+      description
+        "The address prefix or this IPv6 Reachable Address.  This is
+         either a network address, subnetwork address or host
+         address.";
+      config false;
+    }
+
+    uses reachable-address-state;
+
+  } // ipv6-reachable-address-state
+
+  grouping isis-route-administrative-distance {
+
+    container admin-distance {
+
+      description
+        "Configure administrative distances for ISIS routes";
+
+      user-ext:CLI-comm-help "Configure the administrative distances for ISIS routes";
+      user-ext:CLI-no-comm-help "Configure administrative distances for ISIS routes";
+
+      // Low-level model info: Corresponds to rtmEntityDsIsisInt1
+      leaf isis-internal-level-1 {
+        type redist:rtm-admin-distance;
+        default "115";
+
+        user-ext:CLI-comm-help "Set the administrative distance used for IS-IS level 1 internal routes";
+        user-ext:CLI-no-comm-help "Set administrative distance used for IS-IS level 1 internal routes to default";
+        user-ext:CLI-param-help "Set administrative distance used for IS-IS level 1 internal routes";
+        description
+          "The administrative distance to use for IS-IS level 1 internal routes.  The
+          lower the administrative distance for a type of route, the more likely a
+          route of this type will be used as the active route for the given destination.";
+      }
+
+      // Low-level model info: Corresponds to rtmEntityDsIsisInt2
+      leaf isis-internal-level-2 {
+        type redist:rtm-admin-distance;
+        default "116";
+
+        user-ext:CLI-comm-help "Set the administrative distance used for IS-IS level 2 internal routes";
+        user-ext:CLI-no-comm-help "Set administrative distance used for IS-IS level 2 internal routes to default";
+        user-ext:CLI-param-help "Set administrative distance used for IS-IS level 2 internal routes";
+        description
+          "The administrative distance to use for IS-IS level 2 internal routes.  The
+          lower the administrative distance for a type of route, the more likely a
+          route of this type will be used as the active route for the given destination.";
+      }
+
+      // Low-level model info: Corresponds to rtmEntityDsIsisExt1
+      leaf isis-external-level-1 {
+        type redist:rtm-admin-distance;
+        default "117";
+
+        user-ext:CLI-comm-help "Set the administrative distance used for IS-IS level 1 external routes";
+        user-ext:CLI-no-comm-help "Set administrative distance used for IS-IS level 1 external routes to default";
+        user-ext:CLI-param-help "Set administrative distance used for IS-IS level 1 external routes";
+        description
+          "The administrative distance to use for IS-IS level 1 external routes.  The
+          lower the administrative distance for a type of route, the more likely a
+          route of this type will be used as the active route for the given destination.";
+      }
+
+      // Low-level model info: Corresponds to rtmEntityDsIsisExt2
+      leaf isis-external-level-2 {
+        type redist:rtm-admin-distance;
+        default "118";
+
+        user-ext:CLI-comm-help "Set the administrative distance used for IS-IS level 2 external routes";
+        user-ext:CLI-no-comm-help "Set administrative distance used for IS-IS level 2 external routes to default";
+        user-ext:CLI-param-help "Set administrative distance used for IS-IS level 2 external routes";
+        description
+          "The administrative distance to use for IS-IS level 2 external routes.  The
+          lower the administrative distance for a type of route, the more likely a
+          route of this type will be used as the active route for the given destination.";
+      }
+    }
+
+  } // isis-route-administrative-distance
+
+  grouping global-parameters-for-isis {
+
+    // Low-level model info: Corresponds to AMB_ISIS_SYS (isisSysTable).
+
+    description
+      "IS-IS protocol configuration.";
+
+    uses global-config-for-isis;
+
+    list level {
+
+      // Low-level model info: Corresponds to AMB_ISIS_SYS_LEVEL (isisSysLevelTable).
+
+      description
+        "Level specific information about an instance of IS-IS.";
+
+      user-ext:CLI-comm-help "Configure IS-IS level information";
+      user-ext:CLI-no-comm-help "Remove IS-IS level information";
+
+      key "level-index";
+
+      leaf level-index {
+        type isis-xor-level-type;
+        description
+          "The level that this entry describes.";
+
+        user-ext:CLI-param-help "Level index";
+      }
+
+      uses system-level-config;
+
+    } // level
+
+    list summary-address {
+
+      // Low-level model info: Corresponds to AMB_ISIS_SUMM_ADDR (isisSummAddrTable).
+
+      description
+        "ISIS IP summary addresses used in forming summary TLVs.";
+
+      user-ext:CLI-comm-help "Configure the summary address";
+      user-ext:CLI-no-comm-help "Remove summary address";
+
+      key "address";
+
+      // Low-level model info: Corresponds to isisSummAddress and isisSummAddrPrefixLen.
+      leaf address {
+        type interfaces:iface-ip-prefix-t;
+
+        description
+          "Summary address";
+
+        user-ext:CLI-param-help "Summary address";
+      }
+
+      // Low-level model info: Corresponds to isisSummAddrMetric.
+      leaf metric {
+        type isis-narrow-metric;
+        default 20;
+
+        description
+          "The metric value to advertise for this summary address.";
+
+        user-ext:CLI-comm-help "Set the metric";
+        user-ext:CLI-no-comm-help "Set metric to default";
+        user-ext:CLI-param-help "Set metric";
+      }
+
+      // Low-level model info: Corresponds to isisSummAddrFullMetric.
+      leaf full-metric {
+        type isis-wide-metric;
+        default 20;
+
+        description
+          "The wide metric value to advertise for this summary address.";
+
+        user-ext:CLI-comm-help "Set the wide metric";
+        user-ext:CLI-no-comm-help "Set wide metric to default";
+        user-ext:CLI-param-help "Set wide metric";
+      }
+
+      // Low-level model info: Corresponds to isisSummAddrAdminTag.
+      leaf admin-tag {
+        type isis-tag;
+        default 0;
+
+        description
+          "The administrative tag to advertise with this summary
+          address in LSPs generated by this system.";
+
+        user-ext:CLI-comm-help "Set the administrative tag";
+        user-ext:CLI-no-comm-help "Set administrative tag to default";
+        user-ext:CLI-param-help "Set administrative tag";
+      }
+
+    } // summary-address
+
+    list redistribute-address {
+
+      // Low-level model info: Corresponds to AMB_ISIS_REDISTRIBUTE_ADDR (isisRedistributeAddrTable).
+
+      description
+        "Decide if a route should be leaked from L2 to L1 when
+        Domain Wide Prefix leaking is enabled.";
+
+      user-ext:CLI-comm-help "Configure whether a route should be leaked from L2 to L1";
+      user-ext:CLI-no-comm-help "Configure whether a route should be leaked from L2 to L1";
+
+      key "address";
+
+      // Low-level model info: Corresponds to isisRedistributeAddrAddress and isisRedistributeAddrPrefixLen.
+      leaf address {
+        type interfaces:iface-ip-prefix-t;
+
+        description
+          "Address range to redistribute from level 2 to level 1.";
+
+        user-ext:CLI-param-help "Address range to redistribute from level 2 to level 1.";
+      }
+
+    } // redistribute-address
+
+    list tag-policy {
+
+      // Low-level model info: Corresponds to AMB_ISIS_TAG_POLICY (isisTagPolicyTable).
+
+      key "redist-type admin-tag";
+
+      description
+        "The Administrative Tag Policy list controls the
+        redistribution of routes between IS-IS levels based on
+        administrative tags.
+
+        Note that L2->L1 tag policy will not apply if L2 to L1
+        leaking is not enabled for the system.";
+
+      user-ext:CLI-comm-help "Configure the administrative tag policy";
+      user-ext:CLI-no-comm-help "Remove administrative tag policy";
+
+      // Low-level model info: Corresponds to isisTagPolicyRedistType.
+      leaf redist-type {
+        type isis-redist-type;
+        description
+          "The type of redistribution to which this policy applies";
+
+        user-ext:CLI-param-help "Type of redistribution for tag policy";
+      }
+
+      // Low-level model info: Corresponds to isisTagPolicyAdminTag.
+      leaf admin-tag {
+        type uint32 {
+          range "0..4294967295";
+        }
+
+        description
+          "The specific administrative tag to match against when applying this policy";
+
+        user-ext:CLI-param-help "Set the specific administrative tag to match against when applying this policy";
+      }
+
+      // Low-level model info: Corresponds to isisTagPolicyAction.
+      leaf action {
+        type meta:route-map-action;
+        default "permit";
+
+        description
+          "The action to take for routes that match this policy";
+
+        user-ext:CLI-comm-help "Set the action to take for routes that match this policy";
+        user-ext:CLI-no-comm-help "Set the action to default";
+        user-ext:CLI-param-help "Set the action to take for routes that match this policy";
+      }
+
+    } // tag-policy
+
+    grouping isis-redist {
+
+      // Low-level model info: Corresponds to new route attributes in AMB_CIPR_RTM_REDIST (rtmRedistTable)
+      // and AMB_CIPR_RTM_RDST_SET_FIELD (rtmRdstSetFieldTable)
+
+      user-ext:CLI-comm-help "Configure IS-IS redistribution parameters";
+      user-ext:CLI-no-comm-help "Configure IS-IS redistribution parameters";
+
+      // Low-level model info: Corresponds to rtmRedistMetricConv
+      leaf metric-conversion {
+        type redist:rtm-metric-conversion;
+        default "constant";
+
+        description
+          "How to act on the value of the metric in the routing information received from the source.";
+
+        user-ext:CLI-comm-help "Set the metric conversion action";
+        user-ext:CLI-no-comm-help "Set metric conversion action to default";
+        user-ext:CLI-param-help "Set metric conversion action";
+      }
+
+      // Low-level model info: Corresponds to rtmRedistMetricValue
+      leaf metric-value {
+        type isis-metric-value;
+        description
+          "Use when creating a value for the metric in the routing information sent to the destination.";
+
+        user-ext:CLI-comm-help "Set the metric value";
+        user-ext:CLI-no-comm-help "Set metric value to default";
+        user-ext:CLI-param-help "Set metric value";
+      }
+
+      // Low-level model info: Corresponds to rtmRedistNwIsisTag
+      // If this field is set, rtmRedistAddIsisTag will be set to true
+      leaf new-tag {
+        type isis-tag;
+        description
+          "IS-IS tag to set in routing information sent to destination.";
+
+        user-ext:CLI-comm-help "Set the IS-IS tag";
+        user-ext:CLI-no-comm-help "Set IS-IS tag to default";
+        user-ext:CLI-param-help "Set IS-IS tag";
+      }
+
+      // Low-level model info: Corresponds to rtmRedistNwPathType
+      leaf new-path-type {
+        type redist:isis-redist-path-types;
+        default isis-level2-internal;
+        description
+          "The IS-IS path type to set on redistributed routes.";
+
+        user-ext:CLI-comm-help "Set the IS-IS path type for redistributed routes";
+        user-ext:CLI-no-comm-help "Set IS-IS path type to default";
+        user-ext:CLI-param-help "Set IS-IS path type for redistributed routes";
+      }
+
+    } // isis-redist
+
+    container address-family {
+
+      description
+        "Configure IS-IS routing for address-family";
+
+      user-ext:CLI-comm-help "Configure IS-IS routing for this address-family";
+      user-ext:CLI-no-comm-help "Configure IS-IS routing for address-family";
+
+      container ipv4 {
+
+        description
+          "Configure IPv4 IS-IS routing";
+
+        user-ext:CLI-comm-help "Configure IPv4 IS-IS routing";
+        user-ext:CLI-no-comm-help "Configure IPv4 IS-IS routing";
+
+        container unicast {
+
+          description
+              "Configure IPv4 unicast IS-IS routing";
+
+          user-ext:CLI-comm-help "Configure IPv4 unicast IS-IS routing";
+          user-ext:CLI-no-comm-help "Configure IPv4 unicast IS-IS routing";
+
+          container lfa {
+
+            if-feature features:ip-frr;
+
+            // Low-level model info: Corresponds to configuration fields in AMB_LFA_ENT (lfaEntTable).
+
+            description
+              "LFA configuration.";
+
+            user-ext:CLI-comm-help "Configure LFA";
+            user-ext:CLI-no-comm-help "Remove LFA";
+
+            presence "Enable LFA";
+
+            uses lfa:lfa-global-config { if-feature features:ip-frr; }
+
+            // Low-level model info: Corresponds to AMB_CIPR_RTM_REDIST (rtmRedistTable) with
+            //                       rtmRedistInfoSrc = isis and rtmRedistInfoDest = lfa.  All
+            //                       routes are redistributed to LFA by default.
+            list filter {
+
+              description
+                "LFA filter rule.";
+
+              user-ext:CLI-comm-help "Configure an LFA filter rule";
+              user-ext:CLI-no-comm-help "Configure LFA filter rule";
+
+              key "name";
+
+              // Low-level model info: A unique rtmRedistEntryId will be generated for each entry
+              leaf name {
+                type redist:redist-name-string;
+
+                user-ext:CLI-param-help "Set LFA filter rule name";
+                description
+                  "LFA filter rule name.";
+              }
+
+              uses redist:lfa-filter-redist-ipv4;
+
+              leaf path-type {
+                type redist:isis-redist-path-types;
+                default "none";
+                description
+                  "Value of ISIS path type filter, if in use.  If the filter is in
+                  use then do not match the source routing information to
+                  this entry if the path type in the source routing
+                  information does not match this filter value.";
+
+                user-ext:CLI-comm-help "Set the path type filter";
+                user-ext:CLI-no-comm-help "Set path type filter to default";
+                user-ext:CLI-param-help "Set path type filter";
+              }
+
+            } // filter
+
+          } // lfa
+
+          container redistribution {
+
+            // Low-level model info: Corresponds to AMB_CIPR_RTM_REDIST (rtmRedistTable).
+
+            description
+              "Redistribution information entries.
+              This list is used to determine how routing information is
+              redistributed to routing protocol managers (RPMs).  The RPM to which
+              the information may be redistributed is called the
+              destination RPM.  Routing information is received from RPMs
+              and from configuration (for static routes); these are referred to
+              as the routing information source.";
+            user-ext:CLI-comm-help "Configure redistribution information";
+            user-ext:CLI-no-comm-help "Remove redistribution information";
+
+            // Low-level model info: Corresponds to rtmRedistInfoSrc = bgp.
+            list bgp {
+
+              key "name";
+
+              // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+              leaf name {
+                type redist:redist-name-string;
+
+                user-ext:CLI-param-help "Redistribution rule name";
+                description
+                  "Session name";
+              }
+
+              user-ext:CLI-comm-help "Configure a BGP redistribution rule";
+              user-ext:CLI-no-comm-help "Configure BGP redistribution rule";
+
+              uses redist:common-redist-ipv4;
+
+              leaf path-type-filter {
+                type redist:bgp-redist-path-types;
+                default "bgp-external";
+                description
+                  "Value of BGP path type filter, if in use.  If the filter is in
+                  use then do not match the source routing information to
+                  this entry if the path type in the source routing
+                  information does not match this filter value.";
+
+                user-ext:CLI-comm-help "Set the path type filter";
+                user-ext:CLI-no-comm-help "Set path type filter to default";
+                user-ext:CLI-param-help "Set path type filter";
+              }
+
+              uses isis-redist;
+            }
+
+            // Low-level model info: Corresponds to rtmRedistInfoSrc = ospf.
+            list ospf {
+
+              user-ext:CLI-comm-help "Configure an  OSPF redistribution rule";
+              user-ext:CLI-no-comm-help "Remove OSPF redistribution rule";
+
+              key "name";
+
+              // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+              leaf name {
+                type redist:redist-name-string;
+
+                user-ext:CLI-param-help "Redistribution rule name";
+                description
+                  "Session name";
+              }
+
+              uses redist:common-redist-ipv4;
+
+              leaf path-type-filter {
+                type redist:ospf-redist-path-types;
+                default "none";
+                description
+                  "Value of OSPF path type filter, if in use.  If the filter is in
+                  use then do not match the source routing information to
+                  this entry if the path type in the source routing
+                  information does not match this filter value.";
+
+                user-ext:CLI-comm-help "Set the path type filter";
+                user-ext:CLI-no-comm-help "Set path type filter to default";
+                user-ext:CLI-param-help "Set path type filter";
+              }
+
+              uses isis-redist;
+            }
+
+            // Low-level model info: Corresponds to rtmRedistInfoSrc = static.
+            list static {
+
+              user-ext:CLI-comm-help "Configure a static redistribution rule";
+              user-ext:CLI-no-comm-help "Remove static redistribution rule";
+
+              key "name";
+
+              // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+              leaf name {
+                type redist:redist-name-string;
+
+                user-ext:CLI-param-help "Redistribution rule name";
+                description
+                  "Session name";
+              }
+
+              uses redist:common-redist-ipv4;
+              uses isis-redist;
+            }
+
+            // Low-level model info: Corresponds to rtmRedistInfoSrc = rip.
+            list rip {
+
+              user-ext:CLI-comm-help "Configure a RIP redistribution rule";
+              user-ext:CLI-no-comm-help "Remove RIP redistribution rule";
+
+              key "name";
+
+              // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+              leaf name {
+                type redist:redist-name-string;
+
+                user-ext:CLI-param-help "Redistribution rule name";
+                description
+                  "Session name";
+              }
+
+              uses redist:common-redist-ipv4;
+              uses isis-redist;
+            }
+
+            // Low-level model info: Corresponds to rtmRedistInfoSrc = i3-connected.
+            list connected {
+
+              user-ext:CLI-comm-help "Configure a connected redistribution rule";
+              user-ext:CLI-no-comm-help "Remove connected redistribution rule";
+
+              key "name";
+
+              // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+              leaf name {
+                type redist:redist-name-string;
+
+                user-ext:CLI-param-help "Rule name";
+                description
+                  "Redistribution rule name";
+              }
+
+              uses redist:common-redist-ipv4;
+              uses isis-redist;
+            }
+
+            // Low-level model info: Corresponds to rtmRedistPathType  = i3-local.
+            list local {
+
+              user-ext:CLI-comm-help "Configure a local redistribution rule";
+              user-ext:CLI-no-comm-help "Remove local redistribution rule";
+
+              key "name";
+
+              // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+              leaf name {
+                type redist:redist-name-string;
+
+                user-ext:CLI-param-help "Rule name";
+                description
+                  "Redistribution rule name";
+              }
+
+              uses redist:common-redist-ipv4;
+              uses isis-redist;
+
+              // Low-level model info: Corresponds to rtmRedistFullSpecFilter.
+              uses redist:fully-specified;
+            }
+
+          } // redistribution
+
+        } // unicast
+
+        uses isis-route-administrative-distance;
+
+      } // ipv4
+
+      container ipv6 {
+
+        presence "IS-IS IPv6 configured";
+
+        description
+          "Configure IPv6 IS-IS routing";
+
+        user-ext:CLI-comm-help "Configure IPv6 IS-IS routing";
+        user-ext:CLI-no-comm-help "Configure IPv6 IS-IS routing";
+
+        container unicast  {
+
+          description
+              "Configure IPv6 unicast IS-IS routing";
+
+          user-ext:CLI-comm-help "Configure IPv6 unicast IS-IS routing";
+          user-ext:CLI-no-comm-help "Configure IPv6 unicast IS-IS routing";
+
+          container lfa {
+
+            if-feature features:ip-frr;
+
+            // Low-level model info: Corresponds to configuration fields in AMB_LFA_ENT (lfaEntTable).
+
+            description
+              "LFA configuration.";
+
+            user-ext:CLI-comm-help "Configure LFA";
+            user-ext:CLI-no-comm-help "Remove LFA";
+
+            presence "Enable LFA";
+
+            uses lfa:lfa-global-config { if-feature features:ip-frr; }
+
+            // Low-level model info: Corresponds to AMB_CIPR_RTM_REDIST (rtmRedistTable) with
+            //                       rtmRedistInfoSrc = isis and rtmRedistInfoDest = lfa.  All
+            //                       routes are redistributed to LFA by default.
+            list filter {
+
+              description
+                "LFA filter rule.";
+
+              user-ext:CLI-comm-help "Configure an LFA filter rule";
+              user-ext:CLI-no-comm-help "Configure LFA filter rule";
+
+              key "name";
+
+              // Low-level model info: A unique rtmRedistEntryId will be generated for each entry
+              leaf name {
+                type redist:redist-name-string;
+
+                user-ext:CLI-param-help "Set LFA filter rule name";
+                description
+                  "LFA filter rule name.";
+              }
+
+              uses redist:lfa-filter-redist-ipv6;
+
+              leaf path-type {
+                type redist:isis-redist-path-types;
+                default "none";
+                description
+                  "Value of ISIS path type filter, if in use.  If the filter is in
+                  use then do not match the source routing information to
+                  this entry if the path type in the source routing
+                  information does not match this filter value.";
+
+                user-ext:CLI-comm-help "Set the path type filter";
+                user-ext:CLI-no-comm-help "Set path type filter to default";
+                user-ext:CLI-param-help "Set path type filter";
+              }
+
+            } // filter
+
+          } // lfa
+
+          container redistribution {
+
+            // Low-level model info: Corresponds to AMB_CIPR_RTM_REDIST (rtmRedistTable).
+
+            description
+              "Redistribution information entries.
+              This list is used to determine how routing information is
+              redistributed to routing protocol managers (RPMs).  The RPM to which
+              the information may be redistributed is called the
+              destination RPM.  Routing information is received from RPMs
+              and from configuration (for static routes); these are referred to
+              as the routing information source.";
+            user-ext:CLI-comm-help "Configure redistribution information";
+            user-ext:CLI-no-comm-help "Remove redistribution information";
+
+            // Low-level model info: Corresponds to rtmRedistInfoSrc = bgp.
+            list bgp {
+
+              user-ext:CLI-comm-help "Configure a BGP redistribution rule";
+              user-ext:CLI-no-comm-help "Remove BGP redistribution rule";
+
+              key "name";
+
+              // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+              leaf name {
+                type redist:redist-name-string;
+
+                user-ext:CLI-param-help "Redistribution rule name";
+                description
+                  "Session name";
+              }
+
+              uses redist:common-redist-ipv6;
+
+              leaf path-type-filter {
+                type redist:bgp-redist-path-types;
+                default "bgp-external";
+                description
+                  "Value of BGP path type filter, if in use.  If the filter is in
+                  use then do not match the source routing information to
+                  this entry if the path type in the source routing
+                  information does not match this filter value.";
+
+                user-ext:CLI-comm-help "Set the path type filter";
+                user-ext:CLI-no-comm-help "Set path type filter to default";
+                user-ext:CLI-param-help "Set path type filter";
+              }
+
+              uses isis-redist;
+            }
+
+            // Low-level model info: Corresponds to rtmRedistInfoSrc = ospf.
+            list ospf {
+
+              user-ext:CLI-comm-help "Configure an OSPF redistribution rule";
+              user-ext:CLI-no-comm-help "Remove OSPF redistribution rule";
+
+              key "name";
+
+              // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+              leaf name {
+                type redist:redist-name-string;
+
+                user-ext:CLI-param-help "Redistribution rule name";
+                description
+                  "Session name";
+              }
+
+              uses redist:common-redist-ipv6;
+
+              leaf path-type-filter {
+                type redist:ospf-redist-path-types;
+                default "none";
+                description
+                  "Value of OSPF path type filter, if in use.  If the filter is in
+                  use then do not match the source routing information to
+                  this entry if the path type in the source routing
+                  information does not match this filter value.";
+
+                user-ext:CLI-comm-help "Set the path type filter";
+                user-ext:CLI-no-comm-help "Set path type filter to default";
+                user-ext:CLI-param-help "Set path type filter";
+              }
+
+              uses isis-redist;
+            }
+
+            // Low-level model info: Corresponds to rtmRedistInfoSrc = rip.
+            list rip {
+
+              user-ext:CLI-comm-help "Configure a RIP redistribution rule";
+              user-ext:CLI-no-comm-help "Remove RIP redistribution rule";
+
+              key "name";
+
+              // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+              leaf name {
+                type redist:redist-name-string;
+
+                user-ext:CLI-param-help "Redistribution rule name";
+                description
+                  "Session name";
+              }
+
+              uses redist:common-redist-ipv6;
+              uses isis-redist;
+            }
+
+            // Low-level model info: Corresponds to rtmRedistInfoSrc = static.
+            list static {
+
+              user-ext:CLI-comm-help "Configure a static redistribution rule";
+              user-ext:CLI-no-comm-help "Remove static redistribution rule";
+
+              key "name";
+
+              // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+              leaf name {
+                type redist:redist-name-string;
+
+                user-ext:CLI-param-help "Redistribution rule name";
+                description
+                  "Session name";
+              }
+
+              uses redist:common-redist-ipv6;
+              uses isis-redist;
+            }
+
+            // Low-level model info: Corresponds to rtmRedistInfoSrc = i3-connected.
+            list connected {
+
+              user-ext:CLI-comm-help "Configure a connected redistribution rule";
+              user-ext:CLI-no-comm-help "Remove connected redistribution rule";
+
+              key "name";
+
+              // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+              leaf name {
+                type redist:redist-name-string;
+
+                user-ext:CLI-param-help "Rule name";
+                description
+                  "Redistribution rule name";
+              }
+
+              uses redist:common-redist-ipv6;
+              uses isis-redist;
+            }
+
+            // Low-level model info: Corresponds to rtmRedistPathType  = i3-local.
+            list local {
+
+              user-ext:CLI-comm-help "Configure a local redistribution rule";
+              user-ext:CLI-no-comm-help "Remove local redistribution rule";
+
+              key "name";
+
+              // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+              leaf name {
+                type redist:redist-name-string;
+
+                user-ext:CLI-param-help "Rule name";
+                description
+                  "Redistribution rule name";
+              }
+
+              uses redist:common-redist-ipv6;
+              uses isis-redist;
+
+              // Low-level model info: Corresponds to rtmRedistFullSpecFilter.
+              uses redist:fully-specified;
+            }
+
+          } // redistribution
+
+        } // unicast
+
+        uses isis-route-administrative-distance;
+
+      } // ipv6
+
+    } // address-family
+
+    container state {
+
+      // Low-level model info: Corresponds to read-only fields in AMB_ISIS_SYS (isisSysTable).
+
+      description
+        "IS-IS protocol state.";
+
+      config false;
+
+      uses global-state-for-isis;
+
+      container level {
+
+        // Low-level model info: Corresponds to read-only fields in AMB_ISIS_SYS_LEVEL (isisSysLevelTable) for level-1.
+        container one {
+
+          uses system-level-state;
+
+        } // one
+
+        // Low-level model info: Corresponds to read-only fields in AMB_ISIS_SYS_LEVEL (isisSysLevelTable) for level-2.
+        container two {
+
+          uses system-level-state;
+
+        } // two
+
+      } // level
+
+    } // state
+
+    container lsp-database-list {
+
+      description
+        "Container to hold LSP database state.";
+
+      config false;
+
+      list lsp-database-state {
+
+        // Low-level model info: Corresponds to AMB_ISIS_LSP_SUMM (isisLSPSummaryTable).
+
+        description
+          "List of LSP database state, learned automatically.";
+
+        config false;
+
+        leaf level {
+          type isis-xor-level-type;
+          description
+            "The level that this entry describes.";
+
+          config false;
+        }
+
+        container lsp-database-level-list {
+
+          description
+            "Container to hold LSP Summary state by level.";
+
+          config false;
+
+          list lsp-database-level-state {
+
+            // Low-level model info: Corresponds to rows in the
+            // AMB_ISIS_LSP_SUMM (isisLSPSummaryTable) by level.
+
+            description
+              "Table of per-level LSP database state, learned automatically.";
+
+            config false;
+
+            uses lsp-database;
+
+          } // lsp-database-level-state
+
+        } // lsp-database-level-list
+
+      } // lsp-database-state
+
+    } // lsp-database-list
+
+    container ipv4-state {
+
+      description
+        "Container to hold IPv4 state.";
+
+      config false;
+
+      // Global LFA statistics.
+      uses lfa:lfa-global-stats { if-feature features:ip-frr; }
+
+      container reachable-address-list {
+
+        description
+          "Container to hold Reachable Address state.";
+
+        config false;
+
+        list reachable-address-state {
+
+          // Low-level model info: Corresponds to AMB_ISIS_IP_RA_TABLE (isisIPRATable).
+
+          description
+            "Table of IPv4 Reachable Addresses to networks, subnetworks
+             or hosts, learned automatically.";
+
+          config false;
+
+          uses ipv4-reachable-address-state;
+
+        } // reachable-address-state
+
+      } // reachable-address-list
+
+      // Global LFA state.
+      uses lfa:lfa-global-state { if-feature features:ip-frr; }
+
+    } // ipv4-state
+
+    container ipv6-state {
+
+      description
+        "Container to hold IPv6 state.";
+
+      config false;
+
+      // Global LFA statistics.
+      uses lfa:lfa-global-stats { if-feature features:ip-frr; }
+
+      container reachable-address-list {
+
+        description
+          "Container to hold Reachable Address state.";
+
+        config false;
+
+        list reachable-address-state {
+
+          // Low-level model info: Corresponds to AMB_ISIS_IP_RA_TABLE (isisIPRATable).
+
+          description
+            "Table of IPv6 Reachable Addresses to networks, subnetworks
+             or hosts, learned automatically.";
+
+          config false;
+
+          uses ipv6-reachable-address-state;
+
+        } // reachable-address-state
+
+      } // reachable-address-list
+
+      // Global LFA state.
+      uses lfa:lfa-global-state { if-feature features:ip-frr; }
+
+    } // ipv6-state
+
+  } // global-parameters-for-isis
+
+  grouping interface-config-for-isis {
+
+    // Low-level model info: Corresponds to AMB_ISIS_CIRC (isisCircTable).
+    // Low-level model info: Always set isisCircType to 'broadcast'.
+
+    description
+      "IS-IS Circuit configuration.";
+
+    // Low-level model info: Corresponds to isisCircPtToPtOverLAN.
+    leaf point-to-point {
+      type empty;
+      description
+        "Allows a broadcast circuit to be configured to operate
+        point-to-point over LAN procedures.
+
+        If enabled, point-point over LAN procedures are followed.
+
+        Otherwise, the circuit is used as a normal LAN.
+
+        Point-to-point over LAN procedures should only be
+        configured when there are just two Intermediate Systems
+        operating on the LAN.";
+
+      user-ext:CLI-comm-help "Enable point-to-point mode";
+      user-ext:CLI-no-comm-help "Disable point-to-point mode";
+    }
+
+    // Low-level model info: Corresponds to isisCircLevel.
+    leaf circuit-level {
+      type isis-system-level;
+      default levels-1-and-2;
+      description
+        "Indicates which type of packets will be sent and
+        accepted on this circuit.";
+
+      user-ext:CLI-comm-help "Set IS-IS levels supported on the circuit";
+      user-ext:CLI-no-comm-help "Set IS-IS level support to the default";
+      user-ext:CLI-param-help "Set IS-IS levels supported on the circuit";
+    }
+
+    // Low-level model info: Corresponds to isisCircProtBfdDesired and the AMB_ISIS_BITS_PROT_SUPP group.
+    container bfd {
+
+      description
+        "Indicates the protocols running on this circuit for which)
+        Bidirectional Forwarding Detection (BFD) is desired.
+
+        If set for an address type, then a BFD session is established to
+        each peer that supports BFD for that address type.";
+
+      user-ext:CLI-comm-help "Configure BFD";
+      user-ext:CLI-no-comm-help "Configure BFD";
+
+      container fast-detect {
+
+        description
+            "Configure BFD fast-detect for this interface";
+
+        user-ext:CLI-comm-help "Configure BFD fast-detect";
+        user-ext:CLI-no-comm-help "Configure BFD fast-detect";
+
+        leaf ipv4 {
+          type empty;
+
+          description
+              "Enable BFD fast-detect for IPv4 on this interface";
+
+          user-ext:CLI-comm-help "Enable BFD fast-detect for IPv4";
+          user-ext:CLI-no-comm-help "Disable BFD fast-detect for IPv4";
+        }
+
+        leaf ipv6 {
+          type empty;
+
+          description
+              "Enable BFD fast-detect for IPv6 on this interface";
+
+          must "not(../../../disable-ipv6)" {
+            error-message "IPv6 must be enabled on the interface";
+          }
+
+          user-ext:CLI-comm-help "Enable BFD fast-detect for IPv6";
+          user-ext:CLI-no-comm-help "Disable BFD fast-detect for IPv6";
+        }
+
+      } // fast-detect
+
+    } // bfd
+
+    // Low-level model info: Corresponds to isisCircPassiveCircuit and isisCircExtDomain.
+    leaf passive {
+      type empty;
+      description
+          "Disable creating neighborhood on this interface.
+
+          This field is ignored if the interface to which this
+          circuit corresponds is a loopback interface.";
+
+      user-ext:CLI-comm-help "Disable creating neighborhood on this interface";
+      user-ext:CLI-no-comm-help "Enable creating neighborhood";
+    }
+
+    // Low-level model info: Corresponds to isisCircAdminState.
+    leaf shutdown {
+      type empty;
+      description
+          "Disable IS-IS on this interface";
+
+      user-ext:CLI-comm-help "Disable IS-IS on this interface";
+      user-ext:CLI-no-comm-help "Enable IS-IS on this interface";
+    }
+
+    // Low-level model info: Corresponds to isisCircAdminTag.
+    leaf admin-tag {
+      type isis-admin-tag;
+      default "0";
+      description
+        "The administrative tag to advertise with subnets advertised for this interface.";
+
+      user-ext:CLI-comm-help "Set the administrative tag";
+      user-ext:CLI-no-comm-help "Set the administrative tag to default value";
+      user-ext:CLI-param-help "Set the administrative tag";
+    }
+
+    // Low-level model info: Corresponds to isisCircSmallHellos.
+    container hello-padding {
+
+      user-ext:CLI-comm-help "Configure hello-padding";
+      user-ext:CLI-no-comm-help "Configure hello-padding";
+
+      leaf disable {
+        type empty;
+        description
+          "Whether to disable hello-padding on this circuit and send only
+          unpadded hellos.";
+
+        user-ext:CLI-comm-help "Disable hello-padding on this interface";
+        user-ext:CLI-no-comm-help "Enable hello-padding on this interface";
+      }
+
+    } // hello-padding
+
+    // Low-level model info: Corresponds to isisCircProtSupported.
+    leaf disable-ipv6 {
+      type empty;
+      description
+          "Disable support of IPv6 on this interface";
+
+      user-ext:CLI-comm-help "Disable support of IPv6 on this interface";
+      user-ext:CLI-no-comm-help "Enable support of IPv6 on this interface";
+    }
+
+  } // interface-config-for-isis
+
+  grouping interface-state-for-isis {
+
+    // Low-level model info: Corresponds to read-only fields in AMB_ISIS_CIRC (isisCircTable).
+
+    description
+      "IS-IS Circuit state.";
+
+    leaf admin-status {
+      type isis-admin-status;
+      description
+        "The administrative state of the circuit.
+
+        In ISIS the default admin state for a new automatic
+        circuit is 'on'.";
+      config false;
+    }
+
+    leaf last-up-time {
+      type uint32;
+      units "hundredths of seconds";
+      description
+        "If the circuit is enabled, the value of sysUpTime when
+        admin-status most recently entered the state on.  If
+        the circuit is not on, the value of sysUpTime when the
+        circuit last entered state on, 0 if the circuit has never
+        been on.";
+      config false;
+    }
+
+    leaf circuit-3-way-enabled {
+      type boolean;
+      description
+        "Is this circuit enabled to run 3-way handshake?
+
+        ISIS will always run the 3-way handshake on point to
+        point circuits.";
+      config false;
+    }
+
+    leaf oper-state {
+      type meta:oper-status;
+      description
+        "The operational state of this circuit.";
+      config false;
+    }
+
+    leaf extended-circuit-id {
+      type uint32;
+      description
+        "The value to be used as the extended circuit ID in 3Way
+        handshake.  This value is unique across all circuits on this
+        IS.";
+      config false;
+    }
+
+    leaf manual-or-automatic {
+      type isis-manual-or-automatic;
+      description
+        "Has this circuit been configured (manual), discovered
+        (automatic) or both?
+
+        Automatic circuits cannot be destroyed.  Destroying a
+        manual circuit removes all configuration from that circuit
+        from ISIS.  Destroying a circuit in state 'both'
+        destroys configuration and returns the circuit to
+        automatic state.";
+      config false;
+    }
+
+    leaf t1-timer-running {
+      type boolean;
+      description
+        "Is the T1 timer running on this circuit?
+
+        This object is only valid on a circuit that is currently
+        running the IS-IS protocol.
+
+        When set to 'true', this indicates that the local node is
+        running starting or restarting node procedures.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to isisCircPassiveCircuit and isisCircExtDomain.
+    leaf passive {
+      type boolean;
+      config false;
+      description
+        "Disabled creating neighborhood on this interface.";
+    }
+
+    // Low-level model info: Corresponds to isisCircPtToPtOverLAN.
+    leaf point-to-point {
+      type boolean;
+      config false;
+      description
+        "Whether a broadcast circuit is configured to operate
+        point-to-point over LAN procedures.
+
+        If enabled, point-point over LAN procedures are followed.
+
+        Otherwise, the circuit is used as a normal LAN.";
+    }
+
+    // Low-level model info: Corresponds to isisCircLevel.
+    leaf circuit-level {
+      type isis-system-level;
+      config false;
+      description
+        "Indicates which type of packets will be sent and
+         accepted on this circuit.";
+    }
+
+    // Low-level model info: Corresponds to isisCircProtBfdDesired and the AMB_ISIS_BITS_PROT_SUPP group.
+    container bfd {
+
+      config false;
+
+      description
+        "Indicates the protocols running on this circuit for which)
+         Bidirectional Forwarding Detection (BFD) is desired.
+
+         If set for an address type, then a BFD session is established to
+         each peer that supports BFD for that address type.";
+
+      container fast-detect {
+
+        description
+          "Configuration of BFD fast-detect for this interface";
+
+        leaf ipv4 {
+          type boolean;
+
+          description
+            "Enabled BFD fast-detect for IPv4 on this interface";
+
+        }
+
+        leaf ipv6 {
+          type boolean;
+
+          description
+            "Enabled BFD fast-detect for IPv6 on this interface";
+        }
+
+      } // fast-detect
+
+    } // bfd
+
+  } // interface-state-for-isis
+
+  grouping circuit-level-config {
+
+    // Low-level model info: Corresponds to AMB_ISIS_CIRC_LEVEL (isisCircLevelTable).
+
+    description
+      "Level specific config about circuits used by IS-IS.";
+
+    user-ext:CLI-comm-help "Configure interface level parameters";
+    user-ext:CLI-no-comm-help "Configure interface level parameters";
+
+    leaf metric {
+      type isis-wide-metric;
+      description
+        "The metric value of this circuit for this level.";
+
+      user-ext:CLI-comm-help "Set the metric";
+      user-ext:CLI-no-comm-help "Set metric to default";
+      user-ext:CLI-param-help "Set metric";
+    }
+
+    // Low-level model info: Corresponds to isisCircLevelISPriority.
+    // Low-level model info: Note that the yang default is different to the MIB default.
+    leaf priority {
+      type isis-priority;
+      default "0";
+      description
+        "The priority for becoming LAN Designated Intermediate
+        System at this level.";
+
+      user-ext:CLI-comm-help "Set the priority to process choice DR";
+      user-ext:CLI-no-comm-help "Set priority to process choice DR";
+      user-ext:CLI-param-help "Set priority";
+    }
+
+    // Low-level model info: Note that the yang default is different to the MIB default.
+    leaf hello-multiplier {
+      type isis-hello-multiplier;
+      default "3";
+      description
+        "This value is multiplied by the corresponding HelloTimer
+        and the result in seconds (rounded up) is used as the
+        holding time in transmitted hellos, to be used by
+        receivers of hello packets from this IS.";
+
+      user-ext:CLI-comm-help "Set the hello multiplier";
+      user-ext:CLI-no-comm-help "Set hello multiplier to default";
+      user-ext:CLI-param-help "Set multiplier";
+    }
+
+    // Low-level model info: Corresponds to isisCircLevelDRHelloTimer.
+    // Low-level model info: Note that the yang field uses seconds while the MIB field uses milliseconds.
+    leaf hello-interval {
+      type isis-hello-interval;
+      default "1";
+      units "seconds";
+      description
+        "Interval between Hello PDUs when this IS is the Designated
+        Intermediate System.";
+
+      user-ext:CLI-comm-help "Set the hello interval in seconds";
+      user-ext:CLI-no-comm-help "Set hello interval to default";
+      user-ext:CLI-param-help "Set time in seconds";
+    }
+
+    // Low-level model info: Corresponds to isisCircLevelHelloTimer.
+    // Low-level model info: Note that the yang field uses seconds while the MIB field uses milliseconds.
+    leaf hello-timer {
+      type isis-hello-timer;
+      default "3";
+      units "seconds";
+      description
+        "Interval between Hello PDUs for this level when this IS is not the
+        Designated Intermediate System.  Point-to-point Hellos are not level
+        specific, so for L1L2 circuits, the L1 interval is used and the L2
+        value is ignored.";
+
+      user-ext:CLI-comm-help "Set the hello timer in seconds";
+      user-ext:CLI-no-comm-help "Set hello timer to default";
+      user-ext:CLI-param-help "Set time in seconds";
+    }
+
+    // Low-level model info: Corresponds to isisCircLevelLSPThrottle.
+    // Low-level model info: Note that the yang default is different to the MIB default.
+    leaf lsp-interval {
+      type isis-lsp-interval;
+      default 100;
+      units "milliseconds";
+      description
+          "Minimum interval between transmitted LSPs";
+
+      user-ext:CLI-comm-help "Set the minimum LSP interval in milliseconds";
+      user-ext:CLI-no-comm-help "Set minimum LSP interval to default";
+      user-ext:CLI-param-help "Set time in milliseconds";
+    }
+
+    // Low-level model info: Corresponds to isisCircLevelMinLSPRetransInt.
+    // Low-level model info: Note that the yang default is different to the MIB default.
+    // Low-level model info: Note that the yang field uses seconds while the MIB field uses milliseconds.
+    // Low-level model info: Convert 0s to 1ms (the minimum value for the MIB field).
+    leaf retransmit-interval {
+      type isis-retransmit-interval;
+      default 10;
+      units "seconds";
+      description
+          "Minimum LSP retransmission interval";
+
+      user-ext:CLI-comm-help "Set the minimum interval between retransmissions of the same LSP in seconds";
+      user-ext:CLI-no-comm-help "Set the minimum interval between retransmissions of the same LSP to default";
+      user-ext:CLI-param-help "Set time in seconds";
+    }
+
+    // Low-level model info: Corresponds to isisCircLevelMinLSPArrivalInt.
+    leaf min-arrival-interval {
+      type isis-min-arrival-interval;
+      units "milliseconds";
+      default "0";
+      description
+        "The minimum interval between reception of new instances of
+        a particular LSP.  LSP instances received at higher
+        frequencies are discarded.  If set to zero then no check
+        is made on the frequency of LSP reception.";
+
+      user-ext:CLI-comm-help "Set the minimum interval between reception of new instances in milliseconds";
+      user-ext:CLI-no-comm-help "Set minimum interval between reception of new instances to default";
+      user-ext:CLI-param-help "Set minimum interval in milliseconds";
+    }
+
+    // Low-level model info: Corresponds to isisCircLevelCSNPInterval.
+    leaf csnp-interval {
+      type circuit-csnp-interval;
+      units "seconds";
+      default "10";
+      description
+        "Interval between periodic transmission of CSNPs.";
+
+      user-ext:CLI-comm-help "Set the interval between periodic transmission of CSNPs";
+      user-ext:CLI-no-comm-help "Set the interval between periodic transmission of CSNPs to default";
+      user-ext:CLI-param-help "Set the interval between periodic transmission of CSNPs";
+    }
+
+    uses authentication-config;
+
+  } // circuit-level-config
+
+  grouping circuit-level-state {
+
+    // Low-level model info: Corresponds to read-only fields in AMB_ISIS_CIRC_LEVEL (isisCircLevelTable).
+
+    description
+      "Level specific state for circuits used by IS-IS.";
+
+    leaf id-octet {
+      type uint32 {
+        range "0..255";
+      }
+      description
+        "A one byte identifier for the circuit selected by the
+        Intermediate System.
+
+        On point-to-point circuits, the value is used as the Local
+        Circuit ID in point-to-point IIH PDUs transmitted on this
+        circuit.  In this case, values of id-octet do not need to be unique.
+
+        For broadcast circuits, the value is used to generate the
+        LAN ID that will be used if this Intermediate System is
+        elected as the Designated IS on this circuit.  The value
+        is required to differ on LANs where the Intermediate
+        System is the Designated Intermediate System.";
+      config false;
+    }
+
+    leaf id {
+      type isis-system-id-or-empty;
+      description
+        "On a point to point circuit with a fully initialized
+        adjacency to a peer IS, the value of this object is the
+        circuit ID negotiated during adjacency initialization.
+
+        On a point to point circuit without such an adjacency, the
+        value is the concatenation of the local system ID and the
+        one byte id-octet for this circuit i.e.  the
+        value that would be proposed for the circuit ID.
+
+        On other circuit types, the value returned is the zero
+        length string.";
+      config false;
+    }
+
+    leaf designated-is {
+      type isis-system-id-or-empty;
+      description
+        "The ID of the LAN Designated Intermediate System on this
+        circuit at this level.  If, for any reason, this system is
+        not partaking in the relevant Designated Intermediate
+        System election process, then the value returned is the
+        zero length OCTET STRING.";
+      config false;
+    }
+
+    leaf id-hostname {
+      type isis-host-name-or-empty;
+      description
+        "The hostname corresponding to the system ID part of the id.
+
+        This is the null string if the id object is null, or if no hostname
+        is known.";
+      config false;
+    }
+
+    leaf designated-is-hostname {
+      type isis-host-name-or-empty;
+      description
+        "The hostname corresponding to the system ID part of the id.";
+      config false;
+    }
+
+  } // circuit-level-state
+
+  grouping packet-counter-stats {
+
+    leaf is-is-hello-count {
+      type uint32;
+      description
+        "The number of IS-IS Hello PDUs seen in this direction at this level.
+
+        Point-to-Point IIH PDUs are counted at the lowest enabled level:
+        at L1 on L1 or L1L2 circuits, and at L2 otherwise.";
+      config false;
+    }
+
+    leaf es-is-hello-count {
+      type uint32;
+      description
+        "The number of ES-IS Hello PDUs seen in this direction.
+
+        ISH PDUs are counted at the lowest enabled level: at L1 on
+        L1 or L1L2 circuits, and at L2 otherwise.";
+      config false;
+    }
+
+    leaf es-hello-count {
+      type uint32;
+      description
+        "The number of ES Hello PDUs seen in this direction.
+
+        ESH PDUs are counted at the lowest enabled level: at L1 on
+        L1 or L1L2 circuits, and at L2 otherwise.";
+      config false;
+    }
+
+    leaf lsp-count {
+      type uint32;
+      description
+        "The number of IS-IS LSPs seen in this direction at this level.";
+      config false;
+    }
+
+    leaf csnp-count {
+      type uint32;
+      description
+        "The number of IS-IS CSNPs seen in this direction at this level.";
+      config false;
+    }
+
+    leaf psnp-count {
+      type uint32;
+      description
+        "The number of IS-IS PSNPs seen in this direction at this level.";
+      config false;
+    }
+
+    leaf unknown-packet-count {
+      type uint32;
+      description
+        "The number of unknown IS-IS PDUs seen at this level.";
+      config false;
+    }
+
+    leaf discarded-iih-count {
+      type uint32;
+      description
+        "The number of IIH PDUs that have been discarded.
+
+        This field is always zero for outgoing PDUs.";
+      config false;
+    }
+
+    leaf discarded-lsp-count {
+      type uint32;
+      description
+        "The number of LSP PDUs that have been discarded by the SDC
+        component of ISIS.
+
+        This field is always zero for outgoing PDUs.";
+      config false;
+    }
+
+    leaf discarded-csnp-count {
+      type uint32;
+      description
+        "The number of CSNP PDUs that have been discarded by the
+        SDC component of ISIS.
+
+        This field is always zero for outgoing PDUs.";
+      config false;
+    }
+
+    leaf discarded-psnp-count {
+      type uint32;
+      description
+        "The number of PSNP PDUs that have been discarded by the
+        SDC component of ISIS.
+
+        This field is always zero for outgoing PDUs.";
+      config false;
+    }
+
+  } // packet-counter-stats
+
+  grouping adjacency-state {
+
+    // Low-level model info: Corresponds to AMB_ISIS_ISADJ (isisISAdjTable).
+
+    description
+      "Table of adjacencies to Intermediate Systems.";
+
+    leaf adjacency-index {
+      type uint32 {
+        range "1..2000000000";
+      }
+      description
+        "A unique value identifying the IS adjacency from all other
+         such adjacencies on this circuit.  This value is
+         automatically assigned by the system when the adjacency is
+         created.";
+      config false;
+    }
+
+    leaf adj-state {
+      type isis-adjacency-state;
+      description
+        "The state of the adjacency.";
+      config false;
+    }
+
+    leaf adj-three-way-state {
+      type isis-adjacency-state;
+      description
+        "The 3Way state of the adjacency.  These are picked to
+        match the historical on-the-wire representation of the
+        3Way state.";
+      config false;
+    }
+
+    leaf neighbor-snpa-address {
+      type string;
+      description "The SNPA address of the neighboring system.";
+      config false;
+    }
+
+    leaf neighbor-system-type {
+      type isis-system-level;
+      description
+        "The type of the neighboring system.";
+      config false;
+    }
+
+    leaf neighbor-system-id {
+      type isis-system-id;
+      description
+        "The system ID of the neighboring Intermediate System.";
+      config false;
+    }
+
+    leaf neighbor-hostname {
+      type isis-host-name-or-empty;
+      description
+        "The hostname corresponding to neighbor-system-id.";
+      config false;
+    }
+
+    leaf hold-timer {
+      type uint32 {
+        range "1..65535";
+      }
+      description
+        "The holding time in seconds for this adjacency.  This
+        value is based on received IIH PDUs and the elapsed time
+        since receipt.";
+      config false;
+    }
+
+    leaf last-up-time {
+      type uint32;
+      description
+        "If the state is 'up', the value of sysUpTime when the adjacency
+        most recently entered the state 'up', or 0 if it has never been 'up'.";
+      config false;
+    }
+
+    leaf restart-capable {
+      type boolean;
+      description
+        "Does the neighbor support restart signalling?
+
+        This object is set to 'true' if the peer includes the
+        restart TLV in IIH PDUs.";
+      config false;
+    }
+
+    leaf bfd-status {
+      type isis-bfd-status;
+      description
+        "The overall BFD status of the adjacency. ";
+      config false;
+    }
+
+  } // adjacency-state
+
+  grouping isis-attributes-bits {
+
+    // Low-level model info: Corresponds to the bit flags in the isisLSPAttributes field.
+
+    description
+      "A set of attributes carried by an LSP.";
+
+    leaf partitioned {
+      type empty;
+      description
+        "If set, the originator supports partition repair.";
+      config false;
+    }
+
+    leaf attached-error {
+      type empty;
+      description
+        "If set, the originator is attached to
+         another area using the referred metric.";
+      config false;
+    }
+
+    leaf attached-expense {
+      type empty;
+      description
+        "If set, the originator is attached to
+         another area using the referred metric.";
+      config false;
+    }
+
+    leaf attached-delay {
+      type empty;
+      description
+        "If set, the originator is attached to
+         another area using the referred metric.";
+      config false;
+    }
+
+    leaf attached-default {
+      type empty;
+      description
+        "If set, the originator is attached to
+         another area using the referred metric.";
+      config false;
+    }
+
+    leaf overload {
+      type empty;
+      description
+        "If set, the originator is overloaded,
+         and must be avoided in path calculation.";
+      config false;
+    }
+
+    leaf level-1 {
+      type empty;
+      description
+        "If set, the intermediate system is level 1.";
+      config false;
+    }
+
+    leaf level-2 {
+      type empty;
+      description
+        "If set, the intermediate system is level 2.";
+      config false;
+    }
+
+  } // isis-attributes-bits
+
+  grouping tlv-database {
+
+    // Low-level model info: Corresponds to AMB_ISIS_LSP_TLV (isisLSPTLVTable).
+
+    description
+      "The contents of each LSP.";
+
+    leaf tlv-index {
+      type uint32;
+      description
+        "The index of this TLV in the LSP.  The first TLV has index
+        1 and the Nth TLV has an index of N.";
+      config false;
+    }
+
+    leaf sequence-number {
+      type uint32;
+      description
+        "This leaf describes the sequence number for this LSP.";
+      config false;
+    }
+
+    leaf checksum {
+      type uint32;
+      description
+        "This leaf describes the 16 bit Fletcher Checksum.";
+      config false;
+    }
+
+    leaf type {
+      type uint32;
+      description
+        "This leaf describes the type of this TLV.";
+      config false;
+    }
+
+    leaf length {
+      type uint32;
+      description
+        "This leaf describes the length of this TLV.";
+      config false;
+    }
+
+    leaf value {
+      type isis-tlv-value;
+      description
+        "The value of this TLV.";
+      config false;
+    }
+
+    leaf hostname {
+      type isis-host-name-or-empty;
+      description
+        "The hostname corresponding to the system ID part of the lsp-id.
+
+        This is the null string if no hostname is known.";
+      config false;
+    }
+
+  } // tlv-database
+
+  grouping lsp-database {
+
+    description
+     "This group defines attributes of an
+      ISIS database (Link State DB).";
+
+    leaf lsp-id {
+      type isis-lsp-id;
+      description
+       "This leaf describes the 8 byte LSP ID of the LSP, consisting of
+        the SystemID, CircuitID and Fragment Number.";
+      config false;
+    }
+
+    leaf sequence-number {
+      type uint32;
+      description
+       "This leaf describes the sequence number of the LSP.";
+      config false;
+    }
+
+    leaf zero-life {
+      type boolean;
+      description
+        "This leaf describes whether the LSP is being purged by this system.";
+      config false;
+    }
+
+    leaf checksum {
+      type uint32;
+      description
+        "This leaf describes the Fletcher Checksum of the LSP.";
+      config false;
+    }
+
+    leaf remaining-lifetime {
+      type uint32;
+      units "seconds";
+      description
+       "This leaf describes the remaining lifetime
+        in seconds before the LSP expiration.
+
+        For a current LSP (zero-life is 'false', this
+        indicates the time remaining before the LSP will expire.
+        For an LSP being purged from the system (zero-life
+        is 'true'), this will indicate the time remaining before
+        final deletion of the LSP.";
+      config false;
+    }
+
+    leaf pdu-length {
+      type uint32;
+      description
+        "This leaf describes the size of the PDU.";
+      config false;
+    }
+
+    container attributes {
+      uses isis-attributes-bits;
+      description
+        "The flags carried by the LSP.";
+      config false;
+    }
+
+    leaf id-hostname {
+      type isis-host-name-or-empty;
+      description
+        "The hostname corresponding to the system ID part of the is.
+
+        This is the null string if no hostname is known.";
+      config false;
+    }
+
+    container lsp-tlv-db-list {
+
+      description
+        "Container to hold LSP database TLV state.";
+
+      config false;
+
+      list lsp-tlv-db-state {
+
+        // Low-level model info: Corresponds to AMB_ISIS_LSP_TLV (isisLSPTLVTable).
+
+        description
+          "Table of LSP database TLV state.";
+
+        config false;
+
+        uses tlv-database;
+
+      } // lsp-tlv-db-state
+
+    } // lsp-tlv-db-list
+
+  } // lsp-database
+
+  grouping interface-config-parameters {
+
+    container isis {
+
+      // Low-level model info: Corresponds to AMB_ISIS_CIRC (isisCircTable).
+
+      description
+        "IS-IS Circuit configuration.";
+
+      user-ext:CLI-comm-help "Configure IS-IS circuit parameters";
+      user-ext:CLI-no-comm-help "Configure IS-IS circuit parameters";
+
+      uses interface-config-for-isis;
+
+      list level {
+
+        // Low-level model info: Corresponds to AMB_ISIS_CIRC_LEVEL (isisCircLevelTable).
+
+        description
+          "Level specific information about circuits used by IS-IS.";
+
+        user-ext:CLI-comm-help "Configure IS-IS interface level information";
+        user-ext:CLI-no-comm-help "Remove IS-IS interface level information";
+
+        key "level-index";
+
+        leaf level-index {
+          type isis-xor-level-type;
+          description
+            "The level that this entry describes.";
+
+          user-ext:CLI-param-help "Level index";
+        }
+
+        uses circuit-level-config;
+
+        // An interface metric must be less than 64 if the global metric style
+        // is "narrow" or "both" (both = narrow or wide).
+//        must "not(metric > 63) or " +
+//             "(ancestor::global/level[level-index = current()/level-index]/metric-style = 'wide') or " +
+//             "(ancestor::vrf/level[level-index = current()/level-index]/metric-style = 'wide')" {
+//          error-message
+//            "IS-IS interface metric must be less than 64 if the metric range is not wide";
+//        }
+
+      } // level
+
+    } // isis
+
+  } // interface-config-parameters
+
+  grouping interface-state-parameters {
+
+    uses interfaces:iface-id;
+
+    container isis {
+
+      // Low-level model info: Corresponds to read-only fields in AMB_ISIS_CIRC (isisCircTable).
+
+      config false;
+
+      uses interface-state-for-isis;
+
+      container level {
+
+        // Low-level model info: Corresponds to read-only fields in AMB_ISIS_CIRC_LEVEL (isisCircLevelTable) for level-1.
+        container one {
+
+          uses circuit-level-state;
+
+          // Low-level model info: Corresponds to read-only fields in AMB_ISIS_PACKET_COUNTER (isisPacketCounterTable) for level-1.
+          container packet-counters {
+
+            // Low-level model info: Corresponds to isisPacketCountDirection (isisPacketCounterTable)
+            container direction {
+
+              container sending {
+                uses packet-counter-stats;
+              } // sending
+
+              container receiving {
+                uses packet-counter-stats;
+              } // receiving
+
+            } // direction
+
+          } // packet-counters
+
+        } // one
+
+        // Low-level model info: Corresponds to read-only fields in AMB_ISIS_CIRC_LEVEL (isisCircLevelTable) for level-2.
+        container two {
+
+          uses circuit-level-state;
+
+          // Low-level model info: Corresponds to read-only fields in AMB_ISIS_PACKET_COUNTER (isisPacketCounterTable) for level-2.
+          container packet-counters {
+
+            // Low-level model info: Corresponds to isisPacketCountDirection (isisPacketCounterTable)
+            container direction {
+
+              container sending {
+                uses packet-counter-stats;
+              } // sending
+
+              container receiving {
+                uses packet-counter-stats;
+              } // receiving
+
+            } // direction
+
+          } // packet-counters
+
+        } // two
+
+      } // level
+
+      container adjacency-list {
+
+        description
+          "Container to hold Adjacency state.";
+
+        list adjacency {
+
+          // Low-level model info: Corresponds to AMB_ISIS_ISADJ (isisISAdjTable).
+
+          description
+            "Table of adjacencies to Intermediate Systems.";
+
+          config false;
+
+          uses adjacency-state;
+
+        } // adjacency
+
+      } // adjacency-list
+
+    } // isis
+
+  } // interface-state-parameters
+
+  grouping isis-instance {
+
+    // Low-level model info: Not using MT IS-IS yet so RPI joins are always unicast.
+
+    uses global-parameters-for-isis;
+
+    container interfaces {
+
+//      if-feature interfaces:standard-interfaces;
+      user-ext:CLI-not-command;
+
+      list interface {
+
+        description "Per-interface IS-IS configuration.";
+        user-ext:CLI-comm-help "Configure IS-IS on an interface";
+        user-ext:CLI-no-comm-help "Configure IS-IS on interface";
+
+        // Low-level model info: Use the interface index /number key for the isisCircIndex and isisCircIfIndex MIB indices.
+
+        key "if-name";
+
+        leaf if-name {
+          type leafref {
+            path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+          }
+          description
+            "The interface name.";
+
+          user-ext:CLI-comm-help "Set the interface name";
+          user-ext:CLI-param-help "Set interface name";
+        }
+
+        // ISIS can not be configured on a layer 2 forwarding interface
+        must "not(/interface:interfaces/interface:interface[interface:name = current()/if-name]/interface:forwarding-mode) or " +
+             "not(/interface:interfaces/interface:interface[interface:name = current()/if-name]/interface:forwarding-mode = 'interface:layer-2-forwarding')"
+        {
+          error-message "IS-IS cannot be configured on a layer 2 forwarding interface";
+        }
+
+        // The first three lines of this must statement determine whether we need to check that IP MTU and ISIS Level 1 max LSP size are consistent
+        // The remaining lines are the four alternative conditions that need to be satisfied depending on whether IP MTU and Level 1 max LSP size are specified
+        // The max LSP size is constrained to the correct size by the YANG
+        must "not(/interface:interfaces/interface:interface[interface:name = current()/if-name]/interface:forwarding-mode) or " +
+             "(/interface:interfaces/interface:interface[interface:name = current()/if-name]/interface:forwarding-mode != 'interface:network-layer') or " +
+             "(../../is-level = 'level-2') or " +
+             "(not(/interface:interfaces/interface:interface[interface:name = current()/if-name]/interface:mtu) and " +
+              "not(../../level[level-index = 'level-1']/max-lsp-size)) or " +
+             "not(/interface:interfaces/interface:interface[interface:name = current()/if-name]/interface:mtu) or " +
+             "(not(../../level[level-index = 'level-1']/max-lsp-size) and " +
+              "(/interface:interfaces/interface:interface[interface:name = current()/if-name]/interface:mtu >= 1492)) or " +
+             "(/interface:interfaces/interface:interface[interface:name = current()/if-name]/interface:mtu >= ../../level[level-index = 'level-1']/max-lsp-size)"
+        {
+          error-message "An interface forwarding at the network layer must have IP MTU at least as great as the maximum size of level 1 LSPs ISIS originates (max-lsp-size)";
+        }
+
+        // The first three lines of this must statement determine whether we need to check that IP MTU and ISIS Level 2 max LSP size are consistent
+        // The remaining lines are the four alternative conditions that need to be satisfied depending on whether IP MTU and Level 2 max LSP size are specified
+        // The max LSP size is constrained to the correct size by the YANG
+        must "not(/interface:interfaces/interface:interface[interface:name = current()/if-name]/interface:forwarding-mode) or " +
+             "(/interface:interfaces/interface:interface[interface:name = current()/if-name]/interface:forwarding-mode != 'interface:network-layer') or " +
+             "(../../is-level = 'level-1') or " +
+             "(not(/interface:interfaces/interface:interface[interface:name = current()/if-name]/interface:mtu) and " +
+              "not(../../level[level-index = 'level-2']/max-lsp-size)) or " +
+             "not(/interface:interfaces/interface:interface[interface:name = current()/if-name]/interface:mtu) or " +
+             "(not(../../level[level-index = 'level-2']/max-lsp-size) and " +
+              "(/interface:interfaces/interface:interface[interface:name = current()/if-name]/interface:mtu >= 1492)) or " +
+             "(/interface:interfaces/interface:interface[interface:name = current()/if-name]/interface:mtu >= ../../level[level-index = 'level-2']/max-lsp-size)"
+        {
+          error-message "An interface forwarding at the network layer must have IP MTU at least as great as the maximum size of level 2 LSPs ISIS originates (max-lsp-size)";
+        }
+
+        uses interface-config-parameters;
+        uses lfa:lfa-interface-config { if-feature features:ip-frr; }
+
+      } // interface
+
+    } // interfaces
+
+    container custom-interfaces {
+
+      if-feature interfaces:custom-interfaces;
+      user-ext:CLI-not-command;
+
+      container interface {
+
+        description "Per-interface IS-IS configuration.";
+        user-ext:CLI-comm-help "Configure IS-IS on an interface";
+        user-ext:CLI-no-comm-help "Configure IS-IS on interface";
+
+        // Low-level model info: Use the interface index /number key for the isisCircIndex and isisCircIfIndex MIB indices.
+
+        container oneGE {
+
+          user-ext:CLI-not-command;
+          user-ext:CLI-comm-switch "gigabitethernet/gigabitethernet-sub";
+
+          list gigabitethernet {
+
+            description "1G interface";
+
+            user-ext:CLI-comm-help "Add IS-IS configuration to 1G interface";
+            user-ext:CLI-no-comm-help "Remove IS-IS configuration from 1G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "1G interface name";
+            }
+
+            uses interface-config-parameters;
+            uses lfa:lfa-interface-config { if-feature features:ip-frr; }
+
+          } // gigabitethernet
+
+          list gigabitethernet-sub {
+
+            description "1G subinterface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-subiface-range-t;
+              description "<unit>/<dev>/<port>.<subid>";
+              user-ext:CLI-param-help "Set 1G subinterface name";
+            }
+
+            uses interface-config-parameters;
+
+          } // gigabitethernet-sub
+
+        } // oneGE
+
+        container tenGE {
+
+          user-ext:CLI-not-command;
+          user-ext:CLI-comm-switch "tengigabitethernet/tengigabitethernet-sub";
+
+          list tengigabitethernet {
+
+            description "10G interface";
+
+            user-ext:CLI-comm-help "Add IS-IS configuration to 10G interface";
+            user-ext:CLI-no-comm-help "Remove IS-IS configuration from 10G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "10G interface name";
+            }
+
+            uses interface-config-parameters;
+            uses lfa:lfa-interface-config { if-feature features:ip-frr; }
+
+          } // tengigabitethernet
+
+          list tengigabitethernet-sub {
+
+            description "10G subinterface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-subiface-range-t;
+              description "<unit>/<dev>/<port>.<subid>";
+              user-ext:CLI-param-help "Set 10G subinterface name";
+            }
+
+            uses interface-config-parameters;
+
+          } // tengigabitethernet-sub
+
+        } // tenGE
+
+        container fortyGE {
+
+          user-ext:CLI-not-command;
+          user-ext:CLI-comm-switch "fortygigabitethernet/fortygigabitethernet-sub";
+
+          list fortygigabitethernet {
+
+            description "40G interface";
+
+            user-ext:CLI-comm-help "Add IS-IS configuration to 40G interface";
+            user-ext:CLI-no-comm-help "Remove IS-IS configuration from 40G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "40G interface name";
+            }
+
+            uses interface-config-parameters;
+            uses lfa:lfa-interface-config { if-feature features:ip-frr; }
+
+          } // fortygigabitethernet
+
+          list fortygigabitethernet-sub {
+
+            description "40G subinterface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-subiface-range-t;
+              description "<unit>/<dev>/<port>.<subid>";
+              user-ext:CLI-param-help "Set 40G subinterface name";
+            }
+
+            uses interface-config-parameters;
+
+          } // fortygigabitethernet-sub
+
+        } // fortyGE
+
+        container hundredGE {
+
+          user-ext:CLI-not-command;
+          user-ext:CLI-comm-switch "hundredgigabitethernet/hundredgigabitethernet-sub";
+
+          list hundredgigabitethernet {
+
+            description "100G interface";
+
+            user-ext:CLI-comm-help "Add IS-IS configuration to 100G interface";
+            user-ext:CLI-no-comm-help "Remove IS-IS configuration from 100G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "100G interface name";
+            }
+
+            uses interface-config-parameters;
+            uses lfa:lfa-interface-config { if-feature features:ip-frr; }
+
+          } // hundredgigabitethernet
+
+          list hundredgigabitethernet-sub {
+
+            description "100G subinterface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-subiface-range-t;
+              description "<unit>/<dev>/<port>.<subid>";
+              user-ext:CLI-param-help "Set 100G subinterface name";
+            }
+
+            uses interface-config-parameters;
+
+          } // hundredgigabitethernet-sub
+
+        } // hundredGE
+
+        container bundle-ifaces {
+
+          user-ext:CLI-not-command;
+          user-ext:CLI-comm-switch "bundle-ether/bundle-ether-sub";
+
+          list bundle-ether {
+
+            description "Specify the attachment bundle-ether interface";
+
+            user-ext:CLI-comm-help "Specify the attachment bundle-ether interface";
+            user-ext:CLI-no-comm-help "Specify the attachment bundle-ether interface";
+
+            key "bundle-id";
+
+            leaf bundle-id {
+              type interfaces:bundle-id-t;
+              description "Bundle-ether id";
+              user-ext:CLI-param-help "Bundle-ether interface";
+            }
+
+            uses interface-config-parameters;
+            uses lfa:lfa-interface-config { if-feature features:ip-frr; }
+          }
+
+          list bundle-ether-sub {
+
+            description "Specify the attachment bundle-ether sub-interface";
+
+            user-ext:CLI-comm-help "Configure attachment bundle-ether sub-interface";
+            user-ext:CLI-no-comm-help "Remove attachment bundle-ether sub-interface";
+
+            key "bundle-id";
+
+            leaf bundle-id {
+              type interfaces:bundle-sub-id-t;
+              description "Bundle-ether id";
+              user-ext:CLI-param-help "Bundle-ether sub-interface";
+            }
+
+            uses interface-config-parameters;
+            uses lfa:lfa-interface-config { if-feature features:ip-frr; }
+          }
+
+        } // bundle-ifaces
+
+        container spec-ifaces {
+
+          user-ext:CLI-not-command;
+
+          list loopback {
+
+              description "Loopback interface";
+
+              user-ext:CLI-comm-help "Add IS-IS configuration to loopback interface";
+              user-ext:CLI-no-comm-help "Remove IS-IS configuration from loopback interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:loopback-id-t;
+                description "Loopback ID";
+                user-ext:CLI-param-help "Loopback ID";
+              }
+
+              uses interface-config-parameters;
+
+          } // loopback
+
+        } // spec-ifaces
+
+      } // interface
+
+    } // custom-interfaces
+
+    container interface-state-list {
+
+      description "Container to hold per-interface IS-IS state.";
+
+      config false;
+
+      list interface-state {
+
+        description "Per-interface IS-IS state";
+
+        config false;
+
+        key "if-base-name";
+
+        uses interface-state-parameters;
+
+      } // interface-state
+
+    } // interface-state-list
+
+  } // isis-instance
+
+
+  // Low-level model info: The IS-IS top level MIBs are AMB_ISIS_SYS (isisSysTable) and AMB_ISIS_SD_ENT (isisSdEntTable).
+  container router {
+
+    description
+        "Configure router";
+
+    user-ext:CLI-comm-help "Configure the router";
+    user-ext:CLI-no-comm-help "Configure router";
+
+    list isis {
+
+      description
+        "IS-IS protocol configuration and state.";
+
+      user-ext:CLI-comm-help "Configure IS-IS";
+      user-ext:CLI-no-comm-help "Configure or remove IS-IS";
+      user-ext:CLI-max-elements-errmsg "maximum elements for 'router isis' exceeded";
+
+      key "vrf-name";
+
+      leaf vrf-name {
+        type meta:l3vpn-vrf-name;
+        description
+          "The name of this VRF.  This MAY be equivalent to the RFC2685 VPN-ID.";
+
+        user-ext:CLI-comm-help "Associate configuration with VRF";
+        user-ext:CLI-no-comm-help "Clear VRF association";
+      }
+
+      container global {
+
+        user-ext:CLI-not-command;
+        uses isis-instance;
+
+        // A net must be specified.
+//        must "(net)" {
+//          error-message "A net must be configured for IS-IS";
+//        }
+      }
+
+      list vrf {
+
+        description
+            "VRF ISIS configuration";
+
+        user-ext:CLI-comm-help "Configure IS-IS in a VRF";
+        user-ext:CLI-no-comm-help "Configure or remove IS-IS in VRF";
+
+        key "vrf-name";
+
+        leaf vrf-name {
+          type meta:l3vpn-vrf-name;
+          description
+            "The name of this VRF.  This MAY be equivalent to the RFC2685 VPN-ID.";
+
+          user-ext:CLI-comm-help "Associate ISIS configuration with a VRF";
+          user-ext:CLI-no-comm-help "Clear VRF association";
+        }
+
+        uses isis-instance;
+
+        // A net must be specified.
+//        must "(net)" {
+//          error-message "A net must be configured for IS-IS";
+//        }
+
+      } // vrf
+
+    } // isis
+
+  } // router
+
+} // isis

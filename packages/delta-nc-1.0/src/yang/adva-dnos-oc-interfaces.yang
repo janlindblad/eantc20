@@ -1,0 +1,295 @@
+module adva-dnos-oc-interfaces {
+
+  yang-version "1";
+
+  // namespace
+  namespace "http://www.advaoptical.com/cim/adva-dnos-oc-interfaces";
+
+  prefix "adva-oc-ints";
+
+  import iana-if-type { prefix ift; }
+  import openconfig-inet-types { prefix oc-inet; }
+  import openconfig-vlan-types { prefix oc-vlan-types; }
+  import openconfig-interfaces { prefix oc-if; }
+  import openconfig-if-ethernet { prefix oc-eth; }
+  import openconfig-yang-types { prefix oc-yang; }
+  import openconfig-if-ip { prefix oc-ip; }
+  import openconfig-vlan { prefix oc-vlan; }
+  import openconfig-if-aggregate { prefix oc-lag; }
+  import openconfig-extensions { prefix oc-ext; }
+  import openconfig-network-instance { prefix oc-ni; }
+  import adva-dnos-types { prefix adva-types; }
+
+  // meta
+  organization  "Adva Optical Networking";
+
+  contact
+    "ADVA Optical Networking
+    www.advaoptical.com";
+
+  description   "This module outlines the deviations from the
+                 OpenConfig interface model for ADVA YOK definitions.";
+
+  oc-ext:openconfig-version "0.1.1";
+
+  revision "2019-03-28" {
+    description "Initial revision.";
+    reference "0.1.0";
+  }
+
+  // grouping statements
+
+  grouping adva-vrf-config {
+    description
+      "Add vrf data for interfaces";
+
+    leaf vrf {
+      type leafref {
+        path "/oc-ni:network-instances/oc-ni:network-instance/oc-ni:config/oc-ni:name";
+      }
+      description
+        "VRF name the interface defined in";
+    }
+  }
+
+  grouping adva-ipv6-link-local-config {
+    description
+      "IPv6 link-local configuration data for IPv6 interfaces";
+
+    leaf link-local-enable {
+      type boolean;
+      default false;
+      description
+        "Enable/disable IPv6 Link-Local address of the interface";
+    }
+  }
+
+  grouping adva-ipv6-link-local-state {
+    description
+      "IPv6 link-local state data for IPv6 interfaces";
+
+    leaf link-local-enable {
+      type boolean;
+      default false;
+      description
+        "Enable/disable IPv6 Link-Local address of the interface";
+    }
+
+    leaf link-local-ip {
+      type oc-inet:ipv6-address;
+      description
+        "IPv6 Link-Local address";
+    }
+
+    leaf link-local-prefix-length {
+      type uint8 {
+        range "0..128";
+      }
+      description
+        "The length of the Link-Local subnet prefix.";
+    }
+  }
+
+  grouping adva-ethernet-config {
+    description
+      "Add configuration data for ethernet";
+
+    leaf inner-tpid {
+      type identityref {
+        base oc-vlan-types:TPID_TYPES;
+      }
+      default oc-vlan-types:TPID_0X8100;
+      description
+        "Set port inner TPID";
+    }
+
+    leaf outer-tpid {
+      type identityref {
+        base oc-vlan-types:TPID_TYPES;
+      }
+      default oc-vlan-types:TPID_0X8100;
+      description
+        "Set port outer TPID";
+    }
+
+    leaf mef-role {
+      type adva-types:mef-role-type;
+      default UNI;
+      description
+        "Set port MEF role";
+    }
+  }
+
+  grouping adva-ethernet-counters {
+    description
+      "Data for ADVA port and LAG interface counters.";
+
+    leaf out-oversize-frames {
+      type oc-yang:counter64;
+      description
+        "The total number of frames transmitted that were
+        longer than 1518 octets (excluding framing bits,
+        but including FCS octets) and were otherwise
+        well formed.";
+    }
+
+    leaf in-out-collisions {
+      type oc-yang:counter64;
+      description
+        "The total number of frames for which one or more
+        collisions occurred when the frames were received
+        or transmitted.";
+    }
+
+    // CoS counters of forwarded packets
+    leaf ingress-forward-green-pkts {
+      type oc-yang:counter64;
+      description
+        "Admitted packets marked 'green'.";
+    }
+
+    leaf egress-forward-green-pkts {
+      type oc-yang:counter64;
+      description
+        "Admitted packets marked 'green'.";
+    }
+  }
+
+  // augment statements
+
+  augment /oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinterface/oc-if:config {
+    when "../../../oc-if:config/oc-if:type = 'ift:softwareLoopback' or " +
+         "../../../oc-if:config/oc-if:type = 'ift:l3ipvlan'";
+    description
+      "Adds ADVA interface data";
+
+    uses adva-vrf-config;
+  }
+
+  augment /oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinterface/oc-if:state {
+    when "../../../oc-if:config/oc-if:type = 'ift:softwareLoopback' or " +
+         "../../../oc-if:config/oc-if:type = 'ift:l3ipvlan'";
+    description
+      "Adds ADVA interface data";
+
+    uses adva-vrf-config;
+  }
+
+  augment "/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinterface/oc-ip:ipv6/oc-ip:config" {
+    description
+      "Adds ipv6 link-local config";
+
+    uses adva-ipv6-link-local-config;
+  }
+
+  augment "/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinterface/oc-ip:ipv6/oc-ip:state" {
+    description
+      "Adds ipv6 link-local state";
+
+    uses adva-ipv6-link-local-state;
+  }
+
+  augment /oc-if:interfaces/oc-if:interface/oc-eth:ethernet/oc-eth:config {
+    when "../../oc-if:config/oc-if:type = 'ift:ethernetCsmacd' and " +
+         "starts-with(../../oc-if:config/oc-if:name, 'eth-') or " +
+         "../../oc-if:config/oc-if:type = 'ift:ieee8023adLag'";
+    description
+      "Adding ADVA config data to ethernet interface model";
+
+    uses adva-ethernet-config;
+  }
+
+  augment /oc-if:interfaces/oc-if:interface/oc-eth:ethernet/oc-eth:state {
+    when "../../oc-if:config/oc-if:type = 'ift:ethernetCsmacd' and " +
+         "starts-with(../../oc-if:config/oc-if:name, 'eth-') or " +
+         "../../oc-if:config/oc-if:type = 'ift:ieee8023adLag'";
+    description
+      "Adding ADVA config data to ethernet interface model";
+
+    uses adva-ethernet-config;
+  }
+
+  augment /oc-if:interfaces/oc-if:interface/oc-eth:ethernet/oc-eth:state/oc-eth:counters {
+    when "../../../oc-if:config/oc-if:type = 'ift:ethernetCsmacd' and " +
+         "starts-with(../../../oc-if:config/oc-if:name, 'eth-') or " +
+         "../../../oc-if:config/oc-if:type = 'ift:ieee8023adLag'";
+
+    description
+      "Adding ADVA port and LAG counters data to ethernet interface model";
+
+    uses adva-ethernet-counters;
+  }
+
+  // deviate statements
+
+  deviation /oc-if:interfaces/oc-if:interface/oc-if:config/oc-if:enabled {
+    deviate replace {
+      default false;
+    }
+  }
+
+  deviation /oc-if:interfaces/oc-if:interface/oc-eth:ethernet/oc-eth:config/oc-eth:auto-negotiate {
+    deviate replace {
+      default false;
+    }
+  }
+
+  deviation /oc-if:interfaces/oc-if:interface/oc-if:state/oc-if:loopback-mode {
+    deviate not-supported;
+  }
+
+  deviation /oc-if:interfaces/oc-if:interface/oc-if:state/oc-vlan:tpid {
+    deviate not-supported;
+  }
+
+  deviation /oc-if:interfaces/oc-if:interface/oc-if:config/oc-if:loopback-mode {
+    deviate not-supported;
+  }
+
+  deviation /oc-if:interfaces/oc-if:interface/oc-if:config/oc-vlan:tpid {
+    deviate not-supported;
+  }
+
+//  deviation /oc-if:interfaces/oc-if:interface/oc-if:hold-time {
+//    deviate not-supported;
+//  }
+
+//  deviation /oc-if:interfaces/oc-if:interface/oc-vlan:routed-vlan {
+//    deviate not-supported;
+//  }
+
+  deviation /oc-if:interfaces/oc-if:interface/oc-eth:ethernet/oc-eth:config/oc-eth:duplex-mode {
+    deviate not-supported;
+  }
+
+  deviation /oc-if:interfaces/oc-if:interface/oc-eth:ethernet/oc-eth:config/oc-eth:mac-address {
+    deviate not-supported;
+  }
+
+  deviation /oc-if:interfaces/oc-if:interface/oc-eth:ethernet/oc-eth:config/oc-eth:enable-flow-control {
+    deviate not-supported;
+  }
+
+  deviation /oc-if:interfaces/oc-if:interface/oc-eth:ethernet/oc-eth:state/oc-eth:negotiated-duplex-mode {
+    deviate not-supported;
+  }
+
+  deviation /oc-if:interfaces/oc-if:interface/oc-eth:ethernet/oc-eth:state/oc-eth:negotiated-port-speed {
+    deviate not-supported;
+  }
+
+//  deviation /oc-if:interfaces/oc-if:interface/oc-eth:ethernet/oc-vlan:switched-vlan {
+//    deviate not-supported;
+//  }
+
+//  deviation /oc-if:interfaces/oc-if:interface/oc-lag:aggregation/oc-vlan:switched-vlan {
+//    deviate not-supported;
+//  }
+
+  deviation /oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinterface/oc-ip:ipv4/oc-ip:addresses/oc-ip:address/oc-ip:config/oc-ip:prefix-length {
+    deviate add {
+      mandatory true;
+    }
+  }
+
+}

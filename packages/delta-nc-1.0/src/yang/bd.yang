@@ -1,0 +1,761 @@
+module bd {
+
+  namespace "http://metaswitch.com/yang/nbu/bd";
+
+  prefix bd;
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "args.owner";
+
+  revision 2016-01-01 {
+    description
+      "Initial revision.";
+  }
+
+  typedef AMB_L2_BRIDGE_DOMAIN_TYPE {
+    description
+      "";
+    type enumeration {
+      enum none                             { value 0; }
+      enum vlan                             { value 1; }
+      enum vpws                             { value 2; }
+      enum vpls                             { value 3; }
+      enum evpn                             { value 4; }
+    }
+  }
+
+  typedef AMB_ROW_STATUS {
+    description
+      "";
+    type enumeration {
+      enum active                           { value 1; }
+      enum not-in-service                   { value 2; }
+      enum not-ready                        { value 3; }
+      enum create-and-go                    { value 4; }
+      enum create-and-wait                  { value 5; }
+      enum destroy                          { value 6; }
+    }
+  }
+
+  typedef AMB_ADMIN_STATUS {
+    description
+      "";
+    type enumeration {
+      enum up                               { value 1; }
+      enum down                             { value 2; }
+    }
+  }
+
+  typedef AMB_BASE_OPER_STATUS {
+    description
+      "";
+    type enumeration {
+      enum up                               { value 1; }
+      enum down                             { value 2; }
+      enum going-up                         { value 3; }
+      enum going-down                       { value 4; }
+      enum activation-failed                { value 5; }
+      enum quiescing                        { value 6; }
+      enum not-ready                        { value 7; }
+      enum failed                           { value 8; }
+      enum parent-failed                    { value 9; }
+      enum failed-permanently               { value 10; }
+      enum failing                          { value 11; }
+    }
+  }
+
+  typedef AMB_TRUTH_VALUE {
+    description
+      "";
+    type enumeration {
+      enum true                             { value 1; }
+      enum false                            { value 2; }
+    }
+  }
+
+  typedef AMB_FDB_STATUS {
+    description
+      "";
+    type enumeration {
+      enum fdb-status-other                 { value 1; }
+      enum fdb-status-invalid               { value 2; }
+      enum fdb-status-learned               { value 3; }
+      enum fdb-status-self                  { value 4; }
+      enum fdb-status-mgmt                  { value 5; }
+    }
+  }
+
+  typedef AMB_BD_IF_PORT_STATES {
+    description
+      "";
+    type enumeration {
+      enum bd-if-port-st-init               { value 0; }
+      enum bd-if-port-st-disabled           { value 1; }
+      enum bd-if-port-st-learning           { value 2; }
+      enum bd-if-port-st-forwarding         { value 3; }
+      enum bd-if-port-st-blocked            { value 4; }
+      enum bd-if-port-st-listening          { value 5; }
+    }
+  }
+
+  typedef AMB_BD_SW_DATAPLANE_VARIANT {
+    description
+      "";
+    type enumeration {
+      enum sw-dataplane-lx                  { value 1; }
+      enum sw-dataplane-ovs                 { value 2; }
+      enum sw-dataplane-p4                  { value 3; }
+    }
+  }
+
+  typedef AMB_BD_SJ_INTERFACE_ID {
+    description
+      "";
+    type enumeration {
+      enum bd-sj-bdpi                       { value 2038431744; }
+    }
+  }
+
+  typedef AMB_SJ_STATUS {
+    description
+      "";
+    type enumeration {
+      enum sj-status-not-joined             { value 1; }
+      enum sj-status-joined                 { value 2; }
+      enum sj-status-rcvd-register          { value 3; }
+      enum sj-status-join-active            { value 4; }
+      enum sj-status-failing-over           { value 5; }
+      enum sj-status-failed                 { value 6; }
+      enum sj-status-rcvd-unregister        { value 7; }
+      enum sj-status-unreg-done             { value 8; }
+    }
+  }
+  container bd-ent {
+    list bd-ent {
+
+      description
+        "Each entry in this table represents a BD stub entity.";
+
+      key "entity-index";
+
+      leaf entity-index {
+        // Low-level model info: Corresponds to bdEntIndex.
+        type uint32;
+        description
+          "Identifies a BD stub entity.  This is also the unique
+      identifier of the Bridge associated with this BD stub.";
+      } // entity-index
+
+      container entity {
+        leaf entity-index {
+          // Low-level model info: Corresponds to bdEntIndex.
+          type uint32;
+          description
+            "Identifies a BD stub entity.  This is also the unique
+      identifier of the Bridge associated with this BD stub.";
+        } // entity-index
+
+        leaf admin-status {
+          // Low-level model info: Corresponds to bdEntAdminStatus.
+          type AMB_ADMIN_STATUS;
+          default up;
+          description
+            "The administrative status of this BD stub entity, used to
+      activate and deactivate the BD stub.";
+        } // admin-status
+
+        leaf oper-status {
+          // Low-level model info: Corresponds to bdEntOperStatus.
+          type AMB_BASE_OPER_STATUS;
+          description
+            "The current operational status of this BD stub entity.";
+          config false;
+        } // oper-status
+
+        leaf bridge-index {
+          // Low-level model info: Corresponds to bdEntBridgeIndex.
+          type int32;
+          description
+            "The number of the Layer 2 Bridge that the BD stub will
+      control.  For example, if set to 1, the BD stub will
+      control bridge br1, if set to 12, the BD stub will control
+      bridge br12.";
+        } // bridge-index
+
+        leaf emulate-programming {
+          // Low-level model info: Corresponds to bdEntEmulateProgramming.
+          type boolean;
+          default false;
+          description
+            "Whether the BD stub should emulate programming.  If this
+      field is set to 'true', the BD stub will act as a BDPI
+      join slave but will not make any OS calls and will not
+      program any state.  This field should be set to 'true' if
+      the BD stub is being run on an emulated machine, and
+      should usually be left as 'false' otherwise.
+
+      Changing the value of this field while the BD stub is
+      active will cause the BD stub to immediately deactivate,
+      then re-activate.";
+        } // emulate-programming
+
+        leaf profile-index {
+          // Low-level model info: Corresponds to bdEntProfileIndex.
+          type int32;
+          description
+            "The profile index for the BDPI join to the Layer 2 VPN
+      Manager that is used to manage VPLS bridge domains.
+
+      This field is only used when the stub is being used to
+      control VPLS bridge domains.
+
+      Changing the value of this field while the VLAN stub is
+      active will cause the VLAN stub to immediately deactivate,
+      then re-activate.";
+        } // profile-index
+
+        leaf data-plane-changes {
+          // Low-level model info: Corresponds to bdEntDataPlaneChanges.
+          type uint32;
+          description
+            "FOR TEST PURPOSES ONLY.  The number of times that the BD
+      stub has made a change to the data plane programming.
+
+      This is 0 at the start of day, and is incremented whenever
+      the BD stub makes a call into the data plane that results
+      in a change to the data plane programming.";
+          config false;
+        } // data-plane-changes
+
+        leaf enable-ovs {
+          // Low-level model info: Corresponds to bdEntEnableOvs.
+          type boolean;
+          default false;
+          description
+
+          "This field is now deprecated - use bdEntSwDataplane.
+
+          FOR TEST PURPOSES ONLY.  Whether to enable Open vSwitch
+          support in the sample Linux integration variant of the
+          stub.
+
+          The stub will program the Open vSwitch dataplane if OVS
+          support is compiled in and if this field is set to 'true'.
+
+          Changing the value of this field while the BD stub is
+          active will cause the BD stub to immediately deactivate,
+          then re-activate.                                         ";
+
+        } // enable-ovs
+
+        leaf sw-dataplane {
+          // Low-level model info: Corresponds to bdEntSwDataplane.
+          type AMB_BD_SW_DATAPLANE_VARIANT;
+          default sw-dataplane-lx;
+          description
+
+          "FOR TEST PURPOSES ONLY.  The software dataplane
+          integration to be used in the sample Linux integration
+          variant of the stub.
+
+          The stub will program the Linux dataplane if this field is
+          set to BD_SW_DATAPLANE_VARIANT_LX.
+
+          The stub will program the Open vSwitch dataplane if OVS
+          support is compiled in and if this field is set to
+          BD_SW_DATAPLANE_VARIANT_OVS.
+
+          The stub will program the P4 dataplane if P4 support is
+          compiled in and if this field is set to
+          BD_SW_DATAPLANE_VARIANT_P4.
+
+          Changing the value of this field while the BD stub is
+          active will cause the BD stub to immediately deactivate,
+          then re-activate.                                         ";
+
+        } // sw-dataplane
+
+      } // entity
+
+      container subtables {
+        container bd-bridge-domain {
+          list bd-bridge-domain {
+
+            description
+              "This read-only MIB table reports the set of interfaces
+    associated with a VLAN ID, that is, the set of interfaces
+    associated with a Bridge Domain.";
+
+            key "entity-index bd-type bd-id bd-sub-id interface-index";
+
+            config false;
+
+            leaf entity-index {
+              // Low-level model info: Corresponds to bdBridgeDomainEntIndex.
+              type uint32;
+              description
+                "Identifies a BD stub entity.";
+            } // entity-index
+
+            leaf bd-type {
+              // Low-level model info: Corresponds to bdBridgeDomainType.
+              type AMB_L2_BRIDGE_DOMAIN_TYPE;
+              description
+                "The Bridge Domain type of the Bridge Domain.";
+            } // bd-type
+
+            leaf bd-id {
+              // Low-level model info: Corresponds to bdBridgeDomainId.
+              type uint32;
+              description
+                "The principal identifier for this Bridge Domain.";
+            } // bd-id
+
+            leaf bd-sub-id {
+              // Low-level model info: Corresponds to bdBridgeDomainSubId.
+              type uint32;
+              description
+                "The secondary identifier for this Bridge Domain.";
+            } // bd-sub-id
+
+            leaf interface-index {
+              // Low-level model info: Corresponds to bdBridgeDomainInterfaceIndex.
+              type uint32;
+              description
+                "The interface index.";
+            } // interface-index
+
+          } // bd-bridge-domain
+
+        } // bd-bridge-domain
+
+        container bd-fdb {
+          list bd-fdb {
+
+            description
+              "Table of FDB entries for a Bridge Domain.";
+
+            key "entity-index bd-type bd-id bd-sub-id mac-addr if-index";
+
+            config false;
+
+            leaf entity-index {
+              // Low-level model info: Corresponds to bdFdbEntityIndex.
+              type uint32 {
+                range "1..2147483647";
+              }
+              description
+                "The entity index of the component reporting Bridge Domain
+      information.";
+            } // entity-index
+
+            leaf bd-type {
+              // Low-level model info: Corresponds to bdFdbBdType.
+              type AMB_L2_BRIDGE_DOMAIN_TYPE;
+              description
+                "The type of Bridge Domain.";
+            } // bd-type
+
+            leaf bd-id {
+              // Low-level model info: Corresponds to bdFdbBdIndex.
+              type uint32 {
+                range "1..2147483647";
+              }
+              description
+                "The principle identifier for the Bridge Domain.  This is
+      VPLS index, VPWS index or VLAN ID depending on type.";
+            } // bd-id
+
+            leaf bd-sub-id {
+              // Low-level model info: Corresponds to bdFdbBdSubIndex.
+              type uint32 {
+                range "1..2147483647";
+              }
+              description
+                "A secondary identifier for the Bridge Domain.  For VPLS
+      and VLAN Bridge Domains it is set to 0.  For VPWS Bridge
+      Domains this is equal to Attachment Circuit interface
+      index.";
+            } // bd-sub-id
+
+            leaf mac-addr {
+              // Low-level model info: Corresponds to bdFdbMacAddress.
+              type string {
+                length "0..12";
+              }
+              description
+                "MAC address.";
+            } // mac-addr
+
+            leaf if-index {
+              // Low-level model info: Corresponds to bdFdbOutIfIndex.
+              type int32 {
+                range "1..2147483647";
+              }
+              description
+                "Output interface for this FDB entry.";
+            } // if-index
+
+            leaf status {
+              // Low-level model info: Corresponds to bdFdbStatus.
+              type AMB_FDB_STATUS;
+              description
+                "The status of this entry.
+
+      -  other(1) - none of the following.
+
+      -  invalid(2) - this entry is no longer valid (for
+      example, it was learned but has since aged out), but
+      has not yet been flushed from the table.
+
+      -  learned(3) - the FDB entry has been learned and is
+      being used.
+
+      -  self(4) - the entry represents one of the device's
+      addresses.  The value of bdFdbOutIfIndex indicates
+      which of the device's interfaces has this address.
+
+      -  mgmt(5) - the FDB entry has been statically configured
+      by management.";
+              config false;
+            } // status
+
+          } // bd-fdb
+
+        } // bd-fdb
+
+        container bd-interface {
+          list bd-interface {
+
+            description
+              "Rows in this MIB table represent an interface in the
+    dataplane that is a member of a bridge that the BD stub can
+    control state for.  On creation/destruction of this row, the
+    O/S-specific implementation of the BD stub will perform
+    sufficient dataplane programming to configure the interface
+    as a member of the bridge.";
+
+            key "entity-index interface-index";
+
+            leaf entity-index {
+              // Low-level model info: Corresponds to bdInterfaceEntIndex.
+              type uint32;
+              description
+                "Identifies a BD stub entity.";
+            } // entity-index
+
+            leaf interface-index {
+              // Low-level model info: Corresponds to bdInterfaceIndex.
+              type int32;
+              description
+                "The interface index of the interface.";
+            } // interface-index
+
+            leaf admin-status {
+              // Low-level model info: Corresponds to bdInterfaceAdminStatus.
+              type AMB_ADMIN_STATUS;
+              default up;
+              description
+                "The administrative status of this interface, used to
+      activate and deactivate interfaces.";
+            } // admin-status
+
+            leaf oper-status {
+              // Low-level model info: Corresponds to bdInterfaceOperStatus.
+              type AMB_BASE_OPER_STATUS;
+              description
+                "The current operational status of this interface.  Note
+      that if activation of this interface fails, for example if
+      soft dataplane configuration failed or, in a hard
+      dataplane, the interface is not a member of the bridge,
+      the oper status of the bridge will be
+      AMB_BASE_OPER_STATUS_FAILD_PERM.";
+              config false;
+            } // oper-status
+
+            leaf port-state {
+              // Low-level model info: Corresponds to bdInterfacePortState.
+              type AMB_BD_IF_PORT_STATES;
+              description
+                "The currently programmed port state of this interface.";
+              config false;
+            } // port-state
+
+            leaf default-port-state {
+              // Low-level model info: Corresponds to bdInterfaceDefaultPortState.
+              type AMB_BD_IF_PORT_STATES;
+              default bd-if-port-st-blocked;
+              description
+                "The default port state of this interface.  This field is
+      used to enable an interface on a bridge in the absence of
+      a Layer 2 protocol that controls the port state
+      dynamically.
+
+      This must always be set to AMB_BD_IF_PORT_ST_BLOCKED if
+      the port state is being managed by a Layer 2 protocol
+      (such as DC-ERPS or DC-STP).";
+            } // default-port-state
+
+          } // bd-interface
+
+        } // bd-interface
+
+        container bd-port-state {
+          list bd-port-state {
+
+            description
+              "This read-only MIB table reports the configured port state
+    for a VLAN ID on an interface.";
+
+            key "entity-index interface-index vlan-id";
+
+            config false;
+
+            leaf entity-index {
+              // Low-level model info: Corresponds to bdPortStateEntIndex.
+              type uint32;
+              description
+                "Identifies a BD stub entity.";
+            } // entity-index
+
+            leaf interface-index {
+              // Low-level model info: Corresponds to bdPortStateInterfaceIndex.
+              type uint32;
+              description
+                "The interface index.";
+            } // interface-index
+
+            leaf vlan-id {
+              // Low-level model info: Corresponds to bdPortStateVlanId.
+              type uint32;
+              description
+                "The VLAN ID.";
+            } // vlan-id
+
+            leaf port-state {
+              // Low-level model info: Corresponds to bdPortStateState.
+              type AMB_BD_IF_PORT_STATES;
+              description
+                "The port state configured for this VLAN ID on this
+      interface.";
+              config false;
+            } // port-state
+
+          } // bd-port-state
+
+        } // bd-port-state
+
+        container bd-sj {
+          list bd-sj {
+
+            description
+              "This table contains information on joins for which BD stub
+    entities are acting as slaves.  Each row in this table
+    represents one slave join in a particular BD stub entity.";
+
+            key "entity-index interface-id partner-type partner-index sub-index";
+
+            config false;
+
+            leaf entity-index {
+              // Low-level model info: Corresponds to bdSjEntIndex.
+              type uint32;
+              description
+                "Identifies a BD stub entity.";
+            } // entity-index
+
+            leaf interface-id {
+              // Low-level model info: Corresponds to bdSjInterfaceId.
+              type AMB_BD_SJ_INTERFACE_ID;
+              description
+                "Identifies the interface of this slave join.";
+            } // interface-id
+
+            leaf partner-type {
+              // Low-level model info: Corresponds to bdSjPartnerType.
+              type uint32;
+              description
+                "Identifies the process type of master entity that has
+      joined to this slave.";
+            } // partner-type
+
+            leaf partner-index {
+              // Low-level model info: Corresponds to bdSjPartnerIndex.
+              type uint32;
+              description
+                "Identifies the entity index of the master entity that has
+      joined to this slave.";
+            } // partner-index
+
+            leaf sub-index {
+              // Low-level model info: Corresponds to bdSjSubIndex.
+              type uint32;
+              description
+                "This permits a master and slave to have multiple
+      simultaneous joins of the same type.";
+            } // sub-index
+
+            leaf join-status {
+              // Low-level model info: Corresponds to bdSjJoinStatus.
+              type AMB_SJ_STATUS;
+              description
+                "The current join status of this slave join.";
+              config false;
+            } // join-status
+
+          } // bd-sj
+
+        } // bd-sj
+
+        container bd-bd-stats {
+          list bd-bd-stats {
+
+            description
+              "This read-only MIB table reports statistics for Bridge
+    Domains.";
+
+            key "entity-index bd-type bd-id bd-sub-id";
+
+            config false;
+
+            leaf entity-index {
+              // Low-level model info: Corresponds to bdStatsEntityIndex.
+              type uint32 {
+                range "1..2147483647";
+              }
+              description
+                "The entity index of the component reporting Bridge Domain
+      statistics.";
+            } // entity-index
+
+            leaf bd-type {
+              // Low-level model info: Corresponds to bdStatsBdType.
+              type AMB_L2_BRIDGE_DOMAIN_TYPE;
+              description
+                "The type of Bridge Domain.";
+            } // bd-type
+
+            leaf bd-id {
+              // Low-level model info: Corresponds to bdStatsBdIndex.
+              type uint32 {
+                range "1..2147483647";
+              }
+              description
+                "The principle identifier for the Bridge Domain.  This is
+      the VLAN ID, VPWS index or VPLS index, depending on the
+      type.";
+            } // bd-id
+
+            leaf bd-sub-id {
+              // Low-level model info: Corresponds to bdStatsBdSubIndex.
+              type uint32 {
+                range "1..2147483647";
+              }
+              description
+                "A secondary identifier for the Bridge Domain.  For Bridge
+      Domains of type VLAN or VPLS it is set to 0.  For Bridge
+      Domains of type VPWS it is set to the attachment circuit
+      interface index.";
+            } // bd-sub-id
+
+            leaf macs-learned {
+              // Low-level model info: Corresponds to bdStatsMacsLearned.
+              type uint32;
+              description
+                "Current count of learned MAC addresses in the Filtering
+      Database of this Bridge Domain.";
+              config false;
+            } // macs-learned
+
+            leaf unicast-packets {
+              // Low-level model info: Corresponds to bdStatsUnicastPackets.
+              type uint64;
+              description
+                "Count of unicast packets forwarded by this Bridge Domain.";
+              config false;
+            } // unicast-packets
+
+            leaf unicast-bytes {
+              // Low-level model info: Corresponds to bdStatsUnicastBytes.
+              type uint64;
+              description
+                "Count of bytes in unicast frames forwarded by this Bridge
+      Domain.";
+              config false;
+            } // unicast-bytes
+
+            leaf multicast-packets {
+              // Low-level model info: Corresponds to bdStatsMulticastPackets.
+              type uint64;
+              description
+                "Count of multicast packets forwarded by this Bridge
+      Domain.";
+              config false;
+            } // multicast-packets
+
+            leaf multicast-bytes {
+              // Low-level model info: Corresponds to bdStatsMulticastBytes.
+              type uint64;
+              description
+                "Count of bytes in multicast frames forwarded by this
+      Bridge Domain.";
+              config false;
+            } // multicast-bytes
+
+            leaf broadcast-packets {
+              // Low-level model info: Corresponds to bdStatsBroadcastPackets.
+              type uint64;
+              description
+                "Count of broadcast packets forwarded by this Bridge
+      Domain.";
+              config false;
+            } // broadcast-packets
+
+            leaf broadcast-bytes {
+              // Low-level model info: Corresponds to bdStatsBroadcastBytes.
+              type uint64;
+              description
+                "Count of bytes in broadcast frames forwarded by this
+      Bridge Domain.";
+              config false;
+            } // broadcast-bytes
+
+            leaf discarded-packets {
+              // Low-level model info: Corresponds to bdStatsDiscardPackets.
+              type uint64;
+              description
+                "Count of discarded packets forwarded by this Bridge
+      Domain.";
+              config false;
+            } // discarded-packets
+
+            leaf discarded-bytes {
+              // Low-level model info: Corresponds to bdStatsDiscardBytes.
+              type uint64;
+              description
+                "Count of bytes in discarded frames forwarded by this
+      Bridge Domain.";
+              config false;
+            } // discarded-bytes
+
+          } // bd-bd-stats
+
+        } // bd-bd-stats
+
+      } // subtables
+
+    } // bd-ent
+
+  } // bd-ent
+
+} // bd

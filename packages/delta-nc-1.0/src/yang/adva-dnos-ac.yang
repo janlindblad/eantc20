@@ -1,0 +1,290 @@
+module adva-dnos-ac {
+
+  yang-version "1";
+
+  // namespace
+  namespace  "http://www.advaoptical.com/cim/adva-dnos-ac";
+
+  prefix "adva-dnos-ac";
+
+  import iana-if-type { prefix ift; }
+  import openconfig-interfaces { prefix oc-if; }
+  import openconfig-yang-types { prefix oc-yang; }
+  import openconfig-extensions { prefix oc-ext; }
+  import openconfig-vlan { prefix oc-vlan; }
+  import adva-dnos-types { prefix adva-types; }
+  
+  // meta
+  organization "ADVA Optical Networking";
+
+  contact
+    "ADVA Optical Networking
+    www.advaoptical.com";
+
+  description
+    "This module defines data related to ADVA AC interface  components in the
+    OpenConfig interface model for Agema family.";
+
+  oc-ext:openconfig-version "0.1.1";
+
+  revision "2019-03-05" {
+    description
+      "Initial revision.";
+    reference "0.1.0";
+  }
+
+  // OpenConfig specific extensions for module metadata.
+
+  // identity statements
+
+  // typedef statements
+
+  // grouping statements
+
+  grouping adva-ac-if-config {
+    description 
+      "Data for ADVA AC interface.";
+
+    leaf outer-tags {
+      type adva-types:vlan-tag-list;
+      description "List of AC interface outer tags.";
+    }
+
+    leaf inner-tag {
+      type adva-types:vlan-tag;
+      description "AC interface inner tag.";
+    }
+
+    leaf untagged-allowed {
+      type boolean;
+      default false;
+      description "AC interface accepts untagged packets.";
+    }
+
+    leaf port-based {
+      type boolean;
+      default false;
+      description "Port based AC interface.";
+    }
+
+    leaf priority-tag {
+      type boolean;
+      default false;
+      description "AC priority tag.";
+    }
+
+    leaf statistics-egress {
+      type boolean;
+      default false;
+      description "Enable egress counters on the AC interface.";
+    }
+
+    leaf statistics-ingress {
+      type boolean;
+      default false;
+      description "Enable ingress counters on the AC interface.";
+    }
+
+    leaf tag-manipulation-profile {
+      type adva-types:profile-name;
+      description "Tag manipulation profile name.";
+    }
+
+    leaf l2cp-profile {
+      type adva-types:profile-name;
+      description "L2cp Profile name.";
+    }
+
+    leaf loopback-direction {
+      type  adva-types:direction-type;
+      description "Loopback direction";
+    }
+
+  }
+  
+  grouping adva-ac-cos-counters {
+    description 
+      "Data for ADVA AC interface CoS counters.";
+
+    container counters {
+      description
+        "Packet and byte counters for AC Cos ingress and egress 
+        forward and discard.";
+        
+				// Counters of forwarded packets
+		    leaf ingress-forward-green-pkts {
+    		  type oc-yang:counter64;
+      		description
+        		"Admitted packets marked 'green'.";
+    		}
+
+    		leaf ingress-forward-non-green-pkts {
+      		type oc-yang:counter64;
+      		description
+        		"Admitted packets marked 'non green'.";
+    		}
+
+    		leaf ingress-forward-red-pkts {
+      		type oc-yang:counter64;
+      		description
+        		"Admitted packets marked 'red'.";
+    		}
+
+    		leaf egress-forward-green-pkts {
+      		type oc-yang:counter64;
+      		description
+        		"Admitted packets marked 'green'.";
+    		}
+
+    		leaf egress-forward-non-green-pkts {
+      		type oc-yang:counter64;
+      		description
+        		"Admitted packets marked 'non green'.";
+    		}
+
+    		leaf egress-forward-red-pkts {
+      		type oc-yang:counter64;
+      		description
+        		"Admitted packets marked 'red'.";
+    		}
+
+				// Counters of forwarded bytes
+    		leaf ingress-forward-green-bytes {
+      		type oc-yang:counter64;
+      		description
+        		"Admitted bytes marked 'green'.";
+    		}
+
+    		leaf ingress-forward-non-green-bytes {
+      		type oc-yang:counter64;
+      		description
+        		"Admitted bytes marked 'non green'.";
+    		}
+
+    		leaf ingress-forward-red-bytes {
+      		type oc-yang:counter64;
+      		description
+        		"Admitted bytes marked 'red'.";
+    		}
+
+    		leaf egress-forward-green-bytes {
+      		type oc-yang:counter64;
+      		description
+        		"Admitted bytes marked 'green'.";
+    		}
+
+    		leaf egress-forward-non-green-bytes {
+      		type oc-yang:counter64;
+      		description
+        		"Admitted bytes marked 'non green'.";
+    		}
+
+    		leaf egress-forward-red-bytes {
+      		type oc-yang:counter64;
+      		description
+        		"Admitted bytes marked 'red'.";
+    		}
+
+				// Counters of discarded packets
+    		leaf ingress-discard-green-pkts {
+      		type oc-yang:counter64;
+      		description
+        		"Dropped packets marked 'green'.";
+    		}
+
+    		leaf ingress-discard-non-green-pkts {
+      		type oc-yang:counter64;
+      		description
+        		"Dropped packets marked 'non green'.";
+    		}
+
+    		leaf ingress-discard-red-pkts {
+      		type oc-yang:counter64;
+      		description
+        		"Dropped packets marked 'red'.";
+    		}
+
+    		leaf egress-discard-green-pkts {
+      		type oc-yang:counter64;
+      		description
+        		"Dropped packets marked 'green'.";
+    		}
+
+    		leaf egress-discard-non-green-pkts {
+      		type oc-yang:counter64;
+      		description
+        		"Dropped packets marked 'non green'.";
+    		}
+
+    		leaf egress-discard-red-pkts {
+      		type oc-yang:counter64;
+      		description
+        		"Dropped packets marked 'red'.";
+    		}
+
+				// Counters of discarded bytes
+    		leaf ingress-discard-green-bytes {
+      		type oc-yang:counter64;
+      		description
+        		"Dropped bytes marked 'green'.";
+    		}
+
+    		leaf ingress-discard-non-green-bytes {
+      		type oc-yang:counter64;
+      		description
+        		"Dropped bytes marked 'non green'.";
+    		}
+
+    		leaf ingress-discard-red-bytes {
+      		type oc-yang:counter64;
+      		description
+        		"Dropped bytes marked 'red'.";
+    		}
+
+    		leaf egress-discard-green-bytes {
+      		type oc-yang:counter64;
+      		description
+        		"Dropped bytes marked 'green'.";
+    		}
+
+    		leaf egress-discard-non-green-bytes {
+      		type oc-yang:counter64;
+      		description
+        		"Dropped bytes marked 'non green'.";
+    		}
+
+    		leaf egress-discard-red-bytes {
+      		type oc-yang:counter64;
+      		description
+        		"Dropped bytes marked 'red'.";
+      }
+    }
+  }
+  
+  // data definition statements
+
+  // augment statements
+
+  augment /oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinterface/oc-if:state {
+    when "../../../oc-if:config/oc-if:type = 'ift:l2vlan'";
+
+    description
+      "Adds ADVA AC interface data";
+      
+    uses adva-ac-if-config;
+    uses adva-ac-cos-counters;
+  }
+
+  augment /oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinterface/oc-if:config {
+    when "../../../oc-if:config/oc-if:type = 'ift:l2vlan'";
+
+    description
+      "Adds ADVA AC interface data";
+
+    uses adva-ac-if-config;
+  }
+
+  // deviate statements
+
+}
+

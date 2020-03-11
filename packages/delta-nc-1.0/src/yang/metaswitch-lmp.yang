@@ -1,0 +1,3029 @@
+module metaswitch-lmp {
+
+  // Actions require Yang version 1.1.
+  // Start yang1.1-only
+  yang-version 1.1;
+  // End yang1.1-only
+
+  namespace "http://metaswitch.com/yang/nbu/lmp/201808010000Z";
+
+  prefix lmp;
+
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix "interfaces"; }
+  import metaswitch-custom-yang-types { prefix "custom"; }
+  import metaswitch-yang-types { prefix meta; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Link Management Protocol";
+
+  revision 2018-08-01 {
+    description
+      "Initial revision.";
+  }
+
+  typedef wdm-role-t {
+    description
+      "WDM roles";
+    type enumeration {
+      enum peer                             { value 1; } // LMP and WDM procedures enabled
+      enum ols                              { value 2; } // WDM procedures enabled
+      enum none                             { value 4; } // LMP procedures enabled
+    }
+  }
+
+  typedef resend-interval-t {
+    description
+      "Resend interval";
+    type uint32 {
+      range "1..2147483647";
+    }
+    units "milliseconds";
+  }
+
+  typedef resend-delta-t {
+    description
+      "Resend interval delta";
+    type uint32;
+  }
+
+  typedef link-verify-interval-t {
+    description
+      "Link verification interval";
+    type uint32 {
+      range "0..2147483647";
+    }
+    units "milliseconds";
+  }
+
+  typedef extended-hello-dead-interval-default-t {
+    description
+      "Minimum hello dead interval";
+    type uint32;
+    units "milliseconds";
+  }
+
+  typedef retransmit-interval-t {
+    description
+      "Retransmission interval";
+    type uint32 {
+      range "1..2147483647";
+    }
+    units "milliseconds";
+  }
+
+  typedef retry-limit-t {
+    description
+      "Transmission retry limit";
+    type uint32;
+  }
+
+  typedef retransmit-delta-t {
+    description
+      "Retransmission interval delta";
+    type uint32;
+  }
+
+  typedef setup-role-t {
+    description
+      "Setup role";
+    type enumeration {
+      enum active                           { value 1; }
+      enum passive                          { value 2; }
+    }
+  }
+
+  typedef down-flag-timeout-t {
+    description
+      "Down flag timeout";
+    type uint32 {
+      range "1..65535";
+    }
+    units "milliseconds";
+  }
+
+  typedef priority-t {
+    description
+      "Priority";
+    type uint32;
+  }
+
+  typedef config-retransmit-interval-t {
+    description
+      "Config retransmit interval";
+    type uint32 {
+      range "1..2147483647";
+    }
+    units "milliseconds";
+  }
+
+  typedef hello-interval-t {
+    description
+      "Hello interval";
+    type uint32 {
+      range "1..65535";
+    }
+    units "milliseconds";
+  }
+
+  typedef channel-id-t {
+    description
+      "Control channel id";
+    type uint32 {
+      range "1..4294967295";
+    }
+  }
+
+  typedef tel-mux-capability-t {
+    description
+      "Mux capability";
+    type enumeration {
+      enum packet-switch-1                  { value 1; }
+      enum packet-switch-2                  { value 2; }
+      enum packet-switch-3                  { value 3; }
+      enum packet-switch-4                  { value 4; }
+      enum layer-2-switch                   { value 51; }
+      enum tdm                              { value 100; }
+      enum tdm-otn                          { value 110; }
+      enum lamdba-switch                    { value 150; }
+      enum fiber-switch                     { value 200; }
+    }
+  }
+
+  typedef link-verf-links-t {
+    description
+      "Link verfication types";
+    type enumeration {
+      enum all                              { value 1; }
+      enum new                              { value 2; }
+    }
+  }
+
+  typedef otn-trace-t {
+    description
+      "OTN trace types";
+    type enumeration {
+      enum otuk-tti                         { value 1; }
+      enum oduk-tti                         { value 2; }
+      enum l1-oduk-tti                      { value 3; }
+      enum l2-oduk-tti                      { value 4; }
+      enum l3-oduk-tti                      { value 5; }
+      enum l4-oduk-tti                      { value 6; }
+      enum l5-oduk-tti                      { value 7; }
+      enum l6-oduk-tti                      { value 8; }
+    }
+  }
+
+  typedef wdm-wavelength-t {
+    description
+      "WDM wavelength";
+    type uint32;
+    units "nanometers";
+  }
+
+  typedef wdm-bit-rate-t {
+    description
+      "WDM bit rate";
+    type uint32;
+  }
+
+  typedef wdm-verify-interval-t {
+    description
+      "WDM interval";
+    type uint32 {
+      range "1..65535";
+    }
+    units "milliseconds";
+  }
+
+  typedef wavelength-t {
+    description
+      "Wavelength";
+    type uint32;
+    units "nanometers";
+  }
+
+  typedef bit-rate-t {
+    description
+      "Bit rate";
+    type uint32;
+  }
+
+  typedef verify-interval-t {
+    description
+      "Verification interval";
+    type uint32 {
+      range "1..65535";
+    }
+    units "milliseconds";
+  }
+
+  typedef wdm-remote-unnumbered-id-t {
+    description
+      "WDM remote unnumbered id";
+    type uint32 {
+      range "0..2147483647";
+    }
+  }
+
+  typedef direction-t {
+    description
+      "Direction";
+    type enumeration {
+      enum active                           { value 1; }
+      enum passive                          { value 2; }
+      enum both                             { value 3; }
+    }
+  }
+
+  typedef tel-protect-t {
+    description
+      "TE Link protection type";
+    type enumeration {
+      enum unprotected                      { value 0; }
+      enum shared                           { value 1; }
+      enum dedicated-1-for-1                { value 2; }
+      enum dedicated-1-plus-1               { value 3; }
+      enum enhanced                         { value 4; }
+    }
+  }
+
+  typedef unnumbered-id-t {
+    description
+      "Unnumbered id";
+    type int32 {
+      range "0..2147483647";
+    }
+  }
+
+  typedef data-link-t {
+    description
+      "Data link type";
+    type enumeration {
+      enum port                             { value 1; }
+      enum component-link                   { value 2; }
+    }
+  }
+
+  typedef encoding-type-t {
+    description
+      "Data link encoding type";
+    type enumeration {
+      enum g709-oduk                        { value 12; }
+      enum g709-och                         { value 13; }
+    }
+  }
+
+  typedef data-link-tributary-slot-t {
+    description
+      "Data Link tributary slot sizes";
+    type enumeration {
+      enum meaningless                      { value 0; }
+      enum 1.25gpbs                         { value 1; }
+      enum 2.5gpbs                          { value 2; }
+    }
+  }
+
+  typedef ho-odu-link-type-t {
+    description
+      "Higher order ODU link types";
+    type enumeration {
+      enum odu1                            { value 1; }
+      enum odu2                            { value 2; }
+      enum odu3                            { value 3; }
+      enum odu4                            { value 4; }
+      enum odu2e                           { value 15; }
+    }
+  }
+
+  typedef link-group-id-t {
+    description
+      "Link group id";
+    type uint32 {
+      range 0..4294967294;
+    }
+  }
+
+  typedef srlg-id-t {
+    description
+      "Shared risk link group id";
+    type uint32 {
+      range 0..4294967295;
+    }
+  }
+
+  typedef cc-oper-status-t {
+    description
+      "Control channel operational status values";
+    type enumeration {
+      enum up                               { value 1; }
+      enum down                             { value 2; }
+      enum config-send                      { value 3; }
+      enum config-receive                   { value 4; }
+      enum active                           { value 5; }
+      enum going-down                       { value 6; }
+    }
+  }
+
+  typedef data-link-oper-status-t {
+    description
+      "Data link operational status values";
+    type enumeration {
+      enum up-alloc                         { value 1; }
+      enum up-free                          { value 2; }
+      enum down                             { value 3; }
+      enum testing                          { value 4; }
+    }
+  }
+
+  container lmp {
+
+    description
+        "Configure LMP";
+
+    user-ext:CLI-comm-help "Configure LMP";
+    user-ext:CLI-no-comm-help "Configure LMP";
+
+    presence "Enable LMP";
+
+    container global {
+
+      // Low-level model info: Corresponds to dcLmpProductTable (AMB_LMP_PRODUCT).
+
+      description
+        "Global LMP configuraton.";
+
+      user-ext:CLI-comm-help "Configure global LMP parameters";
+      user-ext:CLI-no-comm-help "Configure global LMP parameters";
+
+      leaf node-id {
+        // Low-level model info: Corresponds to dcLmpProductNodeId.
+        type interfaces:iface-ipv4-address-t;
+        mandatory true;
+        description
+          "The Node ID for this LMP node.";
+
+        user-ext:CLI-comm-help "Set LMP node router ID";
+        user-ext:CLI-no-comm-help "Unset LMP node router ID";
+        user-ext:CLI-param-help "Set LMP node router ID";
+      }
+
+      leaf resend-interval {
+        // Low-level model info: Corresponds to dcLmpProductResendInterval.
+        type resend-interval-t;
+        default "500";
+        description
+          "The initial interval in milliseconds between resends of
+          LMP messages, where per-message type values are not
+          provided.";
+        units "milliseconds";
+
+        user-ext:CLI-comm-help "Set resend interval (milliseconds)";
+        user-ext:CLI-no-comm-help "Use default resend interval";
+        user-ext:CLI-param-help "Set resend interval (milliseconds)";
+      }
+
+      leaf resend-delta {
+        // Low-level model info: Corresponds to dcLmpProductResendDelta.
+        type resend-delta-t;
+        default "1";
+        description
+          "The default factor that governs the speed with which the
+          sender increases the retransmission interval.  The interval is
+          multiplied by (1+delta) on each retransmit.";
+
+        user-ext:CLI-comm-help "Set resend interval delta";
+        user-ext:CLI-no-comm-help "Set resend interval delta to default";
+        user-ext:CLI-param-help "Set resend interval delta";
+      }
+
+      leaf link-verify-interval {
+        // Low-level model info: Corresponds to dcLmpProductLinkVerifyInterval.
+        type link-verify-interval-t;
+        default "100000";
+        description
+          "This object indicates how often the link verification
+          procedure is executed.
+
+        This field can be set to zero to disable periodic link
+        verification.";
+        units "milliseconds";
+
+        user-ext:CLI-comm-help "Set link verification interval (milliseconds)";
+        user-ext:CLI-no-comm-help "Set link verification interval to default";
+        user-ext:CLI-param-help "Set link verification interval (milliseconds)";
+      }
+
+      leaf destination-ip-address-as-uni {
+        // Low-level model info: Corresponds to dcLmpDestIpAddrAsUni.
+        type boolean;
+        default false;
+        description
+          "OIF UNI specifies that Config, ConfigAck, ConfigNack and
+          Hello messages be sent to the neighbor's IPCC address (or
+          the All-nodes multicast address in the case of an in-fibre
+          Config).  All other messages must be sent with the
+          neighbor's node ID as the destination IP address.
+
+          By default, LMP does not do this, but rather always
+          sends to the known CC's destination IP address (or the
+          All-nodes multicast, if the address has not been
+          configured, and a Config is sent).
+
+          Set this field to true in order to enable the OIF UNI
+          behaviour.";
+
+        user-ext:CLI-comm-help "Set LMP message destination using OIF UNI behaviour";
+        user-ext:CLI-no-comm-help "Set LMP message destination using default behaviour";
+        user-ext:CLI-param-help "Set LMP message destination using OIF UNI behaviour";
+      }
+
+      leaf wdm-role {
+        // Low-level model info: Corresponds to dcLmpProductWdmRole.
+        type wdm-role-t;
+        default none;
+        description
+          "Indicates whether this LMP entity can operate in an WDM
+          role and if so whether it should take the role of a peer
+          or optical line system (OLS).";
+
+        user-ext:CLI-comm-help "Set LMP entity WDM role";
+        user-ext:CLI-no-comm-help "Disable LMP support for WDM role";
+        user-ext:CLI-param-help "Set LMP entity WDM role";
+      }
+
+      leaf source-ip-address-node-id {
+        // Low-level model info: Corresponds to dcLmpSrcIpAddrNodeID.
+        type boolean;
+        default false;
+        description
+          "Some LMP implementations use the Node ID as the source IP
+          address in LMP messages.
+
+          In UNI scenarios this is safe, because the Node ID is drawn
+          from the same address space as the interface addresses, and so
+          unambiguously identifies a neighbor.  LMP accepts messages
+          with the source IP address set to the remote Node ID if UNI
+          addressing is enabled (destination-ip-address-as-uni is true).
+
+          If UNI addressing is not enabled, set this flag to true to enable
+          the equivalent behavior.  This is not safe if the Node ID can overlap
+          with IP addresses in use in the system.  Neighbor discovery is not
+          supported with this option.  Multiple parallel CCs to a given
+          neighbor through one local interface are not supported with
+          this option.
+
+          This value can be changed while LMP is active, and will
+          affect all messages received from that point.";
+
+        user-ext:CLI-comm-help "Accept LMP message source address set to node ID";
+        user-ext:CLI-no-comm-help "Do not accept LMP message source address set to node ID";
+        user-ext:CLI-param-help "Accept LMP message source address set to node ID";
+      }
+
+      leaf extended-hello-dead-interval-default {
+        // Low-level model info: Corresponds to dcLmpProductExtendedHelloDeadIvl.
+        type extended-hello-dead-interval-default-t;
+        default "0";
+        description
+          "When set to a non-zero value greater than the negotiated hello dead
+          interval, this overrides the hello dead interval for a control
+          channel to indicate how long the device should wait (in
+          milliseconds) before declaring that control channel dead.
+
+          When set to a non-zero value less than or equal to the negotiated
+          hello dead interval for a control channel,
+          this field has no effect for that control channel.
+
+          When set to zero (the default value), this field is not
+          used by LMP.
+
+          This parameter should be used with care.  Not
+          detecting control channel failure in a timely manner can
+          cause negative effects.  For example, as follows.
+
+          -  BeginVerify messages will continue to be retried after
+          lmpCcHelloDeadIntervalNegotiated has expired, which
+          will block anonymous verification of TELs with other
+          neighbors.  On hardware with limited termination
+          capability for sending Test messages, this behaviour
+          might block all link verification to all neighbors, not
+          just anonymous verification.
+
+          -  If there are multiple control channels to a neighbor
+          and the primary control channel fails, DC-LMP will
+          continue using the failed control channel to send all
+          message types that are not control channel specific,
+          rather than another control channel becoming the
+          primary control channel.  Hence the neighbor will not
+          receive any of these messages.
+
+          -  Hello messages, and message types that are not control
+          channel specific, continue to be sent over the control
+          channel after the lmpCcHelloDeadIntervalNegotiated has
+          expired.  This behavior does not conform to RFC 4204.
+
+          However, this object can be set to a non-zero value when
+
+          -  the local node wishes to support LMP Graceful Restart
+          procedures for neighbors that restart and
+          -  LMP neighbors may take longer to restart than the
+          maximum possible value for the
+          lmpCcHelloDeadIntervalNegotiated.
+
+          The object should be set to a value that is as small as
+          possible because of the negative effects listed above.
+
+          This field may be changed at any time.  The new value is
+          used the next time that the HelloDead timer is started for
+          each Control Channel.";
+
+        units "milliseconds";
+
+        user-ext:CLI-comm-help "Set minimum hello dead interval for control channels (milliseconds)";
+        user-ext:CLI-no-comm-help "Use negotiated control channel hello dead interval";
+        user-ext:CLI-param-help "Set minimum hello dead interval for control channel (milliseconds)";
+
+      } // extended-hello-dead-interval-default
+
+    } // global
+
+    list neighbor {
+
+      // Low-level model info: Corresponds to lmpNbrTable (AMB_LMP_NBR).
+
+      description
+        "Neighbor node(s) to which control channels may be established.";
+
+      key "node-id";
+
+      user-ext:CLI-comm-help "Configure LMP neighbor";
+      user-ext:CLI-no-comm-help "Remove LMP neighbor";
+
+      leaf node-id {
+        // Low-level model info: Corresponds to lmpNbrNodeId.
+        type interfaces:iface-ipv4-address-t;
+        description
+          "The remote Node ID.";
+
+        user-ext:CLI-param-help "Set LMP neighbor node ID";
+      }
+
+      leaf retransmit-interval {
+        // Low-level model info: Corresponds to lmpNbrRetransmitInterval.
+        type retransmit-interval-t;
+        description
+          "This object specifies the interval that is used for the
+          retransmission of LinkSummary, BeginVerify, EndVerify,
+          TestStatusSuccess, TestStatusFailure, ChannelStatus and
+          ChannelStatusRequest messages.";
+        units "milliseconds";
+
+        user-ext:CLI-comm-help "Set retransmission interval (milliseconds)";
+        user-ext:CLI-no-comm-help "Use globally configured retransmission interval";
+        user-ext:CLI-param-help "Set retransmission interval (milliseconds)";
+      }
+
+      leaf retry-limit {
+        // Low-level model info: Corresponds to lmpNbrRetryLimit.
+        type retry-limit-t;
+        default "3";
+        description
+          "This object specifies the maximum number of times a
+          message is transmitted without being acknowledged.  A
+          value of 0 is used to indicate that a node should never
+          stop retransmission.";
+
+        user-ext:CLI-comm-help "Set maximum number of transmission attempts";
+        user-ext:CLI-no-comm-help "Use default maximum number of transmission attempts";
+        user-ext:CLI-param-help "Set maximum number of transmission attempts";
+      }
+
+      leaf retransmit-delta {
+        // Low-level model info: Corresponds to lmpNbrRetransmitDelta.
+        type retransmit-delta-t;
+        description
+          "This object governs the speed with which the sender
+          increases the retransmission interval.";
+
+        user-ext:CLI-comm-help "Set retransmission delta";
+        user-ext:CLI-no-comm-help "Use globally configured retransmission delta";
+        user-ext:CLI-param-help "Set retransmission delta";
+      }
+
+    } // neighbor
+
+    list control-channel {
+
+      // Low-level model info: Corresponds to lmpControlChannelTable
+      // (AMB_LMP_CC).
+
+      description
+        "LMP control channels.";
+
+      key "channel-id";
+
+      must "((underlying-interface-name) or (remote-ip-address))" {
+        error-message "An interface name or remote IP address must be specified";
+      }
+
+      user-ext:CLI-comm-help "Configure LMP control channel";
+      user-ext:CLI-no-comm-help "Remove LMP control channel";
+
+      leaf channel-id {
+        // Low-level model info: Corresponds to lmpCcId.
+        type channel-id-t;
+        description
+          "The local control channel identifier.";
+
+        user-ext:CLI-param-help "Set LMP control channel ID";
+      }
+
+      leaf underlying-interface-name {
+        // Low-level model info: Corresponds to lmpCcUnderlyingIfIndex &
+        // lmpCcIsIf.
+        type custom:iface-name;
+        description
+          "The name of the interface over which LMP will transmit its traffic.
+
+          If control channels are not modeled as interfaces, the interface name
+          should not be specified.";
+
+        user-ext:CLI-comm-help "Set control channel underlying interface name";
+        user-ext:CLI-no-comm-help "Unset control channel underlying interface name";
+        user-ext:CLI-param-help "Set control channel underlying interface name";
+      }
+
+      leaf neighbor-node-id {
+        // Low-level model info: Corresponds to lmpCcNbrNodeId.
+        type interfaces:iface-ipv4-address-t;
+        description
+          "This is the Node ID of the control channel remote node.
+          This value is either configured or gets created by the
+          node when a Config message is received or when an outgoing
+          Config message is acknowledged by the remote node.";
+
+        user-ext:CLI-comm-help "Set neighbor node id";
+        user-ext:CLI-no-comm-help "Unset neighbor node id";
+        user-ext:CLI-param-help "Set neighbor node id";
+      }
+
+      leaf remote-ip-address {
+        // Low-level model info: Corresponds to lmpRemoteCcIpAddr.
+        type interfaces:iface-ipv4-address-t;
+        description
+          "The remote control channel IP address for non point-to-point
+          configuration.  For point-to-point configuration, this value can be
+          set to null.
+
+          If this node is configured to initiate Configuration
+          exchanges and config-multicasting is set to 'true',
+          Config messages will be sent to the AllNodes multicast
+          address.  If the remote address is configured, but the
+          discovered address is different, the CC will not be
+          activated.  If the remote address is not configured, it
+          will be discovered.";
+
+        user-ext:CLI-comm-help "Set remote ip address";
+        user-ext:CLI-no-comm-help "Unset remote ip address";
+        user-ext:CLI-param-help "Set remote ip address";
+      }
+
+      leaf setup-role {
+        // Low-level model info: Corresponds to lmpCcSetupRole.
+        type setup-role-t;
+        default active;
+        description
+          "The role that this node should take during establishment
+          of this control channel.  An active node will initiate
+          establishment.  A passive node will wait for the remote
+          node to initiate.  A pair of nodes that both take the
+          passive role will never establish communications.";
+
+        user-ext:CLI-comm-help "Set setup role";
+        user-ext:CLI-no-comm-help "Use default setup role";
+        user-ext:CLI-param-help "Set setup role";
+      }
+
+      leaf authentication {
+        // Low-level model info: Corresponds to lmpCcAuthentication.
+        type boolean;
+        default false;
+        description
+          "Whether the control channel should use authentication.";
+
+        user-ext:CLI-comm-help "Set whether the control channel should use authentication";
+        user-ext:CLI-no-comm-help "Use default control channel authentication setting";
+        user-ext:CLI-param-help "Set whether the control channel should use authentication";
+      }
+
+      container fast-keepalive {
+
+        // The hello-interval must be between the min and max values.  The default values for
+        // the hello-interval, min and max is 150.
+        must "(((number(hello-interval) >= number(hello-interval-min)) or
+                (not(hello-interval) and not(hello-interval-min)) or
+                (not(hello-interval) and hello-interval-min <= 150) or
+                (hello-interval >= 150 and not(hello-interval-min))) and
+              ((number(hello-interval) <= number(hello-interval-max))) or
+               (not(hello-interval) and not(hello-interval-max)) or
+               (not(hello-interval) and hello-interval-max >= 150) or
+               (hello-interval <= 150 and not(hello-interval-max)))" {
+          error-message "Hello interval must be between the minimum and maximum values";
+        }
+
+        // The hello-dead-interval must be between the min and max values.  The default values for
+        // the hello-interval, min and max is 500.
+        must "(((number(hello-dead-interval) >= number(hello-dead-interval-min)) or
+                (not(hello-dead-interval) and not(hello-dead-interval-min)) or
+                (not(hello-dead-interval) and hello-dead-interval-min <= 500) or
+                (hello-dead-interval >= 500 and not(hello-dead-interval-min))) and
+              ((number(hello-dead-interval) <= number(hello-dead-interval-max))) or
+               (not(hello-dead-interval) and not(hello-dead-interval-max)) or
+               (not(hello-dead-interval) and hello-dead-interval-max >= 500) or
+               (hello-dead-interval <= 500 and not(hello-dead-interval-max)))" {
+           error-message "Hello dead interval must be between the minimum and maximum values";
+        }
+
+        must "((number(hello-dead-interval) > number(hello-interval)) or
+               (not(hello-dead-interval) and (hello-interval < 500)) or
+               (not(hello-interval) and (hello-dead-interval > 150)) or
+               (not(hello-interval) and (not(hello-dead-interval))))" {
+          error-message "Hello dead interval must be greater than hello interval";
+        }
+
+        description
+          "Fast keep alive parameters.";
+
+        presence "Enable fast keep alive";
+
+        user-ext:CLI-comm-help "Configure fast keep alive";
+        user-ext:CLI-no-comm-help "Configure fast keep alive";
+
+        leaf hello-interval {
+          // Low-level model info: Corresponds to lmpCcHelloInterval.
+          type hello-interval-t;
+          default "150";
+          description
+            "The Hello Interval.";
+          units "milliseconds";
+
+          user-ext:CLI-comm-help "Set hello interval (milliseconds)";
+          user-ext:CLI-no-comm-help "Use default hello interval";
+          user-ext:CLI-param-help "Set hello interval (milliseconds)";
+        }
+
+        leaf hello-interval-min {
+          // Low-level model info: Corresponds to lmpCcHelloIntervalMin.
+          type hello-interval-t;
+          default "150";
+          description
+            "The minimum value for the Hello Interval.";
+          units "milliseconds";
+
+          user-ext:CLI-comm-help "Set hello interval minimum value (milliseconds)";
+          user-ext:CLI-no-comm-help "Use default hello interval minimum value";
+          user-ext:CLI-param-help "Set hello interval minimum value (milliseconds)";
+        }
+
+        leaf hello-interval-max {
+          // Low-level model info: Corresponds to lmpCcHelloIntervalMax.
+          type hello-interval-t;
+          default "150";
+          description
+            "The maximum value for the Hello Interval.";
+          units "milliseconds";
+
+          user-ext:CLI-comm-help "Set hello interval maximum value (milliseconds)";
+          user-ext:CLI-no-comm-help "Use default hello interval maximum value";
+          user-ext:CLI-param-help "Set hello interval maximum value (milliseconds)";
+        }
+
+        leaf hello-dead-interval {
+          // Low-level model info: Corresponds to lmpCcHelloDeadInterval.
+          type hello-interval-t;
+          default "500";
+          description
+            "The value of the Hello Dead Interval.";
+          units "milliseconds";
+
+          user-ext:CLI-comm-help "Set hello dead interval (milliseconds)";
+          user-ext:CLI-no-comm-help "Use default hello dead interval";
+          user-ext:CLI-param-help "Set hello dead interval (milliseconds)";
+        }
+
+        leaf hello-dead-interval-min {
+          // Low-level model info: Corresponds to lmpCcHelloDeadIntervalMin.
+          type hello-interval-t;
+          default "500";
+          description
+            "The minimum value for the Hello Dead Interval.";
+          units "milliseconds";
+
+          user-ext:CLI-comm-help "Set hello dead interval minimum value (milliseconds)";
+          user-ext:CLI-no-comm-help "Use default hello dead interval minimum value";
+          user-ext:CLI-param-help "Set hello dead interval minimum value (milliseconds)";
+        }
+
+        leaf hello-dead-interval-max {
+          // Low-level model info: Corresponds to lmpCcHelloDeadIntervalMax.
+          type hello-interval-t;
+          default "500";
+          description
+            "The maximum value for the Hello Dead Interval.";
+          units "milliseconds";
+
+          user-ext:CLI-comm-help "Set hello dead interval maximum value (milliseconds)";
+          user-ext:CLI-no-comm-help "Use default hello dead interval maximum value";
+          user-ext:CLI-param-help "Set hello dead interval maximum value (milliseconds)";
+        }
+
+      } // fast-keepalive
+
+      leaf enable {
+        // Low-level model info: Corresponds to lmpCcAdminStatus.
+        type boolean;
+        default true;
+        description
+          "Whether to enable this control channel.";
+
+        user-ext:CLI-comm-help "Set whether the control channel is enabled";
+        user-ext:CLI-no-comm-help "Use default enable/disable setting";
+        user-ext:CLI-param-help "Set whether the control channel is enabled";
+      }
+
+      leaf config-retransmit-interval {
+        // Low-level model info: Corresponds to lmpCcConfigRetransmitInterval.
+        type config-retransmit-interval-t;
+        default "500";
+        description
+          "The interval that is used for the retransmission of Config messages
+          during the parameter negotiation phase.";
+        units "milliseconds";
+
+        user-ext:CLI-comm-help "Set config retransmission interval (milliseconds)";
+        user-ext:CLI-no-comm-help "Use default config retransmission interval";
+        user-ext:CLI-param-help "Set config retransmission interval (milliseconds)";
+      }
+
+      leaf next-hop-address {
+        // Low-level model info: Corresponds to lmpCcNextHopAddr.
+        type interfaces:iface-ipv4-address-t;
+        description
+          "The next hop IP address for this control channel.  This
+          object may be set to null to indicate that the next hop IP
+          address is the same as the destination IP address.";
+
+        user-ext:CLI-comm-help "Set next hop address";
+        user-ext:CLI-no-comm-help "Set next hop IP address to the destination IP address";
+        user-ext:CLI-param-help "Set next hop address";
+      }
+
+      leaf priority {
+        // Low-level model info: Corresponds to lmpCcPriority.
+        type priority-t;
+        default "0";
+        description
+          "The priority of this control channel, for determination of which
+          control channel to use for outgoing messages when more than one
+          control channel to the same neighbor is available.  If two control
+          channels have the same priority, the channel with the lowest interface
+          index is used.";
+
+        user-ext:CLI-comm-help "Set priority";
+        user-ext:CLI-no-comm-help "Set default priority";
+        user-ext:CLI-param-help "Set priority";
+      }
+
+      leaf down-flag-timeout {
+        // Low-level model info: Corresponds to lmpCcCcdownTimeout.
+        type down-flag-timeout-t;
+        default "1000";
+        description
+          "This object specifies how long the local node will wait for a
+          ControlChannelDown flag to be acknowledged by the partner node before
+          bringing the CC down.  It is recommended that this value should be no
+          smaller than the configured Maximum Hello Interval.";
+        units "milliseconds";
+
+        user-ext:CLI-comm-help "Set ControlChannelDown flag timeout (milliseconds)";
+        user-ext:CLI-no-comm-help "Set default ControlChannelDown flag timeout";
+        user-ext:CLI-param-help "Set ControlChannelDown flag timeout (milliseconds)";
+      }
+
+      leaf config-multicasting {
+        // Low-level model info: Corresponds to lmpCcConfigMulticasting.
+
+        // Multicasting is only allowed to be configured if both an underlying interface name and
+        // a remote ip address are configured.  Otherwise the multicasting support is set
+        // automatically based on the presence of a remote IP address or an underlying interface
+        // name for this control channel.
+        when "(../underlying-interface-name) and (../remote-ip-address)";
+
+        type boolean;
+        default true;
+        description
+          "This object specifies whether Config messages will be sent
+          to the all-hosts IPv4 multicast address (224.0.0.1) by the
+          local and/or remote node.
+          If both the local and the remote node are configured with
+          the respective destination IP addresses for the control
+          channel, this object can be set to false.  This will
+          optimize control channel set-up, as a multicast socket
+          need not be created.
+          This object cannot be set to true if this control channel
+          is not modeled as an interface.";
+
+        user-ext:CLI-comm-help "Set whether config multicasting is enabled";
+        user-ext:CLI-no-comm-help "Set config multicasting to default setting";
+        user-ext:CLI-param-help "Set whether config multicasting is enabled";
+      }
+
+      leaf wdm-mode {
+        // Low-level model info: Corresponds to lmpCcWdmMode.
+
+        // WDM mode can only be set if the global WDM role is not none.
+        when "(/lmp/global/wdm-role != 'none')";
+
+        type boolean;
+        default false;
+        description
+          "Whether this CC entry will operate in WDM mode.  Operating in WDM
+          mode means that the node will attempt to establish a peer-OLS LMP
+          session to the neighbor, rather than a peer-peer LMP session over this
+          CC.";
+
+        user-ext:CLI-comm-help "Set whether to operate in WDM mode";
+        user-ext:CLI-no-comm-help "Set WDM operation mode to default setting";
+        user-ext:CLI-param-help "Set whether to operate in WDM mode";
+      }
+
+  // Start yang1.1-only
+      action reset-performance-stats {
+        // Low-level model info: Corresponds to lmpCcPerfReset.
+        description
+          "Reset all stats counters in control-channel-stats list.";
+
+        user-ext:CLI-param-help "Reset all stats counters for control channel.";
+      }
+  // End yang1.1-only
+
+    } // control-channel
+
+    list te-link {
+
+      // Low-level model info: Corresponds to lmpTeLinkTable (AMB_LMP_TEL).
+
+      must "((/lmp/global/wdm-role != 'ols') or not(neighbor-node-id))" {
+        error-message "neighbor-node-id cannot be set if LMP procedures are not enabled";
+      }
+
+      must "((/lmp/global/wdm-role != 'ols') or not(verification))" {
+        error-message "verification cannot be set if LMP procedures are not enabled";
+      }
+
+      must "((/lmp/global/wdm-role != 'ols') or not(fault-management) or (fault-management = 'false'))" {
+        error-message "fault-management cannot be set if LMP procedures are not enabled";
+      }
+
+      must "((/lmp/global/wdm-role != 'ols') or not(remote-unnumbered-id))" {
+        error-message "remote-unnumbered-id cannot be set if LMP procedures are not enabled";
+      }
+
+      must "((/lmp/global/wdm-role != 'ols') or not(remote-ip-address))" {
+        error-message "remote-ip-address cannot be set if LMP procedures are not enabled";
+      }
+
+      must "((/lmp/global/wdm-role != 'none') or not(wdm) or (wdm = 'false'))" {
+        error-message "wdm cannot be set if WDM procedures are not enabled";
+      }
+
+      must "((/lmp/global/wdm-role != 'none') or not(wdm-neighbor-node-id))" {
+        error-message "wdm-neighbor-node-id cannot be set if WDM procedures are not enabled";
+      }
+
+      must "((/lmp/global/wdm-role != 'none') or not(wdm-verification))" {
+        error-message "wdm-verification cannot be set if WDM procedures are not enabled";
+      }
+
+      must "((/lmp/global/wdm-role != 'none') or
+              (not(wdm-fault-management) or (wdm-fault-management = 'false')))" {
+        error-message "wdm-fault-management cannot be set if WDM procedures are not enabled";
+      }
+
+      must "((/lmp/global/wdm-role != 'none') or not(wdm-remote-unnumbered-id))" {
+        error-message "wdm-remote-unnumbered-id cannot be set if WDM procedures are not enabled";
+      }
+
+      must "((/lmp/global/wdm-role != 'none') or not(wdm-remote-ip-address))" {
+        error-message "wdm-remote-ip-address cannot be set if WDM procedures are not enabled";
+      }
+
+      // The ip-address must be unique and not 0.0.0.0
+      unique "ip-address";
+
+      must "(not(ip-address) or ip-address != '0.0.0.0')" {
+        error-message "ip-address cannot be set to 0.0.0.0";
+      }
+
+      // Either:
+      // -  te-link verification is disabled, or
+      // -  LMP is not supported globally and either WDM is not supported globally or WDM is disabled on this te-link, or
+      // -  encoding type is not g709-oduk, or
+      // -  at least one of the otn-verify-transport-mechanism flags is set to true.
+      must "(not(verification) or
+            ((/lmp/global/wdm-role = 'ols') and (wdm = 'false' or not(wdm))) or
+            ((/lmp/global/wdm-role = 'none') or not(/lmp/global/wdm-role) or
+             (wdm = 'false' or not(wdm))) or
+            (encoding-type != 'g709-oduk') or
+            (link-verification/otn-verify-transport-mechanism/otuk-tti != 'false') or
+            (link-verification/otn-verify-transport-mechanism/oduk-tti = 'true') or
+            (link-verification/otn-verify-transport-mechanism/gcc0 = 'true') or
+            (link-verification/otn-verify-transport-mechanism/gcc12 = 'true') or
+            (link-verification/otn-verify-transport-mechanism/otuk-section = 'true') or
+            (link-verification/otn-verify-transport-mechanism/oduk-path = 'true'))" {
+        error-message "otn-verify-transport-mechanism must be set for g709-oduk encoding";
+      }
+
+      description
+        "TE links.";
+
+      key "interface";
+
+      user-ext:CLI-comm-help "Configure LMP TE link";
+      user-ext:CLI-no-comm-help "Remove LMP TE link";
+
+      leaf interface {
+        // Low-level model info: Corresponds to ifIndex.
+        type custom:iface-name;
+        mandatory true;
+        description
+          "The interface name.";
+
+        user-ext:CLI-param-help "Set TE link interface name";
+      }
+
+      leaf neighbor-node-id {
+        // Low-level model info: Corresponds to lmpTeLinkNbrNodeId.
+        type interfaces:iface-ipv4-address-t;
+        description
+          "The Node ID of the TE link remote node.  This value may be learned
+          during control channel parameter negotiation phase (in the Config
+          message).";
+
+        user-ext:CLI-comm-help "Set neighbor node id";
+        user-ext:CLI-no-comm-help "Unset neighbor node id";
+        user-ext:CLI-param-help "Set neighbor node id";
+      }
+
+      container verification {
+
+        // Low-level model info: Corresponds to lmpTeLinkVerification &
+        // lmpTeLinkVerificationDirection.
+        description
+          "Whether the extended LMP link verification procedure is enabled for
+          this TE link.";
+
+        presence "Enable extended LMP link verification procedure";
+
+        user-ext:CLI-comm-help "Configure extended LMP link verification";
+        user-ext:CLI-no-comm-help "Configure extended LMP link verification";
+
+        leaf direction {
+          type direction-t;
+          default both;
+          description
+            "This attribute specifies the direction(s) that the extended LMP link verification
+            procedure is enabled for on this TE link.";
+
+          user-ext:CLI-comm-help "Set which directions extended link verification is enabled for";
+          user-ext:CLI-no-comm-help "Use default setting for which directions extended link verification is enabled for";
+          user-ext:CLI-param-help "Set which directions extended link verification is enabled for";
+        }
+
+      } // verification
+
+      leaf fault-management {
+        // Low-level model info: Corresponds to lmpTeLinkFaultManagement.
+        type boolean;
+        default false;
+        description
+          "Whether the extended LMP fault management procedure is enabled on
+          this TE link.";
+
+        user-ext:CLI-comm-help "Set whether the extended fault management procedure is enabled";
+        user-ext:CLI-no-comm-help "Use default extended fault management procedure enable/disable setting";
+        user-ext:CLI-param-help "Set whether the extended fault management procedure is enabled";
+      }
+
+      leaf wdm {
+        // Low-level model info: Corresponds to lmpTeLinkDwdm.
+
+        // WDM mode can only be set if the global WDM role is not none.
+        when "(/lmp/global/wdm-role != 'none')";
+
+        type boolean;
+        default false;
+
+        description
+          "Whether the extended LMP-WDM procedure is enabled on this TE link.";
+
+        user-ext:CLI-comm-help "Set whether the extended WDM procedure is enabled";
+        user-ext:CLI-no-comm-help "Use default extended WDM procedure enable/disable setting";
+        user-ext:CLI-param-help "Set whether the extended WDM procedure is enabled";
+      }
+
+      leaf enable  {
+        // Low-level model info: Corresponds to lmpTeLinkAdminStatus.
+        type boolean;
+        default true;
+        description
+          "Enable the TE link.";
+
+        user-ext:CLI-comm-help "Set whether the TE link is enabled";
+        user-ext:CLI-no-comm-help "Use default enable/disable setting";
+        user-ext:CLI-param-help "Set whether the TE link is enabled";
+      }
+
+      leaf ip-address {
+        // Low-level model info: Corresponds to lmpTeLinkIpAddr.
+        type interfaces:iface-ipv4-address-t;
+
+        description
+          "Represents the IP address associated with the TE link.";
+
+        user-ext:CLI-comm-help "Set IP address";
+        user-ext:CLI-no-comm-help "Unset IP address";
+        user-ext:CLI-param-help "Set IP address";
+      }
+
+      leaf remote-ip-address {
+        // Low-level model info: Corresponds to lmpTeLinkRemoteIpAddr.
+        type interfaces:iface-ipv4-address-t;
+
+        // remote-ip-address can only be set if this is a numbered link,
+        // i.e. an ip-address has been defined.
+        when "(../ip-address)";
+        description
+          "The remote IP address associated with the TE link.";
+
+        user-ext:CLI-comm-help "Set remote IP address";
+        user-ext:CLI-no-comm-help "Unset remote IP address";
+        user-ext:CLI-param-help "Set remote IP address";
+      }
+
+      leaf remote-unnumbered-id {
+        // Low-level model info: Corresponds to lmpTeLinkRemoteUnnumID.
+        type unnumbered-id-t;
+
+        // remote-unnumbered-id can only be set if this is an unnumbered link,
+        // i.e. no ip-address has been set.
+        when "(not(../ip-address))";
+        description
+          "The remote ID associated with this TE link.  This is the
+          interface index of this TE link on the remote side.  It
+          may either be explicitly configured or communicated by the
+          remote node during the link verification procedure.";
+
+        user-ext:CLI-comm-help "Set remote ID";
+        user-ext:CLI-no-comm-help "Unset remote ID";
+        user-ext:CLI-param-help "Set remote ID";
+      }
+
+      leaf multiplex-capability {
+        // Low-level model info: Corresponds to lmpTeLinkMuxCapability.
+        type tel-mux-capability-t;
+        default tdm;
+        description
+          "This attribute specifies link multiplex capability of the
+          TE link, which is derived from its data-bearing channels.
+          All data-bearing channels within the same TE link must
+          have the same link multiplex capability.";
+
+        user-ext:CLI-comm-help "Set link multiplex capability";
+        user-ext:CLI-no-comm-help "Use default link multiplex capability";
+        user-ext:CLI-param-help "Set link multiplex capability";
+      }
+
+      leaf protection-type {
+        // Low-level model info: Corresponds to lmpTeLinkProtectionType.
+        type tel-protect-t;
+        default unprotected;
+        description
+          "This attribute specifies link protection type of the TE link.";
+
+        user-ext:CLI-comm-help "Set link protection type";
+        user-ext:CLI-no-comm-help "Use default link protection type";
+        user-ext:CLI-param-help "Set link protection type";
+      }
+
+      leaf wdm-neighbor-node-id {
+        // Low-level model info: Corresponds to lmpTeLinkWdmNbrNodeId.
+        type interfaces:iface-ipv4-address-t;
+        description
+          "This is the Node ID of the TE link remote node associated
+          with LMP-WDM procedures.  This value may be learned during
+          control channel parameter negotiation phase (in the Config
+          message).";
+
+        user-ext:CLI-comm-help "Set WDM neighbor node id";
+        user-ext:CLI-no-comm-help "Unset WDM neighbor node id";
+        user-ext:CLI-param-help "Set WDM neighbor node id";
+      }
+
+      container wdm-verification {
+
+        // Low-level model info: Corresponds to lmpTeLinkWdmVerification &
+        // lmpTeLinkWdmVerificationDir.
+        description
+          "Whether the extended LMP link verification procedure is enabled for
+          LMP-WDM procedures on this TE link.";
+
+        presence "Enable WDM extended LMP link verification procedure";
+
+        user-ext:CLI-comm-help "Configure WDM extended LMP link verification";
+        user-ext:CLI-no-comm-help "Configure WDM extended LMP link verification";
+
+        leaf direction {
+          type direction-t;
+          default both;
+          description
+            "This attribute specifies the direction(s) that the extended LMP link verification
+            procedure for WDM is enabled for on this TE link.";
+
+          user-ext:CLI-comm-help "Set which directions WDM extended link verification is enabled for";
+          user-ext:CLI-no-comm-help "Use default setting for which directions WDM extended link verification is enabled for";
+          user-ext:CLI-param-help "Set which directions WDM extended link verification is enabled for";
+        }
+
+      } // wdm-verification
+
+      leaf wdm-fault-management {
+        // Low-level model info: Corresponds to lmpTeLinkWdmFaultManagement.
+        type boolean;
+        default false;
+        description
+          "Whether the extended LMP fault management procedure is enabled for
+          LMP-WDM procedures on this TE link.";
+
+        user-ext:CLI-comm-help "Set whether the extended LMP fault management procedure is enabled";
+        user-ext:CLI-no-comm-help "Use default setting for whether the extended LMP fault management procedure is enabled";
+        user-ext:CLI-param-help "Set whether the extended LMP fault management procedure is enabled";
+      }
+
+      leaf wdm-remote-ip-address {
+        // Low-level model info: Corresponds to lmpTeLinkWdmRemoteIpAddr.
+
+        // wdm-remote-ip-address can only be set if this is a numbered link,
+        // i.e. ip-address has been defined.
+        when "(../ip-address)";
+        type interfaces:iface-ipv4-address-t;
+        description
+          "The remote IP address associated with LMP-WDM procedures
+          on the TE link.
+
+          This is valid for numbered links only";
+
+        user-ext:CLI-comm-help "Set WDM remote IP address";
+        user-ext:CLI-no-comm-help "Unset WDM remote IP address";
+        user-ext:CLI-param-help "Set WDM remote IP address";
+      }
+
+      leaf wdm-remote-unnumbered-id {
+        // Low-level model info: Corresponds to lmpTeLinkWdmRemoteUnnumID.
+
+        // wdm-remote-unnumbered-id can only be set if this is an unnumbered link,
+        // i.e. no ip-address has been set.
+        when "(not(../ip-address))";
+
+        type wdm-remote-unnumbered-id-t;
+        description
+          "The remote ID associated with LMP-WDM procedures on this
+          TE link.  This is the interface index of this TE link on
+          the remote side.  It may either be explicitly configured
+          or communicated by the remote node during the link
+          verification procedure.
+
+          This is valid for unnumbered links only.";
+
+        user-ext:CLI-comm-help "Set WDM remote ID";
+        user-ext:CLI-no-comm-help "Unset WDM remote ID";
+        user-ext:CLI-param-help "Set WDM remote ID";
+      }
+
+      leaf encoding-type {
+        // Low-level model info: Corresponds to lmpDataLinkEncodingType.
+        type encoding-type-t;
+        default g709-oduk;
+        description
+          "The encoding type of the data-bearing link.";
+
+        user-ext:CLI-comm-help "Set encoding type";
+        user-ext:CLI-no-comm-help "Use default encoding type";
+        user-ext:CLI-param-help "Set encoding type";
+      }
+
+      container link-verification {
+
+        // Corresponds to lmpLinkVerificationTable
+
+        presence "Enable LMP link verification settings";
+
+        must "(((/lmp/global/wdm-role != 'none') or not(/lmp/global/wdm-role)) or wdm-verify-interval = '600')" {
+          error-message "wdm-verify-interval cannot be set if WDM procedures are not enabled";
+        }
+
+        must "(((/lmp/global/wdm-role != 'none') or not(/lmp/global/wdm-role)) or wdm-verify-dead-interval = '2000')" {
+          error-message "wdm-verify-dead-interval cannot be set if WDM procedures are not enabled";
+        }
+
+        must "(((/lmp/global/wdm-role != 'none') or not(/lmp/global/wdm-role)) or wdm-verify-all-links = 'new')" {
+          error-message "wdm-verify-all-links cannot be set if WDM procedures are not enabled";
+        }
+
+        must "(((/lmp/global/wdm-role != 'none') or not(/lmp/global/wdm-role)) or wdm-bit-rate = '0')" {
+          error-message "wdm-bit-rate cannot be set if WDM procedures are not enabled";
+        }
+
+        must "(((/lmp/global/wdm-role != 'none') or not(/lmp/global/wdm-role)) or wdm-wavelength = '0')" {
+          error-message "wdm-wavelength cannot be set if WDM procedures are not enabled";
+        }
+
+        must "((/lmp/global/wdm-role != 'ols') or verify-interval = '600')" {
+          error-message "verify-interval cannot be set if LMP procedures are not enabled";
+        }
+
+        must "((/lmp/global/wdm-role != 'ols') or verify-dead-interval = '2000')" {
+          error-message "verify-dead-interval cannot be set if LMP procedures are not enabled";
+        }
+
+        must "((/lmp/global/wdm-role != 'ols') or verify-all-links = 'new')" {
+          error-message "verify-all-links cannot be set if LMP procedures are not enabled";
+        }
+
+        must "((/lmp/global/wdm-role != 'ols') or bit-rate = '0')" {
+          error-message "bit-rate cannot be set if LMP procedures are not enabled";
+        }
+
+        must "((/lmp/global/wdm-role != 'ols') or wavelength = '0')" {
+          error-message "wavelength cannot be set if LMP procedures are not enabled";
+        }
+
+        must "((number(verify-interval) < number(verify-dead-interval)) or
+               (not(verify-interval) and (verify-dead-interval > 600)) or
+               (not(verify-dead-interval) and (verify-interval < 2000)) or
+               (not(verify-interval) and not(verify-dead-interval)))" {
+          error-message "verify-dead-interval must be greater than verify-interval";
+        }
+
+        must "((number(wdm-verify-interval) < number(wdm-verify-dead-interval)) or
+               (not(wdm-verify-interval) and (wdm-verify-dead-interval > 600)) or
+               (not(wdm-verify-dead-interval) and (wdm-verify-interval < 2000)) or
+               (not(wdm-verify-interval) and not(wdm-verify-dead-interval)))" {
+          error-message "wdm-verify-dead-interval must be greater than wdm-verify-interval";
+        }
+
+        description
+          "TE link information associated with the LMP verification procedure.";
+
+          user-ext:CLI-comm-help "Configure LMP verification settings";
+          user-ext:CLI-no-comm-help "Use default LMP verification settings";
+
+        leaf verify-interval {
+          // Low-level model info: Corresponds to lmpVerifyInterval.
+          type verify-interval-t;
+          default 600;
+          description
+            "The Verify Interval used in the LMP link verification process.
+            It indicates the interval at which the Test messages are sent.";
+          units "milliseconds";
+
+          user-ext:CLI-comm-help "Set verification interval (milliseconds)";
+          user-ext:CLI-no-comm-help "Use default verification interval";
+          user-ext:CLI-param-help "Set verification interval (milliseconds)";
+        }
+
+        leaf verify-dead-interval {
+          // Low-level model info: Corresponds to lmpVerifyDeadInterval.
+          type verify-interval-t;
+          default 2000;
+          description
+            "The Verify Dead Interval used in the verification of the physical
+            connectivity of data-bearing links.  It specifies the observation
+            period used to detect a Test message at the remote node.";
+          units "milliseconds";
+
+          user-ext:CLI-comm-help "Set verification dead interval (milliseconds)";
+          user-ext:CLI-no-comm-help "Use default verification dead interval";
+          user-ext:CLI-param-help "Set verification dead interval (milliseconds)";
+        }
+
+        leaf verify-all-links {
+          // Low-level model info: Corresponds to lmpVerifyAllLinks.
+          type link-verf-links-t;
+          default new;
+          description
+            "Whether the verification process checks all entities or only the
+            new entities that have been added to this TE link.";
+
+          user-ext:CLI-comm-help "Set which entities should be verified";
+          user-ext:CLI-no-comm-help "Use default for set of entities that should be verified";
+          user-ext:CLI-param-help "Set which entities WDM should be verified";
+        }
+
+        leaf bit-rate {
+          // Low-level model info: Corresponds to lmpTeLinkBitRate.
+          type bit-rate-t;
+          default "0";
+          description
+            "The bit rate at which the Test messages will be
+            transmitted and is expressed in bytes per second.";
+          units "bytes per second";
+
+          user-ext:CLI-comm-help "Set bit rate for transmission of Test messages (bytes per second)";
+          user-ext:CLI-no-comm-help "Use default bit rate for transmission of Test messages";
+          user-ext:CLI-param-help "Set bit rate for transmission of Test messages (bytes per second)";
+        }
+
+        leaf wavelength {
+          // Low-level model info: Corresponds to lmpTeLinkWavelength.
+          type wavelength-t;
+          default "0";
+          description
+            "The wavelength at which the Test messages will be transmitted over
+            in nanometers (nm).  If each data-bearing link corresponds to
+            a separate wavelength, than this value should be set to 0.";
+          units "nanometers";
+
+          user-ext:CLI-comm-help "Set wavelength for transmission of Test messages (nanometers)";
+          user-ext:CLI-no-comm-help "Use default wavelength for transmission of Test messages";
+          user-ext:CLI-param-help "Set WDM wavelength for transmission of Test messages (nanometers)";
+        }
+
+        leaf wdm-verify-interval {
+          // Low-level model info: Corresponds to lmpVerifyWdmInterval.
+          type wdm-verify-interval-t;
+          default 600;
+          description
+            "The Verify Interval used in the LMP-WDM link verification
+            process.  It indicates the interval at which the Test messages are
+            sent.";
+          units "milliseconds";
+
+          user-ext:CLI-comm-help "Set WDM verification interval (milliseconds)";
+          user-ext:CLI-no-comm-help "Use default WDM verification interval";
+          user-ext:CLI-param-help "Set WDM verification interval (milliseconds)";
+        }
+
+        leaf wdm-verify-dead-interval {
+          // Low-level model info: Corresponds to lmpVerifyWdmDeadInterval.
+          type wdm-verify-interval-t;
+          default 2000;
+          description
+            "The Verify Dead Interval used in the verification of the physical
+            connectivity of data-bearing links for LMP-WDM procedures.  It
+            specifies the observation period used to detect a Test message at
+            the remote node.";
+          units "milliseconds";
+
+          user-ext:CLI-comm-help "Set WDM verification dead interval (milliseconds)";
+          user-ext:CLI-no-comm-help "Use default WDM verification dead interval";
+          user-ext:CLI-param-help "Set WDM verification dead interval (milliseconds)";
+        }
+
+        leaf wdm-verify-all-links {
+          // Low-level model info: Corresponds to lmpVerifyWdmAllLinks.
+          type link-verf-links-t;
+          default new;
+          description
+            "This object indicates whether the verification process
+            of the LMP-WDM procedures checks all entities or only the
+            new entities that have been added to this TE link.";
+
+          user-ext:CLI-comm-help "Set which entities WDM should verify";
+          user-ext:CLI-no-comm-help "Use default for set of entities that WDM should verify";
+          user-ext:CLI-param-help "Set which entities WDM should verify";
+        }
+
+        leaf wdm-bit-rate {
+          // Low-level model info: Corresponds to lmpTeLinkWdmBitRate.
+          type wdm-bit-rate-t;
+          default "0";
+          description
+            "This is the bit rate at which the Test messages associated
+            with the LMP-WDM procedures will be transmitted and is
+            expressed in bytes per second.";
+
+          user-ext:CLI-comm-help "Set WDM bit rate";
+          user-ext:CLI-no-comm-help "Use default WDM bit rate";
+          user-ext:CLI-param-help "Set WDM bit rate";
+        }
+
+        leaf wdm-wavelength {
+          // Low-level model info: Corresponds to lmpTeLinkWdmWavelength.
+          type wdm-wavelength-t;
+          default "0";
+          description
+            "This value corresponds to the wavelength at which the Test
+            messages associated with the LMP-WDM procedures will be
+            transmitted over and is measured in nanometers (nm).
+            If each data-bearing link corresponds to
+            a separate wavelength, than this value should be set to 0.";
+
+          user-ext:CLI-comm-help "Set WDM wavelength";
+          user-ext:CLI-no-comm-help "Use default WDM wavelength";
+          user-ext:CLI-param-help "Set WDM wavelength";
+        }
+
+        container otn-verify-transport-mechanism {
+
+          // Low-level model info: Corresponds to lmpVerifyOtnTransportMechanism.
+          description
+            "This defines the transport mechanism for the Test
+            messages for the LMP-OTN procedures.
+
+            This represents the various mechanisms the local node can support for
+            transmitting LMP Test messages.  The receiver chooses the
+            appropriate mechanism in the BeginVerifyAck message.";
+
+          user-ext:CLI-comm-help "Set supported OTN transport mechanisms";
+          user-ext:CLI-no-comm-help "Support default OTN transport mechanisms";
+
+          leaf otuk-tti {
+            type boolean;
+            default true;
+            description
+              "otuk-tti";
+
+            user-ext:CLI-comm-help "Set whether otuk-tti is supported";
+            user-ext:CLI-no-comm-help "Use default for whether otuk-tti is supported";
+            user-ext:CLI-param-help "Set whether otuk-tti is supported";
+          }
+
+          leaf oduk-tti {
+            type boolean;
+            default false;
+            description
+              "oduk-tti";
+
+            user-ext:CLI-comm-help "Set whether oduk-tti is supported";
+            user-ext:CLI-no-comm-help "Use default for whether oduk-tti is supported";
+            user-ext:CLI-param-help "Set whether oduk-tti is supported";
+          }
+
+          leaf gcc0 {
+            type boolean;
+            default false;
+            description
+              "gcc0";
+
+            user-ext:CLI-comm-help "Set whether gcc0 is supported";
+            user-ext:CLI-no-comm-help "Use default for whether gcc0 is supported";
+            user-ext:CLI-param-help "Set whether gcc0 is supported";
+          }
+
+          leaf gcc12 {
+            type boolean;
+            default false;
+            description
+              "gcc12";
+
+            user-ext:CLI-comm-help "Set whether gcc12 is supported";
+            user-ext:CLI-no-comm-help "Use default for whether gcc12 is supported";
+            user-ext:CLI-param-help "Set whether gcc12 is supported";
+          }
+
+          leaf otuk-section {
+            type boolean;
+            default false;
+            description
+              "otuk-section";
+
+            user-ext:CLI-comm-help "Set whether otuk-section is supported";
+            user-ext:CLI-no-comm-help "Use default for whether otuk-section is supported";
+            user-ext:CLI-param-help "Set whether otuk-section is supported";
+          }
+
+          leaf oduk-path {
+            type boolean;
+            default false;
+            description
+              "oduk-path";
+
+            user-ext:CLI-comm-help "Set whether oduk-path is supported";
+            user-ext:CLI-no-comm-help "Use default for whether oduk-path is supported";
+            user-ext:CLI-param-help "Set whether oduk-path is supported";
+          }
+
+        } // otn-verify-transport-mechanism
+
+        leaf otn-verify-trace-type {
+          // Low-level model info: Corresponds to lmpVerifyOtnTraceType.
+          type otn-trace-t;
+          default l6-oduk-tti;
+          description
+            "The type of Trace message to use for the LMP-OTN procedures.";
+
+          user-ext:CLI-comm-help "Set Trace message type to use for LMP-OTN procedures";
+          user-ext:CLI-no-comm-help "Use default Trace message type for LMP-OTN procedures";
+          user-ext:CLI-param-help "Set Trace message type to use for LMP-OTN procedures";
+        }
+
+      } // link-verification
+
+      list data-link {
+
+        // Low-level model info: Corresponds to lmpDataLinkTable (AMB_LMP_DBL)
+        // and dcIfStackTable (AMB_LMP_IF_STACK).
+
+        must "(not(ip-address) or (ip-address != '0.0.0.0'))"  {
+          error-message "ip-address cannot be 0.0.0.0";
+        }
+
+        must "(not(remote-ip-address) or (remote-ip-address != '0.0.0.0'))"  {
+          error-message "remote-ip-address cannot be 0.0.0.0";
+        }
+
+        must "(not(wdm-remote-ip-address) or (wdm-remote-ip-address != '0.0.0.0'))"  {
+          error-message "wdm-remote-ip-address cannot be 0.0.0.0";
+        }
+
+        must "(ip-address or unnumbered-id)" {
+          error-message "Either an ip-address or an unnumbered-id must be configured";
+        }
+
+        must "((/lmp/global/wdm-role != 'ols') or not(remote-unnumbered-id)
+              or (remote-unnumbered-id = '0'))" {
+          error-message "remote-unnumbered-id cannot be set if LMP procedures are not enabled";
+        }
+
+        must "((/lmp/global/wdm-role != 'ols') or not(remote-ip-address))" {
+          error-message "remote-ip-address cannot be set if LMP procedures are not enabled";
+        }
+
+        must "((/lmp/global/wdm-role != 'none') or
+              not(wdm-remote-unnumbered-id) or (wdm-remote-unnumbered-id = '0'))" {
+          error-message "wdm-remote-unnumbered-id cannot be set if WDM procedures are not enabled";
+        }
+
+        must "((/lmp/global/wdm-role != 'none') or not(wdm-remote-ip-address))" {
+          error-message "wdm-remote-ip-address cannot be set if WDM procedures are not enabled";
+        }
+
+        must "((/lmp/global/wdm-role != 'ols') or not(suppress-correlation-verification))" {
+          error-message "suppress-correlation-verification cannot be set if LMP procedures are not enabled";
+        }
+
+        must "((/lmp/global/wdm-role != 'none') or not(wdm-suppress-correlation-verification))" {
+          error-message "wdm-suppress-correlation-verification cannot be set if WDM procedures are not enabled";
+        }
+
+        must "((../encoding-type = 'g709-och') or
+               (lo-odu-link-types/odu0 = 'true') or
+               (lo-odu-link-types/odu1 = 'true') or
+               (lo-odu-link-types/odu2 = 'true') or
+               (lo-odu-link-types/odu3 = 'true') or
+               (lo-odu-link-types/odu4 = 'true') or
+               (lo-odu-link-types/odu2e = 'true') or
+               (lo-odu-link-types/oduflex = 'true'))" {
+          error-message "At least one lo-odu-link-type must be set if encoding-type is g709-oduk";
+        }
+
+        must "(number(max-reservable-bandwidth-local) >= number(min-reservable-bandwidth-local))" {
+          error-message "Maximum reservable bandwidth must be at least as large as minimum reservable bandwidth";
+        }
+
+        description
+          "Data-bearing links managed by LMP.";
+
+        key "interface";
+
+        user-ext:CLI-comm-help "Configure LMP data link";
+        user-ext:CLI-no-comm-help "Remove LMP data link";
+
+        leaf interface {
+          // Low-level model info: Corresponds to ifIndex.
+          type custom:iface-name;
+          description
+            "The interface name.";
+
+          user-ext:CLI-param-help "Set data link interface name";
+        }
+
+        leaf type {
+          // Low-level model info: Corresponds to lmpDataLinkType.
+          type data-link-t;
+          default port;
+          description
+            "Whether this data-bearing link is a port or a component link.
+            Component link are multiplex capable whereas, ports are not
+            multiplex capable.";
+
+          user-ext:CLI-comm-help "Set data link type";
+          user-ext:CLI-no-comm-help "Use default data link type";
+          user-ext:CLI-param-help "Set data link type";
+        }
+
+        leaf ip-address {
+          // Low-level model info: Corresponds to lmpDataLinkIpAddr.
+          type interfaces:iface-ipv4-address-t;
+          description
+            "IP address of the data-bearing link.";
+
+          user-ext:CLI-comm-help "Set ip address";
+          user-ext:CLI-no-comm-help "Unset ip address";
+          user-ext:CLI-param-help "Set ip address";
+        }
+
+        leaf remote-ip-address {
+          // Low-level model info: Corresponds to lmpDataLinkRemoteIpAddress.
+          type interfaces:iface-ipv4-address-t;
+          // wdm-remote-ip-address can only be set when an ip-address is configured.
+          when "(../ip-address)";
+          description
+            "IP address of the remote end point.  This information is
+            either configured manually or is communicated by the
+            remote node during the link verification procedure.";
+
+          user-ext:CLI-comm-help "Set remote ip address";
+          user-ext:CLI-no-comm-help "Unset remote ip address";
+          user-ext:CLI-param-help "Set remote ip address";
+        }
+
+        leaf unnumbered-id {
+          // Low-level model info: Corresponds to lmpDataLinkUnnumberedId.
+          type unnumbered-id-t;
+          // unnumbered-id can only be set when this is an unnumbered link,
+          // i.e. no ip-address is configured.
+          when "(not(../ip-address))";
+          description
+            "The Unnumbered Identifier associated with the data-bearing
+            link.  If the link is unnumbered, this is the identifier
+            which is published on all LMP messages.  It defaults to
+            the same value as ifIndex, which is the interface index
+            used on all DLM messages.";
+
+          user-ext:CLI-comm-help "Set unnumbered id";
+          user-ext:CLI-no-comm-help "Use interface index as the unnumbered id";
+          user-ext:CLI-param-help "Set unnumbered id";
+        }
+
+        leaf remote-unnumbered-id {
+          // Low-level model info: Corresponds to lmpDataLinkRemoteIfId.
+          type unnumbered-id-t;
+          // remote-unnumbered-id can only be set when this is an unnumbered link,
+          // i.e. no ip-address is configured.
+          when "(not(../ip-address))";
+          default "0";
+          description
+            "Interface identifier of the remote end point.  This
+            information is either configured manually or is
+            communicated by the remote node during the link
+            verification procedure.";
+
+          user-ext:CLI-comm-help "Set remote unnumbered id";
+          user-ext:CLI-no-comm-help "Use default remote unnumbered id";
+          user-ext:CLI-param-help "Set remote unnumbered id";
+        }
+
+        leaf enable {
+          // Low-level model info: Corresponds to lmpDataLinkAdminStatus.
+          type boolean;
+          default true;
+          description
+            "The desired operational status of the data link.";
+
+          user-ext:CLI-comm-help "Set whether the data link is enabled";
+          user-ext:CLI-no-comm-help "Use default enable/disable setting";
+          user-ext:CLI-param-help "Set whether the data link is enabled";
+        }
+
+        leaf min-reservable-bandwidth-local {
+          // Low-level model info: Corresponds to lmpDataLinkMinResBWLocal.
+          type meta:bandwidth-kbps;
+          default 0;
+          description
+            "This attribute specifies the minimum reservable bandwidth
+            on the data-bearing channel in kbps.";
+
+          user-ext:CLI-comm-help "Set minimum reservable bandwidth (kbps)";
+          user-ext:CLI-no-comm-help "Use default minimum reservable bandwidth";
+          user-ext:CLI-param-help "Set minimum reservable bandwidth (kbps)";
+        }
+
+        leaf max-reservable-bandwidth-local {
+          // Low-level model info: Corresponds to lmpDataLinkMaxResBWLocal.
+          type meta:bandwidth-kbps;
+          default 0;
+          description
+            "This attribute specifies the maximum reservable bandwidth
+            on the data-bearing channel in kbps.";
+
+          user-ext:CLI-comm-help "Set maximum reservable bandwidth (kbps)";
+          user-ext:CLI-no-comm-help "Use default maximum reservable bandwidth";
+          user-ext:CLI-param-help "Set maximum reservable bandwidth (kbps)";
+        }
+
+        leaf wavelength {
+          // Low-level model info: Corresponds to lmpDataLinkWavelength.
+          type wavelength-t;
+          default 0;
+          description
+            "This field specifies the wavelength carried over this data
+             link.";
+
+          user-ext:CLI-comm-help "Set wavelength";
+          user-ext:CLI-no-comm-help "Use default wavelength";
+          user-ext:CLI-param-help "Set wavelength";
+        }
+
+        container suppress-correlation-verification {
+
+          // Low-level model info: Corresponds to lmpDataLinkSuppressCorrVerf.
+          description
+            "Whether the data link to be excluded from link correlation and
+            verification in the specified direction(s).
+
+            If the local node or the neighbor cannot terminate all
+            data links simultaneously, setting 'active' on one
+            node without setting 'passive' on the other node
+            is likely to cause erroneous link verification failures
+            for other data links, and therefore is strongly
+            discouraged.";
+
+          presence "Enable suppression of link correlation and verification";
+
+          user-ext:CLI-comm-help "Configure suppression of link correlation and verification";
+          user-ext:CLI-no-comm-help "Configure suppression of link correlation and verification";
+
+          leaf direction {
+            type direction-t;
+            default both;
+            description
+              "This attribute specifies the direction(s) that link correlation and verification
+              is suppressed for on this data link.";
+
+            user-ext:CLI-comm-help "Set which directions to suppress link correlation and verification for";
+            user-ext:CLI-no-comm-help "Use default setting for which directions to suppress link correlation and verification for";
+            user-ext:CLI-param-help "Set which directions to suppress link correlation and verification for";
+          }
+
+        } // suppress-correlation-verification
+
+        leaf wdm-remote-ip-address {
+          // Low-level model info: Corresponds to lmpDataLinkWdmRemoteIpAddress.
+          type interfaces:iface-ipv4-address-t;
+          // wdm-remote-ip-address can only be set when an ip-address is configured.
+          when "(../ip-address)";
+          description
+            "IP address of the remote end point associated with LMP-WDM
+            procedures.  This information is either configured
+            manually or is communicated by the remote node during the
+            link verification procedure.  If the data-bearing link is
+            unnumbered, then the remote IP address must be null.";
+
+          user-ext:CLI-comm-help "Set WDM remote ip address";
+          user-ext:CLI-no-comm-help "Unset WDM remote ip address";
+          user-ext:CLI-param-help "Set WDM remote ip address";
+        }
+
+        leaf wdm-remote-unnumbered-id {
+          // Low-level model info: Corresponds to lmpDataLinkWdmRemoteIfId.
+          type wdm-remote-unnumbered-id-t;
+          // wdm-remote-unnumbered-id can only be set when this is an unnumbered link,
+          // i.e. no ip-address is configured.
+          when "(not(../ip-address))";
+          default "0";
+          description
+            "Interface identifier of the remote end point associated
+            with LMP-WDM procedures.  This information is either
+            configured manually or is communicated by the remote node
+            during the link verification procedure.";
+
+          user-ext:CLI-comm-help "Set WDM remote unnumbered id";
+          user-ext:CLI-no-comm-help "Unset WDM remote unnumbered id";
+          user-ext:CLI-param-help "Set WDM remote unnumbered id";
+        }
+
+        container wdm-suppress-correlation-verification {
+
+          // Low-level model info: Corresponds to lmpDataLinkWdmSuppressCorrVerf.
+          description
+            "Whether the data link to be excluded from link correlation and
+            verification associated with LMP-WDM procedures in the specified
+            direction(s).
+
+            If the local node or the neighbor cannot terminate all
+            data links simultaneously, setting 'active' on one
+            node without setting 'passive' on the other node
+            is likely to cause erroneous link verification failures
+            for other data links, and therefore is strongly
+            discouraged.";
+
+          presence "Enable suppression of WDM link correlation and verification";
+
+          user-ext:CLI-comm-help "Configure suppression of WDM link correlation and verification";
+          user-ext:CLI-no-comm-help "Configure suppression of WDM link correlation and verification";
+
+          leaf direction {
+            type direction-t;
+            default both;
+            description
+              "This attribute specifies the direction(s) that WDM link correlation and verification
+              is suppressed for on this data link.";
+
+            user-ext:CLI-comm-help "Set which directions to suppress WDM link correlation and verification for";
+            user-ext:CLI-no-comm-help "Use default setting for which directions to suppress WDM link correlation and verification for";
+            user-ext:CLI-param-help "Set which directions to suppress WDM link correlation and verification for";
+          }
+
+        } // wdm-suppress-correlation-verification
+
+
+        leaf private-data {
+          // Low-level model info: Corresponds to lmpDataLinkPrivateData.
+          type string {
+            length "0..4";
+          }
+          default "";
+          description
+            "Opaque data for the data link.  This opaque data may be
+            sent to LMP peers on LinkSummary messages.  This opaque
+            data may be used to check LinkSummary messages received
+            from LMP peers.";
+
+          user-ext:CLI-comm-help "Set opaque data";
+          user-ext:CLI-no-comm-help "Unset opaque data";
+          user-ext:CLI-param-help "Set opaque data";
+        }
+
+        leaf tributary-slot-size {
+          // Low-level model info: Corresponds to lmpDataLinkTributarySlotSize.
+          type data-link-tributary-slot-t;
+          when "((../../encoding-type = 'g709-oduk') or (not(../../encoding-type)))";
+          default meaningless;
+          description
+            "Tributary Slot Granularity for this data link.";
+
+          user-ext:CLI-comm-help "Set tributary slot granularity";
+          user-ext:CLI-no-comm-help "Unset tributary slot granularity";
+          user-ext:CLI-param-help "Set tributary slot granularity";
+        }
+
+        leaf ho-odu-link-type {
+          // Low-level model info: Corresponds to lmpDataLinkHOODULinkType.
+          type ho-odu-link-type-t;
+          when "((../../encoding-type = 'g709-oduk') or (not(../../encoding-type)))";
+          default odu1;
+          description
+            "The Higher Order (HO) ODU Signal Type for this link.";
+
+          user-ext:CLI-comm-help "Set higher order ODU signal type";
+          user-ext:CLI-no-comm-help "Unset higher order ODU signal type";
+          user-ext:CLI-param-help "Set higher order ODU signal type";
+        }
+
+        container lo-odu-link-types {
+
+           // Low-level model info: Corresponds to lmpDataLinkLOODULinkTypes .
+          when "((../../encoding-type = 'g709-oduk') or (not(../../encoding-type)))";
+          description
+            "The set of Lower Order (LO) ODU Signal Types supported by this node on the link.";
+
+          user-ext:CLI-comm-help "Configure lower order ODU signal types";
+          user-ext:CLI-no-comm-help "Configure lower order ODU signal types";
+
+          leaf odu0 {
+            type boolean;
+            default false;
+            description
+              "ODU0 signal type - 1.25Gbps.";
+
+            user-ext:CLI-comm-help "Set whether ODU0 signal type is supported.";
+            user-ext:CLI-no-comm-help "Use default setting for whether ODU0 signal type is supported";
+            user-ext:CLI-param-help "Set whether ODU0 signal type is supported.";
+          }
+
+          leaf odu1 {
+            type boolean;
+            default false;
+            description
+              "ODU1 signal type - 2.5Gbps.";
+
+            user-ext:CLI-comm-help "Set whether ODU1 signal type is supported.";
+            user-ext:CLI-no-comm-help "Use default setting for whether ODU1 signal type is supported";
+            user-ext:CLI-param-help "Set whether ODU1 signal type is supported.";
+          }
+
+          leaf odu2 {
+            type boolean;
+            default false;
+            description
+              "ODU2 signal type - 10Gbps.";
+
+            user-ext:CLI-comm-help "Set whether ODU2 signal type is supported.";
+            user-ext:CLI-no-comm-help "Use default setting for whether ODU2 signal type is supported";
+            user-ext:CLI-param-help "Set whether ODU2 signal type is supported.";
+          }
+
+          leaf odu3 {
+            type boolean;
+            default false;
+            description
+              "ODU3 signal type - 40Gbps.";
+
+            user-ext:CLI-comm-help "Set whether ODU3 signal type is supported.";
+            user-ext:CLI-no-comm-help "Use default setting for whether ODU3 signal type is supported";
+            user-ext:CLI-param-help "Set whether ODU3 signal type is supported.";
+          }
+
+          leaf odu4 {
+            type boolean;
+            default false;
+            description
+              "ODU4 signal type - 100Gbps.";
+
+            user-ext:CLI-comm-help "Set whether ODU4 signal type is supported.";
+            user-ext:CLI-no-comm-help "Use default setting for whether ODU4 signal type is supported";
+            user-ext:CLI-param-help "Set whether ODU4 signal type is supported.";
+          }
+
+          leaf odu2e {
+            type boolean;
+            default false;
+            description
+              "ODU2e signal type - 10Gbps Ethernet traffic.";
+
+            user-ext:CLI-comm-help "Set whether ODU2e signal type is supported.";
+            user-ext:CLI-no-comm-help "Use default setting for whether ODU2e signal type is supported";
+            user-ext:CLI-param-help "Set whether ODU2e signal type is supported.";
+          }
+
+          leaf oduflex {
+            type boolean;
+            default false;
+            description
+              "ODUFlex - flexible bandwidth allowing provisioning of multiple ODU0 Tributary Slots
+              for a single LSP.";
+
+            user-ext:CLI-comm-help "Set whether ODUFlex signal type is supported.";
+            user-ext:CLI-no-comm-help "Use default setting for whether ODUFlex signal type is supported";
+            user-ext:CLI-param-help "Set whether ODUFlex signal type is supported.";
+          }
+
+        } // lo-odu-link-types
+
+  // Start yang1.1-only
+        action reset-performance-stats {
+          // Low-level model info: Corresponds to lmpDataLinkPerfReset.
+          description
+            "Reset all stats counters in data-link-stats list.";
+
+          user-ext:CLI-param-help "Reset all stats counters for data link.";
+        }
+  // End yang1.1-only
+
+        container verify-link {
+          user-ext:CLI-not-command;
+
+          when "(/lmp/global/wdm-role != 'ols')";
+
+  // Start yang1.1-only
+          action verify-link {
+            // Low-level model info: Corresponds to lmpDataLinkResetActiveVerf.
+            description
+              "Include the data link in the next periodic active verification.
+
+              After active verification succeeds, a data link is excluded from
+              future periodic active verifications, until either link
+              correlation fails, or a fault is detected in the active
+              direction.  This command overrides that behaviour.
+
+              If the neighbor cannot terminate all data links
+              simultaneously, issuing this command is likely to
+              cause erroneous link verification failures for other data
+              links, and therefore is strongly discouraged.";
+
+            user-ext:CLI-param-help "Mark the data link to be included in the next periodic active verification.";
+          }
+  // End yang1.1-only
+        }
+
+        container wdm-verify-link {
+          user-ext:CLI-not-command;
+
+          when "(/lmp/global/wdm-role != 'none')";
+
+  // Start yang1.1-only
+          action wdm-verify-link {
+            // Low-level model info: Corresponds to lmpDataLinkWdmResetActiveVerf.
+
+            description
+              "Include the data link in the next periodic active verification
+              associated with LMP-WDM procedures.
+
+              After active verification succeeds, a data link is excluded from
+              future periodic active verifications, until either link
+              correlation fails, or a fault is detected in the active
+              direction.  This command overrides that behaviour.
+
+              If the neighbor cannot terminate all data links
+              simultaneously, issuing this command is likely to
+              cause erroneous link verification failures for other data
+              links, and therefore is strongly discouraged.";
+
+            user-ext:CLI-param-help "Mark the data link to be included in the next periodic active verification associated with WDM procedures.";
+          }
+  // End yang1.1-only
+        }
+
+      } // data-link
+
+    } // te-link
+
+    list wdm-ols-link-group {
+
+      // Low-level model info: Corresponds to dcWdmOlsLgTable (AMB_LMP_OLS_LG)).
+      description
+        "The associations between Link Groups and data links on an Optical Line
+        Switch (OLS).";
+
+      // WDM OLS link group can only be configured if the global WDM role is set to OLS.
+      when "(/lmp/global/wdm-role = 'ols')";
+
+      key "interface link-group-id";
+
+      user-ext:CLI-comm-help "Configure OLS link groups";
+      user-ext:CLI-no-comm-help "Remove OLS link groups";
+
+      leaf interface {
+        // Low-level model info: Corresponds to ifIndex.
+        type custom:iface-name;
+        description
+          "The interface name.";
+
+        user-ext:CLI-param-help "Set interface name";
+      }
+
+      leaf link-group-id {
+        // Low-level model info: Corresponds to dcWdmOlsLgId.
+        type link-group-id-t;
+        description
+          "The Link Group identifier associated with the data link.";
+
+        user-ext:CLI-param-help "Set link group identifier";
+      }
+
+    } // wdm-ols-link-group
+
+    list wdm-ols-srlg {
+
+      // Low-level model info: Corresponds to cWdmOlsSrlgTable (AMB_LMP_OLS_SRLG)).
+      description
+        "The associations between Shared Risk Link Groups (SRLGs) and data links
+        on an Optical Line Switch (OLS).";
+
+      // WDM OLS link group can only be configured if the global WDM role is set to OLS.
+      when "(/lmp/global/wdm-role = 'ols')";
+
+      key "interface srlg-id";
+
+      user-ext:CLI-comm-help "Configure OLS shared risk link groups";
+      user-ext:CLI-no-comm-help "Remove OLS shared risk link groups";
+
+      leaf interface {
+        // Low-level model info: Corresponds to ifIndex.
+        type custom:iface-name;
+        description
+          "The data link interface name.";
+
+        user-ext:CLI-param-help "Set interface name";
+      }
+
+      leaf srlg-id {
+        // Low-level model info: Corresponds to dcWdmOlsSrlgId.
+        type srlg-id-t;
+        description
+          "The Shared Risk Link Group associated with the data link.";
+
+        user-ext:CLI-param-help "Set shared risk link group identifier";
+      }
+
+    } // wdm-ols-srlg
+
+    container control-channel-state-list {
+
+      config false;
+      list control-channel-state {
+
+        description
+          "LMP control channel performance counters.";
+
+        key "channel-id";
+
+        leaf channel-id {
+          // Low-level model info: Corresponds to lmpCcId.
+          type uint32 {
+            range "1..4294967294";
+          }
+          description
+            "The local control channel identifier.";
+        }
+
+        leaf remote-id {
+          // Low-level model info: Corresponds to lmpRemoteCcId.
+          type uint32;
+          description
+            "The remote control channel identifier.  It is determined during the
+            negotiation phase.
+
+            A value of zero means that the remote control channel
+            identifier has not yet been learnt.";
+          config false;
+        }
+
+        leaf hello-interval-negotiated {
+          // Low-level model info: Corresponds to lmpCcHelloIntervalNegotiated.
+          type uint32 {
+            range "0..65535";
+          }
+          description
+            "The negotiated HelloInterval value.  Only valid once the control
+            channel is active.";
+          config false;
+        }
+
+        leaf hello-dead-interval-negotiated {
+          // Low-level model info: Corresponds to lmpCcHelloDeadIntervalNegotiated.
+          type uint32 {
+            range "0..65535";
+          }
+          description
+            "the negotiated HelloDeadInterval value.  Only valid once the control
+            channel is active,";
+          config false;
+        }
+
+        leaf last-change {
+          // Low-level model info: Corresponds to lmpCcLastChange.
+          type uint32;
+          description
+            "The value of sysUpTime at the time the control channel
+            entered its current operational state.  If the current
+            state was entered prior to the last re-initialization of
+            the local network management subsystem, then this object
+            contains a zero value.";
+          config false;
+        }
+
+        leaf oper-status {
+          // Low-level model info: Corresponds to lmpCcOperStatus.
+          type cc-oper-status-t;
+          description
+            "The actual operational status of this control channel interface.";
+          config false;
+        }
+
+      } // control-channel-state
+
+    } // control-channel-state-list
+
+    container control-channel-stats-list {
+
+      // Low-level model info: Corresponds to lmpControlChannelPerfTable
+
+      config false;
+
+      list control-channel-stats {
+
+        description
+          "LMP control channel performance counters.";
+
+        key "channel-id";
+
+        leaf channel-id {
+          // Low-level model info: Corresponds to lmpCcId.
+          type uint32 {
+            range "1..4294967294";
+          }
+          description
+            "The local control channel identifier.";
+        }
+
+        leaf inbound-octets {
+          // Low-level model info: Corresponds to lmpCcInOctets.
+          type uint32;
+          description
+            "The total number of LMP message octets received on the control
+            channel.";
+        }
+
+        leaf inbound-discards {
+          // Low-level model info: Corresponds to lmpCcInDiscards.
+          type uint32;
+          description
+            "The number of inbound packets which were chosen to be
+            discarded even though no errors had been detected.  One
+            possible reason for discarding such a packet could be to
+            free up buffer space.";
+        }
+
+        leaf inbound-errors {
+          // Low-level model info: Corresponds to lmpCcInErrors.
+          type uint32;
+          description
+            "The number of inbound packets that contained errors
+            preventing them from being processed by LMP.";
+        }
+
+        leaf outbound-octets {
+          // Low-level model info: Corresponds to lmpCcOutOctets.
+          type uint32;
+          description
+            "The total number of LMP message octets transmitted out of
+            the control channel.";
+        }
+
+        leaf outbound-discards {
+          // Low-level model info: Corresponds to lmpCcOutDiscards.
+          type uint32;
+          description
+            "The number of outbound packets which were chosen to be
+            discarded even though no errors had been detected to
+            prevent their being transmitted.  One possible reason for
+            discarding such a packet could be to free up buffer space.";
+        }
+
+        leaf outbound-errors {
+          // Low-level model info: Corresponds to lmpCcOutErrors.
+          type uint32;
+          description
+            "The number of outbound packets that could not be
+            transmitted because of errors.";
+        }
+
+        leaf config-received {
+          // Low-level model info: Corresponds to lmpCcConfigReceived.
+          type uint32;
+          description
+            "The number of Config messages that have been received on this
+            control channel.";
+        }
+
+        leaf config-sent {
+          // Low-level model info: Corresponds to lmpCcConfigSent.
+          type uint32;
+          description
+            "The number of Config messages that have been sent on this control
+            channel.";
+        }
+
+        leaf config-retransmit {
+          // Low-level model info: Corresponds to lmpCcConfigRetransmit.
+          type uint32;
+          description
+            "The number of Config messages that have been retransmitted over this
+            control channel.";
+        }
+
+        leaf hello-received {
+          // Low-level model info: Corresponds to lmpCcHelloReceived.
+          type uint32;
+          description
+            "The number of Hello messages that have been received on this control
+            channel.";
+        }
+
+        leaf hello-sent {
+          // Low-level model info: Corresponds to lmpCcHelloSent.
+          type uint32;
+          description
+            "The number of Hello messages that have been sent on this control
+            channel.";
+        }
+
+        leaf link-summary-received {
+          // Low-level model info: Corresponds to lmpCcLinkSummaryReceived.
+          type uint32;
+          description
+            "The number of LinkSummary messages that
+            have been received on this control channel.";
+        }
+
+        leaf link-summary-sent {
+          // Low-level model info: Corresponds to lmpCcLinkSummarySent.
+          type uint32;
+          description
+            "The number of LinkSummary messages that
+            have been sent on this control channel.";
+        }
+
+        leaf link-summary-retransmit {
+          // Low-level model info: Corresponds to lmpCcLinkSummaryRetransmit.
+          type uint32;
+          description
+            "The number of LinkSummary messages that
+            have been retransmitted over this control channel.";
+        }
+
+        leaf channel-status-received {
+          // Low-level model info: Corresponds to lmpCcChannelStatusReceived.
+          type uint32;
+          description
+            "The number of ChannelStatus messages
+            that have been received on this control channel.";
+        }
+
+        leaf channel-status-sent {
+          // Low-level model info: Corresponds to lmpCcChannelStatusSent.
+          type uint32;
+          description
+            "The number of ChannelStatus messages
+            that have been sent on this control channel.";
+        }
+
+        leaf channel-status-request-received {
+          // Low-level model info: Corresponds to lmpCcChannelStatusReqReceived.
+          type uint32;
+          description
+            "The number of ChannelStatusRequest
+            messages that have been received on this control channel.";
+        }
+
+        leaf channel-status-request-sent {
+          // Low-level model info: Corresponds to lmpCcChannelStatusReqSent.
+          type uint32;
+          description
+            "The number of ChannelStatusRequest
+            messages that have been sent on this control channel.";
+        }
+
+        leaf channel-status-response-received {
+          // Low-level model info: Corresponds to lmpCcChannelStatusRspReceived.
+          type uint32;
+          description
+            "The number of ChannelStatusResponse
+            messages that have been received on this control channel.";
+        }
+
+        leaf channel-status-response-sent {
+          // Low-level model info: Corresponds to lmpCcChannelStatusRspSent.
+          type uint32;
+          description
+            "The number of ChannelStatusResponse
+            messages that have been sent on this control channel.";
+        }
+
+        leaf counter-discontinuity-time {
+          // Low-level model info: Corresponds to lmpCcCounterDiscontinuityTime.
+          type uint32;
+          description
+            "The value of sysUpTime on the most recent occasion at
+            which any one or more of this control channel's counters
+            suffered a discontinuity.  If no such discontinuities
+            have occurred since the statistcs were last re-set, or the
+            management subsystem was last re-initialized, then this
+            object contains a zero value.";
+        }
+
+        leaf begin-verify-received {
+          // Low-level model info: Corresponds to lmpCcBeginVerifyReceived.
+          type uint32;
+          description
+            "The number of BeginVerify messages that
+            have been received on this control channel.";
+        }
+
+        leaf begin-verify-sent {
+          // Low-level model info: Corresponds to lmpCcBeginVerifySent.
+          type uint32;
+          description
+            "The number of BeginVerify messages that
+            have been sent on this control channel.";
+        }
+
+        leaf begin-verify-retransmit {
+          // Low-level model info: Corresponds to lmpCcBeginVerifyRetransmit.
+          type uint32;
+          description
+            "The number of BeginVerify messages that
+            have been retransmitted over this control channel.";
+        }
+
+        leaf begin-verify-ack-received {
+          // Low-level model info: Corresponds to lmpCcBeginVerifyAckReceived.
+          type uint32;
+          description
+            "The number of BeginVerifyAck messages
+            that have been received on this control channel.";
+        }
+
+        leaf begin-verify-ack-sent {
+          // Low-level model info: Corresponds to lmpCcBeginVerifyAckSent.
+          type uint32;
+          description
+            "The number of BeginVerifyAck messages that have been sent on this
+            control channel.";
+        }
+
+        leaf begin-verify-nack-received {
+          // Low-level model info: Corresponds to lmpCcBeginVerifyNackReceived.
+          type uint32;
+          description
+            "The number of BeginVerifyNack messages that have been received on
+            this control channel.";
+        }
+
+        leaf begin-verify-nack-sent {
+          // Low-level model info: Corresponds to lmpCcBeginVerifyNackSent.
+          type uint32;
+          description
+            "The number of BeginVerifyNack messages that have been sent on this
+            control channel.";
+        }
+
+        leaf link-summary-ack-received {
+          // Low-level model info: Corresponds to lmpCcLinkSummaryAckReceived.
+          type uint32;
+          description
+            "The number of LinkSummaryAck messages that have been received on
+            this control channel.";
+        }
+
+        leaf link-summary-ack-sent {
+          // Low-level model info: Corresponds to lmpCcLinkSummaryAckSent.
+          type uint32;
+          description
+            "The number of LinkSummaryAck messages that have been sent on this
+            control channel.";
+        }
+
+        leaf link-summary-nack-received {
+          // Low-level model info: Corresponds to lmpCcLinkSummaryNackReceived.
+          type uint32;
+          description
+            "The number of LinkSummaryNack messages that have been received on
+            this control channel.";
+        }
+
+        leaf link-summary-nack-sent {
+          // Low-level model info: Corresponds to lmpCcLinkSummaryNackSent.
+          type uint32;
+          description
+            "The number of LinkSummaryNack messages that have been sent on this
+            control channel.";
+        }
+
+      } // control-channel-stats
+
+    } // control-channel-stats-list
+
+    container data-link-state-list {
+
+      config false;
+      list data-link-state {
+
+        description
+          "Data-bearing links managed by LMP.";
+
+        key "interface-name";
+
+        leaf interface-name {
+          // Low-level model info: Corresponds to ifIndex.
+          type custom:iface-name;
+          description
+            "The interface name.";
+        }
+
+        leaf active-oper-status {
+          // Low-level model info: Corresponds to lmpDataLinkActiveOperStatus.
+          type data-link-oper-status-t;
+          description
+            "The actual operational status of this data-bearing link
+            (active FSM).";
+        }
+
+        leaf passive-oper-status {
+          // Low-level model info: Corresponds to lmpDataLinkPassiveOperStatus.
+          type data-link-oper-status-t;
+          description
+            "The actual operational status of this data-bearing link
+            (passive FSM).";
+        }
+
+        leaf min-reservable-bandwidth-remote {
+          // Low-level model info: Corresponds to lmpDataLinkMinResBWRemote.
+          type meta:bandwidth-kbps;
+          description
+            "This attribute specifies the minimum reservable bandwidth in kbps
+            on the data-bearing channel from the neighbor's send direction.";
+        }
+
+        leaf max-reservable-bandwidth-remote {
+          // Low-level model info: Corresponds to lmpDataLinkMaxResBWRemote.
+          type meta:bandwidth-kbps;
+          description
+            "This attribute specifies the maximum reservable bandwidth in kbps
+            on the data-bearing channel from the neighbor's send direction.";
+        }
+
+        leaf negotiated-tributary-slot-size {
+          // Low-level model info: Corresponds to lmpDataLinkNegTribSlotSize.
+          type data-link-tributary-slot-t;
+          description
+            "The negotiated tributary slot size for use on this link.
+            This field is only valid for G.709 links for which the
+            active-oper-status and passive-oper-status are both 'up-alloc' or
+            'up-free'.";
+        }
+
+        container negotiated-lo-odu-link-types {
+          // Low-level model info: Corresponds to lmpDataLinkNegLOODULinkTypes.
+          description
+            "The negotiated set of Lower Order (LO) ODU Signal Types supported
+            by both nodes on this link.
+
+            This field is only valid for G.709 links for which the
+            active-oper-status and passive-oper-status are both 'up-alloc' or
+            'up-free'.";
+
+          leaf oduflex {
+            type empty;
+            description
+              "oduflex";
+          }
+
+          leaf odu2e {
+            type empty;
+            description
+              "odu2e";
+          }
+
+          leaf odu4 {
+            type empty;
+            description
+              "odu4";
+          }
+
+          leaf odu3 {
+            type empty;
+            description
+              "odu3";
+          }
+
+          leaf lo-odu2 {
+            type empty;
+            description
+              "lo-odu2";
+          }
+
+          leaf odu1 {
+            type empty;
+            description
+              "odu1";
+          }
+
+          leaf odu0 {
+            type empty;
+            description
+              "odu0";
+          }
+
+        } // neg-lo-odu-link-types
+
+      } // data-link-state
+
+    } // data-link-state-list
+
+    container data-link-stats-list {
+
+      config false;
+
+      list data-link-stats {
+        description
+          "Data-bearing links managed by LMP.";
+
+        key "interface-name";
+
+        leaf interface-name {
+          // Low-level model info: Corresponds to ifIndex.
+          type custom:iface-name;
+          description
+            "The interface name.";
+        }
+
+        leaf test-received {
+          // Low-level model info: Corresponds to lmpDataLinkTestReceived.
+          type uint32;
+          description
+            "The number of Test messages that have been received for this
+            data-bearing link.";
+        }
+
+        leaf test-sent {
+          // Low-level model info: Corresponds to lmpDataLinkTestSent.
+          type uint32;
+          description
+            "The number of Test messages that have been sent for this
+            data-bearing link.";
+        }
+
+        leaf discontinuity-time {
+          // Low-level model info: Corresponds to lmpDataLinkDiscontinuityTime.
+          type uint32;
+          description
+            "The value of sysUpTime on the most recent occasion at
+            which any one or more of this data-bearing link's counters
+            suffered a discontinuity.  If no such discontinuities have
+            occurred since the statistcs were last re-set, or the
+            management subsystem was last re-initialized, then this
+            object contains a zero value.";
+        }
+
+        leaf wdm-test-received {
+          // Low-level model info: Corresponds to lmpDataLinkWdmTestReceived.
+          type uint32;
+          description
+            "The number of Test messages that have been received on this
+            data-bearing link associated with LMP-WDM procedures.";
+        }
+
+        leaf wdm-test-sent {
+          // Low-level model info: Corresponds to lmpDataLinkWdmTestSent.
+          type uint32;
+          description
+            "The number of Test messages that have been sent on this
+            data-bearing link associated with LMP-WDM procedures.";
+        }
+
+        leaf wdm-discontinuity-time {
+          // Low-level model info: Corresponds to lmpDataLinkWdmDiscontinuityTime.
+          type uint32;
+          description
+            "The value of sysUpTime on the most recent occasion at
+            which any one or more of this data-bearing link's counters
+            suffered a discontinuity associated with LMP-WDM
+            procedures.  If no such discontinuities have
+            occurred since the statistcs were last re-set, or the
+            management subsystem was last re-initialized, then this
+            object contains a zero value.";
+        }
+
+      } // data-link-state
+
+    } // data-link-stats-list
+
+    container wdm-link-group-list {
+
+      config false;
+      list wdm-oxc-link-group {
+
+        description
+          "The associations between Link Groups and data links on an Optical
+          Cross Connect (OXC).
+
+          This table can only be accessed when LMP has been
+          configured to run as an LMP OXC peer.
+
+          These associations are learnt from a peer OLS via the
+          LMP-WDM protocol.";
+
+        key "interface-name link-group-id";
+
+        leaf interface-name {
+          // Low-level model info: Corresponds to ifIndex.
+          type custom:iface-name;
+          description
+            "The data link interface name.";
+        }
+
+        leaf link-group-id {
+          // Low-level model info: Corresponds to dcWdmOxcLgId.
+          type uint32;
+          description
+            "This identifies a Link Group identifier associated with
+            the data link.";
+        }
+
+      } // wdm-oxc-link-group
+
+    } // wdm-link-group-list
+
+    container wdm-srlg-list {
+
+      config false;
+      list wdm-oxc-srlg {
+
+        description
+          "The association between Shared RiskLink Groups (SRLGs) and data
+          links on an Optical Cross Connect (OXC).
+
+          This table can only be accessed when DC-LMP has been
+          configured to run as an LMP OXC peer.
+
+          These associations are learnt from a peer OLS via the
+          LMP-WDM protocol.";
+
+        key "interface-name srlg-id";
+
+        leaf interface-name {
+          // Low-level model info: Corresponds to ifIndex.
+          type custom:iface-name;
+          description
+            "The data link interface name.";
+        }
+
+        leaf srlg-id {
+          // Low-level model info: Corresponds to dcWdmOxcSrlgId.
+          type uint32;
+          description
+            "The identifier of the Shared Risk Link Group associated
+          with the data link in this table entry.";
+        }
+
+      } // wdm-oxc-srlg
+
+    } // wdm-srlg-list
+
+  } // lmp
+
+  notification control-channel-up {
+    description
+      "Notification that a Control Channel has transitioned to up";
+
+    leaf channel-id {
+      type uint32 {
+        range "1..4294967294";
+      }
+      description
+        "The local control channel identifier.";
+    }
+  }
+
+  notification control-channel-down {
+    description
+      "Notification that a Control Channel is no longer up";
+
+    leaf channel-id {
+      type uint32 {
+        range "1..4294967294";
+      }
+      description
+        "The local control channel identifier.";
+    }
+  }
+
+  notification te-link-degraded {
+    description
+      "Notification that a TE Link has degraded";
+
+    leaf interface-name {
+      type custom:iface-name;
+      description
+        "The interface name.";
+    }
+  }
+
+  notification te-link-no-longer-degraded {
+    description
+      "Notification that a TE Link is no longer degraded";
+
+    leaf interface-name {
+      type custom:iface-name;
+      description
+        "The interface name.";
+    }
+  }
+
+  notification te-link-correlated {
+    description
+      "Notification that a TE Link has completed correlation";
+
+    leaf interface-name {
+      type custom:iface-name;
+      description
+        "The interface name.";
+    }
+
+    leaf active {
+      type boolean;
+      description
+        "Whether the TE Link has completed correlation in the active
+        direction.";
+    }
+
+    leaf passive {
+      type boolean;
+      description
+        "Whether the TE Link has completed correlation in the passive
+        direction.";
+    }
+
+  }
+
+  notification data-link-property-mismatch {
+    description
+      "Notification that a data bearing link property mismatch has been
+      detected";
+
+    leaf te-link-interface-name {
+      type custom:iface-name;
+      description
+        "The TE link interface name.";
+    }
+
+    leaf interface-name {
+      type custom:iface-name;
+      description
+        "The interface name.";
+    }
+
+    leaf remote-interface-index {
+      type int32 {
+        range "1..2147483647";
+      }
+      description
+        "The interface index advertised by the remote node.";
+    }
+
+    leaf remote-address {
+      type interfaces:iface-ipv4-address-t;
+      description
+        "The IP address advertised by the remote node.";
+    }
+
+    leaf local {
+      type boolean;
+      description
+        "Whether the notification was generated by a mismatch on a local
+        link detected by the remote node.";
+    }
+  }
+
+  notification te-link-property-mismatch {
+    description
+      "Notification that a TE link property mismatch has been detected";
+
+    leaf interface-name {
+      type custom:iface-name;
+      description
+        "The interface name.";
+    }
+
+    leaf remote-interface-index {
+      type int32 {
+        range "1..2147483647";
+      }
+      description
+        "The interface index advertised by the remote node.";
+    }
+
+    leaf remote-address {
+      type interfaces:iface-ipv4-address-t;
+      description
+        "The IP address advertised by the remote node.";
+    }
+
+    leaf local {
+      type boolean;
+      description
+        "Whether the notification was generated by a mismatch on a local
+        link detected by the remote node.";
+    }
+  }
+
+  notification neighbor-unprotected {
+    description
+      "Notification that the last redundant Control Channel between LMP
+      neighbors has failed";
+
+    leaf node-id {
+      // Low-level model info: Corresponds to dcLmpProductNodeId.
+      type interfaces:iface-ipv4-address-t;
+      description
+        "The Node ID for this LMP node.";
+    }
+  }
+
+  notification data-link-verification-failure {
+    description
+      "Notification that a data-bearing link verification has failed";
+
+    leaf interface-name {
+        type custom:iface-name;
+        description
+          "The interface name.";
+      }
+  }
+
+} // metaswitch-lmp

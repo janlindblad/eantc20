@@ -1,0 +1,2454 @@
+
+module igmp-router {
+
+  namespace "http://metaswitch.com/yang/nbu/igmp-router/201511040000Z";
+
+  prefix igmp;
+
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix "interfaces"; }
+  import metaswitch-yang-types { prefix meta; }
+  import metaswitch-custom-yang-types { prefix "custom"; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Internet Group Management Protocol (Router)";
+
+  revision 2018-04-13 {
+    description "IGMP Proxy and Snooping support added.";
+  }
+
+  revision 2015-11-04 {
+    description "Initial revision.";
+  }
+
+  typedef igrt-src-filter-mode {
+    type enumeration {
+      enum include                          { value 1; }
+      enum exclude                          { value 2; }
+    }
+    description
+      "Source filter mode";
+  }
+
+  typedef igrt-origin-type {
+    type enumeration {
+      enum dynamic                          { value 1; }
+      enum static                           { value 2; }
+    }
+    description
+      "Origin type";
+  }
+
+  typedef igmp-query-interval {
+    type uint32 {
+      range "1..31744";
+    }
+    description
+      "(1-31744)";
+  }
+
+  typedef igmp-version {
+    type uint32 {
+      range "1..3";
+    }
+    description
+      "(1-3)";
+  }
+
+  typedef mld-version {
+    type uint32 {
+      range "1..2";
+    }
+    description
+      "(1-2)";
+  }
+
+  typedef igmp-query-response-interval {
+    type uint32 {
+      range "0..31744";
+    }
+    description
+      "10ths of SECS (0-31744)";
+  }
+
+  typedef mld-query-response-interval {
+    type uint32 {
+      range "0..83876";
+    }
+    description
+      "10ths of SECS (0-83876)";
+  }
+
+  typedef igmp-last-member-query-interval {
+    type uint32 {
+      range "1..31744";
+    }
+    description
+      "10ths of SECS (1-31744)";
+  }
+
+  typedef mld-last-member-query-interval {
+    type uint32 {
+      range "1..83876";
+    }
+    description
+      "10ths of SECS (1-83876)";
+  }
+
+  typedef igmp-robustness {
+    type uint32 {
+      range "1..255";
+    }
+    description
+      "(1-255)";
+  }
+
+  typedef igmp-groups-limit-t {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "(0-4294967295)";
+  }
+
+  typedef igmp-sources-limit-t {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "(0-4294967295)";
+  }
+
+  feature igmp-router {
+    description
+      "This feature means that the device supports IGMP Router";
+  }
+
+  grouping global-igmp-mld-stats {
+
+    container stats {
+
+      config false;
+
+      leaf stats-valid-queries {
+        type uint32;
+        description
+          "The number of received queries that were processed as
+          valid (not bad or filtered out), since the Router entity
+          was activated.
+
+          This counter covers all interfaces, and is reset on activation.
+
+          This value can wrap.";
+        config false;
+      }
+
+      leaf stats-valid-reports {
+        type uint32;
+        description
+          "The number of received reports that were processed as
+          valid (not bad or filtered out), since the Router entity
+          was activated.
+
+          IGMPv3 and MLDv2 reports containing multiple records are
+          counted once for each valid record.
+
+          This counter covers all interfaces, and is reset on activation.
+
+          This value can wrap.";
+        config false;
+      }
+
+      leaf stats-valid-leaves {
+        type uint32;
+        description
+          "The number of received IGMPv2 leave or MLDv1 done reports
+          that were processed as valid (not bad or filtered out),
+          since the Router entity was activated.
+
+          This counter covers all interfaces, and is reset on activation.
+
+          This value can wrap.";
+        config false;
+      }
+
+      leaf stats-valid-total {
+        type uint32;
+        description
+          "The total number of queries, reports and leaves that were
+          processed as valid (not bad or filtered out), since the
+          Router entity was activated.
+
+          This counter covers all interfaces, and is reset on activation.
+
+          This value can wrap.";
+        config false;
+      }
+
+      leaf stats-filtered-version {
+        type uint32;
+        description
+          "The number of reports that were not processed because they
+          failed a protocol version filter, since the Router entity
+          was activated.
+
+          This counter covers all interfaces, and is reset on activation.
+
+          This value can wrap.";
+        config false;
+      }
+
+      leaf stats-filtered-query-version {
+        type uint32;
+        description
+          "The number of received queries that were not processed
+          because their version clashed with the configured version
+          for the, interface they arrived on, since the Router
+          entity was activated.
+
+          This counter covers all interfaces, and is reset on activation.
+
+          This value can wrap.";
+        config false;
+      }
+
+      leaf stats-filtered-limit {
+        type uint32;
+        description
+          "The number of groups and sources that were not processed
+          because they exceeded a group or source state limit, since
+          the Router entity was activated.
+
+          IGMPv3 and MLDv2 reports containing multiple records and
+          multiple sources are counted once for each filtered group
+          record, and once for each filtered source.
+
+          This counter covers all interfaces, and is reset on activation.
+
+          This value can wrap.";
+        config false;
+      }
+
+      leaf stats-filtered-group-source {
+        type uint32;
+        description
+          "The number of groups and sources that were not processed
+          because they were excluded by a filter, since the Router
+          entity was activated.
+
+          IGMPv3 and MLDv2 reports containing multiple records and
+          multiple sources are counted once for each filtered group
+          record, and once for each filtered source.
+
+          This counter covers all interfaces, and is reset on activation.
+
+          This value can wrap.";
+        config false;
+      }
+
+      leaf stats-filtered-link-local {
+        type uint32;
+        description
+          "The number of reports that were not processed because they
+          were for a link-local multicast address, since the Router
+          entity was activated.
+
+          IGMPv3 and MLDv2 reports containing multiple records are
+          counted once for each filtered group record.
+
+          This counter covers all interfaces, and is reset on activation.
+
+          This value can wrap.";
+        config false;
+      }
+
+      leaf stats-filtered-other {
+        type uint32;
+        description
+          "The number of queries and reports that were not processed
+          for some other reason, since the Router entity was
+          activated.
+
+          IGMPv3 and MLDv2 reports containing multiple records and
+          multiple sources are counted once for each filtered group
+          record, and once for each filtered source.
+
+          This counter covers all interfaces, and is reset on activation.
+
+          This value can wrap.";
+        config false;
+      }
+
+      leaf stats-filtered-total {
+        type uint32;
+        description
+          "The total number of filtered queries, groups and sources
+          in received messages that were not processed because they
+          failed a filter, since the Router entity was activated.
+
+          This counter covers all interfaces, and is reset on activation.
+
+          This value can wrap.";
+        config false;
+      }
+
+      leaf stats-bad-checksum {
+        type uint32;
+        description
+          "The number of received messages that were not processed
+          because they had a bad checksum, since the Router entity
+          was activated.
+
+          This counter covers all interfaces, and is reset on activation.
+
+          This value can wrap.";
+        config false;
+      }
+
+      leaf stats-bad-router-alert {
+        type uint32;
+        description
+          "The number of received messages that were not processed
+          because they were missing the router alert option, since
+          the Router entity was activated.
+
+          This counter covers all interfaces, and is reset on activation.
+
+          This value can wrap.";
+        config false;
+      }
+
+      leaf stats-bad-ssm-range {
+        type uint32;
+        description
+          "The number of records in received messages that were not
+          processed because they represent whole group join/leave
+          operations for a group in the SSM address range, since the
+          Router entity was activated.
+
+          This counter applies to IGMPv3 and MLDv2 reports only.
+
+          This counter covers all interfaces, and is reset on activation.
+
+          This value can wrap.";
+        config false;
+      }
+
+      leaf stats-bad-others {
+        type uint32;
+        description
+          "The number of received messages that were not processed
+          because of some non-conformance other than checksum,
+          router alert, or SSM clash, since the Router entity was
+          activated.
+
+          This counter covers all interfaces, and is reset on activation.
+
+          This value can wrap.";
+        config false;
+      }
+
+      leaf stats-bad-total {
+        type uint32;
+        description
+          "The total number of received records and messages that
+          were not processed because of some non-conformance, since
+          the Router entity was activated.
+
+          This counter covers all interfaces, and is reset on activation.
+
+          This value can wrap.";
+        config false;
+      }
+
+      leaf stats-sent-queries {
+        type uint32;
+        description
+          "The total number of queries sent by this Router entity
+          since it was activated.
+
+          This counter covers all interfaces, and is reset on activation.
+
+          This value can wrap.";
+        config false;
+      }
+
+    } // stats
+
+  } //global-igmp-mld-stats
+
+  grouping global-igmp-mld-parameters {
+
+    // Low-level model info: Corresponds to AMB_IGRT_ENT (mgmdRouterEntTable).
+
+    description
+      "This table is used to create and manage IGMP/MLD Router.";
+
+    // Low-level model info: The mgmdRouterEntMrpmType field is hard-coded to pim in this model.
+
+    // Low-level model info: Use default value (zero) for mgmdRouterEntSsmGroupSpace so the default SSM range is used.
+
+    // Low-level model info: Hard-code mgmdRouterEntScope to 0x00.
+
+    // Low-level model info: The entity indices for I3, SCK and BDII should all be hard-coded to 1.
+
+    leaf proxy {
+      type boolean;
+      default false;
+      description
+        "Whether this instance of IGMP acts as an IGMP router or an IGMP
+        Proxy.";
+    }
+
+    uses global-igmp-mld-stats;
+
+  } // global-igmp-mld-parameters
+
+  grouping interface-igmp-mld-parameters {
+
+    // Low-level model info: Corresponds to AMB_IGRT_IF (mgmdRouterInterfaceTable).
+
+    leaf query-interval {
+      type igmp-query-interval;
+      units "seconds";
+      default "125";
+      description
+        "The desired value of Query Interval on this interface.
+
+        The frequency at which IGMP or MLD General Query packets
+        are transmitted on this interface.
+
+        For IGMPv3/MLDv2, if the entity is not the querier on this
+        interface, this configured value will be overridden if the
+        querier sends a non-zero QQI value in its Query messages.
+        The in-use value can be read from querier-query-interval.";
+
+      user-ext:CLI-comm-help "Set the packet transmission frequency in seconds";
+      user-ext:CLI-no-comm-help "Set the packet transmission frequency to default";
+      user-ext:CLI-param-help "Set the packet transmission frequency in seconds";
+    }
+
+    leaf immediate-leave {
+      type empty;
+      description
+        "If this object is set to 'true', then when the router
+        receives a request to leave a group or source, it
+        immediately updates the routing table without running a
+        timer.
+
+        If immediate-leave is not configured, then the router does not issue
+        a 'last member' query.  This behavior is only useful when the
+        interface has a single connected host.
+
+        If immediate-leave is configured, then the
+        router also issues a last member query, with Max Response
+        Time defined by the last-member-query-interval
+        option.  This behavior is useful in scenarios where it is
+        important for the router to leave the group quickly, even
+        though there is the possibility of a second connected host
+        that still needs to be joined to the group or source.";
+
+      user-ext:CLI-comm-help "Enable immediate leave";
+      user-ext:CLI-no-comm-help "Disable immediate leave";
+    }
+
+    leaf groups-limit {
+      type igmp-groups-limit-t;
+      default "0";
+      description
+        "The maximum number of entries for this interface in the
+        Router Cache List.  If this object is 0, there is no
+        limit.";
+
+      user-ext:CLI-comm-help "Set the maximum number of group entries";
+      user-ext:CLI-no-comm-help "Set the maximum number of group entries to default";
+      user-ext:CLI-param-help "Set the maximum number of group entries";
+    }
+
+    leaf sources-limit {
+      type igmp-sources-limit-t;
+      default "0";
+      description
+        "The maximum number of entries for this interface in the
+        source-list.  If this object is 0, there is no
+        limit.";
+
+      user-ext:CLI-comm-help "Set the maximum number of source list entries";
+      user-ext:CLI-no-comm-help "Set the maximum number of source list entries to default";
+      user-ext:CLI-param-help "Set the maximum number of source list entries";
+    }
+
+    leaf robustness {
+      type igmp-robustness;
+      default "2";
+      description
+        "The desired value of Robustness on this interface.";
+
+      user-ext:CLI-comm-help "Set the robustness for this interface";
+      user-ext:CLI-no-comm-help "Set the robustness for this interface to default";
+      user-ext:CLI-param-help "Set the robustness for this interface";
+    }
+
+    leaf upstream {
+      type boolean;
+      default false;
+      description
+        "For an IGMP Proxy, whether this is an upstream interface.
+         An interface is an upstream interface if the route towards the root
+         of the IGMP proxy tree goes out of the interface.";
+    }
+
+  } // interface-igmp-mld-parameters
+
+  grouping interface-igmp-parameters {
+
+    // Low-level model info: Corresponds to AMB_IGRT_IF (mgmdRouterInterfaceTable) in IGMP mode.
+    // Low-level model info: The mgmdRouterInterfaceQuerierType field is ipv4 for IGMP.
+
+    description
+      "This table is used to create and manage interfaces on which
+      IGMP or MLD is enabled.";
+
+    user-ext:CLI-comm-help "Configure interface parameters";
+    user-ext:CLI-no-comm-help "Configure interface parameters";
+
+    leaf version {
+      type igmp-version;
+      default "3";
+      description
+        "The version of MGMD which is running on this interface.
+        Value 1 applies to IGMPv1 routers, value 2 applies to
+        IGMPv2 routers and value 3 applies to IGMPv3 routers.
+        The default is IGMPv3.
+
+        This object can be used to configure a router / snooping
+        querier capable of running any version.  For IGMP and MLD
+        to function correctly, all routers / snooping queriers on
+        a LAN must be configured to run the same version on that
+        LAN.
+
+        For IGMP snooping, this configured value will not be used
+        if the entity is not the querier on this interface.";
+
+      user-ext:CLI-comm-help "Set MGMD version for this interface";
+      user-ext:CLI-no-comm-help "Set MGMD version for this interface to default";
+      user-ext:CLI-param-help "Set MGMD version for this interface";
+    }
+
+    leaf query-response-interval {
+      type igmp-query-response-interval;
+      units "tenths of seconds";
+      default "100";
+      description
+        "The desired value of Maximum Query Response Time for this
+        interface.
+
+        The Maximum Query Response Time is advertised in MGMDv2 or
+        v3 queries on this interface.
+
+        Different versions of IGMP and MLD support different
+        maximum values in protocol messages.  Accordingly, while
+        83876 is the absolute maximum, the allowed range may be
+        smaller, depending on the configured protocol and version
+        for this interface.
+
+        MLDv2 supports values up to 83876 (10ths of seconds).
+        MLDv1 supports values up to 655 (10ths of seconds).
+        IGMPv3 supports values up to 31744 (10ths of seconds).
+        IGMPv2 supports values up to 255 (10ths of seconds).
+        IGMPv1 does not support variable response times.
+
+        This interval is stored with the same exponential encoding
+        format used for protocol packets.  Values above 327 will
+        be rounded down to the next lower value that can be
+        expressed by MLDv2.
+
+        For IGMPv3/MLDv2 or IGMP snooping, this configured value
+        will not be used if the entity is not the querier on this
+        interface.  The in-use value can be read from
+        query-query-response-interval.";
+
+      user-ext:CLI-comm-help "Set the query response interval in tenths of seconds";
+      user-ext:CLI-no-comm-help "Set the query response interval to default";
+      user-ext:CLI-param-help "Set the query response interval in tenths of seconds";
+
+      // For IGMPv2, the query response interval has a range of 0-255 (rather than the full range of 0-31744 used by the type).
+      // The default version is IGMPv3; the default query response interval is 100.
+
+      must "(not(../version)" +
+           " or (../version != 2)" +
+           " or (. <= 255))" {
+        error-message "query-response-interval has a maximum of 255 for IGMPv2";
+      }
+    }
+
+    leaf last-member-query-interval {
+      type igmp-last-member-query-interval;
+      units "tenths of seconds";
+      default "10";
+      description
+        "The desired value of Last Member Query Interval on this
+        interface.
+
+        The Last Member Query Interval is the Max Response Time
+        inserted into Group-Specific and Group-and-Source-specific
+        Queries sent in response to Leave messages, and is also
+        the amount of time between successive Specific Query
+        messages.  This value may be tuned to modify the leave
+        latency of the network.  A reduced value results in
+        reduced time to detect the loss of the last member of a
+        group.
+
+        The value of this object is irrelevant if version is 1.
+
+        The value of this object is also irrelevant if this
+        interface is configured to use immediate-leave behavior
+        without a last member query - that is, if
+        immediate-leave is configured.
+
+        Different versions of IGMP and MLD support different
+        maximum values in protocol messages.  Accordingly, while
+        83876 is the absolute maximum, the allowed range may be
+        smaller, depending on the configured protocol and version
+        for this interface.
+
+        MLDv2 supports values up to 83876 (10ths of seconds).
+        MLDv1 supports values up to 655 (10ths of seconds).
+        IGMPv3 supports values up to 31744 (10ths of seconds).
+        IGMPv2 supports values up to 255 (10ths of seconds).
+        IGMPv1 does not support specific queries.
+
+        This interval is stored with the same exponential encoding
+        format used for protocol packets.  Values above 327 will
+        be rounded down to the next lower value that can be
+        expressed by MLDv2.
+
+        For IGMPv3/MLDv2, if the entity is not performing IGMP
+        snooping, this configured value will not be used if the
+        local router is not the querier on this interface.  The
+        in-use value can be read from querier-last-member-query-interval.";
+
+      user-ext:CLI-comm-help "Set the last member query interval in tenths of seconds";
+      user-ext:CLI-no-comm-help "Set the last member query interval to default";
+      user-ext:CLI-param-help "Set the last member query interval in tenths of seconds";
+
+      // For IGMPv2, the last member query interval has a range of 1-255 (rather than the full range of 1-31744 used by the type).
+      // The default version is IGMPv3; the default query response interval is 10.
+
+      must "(not(../version)" +
+           " or (../version != 2)" +
+           " or (. <= 255))" {
+        error-message "last-member-query-interval has a maximum of 255 for IGMPv2";
+      }
+    }
+
+    uses interface-igmp-mld-parameters;
+
+    list static-group {
+
+      // Low-level model info: Corresponds to AMB_IGRT_GI_CFG (mgmdRouterCacheCfgTable)
+      // and AMB_IGRT_GIS_CFG (mgmdRouterSrcListCfgTable).
+
+      description
+        "Configure interface static-group";
+
+      user-ext:CLI-comm-help "Configure interface static group";
+      user-ext:CLI-no-comm-help "Remove interface static group";
+
+      key "group-address";
+
+      leaf group-address {
+        type meta:ipv4-multicast-address;
+        description
+          "The IP multicast group address which this entry is
+          associated with";
+
+        user-ext:CLI-param-help "IP multicast group address";
+      }
+
+      list static-source {
+
+        // Low level model info: AMB_IGRT_GIS_CFG (mgmdRouterSrcListCfgTable).
+
+        description
+          "Configure group memberships with a particular source address";
+
+        user-ext:CLI-comm-help "Configure interface static source specific group";
+        user-ext:CLI-no-comm-help "Remove interface static source specific group";
+
+        key "source-address";
+
+        leaf source-address {
+          type interfaces:iface-ipv4-address-t;
+          description
+            "The host address which this entry is associated with -
+            i.e. the source of multicast traffic that this membership
+            includes";
+
+          user-ext:CLI-param-help "IP multicast traffic source";
+        }
+
+      } // static-source
+
+    } // static-group
+
+  } // interface-igmp-parameters
+
+  grouping interface-mld-parameters {
+
+    // Low-level model info: Corresponds to AMB_IGRT_IF (mgmdRouterInterfaceTable) in MLD mode.
+    // Low-level model info: The mgmdRouterInterfaceQuerierType field is ipv6 for MLD.
+
+    description
+      "This table is used to create and manage interfaces on which
+      IGMP or MLD is enabled.";
+
+    user-ext:CLI-comm-help "Configure interface parameters";
+    user-ext:CLI-no-comm-help "Configure interface parameters";
+
+    leaf version {
+      type mld-version;
+      default "2";
+      description
+        "The version of MGMD which is running on this interface.
+        Value 1 applies to MLDv1 routers and value 2 applies
+        to MLDv2 routers.  The default is MLDv2.
+
+        This object can be used to configure a router / snooping
+        querier capable of running any version.  For IGMP and MLD
+        to function correctly, all routers / snooping queriers on
+        a LAN must be configured to run the same version on that
+        LAN.
+
+        For IGMP snooping, this configured value will not be used
+        if the entity is not the querier on this interface.";
+
+      user-ext:CLI-comm-help "Set MGMD version for this interface";
+      user-ext:CLI-no-comm-help "Set MGMD version for this interface to default";
+      user-ext:CLI-param-help "Set MGMD version for this interface";
+    }
+
+    leaf query-response-interval {
+      type mld-query-response-interval;
+      units "tenths of seconds";
+      default "100";
+      description
+        "The desired value of Maximum Query Response Time for this
+        interface.
+
+        The Maximum Query Response Time is advertised in MGMDv2 or
+        v3 queries on this interface.
+
+        Different versions of IGMP and MLD support different
+        maximum values in protocol messages.  Accordingly, while
+        83876 is the absolute maximum, the allowed range may be
+        smaller, depending on the configured protocol and version
+        for this interface.
+
+        MLDv2 supports values up to 83876 (10ths of seconds).
+        MLDv1 supports values up to 655 (10ths of seconds).
+        IGMPv3 supports values up to 31744 (10ths of seconds).
+        IGMPv2 supports values up to 255 (10ths of seconds).
+        IGMPv1 does not support variable response times.
+
+        This interval is stored with the same exponential encoding
+        format used for protocol packets.  Values above 327 will
+        be rounded down to the next lower value that can be
+        expressed by MLDv2.
+
+        For IGMPv3/MLDv2 or IGMP snooping, this configured value
+        will not be used if the entity is not the querier on this
+        interface.  The in-use value can be read from
+        query-query-response-interval.";
+
+      user-ext:CLI-comm-help "Set the query response interval in tenths of seconds";
+      user-ext:CLI-no-comm-help "Set the query response interval to default";
+      user-ext:CLI-param-help "Set the query response interval in tenths of seconds";
+
+      // For MLDv1, the query response interval has a range of 0-655 (rather than the full range of 0-83876 used by the type).
+      // The default version is MLDv2; the default query response interval is 100.
+
+      must "(not(../version)" +
+           " or (../version != 1)" +
+           " or (. <= 655))" {
+        error-message "query-response-interval has a maximum of 655 for MLDv1";
+      }
+    }
+
+    leaf last-member-query-interval {
+      type mld-last-member-query-interval;
+      units "tenths of seconds";
+      default "10";
+      description
+        "The desired value of Last Member Query Interval on this
+        interface.
+
+        The Last Member Query Interval is the Max Response Time
+        inserted into Group-Specific and Group-and-Source-specific
+        Queries sent in response to Leave messages, and is also
+        the amount of time between successive Specific Query
+        messages.  This value may be tuned to modify the leave
+        latency of the network.  A reduced value results in
+        reduced time to detect the loss of the last member of a
+        group.
+
+        The value of this object is irrelevant if version is 1.
+
+        The value of this object is also irrelevant if this
+        interface is configured to use immediate-leave behavior
+        without a last member query - that is, if
+        immediate-leave is configured.
+
+        Different versions of IGMP and MLD support different
+        maximum values in protocol messages.  Accordingly, while
+        83876 is the absolute maximum, the allowed range may be
+        smaller, depending on the configured protocol and version
+        for this interface.
+
+        MLDv2 supports values up to 83876 (10ths of seconds).
+        MLDv1 supports values up to 655 (10ths of seconds).
+        IGMPv3 supports values up to 31744 (10ths of seconds).
+        IGMPv2 supports values up to 255 (10ths of seconds).
+        IGMPv1 does not support specific queries.
+
+        This interval is stored with the same exponential encoding
+        format used for protocol packets.  Values above 327 will
+        be rounded down to the next lower value that can be
+        expressed by MLDv2.
+
+        For IGMPv3/MLDv2, if the entity is not performing IGMP
+        snooping, this configured value will not be used if the
+        local router is not the querier on this interface.  The
+        in-use value can be read from
+        querier-last-member-query-interval.";
+
+      user-ext:CLI-comm-help "Set the last member query interval in tenths of seconds";
+      user-ext:CLI-no-comm-help "Set the last member query interval to default";
+      user-ext:CLI-param-help "Set the last member query interval in tenths of seconds";
+
+      // For MLDv1, the last member query interval has a range of 1-655 (rather than the full range of 1-83876 used by the type).
+      // The default version is MLDv2; the default query response interval is 10.
+
+      must "(not(../version)" +
+           " or (../version != 1)" +
+           " or (. <= 655))" {
+        error-message "last-member-query-interval has a maximum of 655 for MLDv1";
+      }
+    }
+
+    uses interface-igmp-mld-parameters;
+
+    list static-group {
+
+      // Low-level model info: Corresponds to AMB_IGRT_GI_CFG (mgmdRouterCacheCfgTable)
+      // and AMB_IGRT_GIS_CFG (mgmdRouterSrcListCfgTable).
+
+      description
+        "Configure interface static-group";
+
+      user-ext:CLI-comm-help "Configure interface static group";
+      user-ext:CLI-no-comm-help "Remove interface static group";
+
+      key "group-address";
+
+      leaf group-address {
+        type meta:ipv6-multicast-address;
+        description
+          "The IP multicast group address which this entry is
+          associated with";
+
+        user-ext:CLI-param-help "IP multicast group address";
+      }
+
+      list static-source {
+
+        // Low level model info: AMB_IGRT_GIS_CFG (mgmdRouterSrcListCfgTable).
+
+        description
+          "Configure group memberships with a particular source address";
+
+        user-ext:CLI-comm-help "Configure interface static source specific group";
+        user-ext:CLI-no-comm-help "Remove interface static source specific group";
+
+        key "source-address";
+
+        leaf source-address {
+          type interfaces:iface-ipv6-address-t;
+          description
+            "The host address which this entry is associated with -
+            i.e. the source of multicast traffic that this membership
+            includes";
+
+          user-ext:CLI-param-help "IP multicast traffic source";
+        }
+
+      } // static-source
+
+    } // static-group
+
+  } // interface-mld-parameters
+
+  grouping interface-state-igmp-mld-parameters {
+
+    uses interfaces:iface-id;
+
+    container config {
+
+      config false;
+
+      leaf version {
+        type igmp-version;
+        description
+          "The version of MGMD which is running on this interface.
+          Value 1 applies to IGMPv1 routers, value 2 applies to
+          IGMPv2 routers and value 3 applies to IGMPv3 routers.
+          The default is IGMPv3.
+
+          This object can be used to configure a router / snooping
+          querier capable of running any version.  For IGMP and MLD
+          to function correctly, all routers / snooping queriers on
+          a LAN must be configured to run the same version on that
+          LAN.
+
+          For IGMP snooping, this configured value will not be used
+          if the entity is not the querier on this interface.";
+        config false;
+      }
+
+      leaf robustness {
+        type igmp-robustness;
+        description
+          "The desired value of Robustness on this interface.";
+        config false;
+      }
+
+      leaf groups-limit {
+        type igmp-groups-limit-t;
+        description
+          "The maximum number of entries for this interface in the
+          cache list.  If this object is 0, there is no
+          limit.";
+        config false;
+      }
+
+    } // config
+
+    container state {
+
+      config false;
+
+      leaf querier-address {
+        type interfaces:iface-ip-address-allow-zero-t;
+        description
+          "The address of the IGMP or MLD Querier on the IP subnet to
+          which this interface is attached.";
+        config false;
+      }
+
+      leaf oper-status {
+        type meta:oper-status;
+        description
+          "The current operational state of the interface.";
+        config false;
+      }
+
+      leaf querier-up-time {
+        type uint32;
+        description
+          "The time since querier-address was last changed.";
+        config false;
+      }
+
+      leaf querier-expiry-time {
+        type uint32;
+        description
+          "The amount of time remaining before the Other Querier
+          Present Timer expires.  If the local system is the
+          querier, the value of this object is zero.";
+        config false;
+      }
+
+      leaf wrong-version-queries {
+        type uint32;
+        description
+          "The number of general queries received whose IGMP or MLD
+          version does not match the equivalent configured version
+          over the lifetime of the row entry.  Both IGMP and MLD require that
+          all routers on a LAN be configured to run the same version.  Thus, if
+          any general queries are received with the wrong version, this
+          indicates a configuration error.
+
+          This counter is reset to zero when the list entry is
+          initially created.  At other times it behaves like an
+          SNMP counter, in that it only increases, never decreases,
+          and is subject to wrap.";
+        config false;
+      }
+
+      leaf stats-joins {
+        type uint32;
+        description
+          "The number of times a group membership has been added on
+          this interface; that is, the number of times an entry for
+          this interface has been added to the Cache Table.  This
+          object gives an indication of the amount of IGMP or MLD
+          activity over the lifetime of the row entry.
+
+          This counter is reset to zero when the list entry is
+          initially created.  At other times it behaves like an
+          SNMP counter, in that it only increases, never decreases,
+          and is subject to wrap.";
+        config false;
+      }
+
+      leaf groups {
+        type uint32;
+        description
+          "The current number of entries for this interface in the
+          cache list.
+
+          This field can increase or decrease, but never wraps.";
+        config false;
+      }
+
+      leaf sources {
+        type uint32;
+        description
+          "The current number of entries for this interface in the
+          source-list.
+
+          This includes sources which are not visible in
+          source-list because they don't match the mode of
+          their parent group - for example explicitly included
+          sources for a group in exclude mode.
+
+          This field can increase or decrease, but never wraps.";
+        config false;
+      }
+
+      leaf last-member-query-count {
+        type uint32 {
+          range "1..255";
+        }
+        description
+          "Represents the number of Group-specific and
+          Group-and-Source-specific queries sent by the router
+          before it assumes there are no local members.";
+        config false;
+      }
+
+      leaf startup-query-interval {
+        type uint32 {
+          range "1..31744";
+        }
+        units "seconds";
+        description
+          "This variable represents the interval between General
+          Queries sent by a Querier on startup.";
+        config false;
+      }
+
+      leaf startup-query-count {
+        type uint32 {
+          range "1..255";
+        }
+        description
+          "Represents the number of Queries sent out on startup
+          separated by the Startup Query Interval.";
+        config false;
+      }
+
+      leaf failed-joins {
+        type uint32;
+        description
+          "The number of failed joins received for this interface -
+          that is, the number of times a group membership could not
+          be added on this interface.
+
+          This counter is reset to zero when the list entry is
+          initially created.  At other times it behaves like an
+          SNMP counter, in that it only increases, never decreases,
+          and is subject to wrap.";
+        config false;
+      }
+
+      leaf general-queries-sent {
+        type uint32;
+        description
+          "The number of General Queries sent for this interface.
+
+          This counter is reset to zero when the list entry is
+          initially created.  At other times it behaves like an
+          SNMP counter, in that it only increases, never decreases,
+          and is subject to wrap.";
+        config false;
+      }
+
+      leaf specific-queries-sent {
+        type uint32;
+        description
+          "The number of Specific Queries sent for this interface.
+
+          This counter is reset to zero when the list entry is
+          initially created.  At other times it behaves like an
+          SNMP counter, in that it only increases, never decreases,
+          and is subject to wrap.";
+        config false;
+      }
+
+      leaf total-received-messages {
+        type uint32;
+        description
+          "The total number of all IGMP or MLD messages received for
+          this interface.  This includes both valid messages and
+          invalid messages, including those where the version cannot
+          be determined.
+
+          This counter is reset to zero when the list entry is
+          initially created.  At other times it behaves like an
+          SNMP counter, in that it only increases, never decreases,
+          and is subject to wrap.";
+        config false;
+      }
+
+      leaf igmpv1-received-messages {
+        type uint32;
+        description
+          "The number of IGMPv1 messages received for this interface.
+          This includes both valid and invalid messages.
+
+          This counter is reset to zero when the list entry is
+          initially created.  At other times it behaves like an
+          SNMP counter, in that it only increases, never decreases,
+          and is subject to wrap.";
+        config false;
+      }
+
+      leaf igmpv2-mldv1-received-messages {
+        type uint32;
+        description
+          "The number of IGMPv2 or MLDv1 messages received for this
+          interface.  This includes both valid and invalid messages.
+
+          This counter is reset to zero when the list entry is
+          initially created.  At other times it behaves like an
+          SNMP counter, in that it only increases, never decreases,
+          and is subject to wrap.";
+        config false;
+      }
+
+      leaf igmpv3-mldv2-received-messages {
+        type uint32;
+        description
+          "The number of IGMPv3 or MLDv2 messages received for this
+          interface.  This includes both valid and invalid messages.
+
+          This counter is reset to zero when the list entry is
+          initially created.  At other times it behaves like an
+          SNMP counter, in that it only increases, never decreases,
+          and is subject to wrap.";
+        config false;
+      }
+
+      leaf invalid-received-messages {
+        type uint32;
+        description
+          "The number of Invalid IGMP or MLD messages received for
+          this interface.
+
+          This counter is reset to zero when the list entry is
+          initially created.  At other times it behaves like an
+          SNMP counter, in that it only increases, never decreases,
+          and is subject to wrap.";
+        config false;
+      }
+
+      leaf peak-groups {
+        type uint32;
+        description
+          "The maximum number of multicast groups that have been
+          active on the interface.  This is equal to the peak value
+          of the mgmdRouterInterfaceGroups gauge.";
+        config false;
+      }
+
+      leaf querier-query-interval {
+        type uint32 {
+          range "0..31744";
+        }
+        units "seconds";
+        description
+          "The value of Query Interval in use on this interface.
+
+          The frequency at which IGMP or MLD General Query packets
+          are transmitted on this interface.
+
+          For IGMPv3/MLDv2 or IGMP snooping, this may differ from
+          the value configured using query-interval
+          if the local router is not the querier on this interface.";
+        config false;
+      }
+
+      leaf querier-query-response-interval {
+        type uint32 {
+          range "0..83876";
+        }
+        units "tenths of seconds";
+        description
+          "The value of Maximum Query Response Time in use on this
+          interface.
+
+          For IGMPv3/MLDv2 or IGMP snooping, this may differ from
+          the value configured using querier-response-interval
+          if the local router is not the querier on this interface.
+
+          In all other cases, this will equal querier-response-interval.";
+        config false;
+      }
+
+      leaf querier-last-member-query-interval {
+        type uint32 {
+          range "0..83876";
+        }
+        units "tenths of seconds";
+        description
+          "The value of Last Member Query Interval in use on this
+          interface.
+
+          The Last Member Query Interval is the Max Response Time
+          inserted into Group-Specific and Group-and-Source-specific
+          Queries sent in response to Leave messages, and is also
+          the amount of time between successive Specific Query
+          messages.  This value may be tuned to modify the leave
+          latency of the network.  A reduced value results in
+          reduced time to detect the loss of the last member of a
+          group.
+
+          The value of this object is irrelevant if version is 1.
+
+          The value of this object is also irrelevant if this
+          interface is configured to use immediate-leave behavior
+          without a last member query - that is, if
+          immediate-leave is configured.
+
+          For IGMPv3/MLDv2, this may differ from the value
+          configured using querier-last-member-query-interval if the
+          entity is not performing IGMP snooping, and the local
+          router is not the querier on this interface.";
+        config false;
+      }
+
+      leaf stats-up-time {
+        type uint32;
+        units "TimeTicks";
+        description
+          "The time since the statistics counters for this interface
+          were last reset.
+
+          This value may wrap.";
+        config false;
+      }
+
+    } // state
+
+    container cache-state-list {
+
+      description
+        "Container to hold the interfaces that are members of a
+        particular group.";
+
+      config false;
+
+      list cache-state {
+
+        // Low-level model info: Corresponds to AMB_IGRT_GI (mgmdRouterCacheTable)
+        // or AMB_IGRT_EGI (mgmdRouterPerEntCacheTable) for IGMP Snooping.
+
+        description
+          "The (conceptual) table listing the interfaces that are
+          members of a particular group.
+
+          This table includes entries for group memberships learned
+          over IGMP/MLD as well as memberships statically configured
+          through cache list and source list.  This includes both (G,I) and
+          (G,I,S) memberships.";
+
+        // Low-level model info: MIB index is "group-address".
+
+        config false;
+
+        leaf group-address {
+          type interfaces:iface-ip-address-allow-zero-t;
+          description
+            "The IP multicast group address for which this entry
+            contains information.";
+          config false;
+        }
+
+        leaf last-reporter-address {
+          type interfaces:iface-ip-address-allow-zero-t;
+          description
+            "The IP address of the source of the last membership report
+            received for this IP Multicast group address on this
+            interface.  If no membership report has been received,
+            this object has the value ::.";
+          config false;
+        }
+
+        leaf up-time {
+          type uint32;
+          description
+            "The time elapsed since this entry was created.";
+          config false;
+        }
+
+        leaf expiry-time {
+          type uint32;
+          description
+            "This value represents the time remaining before the Group
+            Membership Interval state expires.
+
+            The value will be zero for entries with either:
+            -  a filter mode of include
+            -  a statically configured membership (regardless of any
+            matching learned memberships).";
+          config false;
+        }
+
+        leaf exclude-mode-expiry-timer {
+          type uint32;
+          description
+            "This value is applicable only to MGMDv3 compatible
+            routers, and represents the time remaining before the
+            interface EXCLUDE state expires and the interface state
+            transitions to INCLUDE mode.  This value can never be
+            greater than expiry-time.";
+          config false;
+        }
+
+        leaf v1-host-time {
+          type uint32;
+          description
+            "The time remaining until the local router will assume that
+            there are no longer any IGMP version 1 members on the IP
+            subnet attached to this interface.  Upon hearing any
+            IGMPv1 Membership Report, this value is reset to the group
+            membership timer.  While this time remaining is non-zero,
+            the local router ignores any IGMPv2 Leave Group messages
+            and some types of IGMPv3 and MLDv2 Membership Report
+            messages for this group that it receives on this
+            interface.
+
+            The value will be zero for entries for statically
+            configured memberships (regardless of any matching learned
+            memberships).";
+          config false;
+        }
+
+        leaf v2-host-time {
+          type uint32;
+          description
+            "The time remaining until the local router will assume that
+            there are no longer any IGMPv2 or MLDv1 members on the IP
+            subnet attached to this interface.  Upon hearing an IGMPv2
+            or MLDv1 Membership Report, this value is reset to the
+            group membership timer.  While this time remaining is
+            non-zero, the local router ignores some types of IGMPv3
+            and MLDv2 Membership Report messages, but, assuming no
+            IGMPv1 hosts have been detected, does not ignore any
+            IGMPv2 or MLDv1 Leave Group messages for this group that
+            it receives on this interface.
+
+            The value will be zero for entries for statically
+            configured memberships (regardless of any matching learned
+            memberships).";
+          config false;
+        }
+
+        leaf filter-mode {
+          type igrt-src-filter-mode;
+          description
+            "The source filter mode for this cache entry.  The value
+            indicates the relevance of the corresponding source list
+            entries in the source list for IGMPv3 and MLDv2 interfaces.";
+          config false;
+        }
+
+        // Low-level model info: Corresponds to mgmdRouterCacheType.
+        leaf origin {
+          type igrt-origin-type;
+          description
+            "The type of membership this entry represents.  This is
+            currently either learned through IGMP/MLD or is statically
+            configured through the cache list.";
+          config false;
+        }
+
+      } // cache-state
+
+    } // cache-state-list
+
+    container source-list {
+
+      description
+        "Container to hold the Source List entries corresponding to
+        each interface and multicast group pair on  router.";
+
+      config false;
+
+      list source {
+
+        // Low-level model info: Corresponds to AMB_IGRT_GIS (mgmdRouterSrcListTable).
+
+        description
+          "The (conceptual) table listing the Source List entries
+          corresponding to each interface and multicast group pair on
+          a router.
+
+          This table includes entries for group memberships learned
+          over IGMP/MLD as well as memberships statically configured
+          through source list.  Each entry will also appear in cache list.
+
+          Note that this table does not include the entity index at
+          the start of the OID.  This provides a more flexible lookup,
+          but in a system with many Router entities, the trade-off is
+          that the performance is not as good.";
+
+        // Low-level model info: MIB indices are "group-address source-address".
+
+        config false;
+
+        leaf group-address {
+          type interfaces:iface-ip-address-allow-zero-t;
+          description
+            "The IP multicast group address for which this entry
+            contains information.";
+          config false;
+        }
+
+        leaf source-address {
+          type interfaces:iface-ip-address-allow-zero-t;
+          description
+            "The host address to which this entry corresponds.  The
+            value of filter-mode indicates whether
+            this Host address is included or excluded.";
+          config false;
+        }
+
+        leaf expiry-time {
+          type uint32;
+          description
+            "This value (when non-zero) indicates the time left prior
+            to the expiration of the SrcList entry.
+
+            The value will be zero for entries with either:
+            -  a filter mode of exclude
+            -  a statically configured membership (regardless of any
+            matching learned memberships).";
+          config false;
+        }
+
+        leaf filter-mode {
+          type igrt-src-filter-mode;
+          description
+            "The source filter mode for the group address and interface
+            that this entry corresponds to.  This object provides a
+            convenient check whether the source filter mode has
+            changed while attempting to obtain the complete source
+            list for a row in the cache list.";
+          config false;
+        }
+
+        // Low-level model info: Corresponds to mgmdRouterSrcListType.
+        leaf origin {
+          type igrt-origin-type;
+          description
+            "The type of membership this entry represents.  This is
+            currently either learned through IGMP/MLD or is statically
+            configured through the source list.";
+          config false;
+        }
+
+      } // source
+
+    } // source-list
+
+  } // interface-state-igmp-mld-parameters
+
+  grouping interface-igmp-mld-state-list  {
+
+    container interface-state-list {
+
+      description "Container to hold per-interface IGMP/MLD state.";
+
+      config false;
+
+      list interface-state {
+
+        description "Per-interface IGMP/MLD state";
+
+        config false;
+
+        uses interface-state-igmp-mld-parameters;
+
+      } // interface-state
+
+    } // interface-state-list
+
+  } // interface-igmp-mld-state-list
+
+  container router {
+
+    if-feature igmp:igmp-router;
+
+    description
+      "Configure router";
+
+    user-ext:CLI-comm-help "Configure router";
+    user-ext:CLI-no-comm-help "Configure router";
+
+    container igmp {
+
+      // Low-level model info: Corresponds to AMB_IGRT_ENT (mgmdRouterEntTable) with mgmdRouterEntAddressType set to ipv4.
+
+      presence "Enable Internet Group Management Protocol.";
+
+      user-ext:CLI-comm-help "Configure IGMP";
+      user-ext:CLI-no-comm-help "Configure IGMP";
+
+      uses global-igmp-mld-parameters;
+
+      container interfaces {
+
+        if-feature interfaces:standard-interfaces;
+        user-ext:CLI-not-command;
+
+        list interface {
+
+          description "IGMP member parameters on interface.";
+          user-ext:CLI-comm-help "Configure IGMP member parameters on interface";
+          user-ext:CLI-no-comm-help "Configure IGMP member parameters on interface";
+
+          key "if-name";
+
+          leaf if-name {
+            type custom:iface-name;
+            description
+              "A unique identifier identifying the interface.";
+
+            user-ext:CLI-comm-help "Set interface name";
+            user-ext:CLI-param-help "Set interface name";
+          }
+
+          uses interface-igmp-parameters;
+
+          // The query interval must be greater that the query response interval.
+          // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+          // The default value of the query interval is 125; the default value of the query response interval is 100.
+          // The intervals are converted to milliseconds to compare them.
+          // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+          must "((not(query-interval)) and (not(query-response-interval)))" +
+               " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+               " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+               " or ((query-interval * 1000) > (query-response-interval * 100))" {
+            error-message "IGMP interface query interval must be greater than query response interval";
+          }
+
+          must "((not(upstream) or (../../proxy)))" {
+            error-message "Upstream interfaces are only supported for IGMP Proxy";
+          }
+
+        } // interface
+
+      } // interfaces
+
+      container custom-interfaces {
+
+        if-feature interfaces:custom-interfaces;
+        user-ext:CLI-not-command;
+
+        container interface {
+
+          description "IGMP member parameters on interface.";
+          user-ext:CLI-comm-help "Configure IGMP member parameters on interface";
+          user-ext:CLI-no-comm-help "Configure IGMP member parameters on interface";
+
+          container oneGE {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "gigabitethernet/gigabitethernet-sub";
+
+            list gigabitethernet {
+
+              description "1G interface";
+              user-ext:CLI-comm-help "Add IGMP member configuration to 1G interface";
+              user-ext:CLI-no-comm-help "Remove IGMP member configuration from 1G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "1G interface name";
+              }
+
+              uses interface-igmp-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+
+            } // gigabitethernet
+
+            list gigabitethernet-sub {
+
+              description "1G subinterface";
+              user-ext:CLI-comm-help "Add IGMP member configuration to 1G subinterface";
+              user-ext:CLI-no-comm-help "Remove IGMP member configuration from 1G subinterface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-subiface-range-t;
+                description "<unit>/<dev>/<port>.<subid>";
+                user-ext:CLI-param-help "1G subinterface name";
+              }
+
+              uses interface-igmp-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+            } // gigabitethernet-sub
+
+          } // oneGE
+
+          container tenGE {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "tengigabitethernet/tengigabitethernet-sub";
+
+            list tengigabitethernet {
+
+              description "10G interface";
+              user-ext:CLI-comm-help "Add IGMP member configuration to 10G interface";
+              user-ext:CLI-no-comm-help "Remove IGMP member configuration from 10G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "10G interface name";
+              }
+
+              uses interface-igmp-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+            } // tengigabitethernet
+
+            list tengigabitethernet-sub {
+
+              description "10G subinterface";
+              user-ext:CLI-comm-help "Add IGMP member configuration to 10G subinterface";
+              user-ext:CLI-no-comm-help "Remove IGMP member configuration from 10G subinterface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-subiface-range-t;
+                description "<unit>/<dev>/<port>.<subid>";
+                user-ext:CLI-param-help "10G subinterface name";
+              }
+
+              uses interface-igmp-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+            } // tengigabitethernet-sub
+
+          } // tenGE
+
+          container fortyGE {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "fortygigabitethernet/fortygigabitethernet-sub";
+
+            list fortygigabitethernet {
+
+              description "40G interface";
+              user-ext:CLI-comm-help "Add IGMP member configuration to 40G interface";
+              user-ext:CLI-no-comm-help "Remove IGMP member configuration from 40G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "40G interface name";
+              }
+
+              uses interface-igmp-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+            } // fortygigabitethernet
+
+            list fortygigabitethernet-sub {
+
+              description "40G subinterface";
+              user-ext:CLI-comm-help "Add IGMP member configuration to 40G subinterface";
+              user-ext:CLI-no-comm-help "Remove IGMP member configuration from 40G subinterface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-subiface-range-t;
+                description "<unit>/<dev>/<port>.<subid>";
+                user-ext:CLI-param-help "40G subinterface name";
+              }
+
+              uses interface-igmp-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+            } // fortygigabitethernet-sub
+
+          } // fortyGE
+
+          container hundredGE {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "hundredgigabitethernet/hundredgigabitethernet-sub";
+
+            list hundredgigabitethernet {
+
+              description "100G interface";
+              user-ext:CLI-comm-help "Add IGMP member configuration to 100G interface";
+              user-ext:CLI-no-comm-help "Remove IGMP member configuration from 100G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "100G interface name";
+              }
+
+              uses interface-igmp-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+            } // hundredgigabitethernet
+
+            list hundredgigabitethernet-sub {
+
+              description "100G subinterface";
+              user-ext:CLI-comm-help "Add IGMP member configuration to 100G subinterface";
+              user-ext:CLI-no-comm-help "Remove IGMP member configuration from 100G subinterface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-subiface-range-t;
+                description "<unit>/<dev>/<port>.<subid>";
+                user-ext:CLI-param-help "100G subinterface name";
+              }
+
+              uses interface-igmp-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+            } // hundredgigabitethernet-sub
+
+          } // hundredGE
+
+          container bundle-ifaces {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "bundle-ether/bundle-ether-sub";
+
+            list bundle-ether {
+
+              description "Bundle interface";
+              user-ext:CLI-comm-help "Add IGMP member configuration to bundle interface";
+              user-ext:CLI-no-comm-help "Remove IGMP member configuration from bundle interface";
+
+              key "bundle-id";
+
+              leaf bundle-id {
+                type interfaces:bundle-id-t;
+                description "Bundle-ether id";
+                user-ext:CLI-param-help "Bundle interface name";
+              }
+
+              uses interface-igmp-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+            } // bundle-ether
+
+            list bundle-ether-sub {
+
+              description "Bundle subinterface";
+              user-ext:CLI-comm-help "Add IGMP member configuration to bundle subinterface";
+              user-ext:CLI-no-comm-help "Remove IGMP member configuration from bundle subinterface";
+
+              key "bundle-id";
+
+              leaf bundle-id {
+                type interfaces:bundle-sub-id-t;
+                description "Bundle-ether subinterface id";
+                user-ext:CLI-param-help "Bundle subinterface name";
+              }
+
+              uses interface-igmp-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+            } // bundle-ether-sub
+
+          } // bundle-ifaces
+
+        } // interface
+
+      } // custom-interfaces
+
+      uses interface-igmp-mld-state-list;
+
+    } // igmp
+
+    container mld {
+
+      // Low-level model info: Corresponds to AMB_IGRT_ENT (mgmdRouterEntTable) with mgmdRouterEntAddressType set to ipv6.
+
+      presence "Enable Multicast Listener Discovery.";
+
+      user-ext:CLI-comm-help "Configure MLD";
+      user-ext:CLI-no-comm-help "Configure MLD";
+
+      uses global-igmp-mld-parameters;
+
+      container interfaces {
+
+        if-feature interfaces:standard-interfaces;
+        user-ext:CLI-not-command;
+
+        list interface {
+
+          description "MLD member parameters on interface.";
+          user-ext:CLI-comm-help "Configure MLD member parameters on interface";
+          user-ext:CLI-no-comm-help "Configure MLD member parameters on interface";
+
+          key "if-name";
+
+          leaf if-name {
+            type custom:iface-name;
+            description
+              "A unique identifier identifying the interface.";
+
+            user-ext:CLI-comm-help "Set interface name";
+            user-ext:CLI-param-help "Set interface name";
+          }
+
+          uses interface-mld-parameters;
+
+          // The query interval must be greater that the query response interval.
+          // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+          // The default value of the query interval is 125; the default value of the query response interval is 100.
+          // The intervals are converted to milliseconds to compare them.
+          // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+          must "((not(query-interval)) and (not(query-response-interval)))" +
+               " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+               " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+               " or ((query-interval * 1000) > (query-response-interval * 100))" {
+            error-message "IGMP interface query interval must be greater than query response interval";
+          }
+
+          must "((not(upstream) or (../../proxy)))" {
+            error-message "Upstream interfaces are only supported for IGMP Proxy";
+          }
+
+        } // interface
+
+      } // interfaces
+
+      container custom-interfaces {
+
+        if-feature interfaces:custom-interfaces;
+        user-ext:CLI-not-command;
+
+        container interface {
+
+          description "MLD member parameters on interface.";
+          user-ext:CLI-comm-help "Configure MLD member parameters on interface";
+          user-ext:CLI-no-comm-help "Configure MLD member parameters on interface";
+
+          container oneGE {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "gigabitethernet/gigabitethernet-sub";
+
+            list gigabitethernet {
+
+              description "1G interface";
+
+              user-ext:CLI-comm-help "Add MLD member configuration to 1G interface";
+              user-ext:CLI-no-comm-help "Remove MLD member configuration from 1G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "1G interface name";
+              }
+
+              uses interface-mld-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+            } // gigabitethernet
+
+            list gigabitethernet-sub {
+
+              description "1G subinterface";
+
+              user-ext:CLI-comm-help "Add MLD member configuration to 1G subinterface";
+              user-ext:CLI-no-comm-help "Remove MLD member configuration from 1G subinterface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-subiface-range-t;
+                description "<unit>/<dev>/<port>.<subid>";
+                user-ext:CLI-param-help "1G subinterface name";
+              }
+
+              uses interface-mld-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+            } // gigabitethernet-sub
+
+          } // oneGE
+
+          container tenGE {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "tengigabitethernet/tengigabitethernet-sub";
+
+            list tengigabitethernet {
+
+              description "10G interface";
+
+              user-ext:CLI-comm-help "Add MLD member configuration to 10G interface";
+              user-ext:CLI-no-comm-help "Remove MLD member configuration from 10G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "10G interface name";
+              }
+
+              uses interface-mld-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+            } // tengigabitethernet
+
+            list tengigabitethernet-sub {
+
+              description "10G subinterface";
+
+              user-ext:CLI-comm-help "Add MLD member configuration to 10G subinterface";
+              user-ext:CLI-no-comm-help "Remove MLD member configuration from 10G subinterface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-subiface-range-t;
+                description "<unit>/<dev>/<port>.<subid>";
+                user-ext:CLI-param-help "10G subinterface name";
+              }
+
+              uses interface-mld-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+            } // tengigabitethernet-sub
+
+          } // tenGE
+
+          container fortyGE {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "fortygigabitethernet/fortygigabitethernet-sub";
+
+            list fortygigabitethernet {
+
+              description "40G interface";
+
+              user-ext:CLI-comm-help "Add MLD member configuration to 40G interface";
+              user-ext:CLI-no-comm-help "Remove MLD member configuration from 40G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "40G interface name";
+              }
+
+              uses interface-mld-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+            } // fortygigabitethernet
+
+            list fortygigabitethernet-sub {
+
+              description "40G subinterface";
+
+              user-ext:CLI-comm-help "Add MLD member configuration to 40G subinterface";
+              user-ext:CLI-no-comm-help "Remove MLD member configuration from 40G subinterface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-subiface-range-t;
+                description "<unit>/<dev>/<port>.<subid>";
+                user-ext:CLI-param-help "40G subinterface name";
+              }
+
+              uses interface-mld-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+            } // fortygigabitethernet-sub
+
+          } // fortyGE
+
+          container hundredGE {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "hundredgigabitethernet/hundredgigabitethernet-sub";
+
+            list hundredgigabitethernet {
+
+              description "100G interface";
+
+              user-ext:CLI-comm-help "Add MLD member configuration to 100G interface";
+              user-ext:CLI-no-comm-help "Remove MLD member configuration from 100G interface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-iface-num-t;
+                description "<unit>/<dev>/<port>";
+                user-ext:CLI-param-help "100G interface name";
+              }
+
+              uses interface-mld-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+            } // hundredgigabitethernet
+
+            list hundredgigabitethernet-sub {
+
+              description "100G subinterface";
+
+              user-ext:CLI-comm-help "Add MLD member configuration to 100G subinterface";
+              user-ext:CLI-no-comm-help "Remove MLD member configuration from 100G subinterface";
+
+              key "if-num";
+
+              leaf if-num {
+                type interfaces:eth-subiface-range-t;
+                description "<unit>/<dev>/<port>.<subid>";
+                user-ext:CLI-param-help "100G subinterface name";
+              }
+
+              uses interface-mld-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+            } // hundredgigabitethernet-sub
+
+          } // hundredGE
+
+          container bundle-ifaces {
+
+            user-ext:CLI-not-command;
+            user-ext:CLI-comm-switch "bundle-ether/bundle-ether-sub";
+
+            list bundle-ether {
+
+              description "Bundle interface";
+
+              user-ext:CLI-comm-help "Add MLD member configuration to bundle interface";
+              user-ext:CLI-no-comm-help "Remove MLD member configuration from bundle interface";
+
+              key "bundle-id";
+
+              leaf bundle-id {
+                type interfaces:bundle-id-t;
+                description "Bundle-ether id";
+                user-ext:CLI-param-help "Bundle interface name";
+              }
+
+              uses interface-mld-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+            } // bundle-ether
+
+            list bundle-ether-sub {
+
+              description "Bundle subinterface";
+
+              user-ext:CLI-comm-help "Add MLD member configuration to bundle subinterface";
+              user-ext:CLI-no-comm-help "Remove MLD member configuration from bundle subinterface";
+
+              key "bundle-id";
+
+              leaf bundle-id {
+                type interfaces:bundle-sub-id-t;
+                description "Bundle-ether subinterface id";
+                user-ext:CLI-param-help "Bundle subinterface name";
+              }
+
+              uses interface-mld-parameters;
+
+              // The query interval must be greater that the query response interval.
+              // The units for the query interval are seconds; the units for the query response interval are tenths of seconds.
+              // The default value of the query interval is 125; the default value of the query response interval is 100.
+              // The intervals are converted to milliseconds to compare them.
+              // So, if neither are defined, the query interval is 125,000ms and the query response interval is 10,000ms.
+
+              must "((not(query-interval)) and (not(query-response-interval)))" +
+                   " or ((not(query-interval)) and ((125000) > (query-response-interval * 100)))" +
+                   " or ((not(query-response-interval)) and ((query-interval * 1000) > 10000))" +
+                   " or ((query-interval * 1000) > (query-response-interval * 100))" {
+                error-message "IGMP interface query interval must be greater than query response interval";
+              }
+
+              must "((not(upstream) or (../../../../proxy)))" {
+                error-message "Upstream interfaces are only supported for IGMP Proxy";
+              }
+
+            } // bundle-ether-sub
+
+          } // bundle-ifaces
+
+        } // interface
+
+      } // custom-interfaces
+
+      uses interface-igmp-mld-state-list;
+
+    } // mld
+
+  } // router
+
+} // igmp-router
+

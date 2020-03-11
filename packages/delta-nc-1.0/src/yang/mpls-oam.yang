@@ -1,0 +1,463 @@
+module mpls-oam {
+
+  namespace "http://metaswitch.com/yang/nbu/mpls-oam/201704250000Z";
+
+  prefix mpls-oam;
+
+  import interfaces { prefix "interfaces"; }
+  import metaswitch-yang-types { prefix meta; }
+  import lsp-ping { prefix lsp-ping; }
+  import user-extensions { prefix "user-ext"; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "MPLS TP OAM Yang Module.
+
+     This YANG model is based on the IETF draft module
+     draft-zhang-mpls-tp-yang-oam
+
+     The differences between this model and the draft standard comprise:
+     - changes due to unsupported function
+     - additions required by Metaswitch products.";
+
+  revision 2017-04-25 {
+    description "Initial revision.";
+  }
+
+   typedef enable {
+     type boolean;
+     description "enable";
+   }
+
+   typedef cc-session-mode {
+     type enumeration {
+       enum "coordinated" {
+         value 0;
+         description "uses a single BFD session";
+       }
+       enum "independent" {
+         value 1;
+         description "uses two BFD sessions";
+       }
+     }
+     description "How CC operates for bidirectional LSPs ";
+   }
+
+   typedef cc-channel-t {
+     type enumeration {
+       enum "rfc5885" {
+         value 0;
+         description "Use the channel type specified in RFC 5885";
+       }
+       enum "rfc6428" {
+         value 1;
+         description "Use the channel type specified in RFC 6428";
+       }
+     }
+     description "CC channel type";
+   }
+
+   typedef cc-interval {
+     type uint32{
+       range "1..65535";
+     }
+     units "microseconds";
+     description
+       "(1-65535)";
+   }
+   typedef cv-interval {
+     type uint32 {
+       range "1..65535";
+     }
+     units "microseconds";
+     description
+       "(1-65535)";
+   }
+   typedef cc-detect-multiplier {
+     type uint32{
+       range "1..255";
+     }
+     description
+       "Range (1-255).";
+   }
+   typedef cv-detect-multiplier {
+     type uint32{
+       range "1..255";
+     }
+     description
+       "Range (1-255).";
+   }
+
+   typedef bfd-state-t {
+     type enumeration {
+       enum "init" {
+         value 0;
+         description "The MEG state is init";
+       }
+       enum "down" {
+         value 1;
+         description "The MEG state is down";
+       }
+       enum "up" {
+         value 2;
+         description "The MEG state is up";
+       }
+       enum "admin-down" {
+         value 3;
+         description "The MEG state is adminsitratively down";
+       }
+       enum "mis-connect" {
+         value 4;
+         description "The MEG state is misconnect";
+       }
+     }
+     description "The state of the MEG as reported by BFD.";
+   }
+
+   typedef bfd-diag-t {
+     type enumeration {
+       enum "no-diagnostic" {
+         value 0;
+         description "No diagnostic.";
+       }
+       enum "control-detection-time-expired" {
+         value 1;
+         description "Control detection time expired.";
+       }
+       enum "echo-function-failed" {
+         value 2;
+         description "Echo function failed.";
+       }
+       enum "neighbor-signaled-session-down" {
+         value 3;
+         description "Neighbor signaled session down.";
+       }
+       enum "forwarding-plane-reset" {
+         value 4;
+         description "Forwarding plane reset.";
+       }
+       enum "path-down" {
+         value 5;
+         description "Path down.";
+       }
+       enum "concatenated-path-down" {
+         value 6;
+         description "Concatenated path down.";
+       }
+       enum "administratively-down" {
+         value 7;
+         description "Administratively down.";
+       }
+       enum "reverse-concatenated-path-down" {
+         value 8;
+         description "Reverse concatenated path down.";
+       }
+       enum "link-down-received" {
+         value 9;
+         description "Link down received.";
+       }
+       enum "lock-report-received" {
+         value 10;
+         description "Lock report received.";
+       }
+       enum "encapsulation-error" {
+         value 11;
+         description "Encapsulation error.";
+       }
+       enum "incorrect-source-MEP-id-received" {
+         value 12;
+         description "Incorrect source MEP ID received.";
+       }
+       enum "incorrect-discriminator-received" {
+         value 13;
+         description "Incorrect discriminator received.";
+       }
+       enum "incorrect-label-received" {
+         value 14;
+         description "Incorrect label received.";
+       }
+       enum "incorrect-authentication" {
+         value 15;
+         description "Incorrect authentication.";
+       }
+       enum "mis-connectivity" {
+         value 16;
+         description "Mis-connectivity on CV session.";
+       }
+       enum "no-contact" {
+         value 17;
+         description "No contact with the BFD peer.";
+       }
+     }
+     description "The state of the MEG as reported by BFD.";
+   }
+
+   typedef gal-mode {
+     type enumeration {
+       enum "with-13" {
+         value 0;
+         description "Gal mode is with label 13.";
+       }
+       enum "without-13" {
+         value 1;
+         description "Gal mode is without label 13.";
+       }
+     }
+     description "gal mode";
+   }
+
+   grouping meg-status {
+     leaf mp-index {
+       type uint32 {
+         range "1..65535";
+       }
+       config false;
+       description
+         "The index of the MEG. This is equivalent to the interface index
+          assigned to the LSP.";
+     }
+     leaf bfd-state {
+       type bfd-state-t;
+       config false;
+       description
+         "The state of MEG as reported by BFD.";
+     }
+     leaf local-state {
+       type bfd-diag-t;
+       config false;
+       description
+         "The local diagnostic code.  This specifies the local system's reason
+          for the last transition of the BFD session state from up to some other
+          state.";
+     }
+     leaf remote-state {
+       type bfd-diag-t;
+       config false;
+       description
+         "The remote diagnostic code.  This is the most recent diagnostic code
+          received from the peer specifying the remote system's reason for the
+          last transition of the BFD session state from up to some other
+          state.";
+     }
+     description "This node indicate status of the MEG";
+   }
+
+   grouping gal-set {
+     leaf gal-enable {
+       type enable;
+       default "true";
+       description
+         "Enable use of Generic Associated Channel Label.";
+
+       user-ext:CLI-param-help "Enable GAL";
+       user-ext:CLI-comm-help "Enable GAL";
+       user-ext:CLI-no-comm-help "Disable GAL";
+     }
+     leaf gal-mode {
+       type gal-mode;
+       description
+         "Generic Associated Channel Label mode.";
+
+       user-ext:CLI-param-help "Set GAL mode";
+       user-ext:CLI-comm-help "Set GAL mode";
+       user-ext:CLI-no-comm-help "Remove GAL mode";
+     }
+     description "Generic Associated Channel Label configuration.";
+   }
+
+   container mpls-oam {
+     description "MPLS OAM configuration.";
+
+     user-ext:CLI-comm-help "Set MPLS-OAM";
+     user-ext:CLI-no-comm-help "Remove MPLS-OAM";
+
+     list meg {
+       key "meg-name";
+       description
+         "Maintenance Entity Group (MEG).  This represents the LSP or PW";
+
+       user-ext:CLI-comm-help "Set MEG";
+       user-ext:CLI-no-comm-help "Remove MEG";
+
+       leaf meg-name {
+         type string {
+           length "1..14";
+         }
+         mandatory "true";
+         description
+           "The name used to refer to this service or MEG";
+
+         user-ext:CLI-comm-help "Set MEG name";
+         user-ext:CLI-param-help "Set MEG name";
+       }
+
+       uses lsp-ping:fec;
+
+       container bfd {
+         description
+           "BFD parameters. These parameters are common to CC and CV. If both CC
+            and CV are enabled for this MEG, then a single value is used for each
+            of these common parameters.";
+
+         user-ext:CLI-comm-help "Set BFD parameters";
+         user-ext:CLI-no-comm-help "Remove BFD parameters";
+
+         leaf cc-session-mode {
+           type cc-session-mode;
+           default "coordinated";
+           description
+             "Continuity Check session mode for bidirectional LSPs.";
+
+           user-ext:CLI-param-help "Set CC session mode";
+           user-ext:CLI-comm-help "Set CC session mode";
+           user-ext:CLI-no-comm-help "Set default CC session mode";
+         }
+
+         leaf cc-exp {
+           type meta:mpls-exp-value-t;
+           default "7";
+           description
+             "Per-hop behavior for CC packets.";
+
+           user-ext:CLI-param-help "Set CC per-hop behavior";
+           user-ext:CLI-comm-help "Set CC per-hop behavior";
+           user-ext:CLI-no-comm-help "Set default CC per-hop behavior";
+         }
+
+         leaf source-address {
+           type interfaces:iface-ipv4-address-t;
+           description
+             "Source address used on CC and CV packets.";
+
+           user-ext:CLI-param-help "Set source address";
+           user-ext:CLI-comm-help "Set source address";
+           user-ext:CLI-no-comm-help "Remove source address";
+         }
+         uses gal-set;
+
+         container cc {
+           description "Continuity Check configuration.";
+
+           user-ext:CLI-comm-help "Set CC parameters";
+           user-ext:CLI-no-comm-help "Remove CC parameters";
+
+           leaf cc-transmit-interval {
+             type cc-interval;
+             default "1";
+             description
+               "The minimum interval between Continuity Check packet
+                transmitted in the MEG.";
+
+             user-ext:CLI-param-help "Set CC transmit interval";
+             user-ext:CLI-comm-help "Set CC transmit interval";
+             user-ext:CLI-no-comm-help "Set default CC transmit interval";
+           }
+           leaf cc-receive-interval {
+             type cc-interval;
+             default "1";
+             description
+               "The minimum receive interval for Continuity Check packets in the MEG.";
+
+             user-ext:CLI-param-help "Set CC receive interval";
+             user-ext:CLI-comm-help "Set CC receive interval";
+             user-ext:CLI-no-comm-help "Set default CC receive interval";
+           }
+           leaf cc-detect-multiplier {
+             type cc-detect-multiplier;
+             default "3";
+             description
+               "The detect multiplier for Continuity Check.";
+
+             user-ext:CLI-param-help "Set CC detect multiplier";
+             user-ext:CLI-comm-help "Set CC detect multiplier";
+             user-ext:CLI-no-comm-help "Set default CC detect multiplier";
+           }
+           leaf cc-channel {
+             type cc-channel-t;
+             default "rfc6428";
+             description
+               "The Pseudowire Associated Channel Type to use in the G-ACh
+                header for BFD Continuity Check packets for this MEG.  This
+                is used when the MEG represents a pseudowire.";
+
+             user-ext:CLI-param-help "Set CC channel type";
+             user-ext:CLI-comm-help "Set CC channel type";
+             user-ext:CLI-no-comm-help "Set default CC channel type";
+           }
+           leaf cc-enable {
+             type boolean;
+             default "true";
+             description
+               "Enable Continuity Check.";
+
+             user-ext:CLI-param-help "Enable CC";
+             user-ext:CLI-comm-help "Enable CC";
+             user-ext:CLI-no-comm-help "Disable CC";
+           }
+         } //cc
+
+         container cv {
+           description "Connectivity Verification configuration.";
+
+           user-ext:CLI-comm-help "Set CV parameters";
+           user-ext:CLI-no-comm-help "Remove CV parameters";
+
+           must "((not(./cv-enable)) or (./cv-enable = 'false') or (../../fec/static-lsp))" {
+             error-message "CV can only be enabled for a Static LSP FEC";
+           }
+
+           leaf cv-interval {
+             type cv-interval;
+             default "1";
+             description
+               "The interval of a Connectivity Verification packet sent in the
+                MEG.";
+
+             user-ext:CLI-param-help "Set CV interval";
+             user-ext:CLI-comm-help "Set CV interval";
+             user-ext:CLI-no-comm-help "Set default CV interval";
+           }
+           leaf cv-enable {
+             type boolean;
+             default "false";
+
+             description
+               "Enable Connectivity Verification.";
+
+             user-ext:CLI-param-help "Enable CV";
+             user-ext:CLI-comm-help "Enable CV";
+             user-ext:CLI-no-comm-help "Disable CV";
+           }
+         } //cv
+
+       } //bfd
+
+       leaf loopback {
+         type boolean;
+         default "false";
+         description "Place MEG into loopback mode at this node.";
+
+         user-ext:CLI-param-help "Enable loopback mode";
+         user-ext:CLI-comm-help "Enable loopback mode";
+         user-ext:CLI-no-comm-help "Disable loopback mode";
+       }
+
+       container status-info {
+         config false;
+         description "Status info";
+
+         uses meg-status;
+
+       }
+     }
+   }
+ }

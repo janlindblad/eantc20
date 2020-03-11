@@ -1,0 +1,3026 @@
+module qos {
+
+  // if-feature in enum and identity requires Yang version 1.1.
+  // Start yang1.1-only
+  yang-version 1.1;
+  // End yang1.1-only
+
+  namespace "http://metaswitch.com/yang/nbu/qos/201711130000Z";
+
+  prefix qos;
+
+  import metaswitch-yang-types { prefix meta; }
+  import user-extensions { prefix "user-ext"; }
+  import ietf-inet-types { prefix inet; }
+  import ieee802-types { prefix ieee802; }
+  import ieee802-dot1q-types { prefix ieee8021q; }
+  import ietf-yang-types { prefix yang; }
+  import interface { prefix "interface"; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Quality of Service";
+
+  revision 2018-03-03 {
+    description
+      "Version 2.";
+  }
+
+
+  typedef percent-t {
+    type uint8 {
+      range "1..100";
+    }
+    units percentage;
+    description
+      "Percentage (1-100)";
+  }
+
+  typedef weight-t {
+    type uint16 {
+      range "1..127";
+    }
+    description
+      "Weight (1-127)";
+  }
+
+  typedef port-number-t {
+    type inet:port-number;
+    description
+      "Port number (0-65535)";
+  }
+
+  typedef bandwidth-rate-t {
+    type uint32 {
+      range "1..999999";
+    }
+    description
+      "1-999999";
+  }
+
+  typedef strict-priority-t {
+    type uint8 {
+      range "0..31";
+    }
+    description
+      "Priority: 0 (low) to 31 (high)";
+  }
+
+  typedef threshold-size-t {
+    type uint32 {
+      range "1..999999";
+    }
+    description
+      "1-999999";
+  }
+
+  typedef bandwidth-units-t {
+    type enumeration {
+      enum bps {description "units in Bits/Sec";}
+      enum kbps {description "units in KiloBits/Sec";}
+      enum mbps {description "units in MegaBits/Sec";}
+      enum gbps {description "units in GigaBits/Sec";}
+    }
+  }
+
+  typedef threshold-units-t {
+    type enumeration {
+      enum bytes {description "units in Bytes";}
+      enum kbytes {description "units in KiloBytes";}
+      enum mbytes {description "units in MegaBytes";}
+      enum gbytes {description "units in GigaBytes";}
+      enum ms {description "units in milliseconds";}
+    }
+  }
+
+  typedef burst-units-t {
+    type enumeration {
+      enum bytes {description "units in Bytes";}
+      enum kbytes {description "units in KiloBytes";}
+      enum mbytes {description "units in MegaBytes";}
+      enum gbytes {description "units in GigaBytes";}
+      enum ms {description "units in milliseconds";}
+    }
+  }
+
+  typedef queue-size-t {
+    type uint32 {
+      range "1..999999";
+    }
+    description "1-999999";
+  }
+
+  typedef queue-size-units-t {
+    type enumeration {
+      enum bytes {description "units in Bytes";}
+      enum kbytes {description "units in KiloBytes";}
+      enum mbytes {description "units in MegaBytes";}
+      enum gbytes {description "units in GigaBytes";}
+      enum ms {description "units in milliseconds";}
+    }
+  }
+
+  typedef weighted-modes-t {
+    type enumeration {
+      enum wrr {
+        description "Weighted Round Robin";
+      }
+      enum wdrr {
+        description "Weighted Deficit Round Robin";
+      }
+      enum wfq {
+        // Start yang1.1-only
+        if-feature qos:weighted-fair-queuing;
+        // End yang1.1-only
+        description "Weighted Fair Queueing";
+      }
+    }
+  }
+
+  typedef scheduling-modes-t {
+    type enumeration {
+      enum strict {
+        description "Strict Priority scheduling";
+      }
+      enum weighted {
+        description "Weighted scheduling";
+      }
+    }
+  }
+
+  typedef show-scheduling-modes-t {
+    type enumeration {
+      enum wrr {
+        description "Weighted Round Robin";
+      }
+      enum wdrr {
+        description "Weighted Deficit Round Robin";
+      }
+      enum wfq {
+        description "Weighted Fair Queueing";
+      }
+      enum strict {
+        description "Strict priority";
+      }
+    }
+  }
+
+  typedef meter-action-t {
+    type enumeration {
+      enum accept {
+        description "Accept packets";
+      }
+      enum drop {
+        description "Drop packets";
+      }
+      enum mark-pcp {
+        description "Set the PCP value of packets";
+      }
+      enum mark-dei {
+        description "Set the DEI value of packets";
+      }
+      enum mark-dscp {
+        description "Set the DSCP value of packets";
+      }
+    }
+  }
+
+  typedef queue-mode-t {
+    type enumeration {
+      enum static {
+        description "Static queue sizing";
+      }
+      enum dynamic {
+        description "Dynamic queue sizing";
+      }
+    }
+  }
+
+  typedef classifier-priority-t {
+    type uint8 {
+      range "1..15";
+    }
+    description
+      "Classifier priority: 1 (low) - 15 (high)";
+  }
+
+  typedef pcp-value-t {
+    type uint8 {
+      range "0..7";
+    }
+    description
+      "0-7";
+  }
+
+  typedef mpls-exp-value-t {
+    type uint8 {
+      range "0..7";
+    }
+    description
+      "0-7";
+  }
+
+  typedef tc-value-t {
+    type uint8 {
+      range "0..7";
+    }
+    description
+      "0-7";
+  }
+
+  typedef dei-value-t {
+    type uint32 {
+      range "0..1";
+    }
+    description
+      "0 or 1";
+  }
+
+  typedef ip-protocol-t {
+    type uint8 {
+      range "0..255";
+    }
+    description
+      "IP Protocol (0-255), such as 6 for TCP or 17 for UDP";
+  }
+
+  typedef classfier-level-t {
+    type enumeration {
+      enum Level1                                              { value 1; }
+      enum Level2                                              { value 2; }
+      enum Level3                                              { value 3; }
+    }
+    description "The level of a classifier entry within the scheduling hierarchy.";
+  }
+
+  typedef policer-color-mode-tc {
+    type enumeration {
+      enum aware                 { value 1; description "color aware";}
+      enum blind                 { value 2; description "color blind";}
+    }
+  }
+
+  typedef color-t {
+    type enumeration {
+      enum green                {  description "conformant";}
+      enum yellow               {  description "exceed";}
+      enum red                  {  description "violate";}
+    }
+  }
+
+  typedef dscp-t {
+    type string {
+      pattern "([0-9]|[1-5][0-9]|6[0-3])|"+
+              "(af11)|(af12)|(af13)|(af21)|(af22)|(af23)|(af31)|"+
+              "(af32)|(af33)|(af41)|(af42)|(af43)|(ef)|(default)|"+
+              "(cs1)|(cs2)|(cs3)|(cs4)|(cs5)|(cs6)|(cs7)";
+    }
+    description "A single value in the range 0..63 or one of the following strings:
+                 af11, af12, af13, af21, af22, af23, af31, af32, af33, af41, af42, af43
+                 ef, cs1, cs2, cs3, cs4, cs5, cs6, cs7, or default";
+  }
+
+  typedef ip-precedence-t {
+    type enumeration {
+      enum routine         { value 0; description "Routine precedence";}
+      enum priority        { value 1; description "Priority precedence";}
+      enum immediate       { value 2; description "Immediate precedence";}
+      enum flash           { value 3; description "Flash precedence";}
+      enum flash-override  { value 4; description "Flash override precedence";}
+      enum critical        { value 5; description "Critical precedence";}
+      enum internet        { value 6; description "Internetwork control precedence";}
+      enum network         { value 7; description "Network control precedence";}
+    }
+  }
+
+  /*
+   * Metaswitch: Adapted from module ieee802-dot1q-types (revision 2016-09-22).
+   * The range type specifies a single range.
+   */
+
+  typedef pcp-mode-t {
+    type enumeration {
+      enum mode8p0d;
+      enum mode7p1d;
+      enum mode6p2d;
+      enum mode5p3d;
+      enum manual;
+      enum default;
+      enum mode8p0d-ingress;
+      enum mode7p1d-ingress;
+      enum mode6p2d-ingress;
+      enum mode5p3d-ingress;
+    }
+    description
+      "The PCP encoding and decoding modes";
+  }
+
+  typedef dynamic-buffer-share-factor-t {
+    type uint32 {
+      range "1..9";
+    }
+    description
+      "Buffer share factor (1-9)";
+  }
+
+
+  /*
+   * Features
+   */
+
+  feature weighted-fair-queuing {
+    description
+      "This feature means that the device supports weighted fair queuing.";
+  }
+
+  feature mpls-exp-filter {
+    description
+      "This feature indicates that the device supports MPLS EXP bits
+      classifier filter types.";
+  }
+
+  feature ip-precedence-filter {
+    description
+      "This feature indicates that the device supports IP precedence
+      classifier filter types.";
+  }
+
+  feature traffic-class-filter {
+    description
+      "This feature indicates that the device supports Traffic Class
+      classifier filter types.";
+  }
+
+  feature vlan-range-filter {
+    description
+      "This feature indicates that the device supports VLAN range
+      classifier filter types.";
+  }
+
+
+  identity filter-type {
+    description
+      "This is identity of base filter-type.";
+  }
+  identity dscp {
+    base "filter-type";
+    description
+      "Differentiated services code point filter-type.";
+  }
+  identity source-ip-address {
+    base "filter-type";
+    description
+      "Source ipv4 and ipv6 address filter-type.";
+  }
+  identity dest-ip-address {
+    base "filter-type";
+    description
+      "Destination ipv4 and ipv6 address filter-type.";
+  }
+    identity source-mac-address {
+    base "filter-type";
+    description
+      "Source MAC address filter-type.";
+  }
+  identity dest-mac-address {
+    base "filter-type";
+    description
+      "Destination MAC address filter-type.";
+  }
+  identity vlan-id {
+    base "filter-type";
+    description
+      "VLAN ID filter-type.";
+  }
+  identity vlan-pcp {
+    base "filter-type";
+    description
+      "VLAN PCP filter-type.";
+  }
+  identity vlan-dei {
+    base "filter-type";
+    description
+      "VLAN DEI filter-type.";
+  }
+  identity mpls-exp {
+    // Start yang1.1-only
+    if-feature "qos:mpls-exp-filter";
+    // End yang1.1-only
+    base "filter-type";
+    description
+      "MPLS EXP filter-type.";
+  }
+  identity ip-precedence {
+    // Start yang1.1-only
+    if-feature "qos:ip-precedence-filter";
+    // End yang1.1-only
+    base "filter-type";
+    description
+      "IP precedence (TOS) filter-type.";
+  }
+  identity inner-vlan-id {
+    base "filter-type";
+    description
+      "Inner VLAN ID filter-type.";
+  }
+  identity inner-vlan-pcp {
+    base "filter-type";
+    description
+      "Inner VLAN PCP filter-type.";
+  }
+  identity inner-vlan-dei {
+    base "filter-type";
+    description
+      "Inner VLAN DEI filter-type.";
+  }
+  identity ethertype {
+    base "filter-type";
+    description
+      "Ethertype filter-type.";
+  }
+  identity ip-protocol {
+    base "filter-type";
+    description
+      "IPv4/6 protocol filter-type.";
+  }
+  identity dst-tcp-udp-port {
+    base "filter-type";
+    description
+      "Destination UDP/TCP port number filter-type.";
+  }
+  identity src-tcp-udp-port {
+    base "filter-type";
+    description
+      "Source UDP/TCP port number filter-type.";
+  }
+  identity traffic-class {
+    // Start yang1.1-only
+    if-feature "qos:traffic-class-filter";
+    // End yang1.1-only
+    base "filter-type";
+    description
+      "Traffic class (internal priority) filter-type.";
+  }
+  identity vlan-range {
+    // Start yang1.1-only
+    if-feature "qos:vlan-range-filter";
+    // End yang1.1-only
+    base "filter-type";
+    description
+      "Range of VLAN IDs filter-type.";
+  }
+
+  identity direction {
+    description
+      "This is identity of traffic direction";
+  }
+  identity inbound {
+    base direction;
+    description
+      "Direction of traffic coming into the network entry";
+  }
+  identity outbound {
+    base direction;
+    description
+      "Direction of traffic going out of the network entry";
+  }
+
+  identity stage-type {
+    description
+      "This is the stage that the flow's actions are applied to packets";
+  }
+  identity ingress {
+    base stage-type;
+    description
+      "Staging of actions applied on receipt of packets";
+  }
+  identity egress {
+    base stage-type;
+    description
+      "Staging of actions applied on sending of packets";
+  }
+  identity lookup {
+    base stage-type;
+    description
+      "Staging of actions applied on lookup of packets";
+  }
+
+  grouping priority-color-key-values {
+    leaf priority {
+      type tc-value-t;
+
+      user-ext:CLI-param-help "Priority";
+      description
+        "Priority";
+    }
+    leaf color {
+      type color-t;
+
+      user-ext:CLI-param-help "Color";
+      description
+        "Color";
+    }
+  }
+
+  grouping priority-color-values {
+    leaf priority {
+      type tc-value-t;
+      mandatory true;
+
+      user-ext:CLI-param-help "Priority to assign";
+      description
+        "Priority to assign to frames with this PCP value";
+    }
+    leaf color {
+      type color-t;
+      mandatory true;
+
+      user-ext:CLI-param-help "Color to assign";
+      description
+        "Color to assign";
+    }
+  }
+
+  grouping dscp-cfg {
+    description
+      "Filter grouping containing the dscp configuration.";
+    leaf dscp {
+      // Low-level model info: Corresponds to tcmMatchDscpValue.
+      type dscp-t;
+      description
+        "The dscp value.";
+      user-ext:CLI-param-help "Configure dscp filter";
+      user-ext:CLI-no-comm-help "Remove dscp filter";
+    }
+  }
+
+  grouping ip-address-cfg {
+    description
+      "Filter grouping containing ip address configuration.";
+    leaf ip-addr {
+      // Low-level model info: Corresponds to tcmMatchIpAddress.
+      type inet:ip-prefix;
+      description
+        "ipv4 or ipv6 prefix.";
+      user-ext:CLI-param-help "Configure IP address filter";
+      user-ext:CLI-no-comm-help "Remove IP address filter";
+    }
+  }
+
+  grouping mac-address-cfg {
+    description
+      "Filter grouping containing MAC address configuration.";
+    leaf mac-addr {
+      // Low-level model info: Corresponds to tcmMatchMacAddress.
+      type meta:mac-address;
+      description
+        "MAC address.";
+      user-ext:CLI-param-help "Configure MAC address filter";
+      user-ext:CLI-no-comm-help "Remove MAC address filter";
+    }
+  }
+
+  grouping vlan-id-cfg {
+    description
+      "Filter grouping containing VLAN ID configuration.";
+    leaf vlan-id {
+      // Low-level model info: Corresponds to tcmMatchVlanId.
+      type ieee802:vlanid;
+      description
+        "VLAN ID.";
+      user-ext:CLI-param-help "Configure VLAN ID filter";
+      user-ext:CLI-no-comm-help "Remove VLAN ID filter";
+    }
+  }
+
+  grouping vlan-pcp-cfg {
+    description
+      "Filter grouping containing VLAN PCP configuration.";
+    leaf vlan-pcp {
+      // Low-level model info: Corresponds to tcmMatchPcpValue.
+      type pcp-value-t;
+      description
+        "VLAN PCP.";
+      user-ext:CLI-param-help "Configure VLAN PCP filter";
+      user-ext:CLI-no-comm-help "Remove VLAN PCP filter";
+    }
+  }
+
+  grouping vlan-dei-cfg {
+    description
+      "Filter grouping containing VLAN DEI configuration.";
+    leaf vlan-dei {
+      // Low-level model info: Corresponds to tcmMatchCfiValue.
+      type dei-value-t;
+      description
+        "Drop Eligible Indicator. 1 indicates frames are eligible to be dropped in presence of congestion";
+      user-ext:CLI-param-help "Configure VLAN DEI filter";
+      user-ext:CLI-no-comm-help "Remove VLAN DEI filter";
+    }
+  }
+
+  grouping mpls-exp-cfg {
+    description
+      "Filter grouping containing MPLS EXP configuration.";
+    leaf mpls-exp {
+      type mpls-exp-value-t;
+      description
+        "Topmost MPLS EXP";
+      user-ext:CLI-param-help "Configure topmost MPLS EXP filter";
+      user-ext:CLI-no-comm-help "Remove topmost MPLS EXP filter";
+    }
+  }
+
+  grouping ip-precedence-cfg {
+    description
+      "Filter grouping containing IP precedence configuration.";
+    leaf ip-precedence {
+      type ip-precedence-t;
+      description
+        "IP precedence value (TOS)";
+      user-ext:CLI-param-help "Configure IP precedence filter";
+      user-ext:CLI-no-comm-help "Remove IP precedence filter";
+    }
+  }
+
+  grouping inner-vlan-pcp-cfg {
+    description
+      "Filter grouping containing inner VLAN PCP configuration.";
+    leaf inner-vlan-pcp {
+      // Low-level model info: Corresponds to tcmMatchPcpValue.
+      type pcp-value-t;
+      description
+        "Inner VLAN PCP.";
+      user-ext:CLI-param-help "Configure inner VLAN PCP filter";
+      user-ext:CLI-no-comm-help "Remove inner VLAN PCP filter";
+    }
+  }
+
+  grouping inner-vlan-dei-cfg {
+    description
+      "Filter grouping containing Inner VLAN DEI configuration.";
+    leaf inner-vlan-dei {
+      // Low-level model info: Corresponds to tcmMatchCfiValue.
+      type dei-value-t;
+      description
+        "Inner VLAN DEI.";
+      user-ext:CLI-param-help "Configure inner VLAN DEI filter";
+      user-ext:CLI-no-comm-help "Remove inner VLAN DEI filter";
+    }
+  }
+
+  grouping ethertype-cfg {
+    description
+      "Filter grouping containing Ethertype configuration.";
+    leaf ethertype {
+      // Low-level model info: Corresponds to tcmMatchEthertype.
+      type ieee8021q:ethertype-type;
+      description
+        "Ethertype";
+      user-ext:CLI-param-help "Configure Ethertype filter";
+      user-ext:CLI-no-comm-help "Remove Ethertype filter";
+    }
+  }
+
+  grouping ip-protocol-cfg {
+    description
+      "Filter grouping containing IPv4/6 protocol configuration.";
+    leaf ip-protocol {
+      // Low-level model info: Corresponds to tcmMatchIpProtocol.
+      type ip-protocol-t;
+      description
+        "IPv4/6 protocol";
+      user-ext:CLI-param-help "Configure IPv4/6 protocol filter";
+      user-ext:CLI-no-comm-help "Remove IPv4/6 protocol filter";
+    }
+  }
+
+  grouping tcp-udp-port-cfg {
+    description
+      "Filter grouping containing TCP/UDP port configuration.";
+    leaf tcp-udp-port {
+      // Low-level model info: Corresponds to tcmMatchL4Port.
+      type port-number-t;
+      description
+        "TCP/UDP port number";
+      user-ext:CLI-param-help "Configure TCP/UDP port filter";
+      user-ext:CLI-no-comm-help "Remove TCP/UDP port filter";
+    }
+  }
+
+  grouping traffic-class-cfg {
+    description
+      "Filter grouping containing traffic class configuration.";
+    leaf traffic-class {
+      type tc-value-t;
+      description
+        "Traffic class (internal priority)";
+      user-ext:CLI-param-help "Configure traffic class (internal priority) filter";
+      user-ext:CLI-no-comm-help "Remove traffic class (internal priority) filter";
+    }
+  }
+
+  grouping vlan-range-cfg {
+    description
+      "Filter grouping containing VLAN ID range configuration.";
+    leaf vlan-range {
+      type meta:vid-range-type;
+      description
+        "Range of VLAN IDs";
+
+      must "((substring-after(., '-') = '') or
+             (number(substring-before(., '-')) < number(substring-after(., '-'))))" {
+        error-message "If specifying a VLAN ID range, the first ID must be less than the second ID.";
+      }
+
+      user-ext:CLI-param-help "Configure range of VLAN IDs filter";
+      user-ext:CLI-no-comm-help "Remove range of VLAN IDs filter";
+    }
+  }
+
+  grouping filters {
+    // Low-level model info: Corresponds to AMB_TCM_MATCH (tcmMatchTable).
+    description
+      "Filters types in a Classifier entry.";
+
+    uses dscp-cfg {
+      when "(filter-type = 'qos:dscp')";
+      refine dscp {
+        mandatory true;
+      }
+    }
+
+    uses ip-address-cfg {
+      when "(filter-type = 'qos:source-ip-address') or
+            (filter-type = 'qos:dest-ip-address')";
+      refine ip-addr {
+        mandatory true;
+      }
+    }
+
+    uses mac-address-cfg {
+      when "(filter-type = 'qos:source-mac-address') or
+            (filter-type = 'qos:dest-mac-address')";
+      refine mac-addr {
+        mandatory true;
+      }
+    }
+
+    uses vlan-id-cfg {
+      when "(filter-type = 'qos:vlan-id') or
+            (filter-type = 'qos:inner-vlan-id')";
+      refine vlan-id {
+        mandatory true;
+      }
+    }
+
+    uses vlan-pcp-cfg {
+      when "(filter-type = 'qos:vlan-pcp') or
+            (filter-type = 'qos:inner-vlan-pcp')";
+      refine vlan-pcp {
+        mandatory true;
+      }
+    }
+
+    uses vlan-dei-cfg {
+      when "(filter-type = 'qos:vlan-dei') or
+            (filter-type = 'qos:inner-vlan-dei')";
+      refine vlan-dei {
+        mandatory true;
+      }
+    }
+
+    uses mpls-exp-cfg {
+      if-feature "qos:mpls-exp-filter";
+      when "(filter-type = 'qos:mpls-exp')";
+      refine mpls-exp {
+        mandatory true;
+      }
+    }
+
+    uses ip-precedence-cfg {
+      if-feature "qos:ip-precedence-filter";
+      when "(filter-type = 'qos:ip-precedence')";
+      refine ip-precedence {
+        mandatory true;
+      }
+    }
+
+    uses ethertype-cfg {
+      when "(filter-type = 'qos:ethertype')";
+      refine ethertype {
+        mandatory true;
+      }
+    }
+
+    uses ip-protocol-cfg {
+      when "(filter-type = 'qos:ip-protocol')";
+      refine ip-protocol {
+        mandatory true;
+      }
+    }
+
+    uses tcp-udp-port-cfg {
+      when "(filter-type = 'qos:src-tcp-udp-port') or
+            (filter-type = 'qos:dst-tcp-udp-port')";
+      refine tcp-udp-port {
+        mandatory true;
+      }
+    }
+
+    uses traffic-class-cfg {
+      if-feature "qos:traffic-class-filter";
+      when "(filter-type = 'qos:traffic-class')";
+      refine traffic-class {
+        mandatory true;
+      }
+    }
+
+    uses vlan-range-cfg {
+      if-feature "qos:vlan-range-filter";
+      when "(filter-type = 'qos:vlan-range')";
+      refine vlan-range {
+        mandatory true;
+      }
+    }
+  }
+
+  grouping rate-limiting {
+    description
+      "Rate limit grouping.";
+
+    container rate-limit {
+      description
+        "Rate limit.";
+
+      user-ext:CLI-comm-help "Set rate limit";
+      user-ext:CLI-no-comm-help "Remove rate limit";
+
+      container mcast-limit {
+        description
+          "Rate limit for multicast frames.";
+
+        presence "Apply Multicast traffic rate limits";
+
+        container pir {
+          description "Peak Information Rate (PIR).";
+          leaf rate {
+            type bandwidth-rate-t;
+            mandatory true;
+            description "Multicast rate limit PIR value";
+          }
+          leaf units {
+            type bandwidth-units-t;
+            mandatory true;
+            description "Multicast rate limit PIR units.";
+          }
+        }
+        container pbs {
+          description "Peak Burst Size (PBS).";
+          leaf value {
+            type threshold-size-t;
+            default 100;
+            description "Multicast rate limit PBS value.";
+          }
+          leaf units {
+            type burst-units-t;
+            default kbytes;
+            description "Multicast rate limit PBS units.";
+          }
+        }
+      }
+
+      container bcast-limit {
+        description
+          "Rate limit for broadcast frames.";
+
+        presence "Apply Broadcast traffic rate limits";
+
+        container pir {
+          description "Peak Information Rate (PIR).";
+
+          leaf rate {
+            type bandwidth-rate-t;
+            mandatory true;
+            description "Broadcast rate limit PIR value";
+          }
+          leaf units {
+            type bandwidth-units-t;
+            mandatory true;
+            description "Broadcast rate limit PIR units.";
+          }
+        }
+        container pbs {
+          description "Peak Burst Size (PBS).";
+          leaf value {
+            type threshold-size-t;
+            default 100;
+            description "Broadcast rate limit PBS value.";
+          }
+          leaf units {
+            type burst-units-t;
+            default kbytes;
+            description "Broadcast rate limit PBS units.";
+          }
+        }
+      }
+
+      container uucast-limit {
+        description
+          "Rate limit for unknown unicast frames.";
+
+        presence "Apply Unknown Unicast traffic rate limits";
+
+        container pir {
+          description "Peak Information Rate (PIR).";
+
+          leaf rate {
+            type bandwidth-rate-t;
+            mandatory true;
+            description "Unknown unicast rate limit PIR value";
+          }
+          leaf units {
+            type bandwidth-units-t;
+            mandatory true;
+            description "Unknown unicast rate limit PIR units.";
+          }
+        }
+        container pbs {
+          description "Peak Burst Size (PBS).";
+          leaf value {
+            type threshold-size-t;
+            default 100;
+            description "Unknown unicast rate limit PBS value.";
+          }
+          leaf units {
+            type burst-units-t;
+            default kbytes;
+            description "Unknown unicast rate limit PBS units.";
+          }
+        }
+      }
+    }
+  }
+
+  grouping meter-inline-cfg {
+    description
+      "Meter reference grouping.";
+    leaf meter-name {
+      // Low-level model info: Corresponds to tcmActionPolicerIndex.
+      type leafref {
+        path "/meter-templates/meter-template-entry/meter-name";
+      }
+      description
+        "Meter template name.";
+      user-ext:CLI-comm-help "Set meter template name";
+      user-ext:CLI-no-comm-help "Remove meter template name";
+    }
+  }
+
+  grouping meter-action-params {
+    description
+      "Meter action parameters";
+    leaf meter-action-type {
+      type meter-action-t;
+      description
+        "Meter action type";
+      default accept;
+    }
+    leaf meter-action-pcp-mark {
+      when "../meter-action-type = 'mark-pcp'";
+      type pcp-value-t;
+      default 0;
+      description
+        "The PCP value to mark packets with";
+    }
+    leaf meter-action-dscp-mark {
+      when "../meter-action-type = 'mark-dscp'";
+      type dscp-t;
+      default 0;
+      description
+        "The DSCP value to mark packets with";
+    }
+    leaf meter-action-dei-mark {
+      when "../meter-action-type = 'mark-dei'";
+      type dei-value-t;
+      default 0;
+      description
+        "The DEI value to mark packets with";
+    }
+  }
+
+  grouping classifier-entry-inline-attr {
+    description
+      "Attributes of inline classifier in a policy.";
+
+    list filter-entry {
+
+      key "filter-type";
+
+      description
+        "Filters configured inline in a policy.";
+
+      user-ext:CLI-comm-help "Configure QoS filter";
+      user-ext:CLI-no-comm-help "Remove QoS filter";
+
+      leaf filter-type {
+        type identityref {
+          base "filter-type";
+        }
+
+        description
+          "Type of the filter.";
+
+        user-ext:CLI-param-help "Filter type";
+      }
+
+      uses filters;
+    }
+  }
+
+  grouping qos-queue-cfg {
+    description
+      "QoS queue configuration grouping";
+
+    container shaper {
+      description "Traffic shaping configuration";
+
+      presence "Apply traffic shaping.";
+
+      choice pir {
+        description
+          "Choice of units for shaper rate.";
+        mandatory true;
+
+        case rate {
+          description "Configure shaper PIR with rate units.";
+          leaf rate {
+            type bandwidth-rate-t;
+            mandatory true;
+            must "((../units) and
+                   (((../units = 'bps') or
+                     (../units = 'kbps' and ../rate <= 400000 ) or
+                     (../units = 'mbps' and ../rate <= 400 )) or
+                    (((../units = 'bps') or
+                      (../units = 'kbps') or
+                      (../units = 'mbps' and ../rate <= 10000 ) or
+                      (../units = 'gbps' and ../rate <= 10 )) and
+                     (../pbs) and
+                     (../pbs/value))))" {
+              error-message "The units must be set and the resulting bandwidth
+                             must supported by hardware.";
+            }
+            description "Shaper PIR value";
+          }
+          leaf units {
+            type bandwidth-units-t;
+            mandatory true;
+            description "Shaper bandwidth units.";
+          }
+        }
+
+        case percent {
+          description
+            "Configure shaper PIR as percentage of the maximum rate of the parent class.";
+          leaf percent {
+            type percent-t;
+            mandatory true;
+            description "Shaper PIR percentage.";
+          }
+        }
+      }
+
+      container pbs {
+        description "Shaper burst size (PBS) configuration.";
+        leaf value {
+          type threshold-size-t;
+          must "((../units) and
+                 ((../units = 'bytes') or
+                  (../units = 'kbytes' and ../value <= 10000) or
+                  (../units = 'mbytes' and ../value <= 10 ) or
+                  (../units = 'ms')))" {
+            error-message "The units must be set and the resulting bandwidth
+                           must supported by hardware.";
+          }
+          default "100";
+          description "Shaper burst size value.";
+        }
+        leaf units {
+          type burst-units-t;
+          default "kbytes";
+          description "Shaper burst size units.";
+        }
+      }
+    }
+
+    container guaranteed-bandwidth {
+      description "Guaranteed bandwidth configuration.";
+
+      presence "Apply guaranteed bandwidth.";
+
+      choice bandwidth-units {
+        description
+          "Choice of units for guaranteed bandwidth.";
+        mandatory true;
+
+        case rate {
+          description "Configure guaranteed bandwidth for class using rate units.";
+          leaf rate {
+            type bandwidth-rate-t;
+            mandatory true;
+            must "((../units) and
+                   ((../units = 'bps') or
+                    (../units = 'kbps' and ../rate <= 1000000 ) or
+                    (../units = 'mbps' and ../rate <= 1000 )))" {
+              error-message "The units must be set and the resulting bandwidth
+                             must supported by hardware.";
+            }
+            description "Guaranteed bandwidth value.";
+          }
+          leaf units {
+            type bandwidth-units-t;
+            mandatory true;
+            description "Guaranteed bandwidth units.";
+          }
+        }
+
+        case percent {
+          description
+            "Configure guaranteed bandwidth as percentage of the minimum bandwidth of the parent class.";
+          leaf percent {
+            type percent-t;
+            mandatory true;
+            description "Guaranteed bandwidth percentage.";
+          }
+        }
+      }
+      container cbs {
+        description "Guaranteed bandwidth burst size (CBS) configuration.";
+        leaf value {
+          type threshold-size-t;
+          must "((../units) and
+                 ((../units = 'bytes') or
+                  (../units = 'kbytes' and ../value <= 10000) or
+                  (../units = 'mbytes' and ../value <= 10 ) or
+                  (../units = 'ms')))" {
+            error-message "The units must be set and the resulting bandwidth
+                           must supported by hardware.";
+          }
+          default 100;
+          description "Shaper committed burst size";
+        }
+        leaf units {
+          type burst-units-t;
+          default "kbytes";
+          description "Shaper committed burst size units.";
+        }
+      }
+    }
+
+    leaf bandwidth-remaining-weight {
+      type weight-t;
+      default 1;
+      description
+        "Bandwidth remaining.  This configuration determines how to distribute
+        bandwidth that is not guaranteed through guaranteed bandwidth
+        configuration.  The remaining bandwidth is distributed according to
+        this weight.  A class in a policy with no configured value for
+        bandwidth remaining gets an equal share of the remaining bandwidth
+        that is not allocated.
+        This value is ignored for queues using strict priority.";
+    }
+
+    container queue-size {
+      description "Queue size configuration";
+
+      presence "Queue sizing is applied to this classifier.";
+
+      choice queue-sizing-mode {
+        description
+          "Choice of queue sizing mode - static or dynamic.";
+        default static;
+
+        case static {
+
+          container queue-limit {
+            description "Queue limit for tail-drop congestion management.";
+            leaf value {
+              type queue-size-t;
+              must "((../units) and
+                     ((../units = 'bytes') or
+                      (../units = 'kbytes' and ../value <= 12582 ) or
+                      (../units = 'mbytes' and ../value <= 12 ) or
+                      (../units = 'ms')))" {
+                description "The units must be set and the resulting limit
+                             must supported by hardware.";
+              }
+              default 32;
+              description "Queue limit value.";
+            }
+            leaf units {
+              type queue-size-units-t;
+              default "kbytes";
+              description "Queue limit units.";
+            }
+          }
+        }
+
+        case dynamic {
+          leaf dynamic-buffer-share-factor {
+            type dynamic-buffer-share-factor-t;
+            description "Buffer share factor for dynamically sized queues.
+                         This value is used to determine the fraction of the
+                         shared buffer pool that a queue can use at times
+                         of congestion to avoid packet drop.  The exact value
+                         is calculated dynamically.  The larger the number,
+                         the higher the fraction of the shared buffer pool
+                         allocated.";
+          }
+        }
+      }
+
+      container queue-min-limit {
+        description "Minimum queue size";
+        leaf value {
+          type queue-size-t;
+          must "((../units) and
+                 ((../units = 'bytes') or
+                  (../units = 'kbytes' and ../value <= 12582 ) or
+                  (../units = 'mbytes' and ../value <= 12 ) or
+                  (../units = 'ms')))" {
+            description "The units must be set and the resulting limit
+                         must supported by hardware.";
+          }
+          default 11520;
+          description "Minimum queue size value.";
+        }
+        leaf units {
+          type queue-size-units-t;
+          default "bytes";
+          description "Minimum queue size units.";
+        }
+      }
+    }
+
+    container wred {
+      description "Weighted Random Early Discard configuration.";
+      presence "Apply Weighted Random Early Discard configuration.";
+
+      leaf enable-wred {
+        type boolean;
+        default false;
+        description "Enable WRED for congestion management";
+      }
+
+      leaf ecn-red {
+        type boolean;
+        default false;
+        description "Explicit Congestion Notification based random early detection";
+      }
+
+      list random-detect {
+        key "color";
+        description "Random early detection threshold";
+        leaf color {
+          type color-t;
+          description
+            "Color of packets to apply thresholds to";
+        }
+
+        container threshold-min {
+          description "Threshold at which to start dropping packets";
+          leaf value {
+            type threshold-size-t;
+            mandatory true;
+            description "Minimum RED threshold value.";
+          }
+          leaf units {
+            type threshold-units-t;
+            mandatory true;
+            description "Minimum RED threshold units.";
+          }
+        }
+        container threshold-max {
+          description "Threshold at which to drop all packets";
+          leaf value {
+            type threshold-size-t;
+            mandatory true;
+            description "Maximum RED threshold value.";
+          }
+          leaf units {
+            type threshold-units-t;
+            mandatory true;
+            description "Maximum RED threshold units.";
+          }
+        }
+        leaf drop-probability {
+          default 2;
+          description "Drop probability";
+          type percent-t;
+        }
+      }
+    }
+  } // qos-queue-cfg
+
+  grouping qos-classifier-entries {
+    description
+      "QoS Classifier grouping";
+
+    uses qos-queue-cfg;
+
+    leaf priority {
+      type strict-priority-t;
+
+      // Hardware often has a restriction on the number of strict priority queues supported within a policy
+      must "((count(../../classifier/priority) + count(../../default-classifier/priority)) <= 8)" {
+        error-message "Policy can have maximum of 8 strict priority queues.";
+      }
+
+      description "Use strict priority scheduling with the configured priority
+                   value.";
+    }
+
+    uses meter-inline-cfg;
+  } // qos-classifier-entries
+
+  grouping two-rate-tri-color-meter {
+    description
+      "Two rate three color meter attributes.";
+
+    container two-rate-tri-color-meter {
+      // Low-level model info: Corresponds to AMB_TCM_POLICER (tcmPolicerTable)
+
+      presence "Configure TrTcm";
+
+      description
+        "Two rate three color meter.";
+
+      user-ext:CLI-comm-help "Configure two rate three color meter";
+      user-ext:CLI-no-comm-help "Remove two rate three color meter";
+
+      container committed-rate {
+        description "Policer committed information rate (CIR)";
+        leaf value {
+          type bandwidth-rate-t;
+          mandatory true;
+          must "((../units) and
+                 (((../units = 'bps') or
+                   (../units = 'kbps' and ../value <= 400000 ) or
+                   (../units = 'mbps' and ../value <= 400 )) or
+                  (((../units = 'bps') or
+                    (../units = 'kbps') or
+                    (../units = 'mbps' and ../value <= 10000 ) or
+                    (../units = 'gbps' and ../value <= 10 )) and
+                   (../../committed-burst) and
+                   (../../committed-burst/value))))" {
+            error-message "The units must be set and the resulting bandwidth
+                           must supported by hardware.";
+          }
+          description "CIR value";
+        }
+        leaf units {
+          type bandwidth-units-t;
+          mandatory true;
+          description "CIR units.";
+        }
+      }
+
+      container committed-burst {
+        description "Policer committed burst size (CBS)";
+        leaf value {
+          type threshold-size-t;
+          default 100;
+          must "((../units) and
+                 ((../units = 'bytes') or
+                  (../units = 'kbytes' and ../value <= 10000 ) or
+                  (../units = 'mbytes' and ../value <= 10 ) or
+                  (../units = 'ms' and
+                   (../../committed-rate) and
+                   ((../../committed-rate/units = 'bps' and (((../../committed-rate/value) * (../value)) <= 80000000000)) or
+                    (../../committed-rate/units = 'kbps' and (((../../committed-rate/value) * (../value)) <= 80000000)) or
+                    (../../committed-rate/units = 'mbps' and (((../../committed-rate/value) * (../value)) <= 80000)) or
+                    (../../committed-rate/units = 'gbps' and (((../../committed-rate/value) * (../value)) <= 80))))))" {
+            error-message "The units must be set and the resulting bandwidth
+                           must supported by hardware.";
+          }
+          description "CBS value";
+        }
+        leaf units {
+          type threshold-units-t;
+          default kbytes;
+          description "CBS units.";
+        }
+      }
+
+      container excess-rate {
+        description "Policer excess information rate (EIR)";
+        leaf value {
+          type bandwidth-rate-t;
+          mandatory true;
+          must "((../units) and
+                 (((../units = 'bps') or
+                   (../units = 'kbps' and ../value <= 400000 ) or
+                   (../units = 'mbps' and ../value <= 400 )) or
+                  (((../units = 'bps') or
+                    (../units = 'kbps') or
+                    (../units = 'mbps' and ../value <= 10000 ) or
+                    (../units = 'gbps' and ../value <= 10 )) and
+                   (../../excess-burst) and
+                   (../../excess-burst/value))))" {
+            error-message "The units must be set and the resulting bandwidth
+                           must supported by hardware.";
+          }
+          description "EIR value";
+        }
+        leaf units {
+          type bandwidth-units-t;
+          mandatory true;
+          description "EIR units.";
+        }
+      }
+
+      container excess-burst {
+        description "Policer excess burst size (EBS)";
+        leaf value {
+          type threshold-size-t;
+          default 100;
+          must "((../units) and
+                 ((../units = 'bytes') or
+                  (../units = 'kbytes' and ../value <= 10000 ) or
+                  (../units = 'mbytes' and ../value <= 10 ) or
+                  (../units = 'ms' and
+                   (../../excess-rate) and
+                   ((../../excess-rate/units = 'bps' and (((../../excess-rate/value) * (../value)) <= 80000000000)) or
+                    (../../excess-rate/units = 'kbps' and (((../../excess-rate/value) * (../value)) <= 80000000)) or
+                    (../../excess-rate/units = 'mbps' and (((../../excess-rate/value) * (../value)) <= 80000)) or
+                    (../../excess-rate/units = 'gbps' and (((../../excess-rate/value) * (../value)) <= 80))))))" {
+            error-message "The units must be set and the resulting bandwidth
+                           must supported by hardware.";
+          }
+          description "EBS value";
+        }
+        leaf units {
+          type threshold-units-t;
+          default kbytes;
+          description "EBS units.";
+        }
+      }
+
+      leaf coupling {
+        // Low-level model info: Corresponds to tcmPolicerCoupling
+        type boolean;
+        default false;
+        description
+          "The coupling.";
+        user-ext:CLI-comm-help "Set coupling";
+        user-ext:CLI-no-comm-help "Set coupling to default";
+        user-ext:CLI-param-help "Set coupling";
+      }
+
+      leaf color-mode {
+        // Low-level model info: Corresponds to tcmPolicerColorMode
+        type policer-color-mode-tc;
+        default aware;
+        description
+          "The color mode.";
+        user-ext:CLI-comm-help "Set color mode";
+        user-ext:CLI-no-comm-help "Set color mode to default";
+        user-ext:CLI-param-help "Set color mode";
+      }
+
+      container conform-action {
+        presence "Set action for packets that conform to the Policer (green packets)";
+        uses meter-action-params;
+        description
+          "Action for packets that conform to the Policer (green packets)";
+      }
+      container exceed-action {
+        presence "Set action for unconformant packets (yellow packets)";
+        uses meter-action-params;
+        description
+          "Action for unconformant packets (yellow packets)";
+      }
+      container violate-action {
+        presence "Set action for packets that violate the meter (red packets)";
+        uses meter-action-params;
+        description
+          "Action for packets that violate the meter (red packets)";
+      }
+    }
+  }
+
+  grouping associated-flows-state {
+    list flows {
+      description
+        "List of flows that map into a classifier";
+
+      leaf flow-index {
+        type uint32;
+        description
+          "The identifier of the flow";
+      }
+    }
+  }
+
+  grouping encode-decode-policy {
+
+    leaf pcp-mode {
+      type pcp-mode-t;
+      default default;
+
+      must "../pcp-mode != 'manual' or ../pcp-decode-policy" {
+        error-message
+          "Must specify PCP decode policy for manual PCP mode";
+      }
+
+      description
+        "The PCP encoding and decoding mode to be used for this
+         interface.";
+
+      user-ext:CLI-param-help "Set PCP mode";
+    }
+
+    leaf untagged-priority {
+      type tc-value-t;
+      default 0;
+      description
+        "The internal priority value to assign untagged frames";
+
+      user-ext:CLI-param-help "Set internal priority for untagged frames";
+    }
+
+    leaf pcp-decode-policy {
+      when "../pcp-mode = 'manual'";
+      type leafref {
+        path "/qos:encode-decode-policies/qos:pcp-decode-policy/qos:name";
+      }
+      description
+        "PCP Decode policy";
+
+      user-ext:CLI-param-help "PCP Decode policy";
+    }
+
+    leaf pcp-encode-policy {
+      when "../pcp-mode = 'manual'";
+      type leafref {
+        path "/qos:encode-decode-policies/qos:pcp-encode-policy/qos:name";
+      }
+      description
+        "PCP Encode policy";
+
+      user-ext:CLI-param-help "PCP Encode policy";
+    }
+
+    leaf dscp-decode-policy {
+      type leafref {
+        path "/qos:encode-decode-policies/qos:dscp-decode-policy/qos:name";
+      }
+      description
+        "DSCP Decode policy";
+
+      user-ext:CLI-param-help "DSCP Decode policy";
+    }
+
+    leaf dscp-encode-policy {
+      type leafref {
+        path "/qos:encode-decode-policies/qos:dscp-encode-policy/qos:name";
+      }
+      description
+        "DSCP Encode policy";
+
+      user-ext:CLI-param-help "DSCP Encode policy";
+    }
+
+    leaf mpls-exp-decode-policy {
+      type leafref {
+        path "/qos:encode-decode-policies/qos:mpls-exp-decode-policy/qos:name";
+      }
+      description
+        "MPLS EXP Decode policy";
+
+      user-ext:CLI-param-help "MPLS EXP Decode policy";
+    }
+
+    leaf mpls-exp-encode-policy {
+      type leafref {
+        path "/qos:encode-decode-policies/qos:mpls-exp-encode-policy/qos:name";
+      }
+      description
+        "MPLS EXP Encode policy";
+
+      user-ext:CLI-param-help "MPLS EXP Encode policy";
+    }
+
+  } // encode-decode-policy
+
+  grouping interface-policy {
+
+    list qos-policy {
+
+      description
+        "QoS policy target for inbound or outbound direction";
+
+      key "direction";
+
+      leaf direction {
+        type identityref {
+          base direction;
+        }
+        description
+          "Direction of the traffic flow either inbound or outbound";
+      }
+
+      leaf policy-name {
+        type leafref {
+          path "/qos:policies/qos:qos-policy-entry/qos:policy-name";
+        }
+
+        // The default classifier of the policy attached to a physical interface or bundle
+        // cannot have a service policy.
+        must "(not(/policies/qos-policy-entry[policy-name=current()][(default-classifier/service-policy/policy-name)]) or
+               (../../interface:type = 'interface:vlanSubif'))" {
+          error-message
+            "Default classifier cannot have service policy.";
+        }
+
+        // The default classifier of the policy attached to a physical interface or bundle
+        // cannot have queue-size config.
+        must "(not(/policies/qos-policy-entry[policy-name=current()][(default-classifier/queue-size)]) or
+               (../../interface:type = 'interface:vlanSubif'))" {
+          error-message
+            "Default classifier cannot have queue-size.";
+        }
+
+        mandatory true;
+        description
+          "Name of QoS policy to attach to interface";
+      }
+
+      leaf shared-policy-name {
+        when
+          "(../../interface:type = 'interface:vlanSubif')" {
+            description
+              "Policy sharing only applies to subinterfaces of the same interface.";
+        }
+        type string;
+        description
+          "The name of the shared policy.  A policy can only be shared between
+           multiple subinterfaces of the same interface.  When a policy is shared only one set
+           of scheduling resource is created, rather than one per subinterface.";
+      }
+
+    } // qos-policy
+
+    leaf qos-default-policy {
+      when
+        "(../interface:type = 'interface:ethernet-csmacd')" {
+          description
+            "Default queue Policy only applies to physical interfaces.";
+      }
+      type leafref {
+        path "/qos:policies/qos:default-policy/qos:policy-name";
+      }
+      description
+        "The name of the default queue policy to attach to the interface.";
+    }
+
+  } // interface-policy
+
+  grouping qos-output-state {
+
+    list classifiers {
+      description
+        "The classifiers applied to an interface in the outbound direction.";
+
+      uses classifier-info-state;
+
+      container service-rate {
+        leaf rate {
+          type uint32;
+          description
+            "Service rate - the rate at which a queue can send when congested";
+        }
+        leaf units {
+          type bandwidth-units-t;
+          description
+            "Units for service rate";
+        }
+      }
+
+      uses classifier-stats;
+
+      uses queue-state;
+
+      uses queue-stats;
+
+      leaf meter-index {
+        type uint32;
+        description
+          "The identifier of the meter configured for this classifier";
+      }
+
+      uses associated-flows-state;
+    }
+  }
+
+  grouping default-queue-state {
+
+    list traffic-classes {
+      description
+        "The default queues on an interface.";
+
+      key "traffic-class";
+
+      leaf traffic-class {
+        type tc-value-t;
+        description
+          "Traffic class";
+      }
+
+      uses queue-state;
+
+      uses queue-stats;
+
+    }
+  }
+
+  grouping qos-input-state {
+
+    list classifiers {
+      description
+        "The classifiers applied to an interface in the inbound direction.";
+
+      uses classifier-info-state;
+
+      uses classifier-stats;
+
+      leaf meter-index {
+        type uint32;
+        description
+          "The identifier of the meter configured for this classifier";
+      }
+
+      uses associated-flows-state;
+    }
+  }
+
+  grouping classifier-info-state {
+
+    container classifier-info {
+      description
+        "Information relating to the classifier entry";
+
+      leaf classifier-name {
+        type meta:name-string;
+        description
+          "Classifier name";
+      }
+
+      leaf policy-name {
+        type meta:name-string;
+
+        description
+          "The name of the policy this classifier is associted with.";
+      }
+
+      leaf classifier-level {
+        type classfier-level-t;
+        description
+          "The level of the classifier within the hierarchy.";
+      }
+
+      leaf child-policy-name {
+        type meta:name-string;
+
+        description
+          "The child policy associated with this classifier entry.";
+      }
+
+      leaf parent-policy-name {
+        type meta:name-string;
+
+        description
+          "The parent policy of the policy to which this classifier entry belongs.";
+      }
+
+      leaf parent-classifier-name {
+        type meta:name-string;
+
+        description
+          "The classifier within the parent policy of the policy to which this classifier entry belongs.";
+      }
+
+    }
+  }
+
+  // Sum of flow stats for all flows feeding in to classifier
+  grouping classifier-stats {
+
+    container classifier-stats {
+      description
+        "Statistics for classifier entries";
+      leaf matched-octets {
+        type yang:counter64;
+
+        description
+          "The number of octets matched to this classifier entry.";
+      }
+
+      leaf matched-pkts {
+        type yang:counter64;
+
+        description
+          "The number of packets matched to this classifier entry.";
+      }
+    }
+  }
+
+  grouping flow-stats {
+
+    container flow-stats {
+      description
+        "Statistics for a flow";
+      leaf matched-octets {
+        type yang:counter64;
+
+        description
+          "The number of octets matched to this flow.";
+      }
+
+      leaf matched-pkts {
+        type yang:counter64;
+
+        description
+          "The number of packets matched to this flow.";
+      }
+    }
+  }
+
+  grouping queue-state {
+
+    container queue-state {
+      description
+        "State relating to queues";
+
+      container shaping {
+        description
+          "State relating to shaping";
+
+        container cir {
+          description
+            "The committed information rate, or minimum bandwidth";
+
+          leaf rate {
+            description "Shaper committed information rate (minimum bandwidth)";
+            type uint32;
+          }
+
+          leaf units {
+            type bandwidth-units-t;
+            description "Shaper CIR units.";
+          }
+        }
+
+        container cbs {
+          description
+            "The committed burst size";
+
+          leaf rate {
+            description "Shaper committed burst size";
+            type uint32;
+          }
+
+          leaf units {
+            type burst-units-t;
+            description "Shaper committed burst size units.";
+          }
+        }
+
+        container pir {
+          description
+            "The peak information rate, or maximum bandwidth";
+
+          leaf rate {
+            description "Shaper peak information rate (maximum bandwidth)";
+            type uint32;
+          }
+
+          leaf units {
+            type bandwidth-units-t;
+            description "Shaper PIR units.";
+          }
+        }
+
+        container pbs {
+          description
+            "The peak burst size";
+
+          leaf rate {
+            description "Shaper peak burst size";
+            type uint32;
+          }
+
+          leaf units {
+            type burst-units-t;
+            description "Shaper peak burst size units.";
+          }
+        }
+      }
+
+      container scheduling {
+        description
+          "State relating to scheduling";
+
+        leaf scheduling-mode {
+          type show-scheduling-modes-t;
+          description
+            "Scheduling mode";
+        }
+
+        leaf weight {
+          type weight-t;
+          description
+            "Queue weight";
+        }
+
+        leaf queue-id {
+          type uint32;
+          description
+            "The queue ID of the queue.";
+        }
+      }
+
+      container queue-limits {
+        description
+          "State relating to queue limits";
+
+        leaf queue-sizing-mode {
+          type queue-mode-t;
+          description "Type of queue sizing - static or dynamic.";
+        }
+
+        container queue-max-limit {
+          description "Maximum queue size for statically sized queues.";
+
+          leaf value {
+            type queue-size-t;
+            description "Queue limit value.";
+          }
+          leaf units {
+            type queue-size-units-t;
+            description "Queue limit units.";
+          }
+        }
+
+        container queue-min-limit {
+          description "Minimum queue size for dynamically sized queues.";
+
+          leaf value {
+            type queue-size-t;
+            description "Minimum queue size value.";
+          }
+          leaf units {
+            type queue-size-units-t;
+            description "Minimum queue size units.";
+          }
+        }
+
+        leaf dynamic-buffer-share-factor {
+          type dynamic-buffer-share-factor-t;
+          description
+            "Dynamic buffer share factor for dynamically sized queues";
+        }
+      }
+
+      container wred {
+        description
+          "WRED state";
+
+        leaf wred-enabled {
+          type boolean;
+          description "Whether WRED is enabled for congestion management";
+        }
+
+        leaf ecn-red-enabled {
+          type boolean;
+          description "Whether Explicit Congestion Notification (ECN) based
+            random early detection is enabled";
+        }
+
+        list random-detect {
+          key "color";
+          description "Random early detection threshold";
+          leaf color {
+            type color-t;
+            description
+              "Color of packets thresholds apply to";
+          }
+
+          container threshold-min {
+            description "Threshold at which to start dropping packets";
+            leaf value {
+              type uint32;
+              description "Minimum RED threshold value.";
+            }
+            leaf units {
+              type threshold-units-t;
+              description "Minimum RED threshold units.";
+            }
+          }
+
+          container threshold-max {
+            description "Threshold at which to drop all packets";
+            leaf value {
+              type uint32;
+              description "Maximum RED threshold value.";
+            }
+            leaf units {
+              type threshold-units-t;
+              description "Maximum RED threshold units.";
+            }
+          }
+
+          leaf drop-probability {
+            description "Drop probability";
+            type percent-t;
+          }
+        }
+      }
+    }
+  }
+
+  grouping queue-stats {
+
+    container queue-stats {
+      description
+        "Statistics relating to a queue";
+
+      leaf forwarded-pkts {
+        type yang:counter64;
+
+        description
+          "The number of packets forwarded from this queue.";
+      }
+
+      leaf dropped-pkts {
+        type yang:counter64;
+
+        description
+          "The number of packets dropped from this queue due to lack of resources.";
+      }
+    }
+  }
+
+  grouping meter-state {
+
+    container committed-rate {
+      description "Meter committed information rate (CIR)";
+      leaf value {
+        type uint32;
+        description "CIR value";
+      }
+      leaf units {
+        type bandwidth-units-t;
+        description "CIR units.";
+      }
+    }
+
+    container committed-burst {
+      description "Meter committed burst size (CBS)";
+      leaf value {
+        type uint32;
+        description "CBS value";
+      }
+      leaf units {
+        type threshold-units-t;
+        description "CBR units.";
+      }
+    }
+
+    container excess-rate {
+      description "Meter excess information rate (EIR)";
+      leaf value {
+        type uint32;
+        description "EIR value";
+      }
+      leaf units {
+        type bandwidth-units-t;
+        description "EIR units.";
+      }
+    }
+
+    container excess-burst {
+      description "Meter excess burst size (EBS)";
+      leaf value {
+        type uint32;
+        description "EBS value";
+      }
+      leaf units {
+        type threshold-units-t;
+        description "EBS units.";
+      }
+    }
+
+    leaf coupling {
+      type boolean;
+      description
+        "Meter coupling mode";
+    }
+
+    leaf color-mode {
+      type policer-color-mode-tc;
+      description
+        "Meter color mode.";
+    }
+
+    container conform-action {
+      uses meter-action-params;
+      description
+        "Action for packets that conform to the Policer (green packets)";
+    }
+    container exceed-action {
+      uses meter-action-params;
+      description
+        "Action for unconformant packets (yellow packets)";
+    }
+    container violate-action {
+      uses meter-action-params;
+      description
+        "Action for packets that violate the meter (red packets)";
+    }
+  }
+
+  grouping meter-stats {
+
+    container meter-stats {
+      description
+        "Statistics relating to meters";
+
+      leaf received-octets {
+        type yang:counter64;
+
+        description
+          "The number of octets offered to the policer.";
+      }
+
+      leaf received-pkts {
+        type yang:counter64;
+
+        description
+          "The number of packets offered to the policer.";
+      }
+
+      leaf conform-octets {
+        type yang:counter64;
+
+        description
+          "The number of octets offered to the policer classified as green.";
+      }
+
+      leaf conform-pkts {
+        type yang:counter64;
+
+        description
+          "The number of packets offered to the policer classified as green.";
+      }
+
+      leaf exceed-octets {
+        type yang:counter64;
+
+        description
+          "The number of octets offered to the policer classified as yellow.";
+      }
+
+      leaf exceed-pkts {
+        type yang:counter64;
+
+        description
+          "The number of packets offered to the policer classified as yellow.";
+      }
+
+      leaf violate-octets {
+        type yang:counter64;
+
+        description
+          "The number of octets offered to the policer classified as red.";
+      }
+
+      leaf violate-pkts {
+        type yang:counter64;
+
+        description
+          "The number of packets offered to the policer classified as red.";
+      }
+    }
+  }
+
+  grouping match-state {
+
+    list matches {
+      description
+        "Matches associated with a flow";
+
+      leaf filter-type {
+        type identityref {
+          base "filter-type";
+        }
+
+        description
+          "Type of the filter.";
+
+        user-ext:CLI-param-help "Filter type";
+      }
+
+      uses filters;
+    }
+  }
+
+  grouping port-shaping {
+    container port-shaper {
+      description "Traffic shaping configuration for this port.";
+
+      presence "Traffic shaping is applied to this port.";
+
+      container pir {
+        description
+          "Choice of units for shaper rate.";
+
+          leaf rate {
+            type bandwidth-rate-t;
+            must "((../units) and
+                   (((../units = 'bps') or
+                     (../units = 'kbps' and ../rate <= 400000 ) or
+                     (../units = 'mbps' and ../rate <= 400 )) or
+                    (((../units = 'bps') or
+                      (../units = 'kbps') or
+                      (../units = 'mbps' and ../rate <= 10000 ) or
+                      (../units = 'gbps' and ../rate <= 10 )) and
+                     (../../pbs) and
+                     (../../pbs/value))))" {
+              error-message "The units must be set and the resulting bandwidth
+                             must supported by hardware.";
+            }
+            mandatory true;
+            description "Shaper PIR value";
+          }
+          leaf units {
+            type bandwidth-units-t;
+            mandatory true;
+            description "Shaper bandwidth units.";
+          }
+      }
+
+      container pbs {
+        description "Shaper burst size (PBS) configuration.";
+        leaf value {
+          type threshold-size-t;
+          must "((../units) and
+                 ((../units = 'bytes') or
+                  (../units = 'kbytes' and ../value <= 10000) or
+                  (../units = 'mbytes' and ../value <= 10 ) or
+                  (../units = 'ms')))" {
+            error-message "The units must be set and the resulting bandwidth
+                           must supported by hardware.";
+          }
+          default 200;
+          description "Shaper burst size value.";
+        }
+        leaf units {
+          type burst-units-t;
+          default 'ms';
+          description "Shaper burst size units.";
+        }
+      }
+    }
+  }
+
+  container classifiers {
+    description
+      "List of classifier templates to match traffic.";
+
+    user-ext:CLI-comm-help "Configure QoS classifier templates";
+    user-ext:CLI-no-comm-help "Remove QoS classifier templates";
+
+    list classifier-entry {
+      description
+        "Classifier entry that can be referred to from a QoS policy.";
+
+      user-ext:CLI-comm-help "Configure QoS classifier entry";
+      user-ext:CLI-no-comm-help "Remove QoS classifier entry";
+
+      key "classifier-entry-name";
+      ordered-by user;
+
+      leaf classifier-entry-name {
+
+        type meta:name-string;
+
+        description
+          "Classifier entry name.";
+
+        user-ext:CLI-param-help "Set QoS classifier entry name";
+      }
+      uses classifier-entry-inline-attr;
+    }
+  }
+
+  container policies {
+    description
+      "List of policy templates.";
+
+    user-ext:CLI-comm-help "Configure QoS polices";
+    user-ext:CLI-no-comm-help "Remove QoS polices";
+
+    list qos-policy-entry {
+      description
+        "QoS policy entry";
+
+      user-ext:CLI-comm-help "Configure QoS policy entry";
+      user-ext:CLI-no-comm-help "Remove QoS policy entry";
+
+      key "policy-name";
+
+      leaf policy-name {
+        type meta:name-string;
+
+        description
+          "QoS policy name";
+
+        user-ext:CLI-param-help "QoS policy name";
+      }
+
+      leaf weighted-mode {
+        type weighted-modes-t;
+        default "wdrr";
+        description
+          "Weighted scheduling mode used by this policy (e.g. weighted deficit round robin)";
+      }
+
+      list classifier {
+        description
+          "QoS policy to apply to a particular class of traffic.";
+
+        key "classifier-name";
+
+        leaf classifier-name {
+          type leafref {
+            path "/classifiers/classifier-entry/classifier-entry-name";
+          }
+          description
+            "Reference to classifier entry";
+        }
+
+        leaf classifier-priority {
+          type classifier-priority-t;
+          default 1;
+          description "Priority of this classifier for packet matching";
+        }
+
+        uses qos-classifier-entries;
+
+        container service-policy {
+          description
+            "The Child policy in a hierarchical configuration";
+
+          leaf policy-name {
+            type leafref {
+              path "/policies/qos-policy-entry/policy-name";
+            }
+            description
+              "Reference to child policy for H-QoS";
+
+            must "(. != ../../../policy-name)" {
+                error-message "The QoS Classifier service policy cannot be set to the owning Policy.";
+            }
+
+            must "not(../../queue-size)" {
+                error-message "Queue sizes can only be set on classifiers without service policies.";
+            }
+          }
+        }
+      }
+
+      container default-classifier {
+
+        description
+          "QoS policy to apply to traffic not matching another classifier in this policy.";
+        presence "Apply QoS policy to apply to traffic not matching another classifier in this policy.";
+
+        uses qos-classifier-entries;
+
+        container service-policy {
+          description
+            "The Child policy in a hierarchical configuration";
+
+          leaf policy-name {
+            type leafref {
+              path "/policies/qos-policy-entry/policy-name";
+            }
+            description
+              "Reference to child policy for H-QoS";
+          }
+        }
+      }
+    }
+
+    list default-policy {
+      description
+        "Default queue policy entry";
+
+      user-ext:CLI-comm-help "Configure default queue policy entry";
+      user-ext:CLI-no-comm-help "Remove default queue policy entry";
+
+      key "policy-name";
+
+      leaf policy-name {
+        type meta:name-string;
+
+        description
+          "QoS default queue policy name";
+
+        user-ext:CLI-param-help "QoS default queue policy name";
+      }
+
+      leaf weighted-mode {
+        type weighted-modes-t;
+        default "wdrr";
+        description
+          "Weighted mode used by this policy (e.g. weighted deficit round robin)";
+        user-ext:CLI-param-help "Configure weighted scheduling mode";
+        user-ext:CLI-no-comm-help "Use weighted deficit round robin scheduling mode";
+      }
+
+      list traffic-classes {
+        description
+          "QoS policy to apply to a particular class of traffic.";
+
+        key "traffic-class";
+        min-elements "8";
+
+        leaf traffic-class {
+          type tc-value-t;
+          description
+            "Traffic class";
+          user-ext:CLI-param-help "Configure traffic class";
+          user-ext:CLI-no-comm-help "Remove traffic class";
+        }
+
+        leaf scheduling-mode {
+          type scheduling-modes-t;
+          default strict;
+          description "Use strict priority or weighted scheduling for this queue.";
+          user-ext:CLI-param-help "Configure strict priority or weighted scheduling mode";
+          user-ext:CLI-no-comm-help "Use strict priority scheduling mode";
+        }
+
+        uses qos-queue-cfg;
+      }
+    }
+  }
+
+  container meter-templates {
+    description
+      "Meter templates (policers).";
+
+    user-ext:CLI-comm-help "Configure QoS meter template";
+    user-ext:CLI-no-comm-help "Remove QoS meter template";
+
+    list meter-template-entry {
+      description
+        "Meter entry.";
+
+      user-ext:CLI-comm-help "Configure QoS meter template entry";
+      user-ext:CLI-no-comm-help "Remove QoS meter template entry";
+
+      key "meter-name";
+
+      leaf meter-name {
+        type meta:name-string;
+
+        description
+          "Meter identifier.";
+
+        user-ext:CLI-param-help "Set QoS meter template name";
+      }
+      uses two-rate-tri-color-meter;
+    }
+  }
+
+  container encode-decode-policies {
+
+    description
+      "Policies for encoding and decoding between internal priority and CoS/DSCP/EXP.";
+
+    list pcp-decode-policy {
+
+      // Low-level model info: Used to create specififc entries in
+      // AMB_LIM_IF_PCP_DECODE (limInterfacePcpDecodeTable).
+
+      description
+        "PCP Decoding policy.";
+
+      user-ext:CLI-comm-help "Configure PCP Decoding Policy";
+      user-ext:CLI-no-comm-help "Remove PCP Decoding Policy";
+
+      key "name";
+
+      leaf name {
+        type meta:name-string;
+
+        user-ext:CLI-param-help "Policy name";
+        description
+          "Policy name";
+      }
+
+      list pcp-decode {
+
+        description
+          "PCP Decoding.";
+
+        user-ext:CLI-comm-help "Configure PCP Decode Entry";
+        user-ext:CLI-no-comm-help "Remove PCP Decode Entry";
+
+        key "pcp-value dei";
+
+        leaf pcp-value {
+          type pcp-value-t;
+
+          user-ext:CLI-param-help "PCP value";
+          description
+            "Priority Code Point (PCP) value";
+        }
+
+        leaf dei {
+          type dei-value-t;
+
+          user-ext:CLI-param-help "DEI value";
+          description
+            "Drop Eligible Indicator. 1 indicates frames are eligible to be dropped in presence of congestion";
+        }
+
+
+        uses priority-color-values;
+
+      } // pcp-decode
+
+    } // pcp-decode-policy
+
+    list pcp-encode-policy {
+
+      // Low-level model info: Used to create specififc entries in
+      // AMB_LIM_IF_PCP_ENCODE (limInterfacePcpEncodeTable).
+
+      description
+        "PCP Encoding policy.";
+
+      user-ext:CLI-comm-help "Configure PCP Encoding Policy";
+      user-ext:CLI-no-comm-help "Remove PCP Encoding Policy";
+
+      key "name";
+
+      leaf name {
+        type meta:name-string;
+
+        user-ext:CLI-param-help "Policy name";
+        description
+          "Policy name";
+      }
+
+      list pcp-encode {
+
+        description
+          "PCP Encoding.";
+
+        user-ext:CLI-comm-help "Configure PCP Encode Entry";
+        user-ext:CLI-no-comm-help "Remove PCP Encode Entry";
+
+      key "priority color";
+
+      uses priority-color-key-values;
+
+      leaf pcp-value {
+        type pcp-value-t;
+        mandatory true;
+        user-ext:CLI-param-help "PCP value";
+        description
+          "Priority Code Point (PCP) value";
+      }
+
+      leaf dei {
+        type dei-value-t;
+        mandatory true;
+        user-ext:CLI-param-help "DEI value";
+        description
+          "Drop Eligible Indicator. 1 indicates frames are eligible to be dropped in presence of congestion";
+      }
+
+      } // pcp-encode
+    } // pcp-encode-policy
+
+    list dscp-decode-policy {
+
+      // Low-level model info: Used to create specififc entries in
+      // AMB_LIM_IF_DSCP_DECODE (limInterfaceDscpDecodeTable).
+
+      description
+        "DSCP Decoding policy.";
+
+      user-ext:CLI-comm-help "Configure DSCP Decoding Policy";
+      user-ext:CLI-no-comm-help "Remove DSCP Decoding Policy";
+
+      key "name";
+
+      leaf name {
+        type meta:name-string;
+
+        user-ext:CLI-param-help "Policy name";
+        description
+          "Policy name";
+      }
+
+      list dscp-decode {
+
+        description
+          "DSCP Decoding.";
+
+        user-ext:CLI-comm-help "Configure DSCP Decode Entry";
+        user-ext:CLI-no-comm-help "Remove DSCP Decode Entry";
+
+        key "dscp-value";
+
+        leaf dscp-value {
+          type dscp-t;
+
+          user-ext:CLI-param-help "DSCP value";
+          description
+            "DSCP value";
+        }
+
+        uses priority-color-values;
+
+      } // dscp-decode
+
+    } // dscp-decode-policy
+
+    list dscp-encode-policy {
+
+      // Low-level model info: Used to create specififc entries in
+      // AMB_LIM_IF_DSCP_ENCODE (limInterfaceDscpEncodeTable).
+
+      description
+        "DSCP Encoding policy.";
+
+      user-ext:CLI-comm-help "Configure DSCP Encoding Policy";
+      user-ext:CLI-no-comm-help "Remove DSCP Encoding Policy";
+
+      key "name";
+
+      leaf name {
+        type meta:name-string;
+
+        user-ext:CLI-param-help "Policy name";
+        description
+          "Policy name";
+      }
+
+      list dscp-encode {
+
+        description
+          "DSCP Encoding.";
+
+        user-ext:CLI-comm-help "Configure DSCP Encode Entry";
+        user-ext:CLI-no-comm-help "Remove DSCP Encode Entry";
+
+      key "priority color";
+
+      uses priority-color-key-values;
+
+      leaf dscp-value {
+        type dscp-t;
+        mandatory true;
+        user-ext:CLI-param-help "DSCP value";
+        description
+          "DSCP value";
+      }
+
+      } // dscp-encode
+
+    } // dscp-encode-policy
+
+    list mpls-exp-decode-policy {
+
+      // Low-level model info: Used to create specififc entries in
+      // AMB_LIM_IF_MPLS_DECODE (limInterfaceMPLSDecodeTable).
+
+      description
+        "MPLS EXP Decoding policy.";
+
+      user-ext:CLI-comm-help "Configure MPLS EXP Decoding Policy";
+      user-ext:CLI-no-comm-help "Remove MPLS EXP Decoding Policy";
+
+      key "name";
+
+      leaf name {
+        type meta:name-string;
+
+        user-ext:CLI-param-help "Policy name";
+        description
+          "Policy name";
+      }
+
+      list mpls-exp-decode {
+
+        description
+          "PCP Decoding.";
+
+        user-ext:CLI-comm-help "Configure PCP Decode Entry";
+        user-ext:CLI-no-comm-help "Remove PCP Decode Entry";
+
+        key "mpls-exp-value";
+
+        leaf mpls-exp-value {
+          type mpls-exp-value-t;
+
+          user-ext:CLI-param-help "MPLS EXP value";
+          description
+            "MPLS Experimental bit (EXP) value";
+        }
+
+        uses priority-color-values;
+
+      } // mpls-exp-decode
+
+    } // mpls-exp-decode-policy
+
+    list mpls-exp-encode-policy {
+
+      // Low-level model info: Used to create specififc entries in
+      // AMB_LIM_IF_MPLS_ENCODE (limInterfaceMplsEncodeTable).
+
+      description
+        "MPLS EXP Encoding policy.";
+
+      user-ext:CLI-comm-help "Configure MPLS EXP Encoding Policy";
+      user-ext:CLI-no-comm-help "Remove MPLS EXP Encoding Policy";
+
+      key "name";
+
+      leaf name {
+        type meta:name-string;
+
+        user-ext:CLI-param-help "Policy name";
+        description
+          "Policy name";
+      }
+
+      list mpls-exp-encode {
+
+        description
+          "MPLS EXP Encoding.";
+
+        user-ext:CLI-comm-help "Configure MPLS EXP Encode Entry";
+        user-ext:CLI-no-comm-help "Remove MPLS EXP Encode Entry";
+
+        key "priority color";
+
+        uses priority-color-key-values;
+
+        leaf mpls-exp-value {
+          type mpls-exp-value-t;
+          mandatory true;
+          user-ext:CLI-param-help "MPLS EXP value";
+          description
+            "MPLS Experimental bit (EXP) value";
+        }
+
+      } // mpls-exp-encode
+
+    } // mpls-exp-encode-policy
+
+  } // encode-decode-policies
+
+  // State containers
+  container qos-interfaces-state {
+    config false;
+    description
+      "Per-interface QoS state.";
+
+    list interface {
+
+      description
+        "QoS state for an interface";
+
+      key "interface-name";
+
+      leaf interface-name {
+        type meta:name-string;
+        description
+          "Interface name";
+      }
+
+      container inbound {
+        description
+          "Inbound QoS state";
+        uses qos-input-state;
+      }
+
+      container outbound {
+        description
+          "Outbound QoS state";
+        uses qos-output-state;
+      }
+
+      container default-queues {
+        description
+          "Default Queue QoS state";
+        uses default-queue-state;
+      }
+    }
+  }
+
+  container qos-bundle-interfaces-state {
+    config false;
+    description
+      "Per-bundle interface QoS state.";
+
+    list bundle-interface {
+
+      description
+        "QoS state for a bundle interface and its members";
+
+      key "bundle-interface-name";
+
+      leaf bundle-interface-name {
+        type meta:name-string;
+        description
+          "Bundle interface name";
+      }
+
+      container inbound {
+        description
+          "Inbound QoS state";
+        uses qos-input-state;
+      }
+
+      container outbound {
+        description
+          "Outbound QoS state";
+
+        list bundle-member {
+
+          description
+            "QoS state for a member of a bundle";
+
+          leaf bundle-member-name {
+            type meta:name-string;
+            description
+              "Bundle interface name";
+          }
+
+          uses qos-output-state;
+        }
+      }
+    }
+  }
+
+  container flow-state {
+    config false;
+    description
+      "State associated with an individual flow";
+
+    list flows {
+      description
+        "List of flows receiving different QoS treatment";
+
+      key "flow-index";
+
+      leaf flow-index {
+        type uint32;
+        description
+          "The identifier of this flow";
+      }
+
+      leaf stage {
+        type identityref {
+          base stage-type;
+        }
+        description
+          "The stage at which this flow's actions are applied";
+      }
+
+      list meters {
+        description
+          "List of meters associated with this flow";
+
+        leaf meter-index {
+          type uint32;
+          description
+            "The identifier of this meter instance";
+        }
+      }
+
+      uses match-state;
+
+      uses flow-stats;
+    }
+  }
+
+  container meter-state {
+    config false;
+    description
+      "State and statistics for meters.";
+
+    list meters {
+      description
+        "List of meters";
+
+      key "meter-index";
+
+      leaf meter-index {
+        type uint32;
+        description
+          "The identifier of this meter instance";
+      }
+
+      leaf meter-name {
+        type meta:name-string;
+        description
+          "Name of meter template used by this meter";
+      }
+
+      uses meter-state;
+
+      uses meter-stats;
+    }
+  }
+
+  augment "/interface:interfaces/interface:interface" {
+
+    if-feature interface:interface-qos;
+    when
+      "(interface:type = 'interface:ethernet-csmacd') or
+       (interface:type = 'interface:ieee8023adLag')" {
+      description
+        "Encode / decode policies can be applied to physical interface or
+         bundle interface";
+    }
+
+    description
+      "Augments interface with QoS policies";
+
+    uses qos:encode-decode-policy;
+  }
+
+  augment "/interface:interfaces/interface:interface" {
+    if-feature interface:interface-qos;
+    when
+      "(interface:type = 'interface:ethernet-csmacd') or
+       (interface:type = 'interface:ieee8023adLag') or
+       (interface:type = 'interface:vlanSubif')" {
+      description
+        "QoS Policy applies only to Bundles, Ethernet-like interfaces and
+         sub-interfaces";
+    }
+
+    uses qos:interface-policy;
+
+  }
+
+  augment "/interface:interfaces/interface:interface" {
+    if-feature interface:interface-qos;
+    when
+      "(interface:type = 'interface:ethernet-csmacd')" {
+      description
+        "Applies only to physical interfaces";
+    }
+
+    description
+      "Augment physical interfaces with BUM traffic rate limits";
+
+    uses qos:rate-limiting;
+  }
+
+  augment "/interface:interfaces/interface:interface" {
+    if-feature interface:interface-qos;
+    when
+      "(interface:type = 'interface:ethernet-csmacd')" {
+      description
+        "Applies only to physical interfaces.";
+    }
+
+    description
+      "Augment physical interfaces with shaping";
+
+    uses qos:port-shaping;
+  }
+
+}

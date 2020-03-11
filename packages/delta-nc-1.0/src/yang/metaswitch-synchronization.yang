@@ -1,0 +1,1220 @@
+module metaswitch-synchronization {
+
+  // Actions require Yang version 1.1.
+  yang-version 1.1;
+
+  namespace "http://metaswitch.com/yang/nbu/metaswitch-synchronization/201803160000Z";
+
+  prefix synchronization;
+
+  import interface { prefix "interface"; }
+  import interfaces { prefix "interfaces"; }
+  import user-extensions { prefix "user-ext"; }
+  import metaswitch-yang-types { prefix meta; }
+  import metaswitch-custom-yang-types { prefix "custom"; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Metaswitch SyncE YANG model";
+
+  revision 2018-03-16 {
+    description
+      "Initial revision.";
+  }
+
+
+  identity clock-source-state-t {
+    description
+      "The class to which a time source belongs.  Used when reporting
+      state for clock sources.";
+  }
+
+  identity none {
+    base clock-source-state-t;
+    description
+        "No clock source.";
+  }
+
+  identity clock-source-t {
+    base clock-source-state-t;
+    description
+      "The class to which a time source belongs.  Used when configuring
+      all clock sources.";
+  }
+
+  identity interface {
+    base clock-source-t;
+    description
+        "A clock source that is a network interface.";
+  }
+
+  identity clock-source-non-if-t {
+    base clock-source-t;
+    description
+      "The class to which a time source belongs.  Used when configuring
+      non-interface clock sources.";
+  }
+
+  identity internal {
+    base clock-source-non-if-t;
+    description
+        "An internal clock source.";
+  }
+
+  identity gnss {
+    base clock-source-non-if-t;
+    description
+        "Global Navigation Satellite System external clock source.";
+  }
+
+  typedef ref-clock-t {
+    type enumeration {
+      enum primary                          { value 1; }
+      enum backup                           { value 2; }
+      enum external                         { value 3; }
+    }
+    description
+      "Reference clock type";
+  }
+
+  typedef protocol-status-t {
+    type enumeration {
+      enum disable                          { value 1; }
+      enum tx-only                          { value 2; }
+      enum rx-only                          { value 3; }
+      enum enable                           { value 4; }
+    }
+    description
+      "Protocol status type";
+  }
+
+  typedef clock-quality-option-t {
+    type enumeration {
+      enum 1                                { value 1; }
+      enum 2-gen1                           { value 2; }
+      enum 2-gen2                           { value 3; }
+    }
+    description
+      "Clock quality option type";
+  }
+
+  typedef clock-quality-t {
+    type enumeration {
+      enum none                             { value 0; }
+      enum prc                              { value 1; }
+      enum ssu-a                            { value 2; }
+      enum ssu-b                            { value 3; }
+      enum sec                              { value 4; }
+      enum dnu                              { value 5; }
+      enum prs                              { value 6; }
+      enum stu                              { value 7; }
+      enum st2                              { value 8; }
+      enum tnc                              { value 9; }
+      enum st3-e                            { value 10; }
+      enum st3                              { value 11; }
+      enum smc                              { value 12; }
+      enum st4                              { value 13; }
+      enum prov                             { value 14; }
+      enum dus                              { value 15; }
+      enum failed                           { value 16; }
+      enum unc                              { value 17; }
+      enum nsupp                            { value 18; }
+      enum invalid                          { value 19; }
+      enum unknown                          { value 20; }
+    }
+    description
+      "Clock quality types";
+  }
+
+  typedef clock-quality-option-1-t {
+    type enumeration {
+      enum none                             { value 0; }
+      enum prc                              { value 1; }
+      enum ssu-a                            { value 2; }
+      enum ssu-b                            { value 3; }
+      enum sec                              { value 4; }
+      enum dnu                              { value 5; }
+      enum failed                           { value 16; }
+      enum unc                              { value 17; }
+      enum nsupp                            { value 18; }
+      enum invalid                          { value 19; }
+    }
+    description
+      "Clock quality types for quality option 1";
+  }
+
+  typedef clock-quality-option-2-t {
+    type enumeration {
+      enum none                             { value 0; }
+      enum prs                              { value 6; }
+      enum stu                              { value 7; }
+      enum st2                              { value 8; }
+      enum tnc                              { value 9; }
+      enum st3-e                            { value 10; }
+      enum st3                              { value 11; }
+      enum smc                              { value 12; }
+      enum st4                              { value 13; }
+      enum prov                             { value 14; }
+      enum dus                              { value 15; }
+      enum failed                           { value 16; }
+      enum unc                              { value 17; }
+      enum nsupp                            { value 18; }
+      enum invalid                          { value 19; }
+    }
+    description
+      "Clock quality types for quality option 2";
+  }
+
+  typedef clock-id-t {
+    type meta:ascii-string {
+      length "1..32";
+    }
+    description
+      "Clock Id";
+  }
+
+  typedef clock-direction-t {
+    type enumeration {
+      enum auto                             { value 0; }
+      enum tx-only                          { value 1; }
+      enum rx-only                          { value 2; }
+      enum both                             { value 3; }
+    }
+    description
+      "The clock direction supported on this interface";
+  }
+
+  feature clock-properties {
+    description
+      "This feature means that the device supports setting clocking properties
+       on physical interfaces.";
+  }
+
+
+  grouping clock-identifiers-config {
+
+    leaf clock-type {
+      // Low-level model info: Corresponds to csmEnt*(Clock|Source)Type.
+      mandatory true;
+      type identityref {
+        base "clock-source-t";
+      }
+      description
+        "The type of a clock source.";
+
+      user-ext:CLI-param-help "Configure clock source type";
+      user-ext:CLI-comm-help "Configure clock source type";
+      user-ext:CLI-no-comm-help "Remove clock source type";
+    }
+
+    leaf if-name {
+      // Low-level model info: Corresponds to csmEnt*(Clock|Source)Id when the type is a network interface."
+      type custom:iface-name;
+      when "(../clock-type = 'synchronization:interface')";
+      description
+        "Interface name.";
+
+      user-ext:CLI-param-help "Configure interface name";
+      user-ext:CLI-comm-help "Configure interface name";
+      user-ext:CLI-no-comm-help "Remove interface name";
+    }
+
+    leaf clock-id {
+      // Low-level model info: Corresponds to csmEnt*(Clock|Source)Id when the type is not a network interface."
+      type clock-id-t;
+      when "(../clock-type != 'synchronization:interface')";
+      description
+        "The identifier for the clock source.";
+
+      user-ext:CLI-param-help "Configure clock source id";
+      user-ext:CLI-comm-help "Configure clock source id";
+      user-ext:CLI-no-comm-help "Remove clock source id";
+    }
+
+  } // clock-identifiers-config
+
+  grouping clock-identifiers-state {
+
+    leaf clock-type {
+      // Low-level model info: Corresponds to csmEnt*(Clock|Source)Type.
+      type identityref {
+        base "clock-source-state-t";
+      }
+      description
+        "The type of a clock source.";
+    }
+
+    leaf if-name {
+      // Low-level model info: Corresponds to csmEnt*(Clock|Source)Id when the type is a network interface."
+      type custom:iface-name;
+      description
+        "Interface name.";
+    }
+
+    leaf clock-id {
+      // Low-level model info: Corresponds to csmEnt*(Clock|Source)Id when the type is not a network interface."
+      type clock-id-t;
+      description
+        "The identifier for the clock source.";
+    }
+
+  } // clock-identifiers-state
+
+  grouping synce-global-config {
+
+    leaf default-protocol-status {
+      // Low-level model info: Corresponds to esmcEntDefaultProtoStatus.
+      type protocol-status-t;
+      default "disable";
+      description
+        "The default status of the ESMC protocol for Ethernet
+        interfaces.";
+
+      user-ext:CLI-param-help "Configure default ESMC protocol status for Ethernet interfaces";
+      user-ext:CLI-comm-help "Configure default ESMC protocol status for Ethernet interfaces";
+      user-ext:CLI-no-comm-help "Remove default ESMC protocol status for Ethernet interfaces";
+    }
+
+    leaf quality-option {
+      // Low-level model info: Corresponds to csmEntQualityOption and esmcEntQualityOption.
+      type clock-quality-option-t;
+      default "1";
+      description
+        "The clock quality numbering convention to be used in the
+        synchronization domain";
+
+      user-ext:CLI-param-help "Configure clock quality numbering convention for domain";
+      user-ext:CLI-comm-help "Configure clock quality numbering convention for domain";
+      user-ext:CLI-no-comm-help "Remove clock quality numbering convention for domain";
+    }
+
+    container force-switch {
+
+      presence
+        "Indicates that force switch is active.";
+
+      description
+        "Force switch parameters.";
+
+      user-ext:CLI-comm-help "Configure reference source for domain regardless of other available sources";
+      user-ext:CLI-no-comm-help "Remove reference source for domain regardless of other available sources";
+
+      uses clock-identifiers-config;
+
+    } // force-switch
+
+    container manual-switch {
+
+      presence
+        "Indicates that manual switch is active.";
+
+      description
+        "Manual switch parameters.";
+
+      user-ext:CLI-comm-help "Configure reference source for domain if no other source of higher quality is available";
+      user-ext:CLI-no-comm-help "Remove reference source for domain if no other source of higher quality is available";
+
+      uses clock-identifiers-config;
+
+    } // manual-switch
+
+    leaf quality-enabled {
+      // Low-level model info: Corresponds to csmEntQlEnabled.
+      type boolean;
+      default true;
+      description
+        "Whether clock quality should be taken into account by the clock
+        selection algorithm.";
+
+      user-ext:CLI-param-help "Configure whether clock quality is used by clock selection algorithm";
+      user-ext:CLI-comm-help "Configure whether clock quality is used by clock selection algorithm";
+      user-ext:CLI-no-comm-help "Reset clock selection algorithm to use clock quality";
+    }
+
+    leaf hold-off-time {
+      // Low-level model info: Corresponds to csmEntHoldOffTime.
+      type uint32 {
+        range "50..10000";
+      }
+      units "milliseconds";
+      default 300;
+      description
+        "The hold-off time for the synchronization domain.  This is
+        the amount of time that the selection algorithm should
+        wait after a time source reports QL-FAILED before this
+        information is propagated to the clock selection process.";
+
+      user-ext:CLI-param-help "Configure hold-off time for domain in ms";
+      user-ext:CLI-comm-help "Configure hold-off time for domain in ms";
+      user-ext:CLI-no-comm-help "Remove hold-off time for domain in ms";
+    }
+
+    leaf wait-to-restore-time {
+      // Low-level model info: Corresponds to csmEntWtrTime.
+      type uint32 {
+        range "0..86400";
+      }
+      units "seconds";
+      default 300;
+      description
+        "The wait to restore time for the synchronization domain.
+        After a time source has recovered after a failure,
+        this is the amount of time before the new quality is passed to
+        the selection process.";
+
+      user-ext:CLI-param-help "Configure wait to restore time for domain in seconds";
+      user-ext:CLI-comm-help "Configure wait to restore time for domain in seconds";
+      user-ext:CLI-no-comm-help "Remove wait to restore time for domain in seconds";
+    }
+
+    leaf unknown-source-quality {
+      // Low-level model info: Corresponds to csmEntUnknownSourceQl.
+      when "(not(../quality-option) or (../quality-option = '1'))";
+      type clock-quality-option-1-t;
+      default "sec";
+      description
+        "The clock quality that should be assumed for
+        sources where clock quality information is not signaled.";
+
+      user-ext:CLI-param-help "Configure clock quality assumed for sources where quality is not signaled";
+      user-ext:CLI-comm-help "Configure clock quality assumed for sources where quality is not signaled";
+      user-ext:CLI-no-comm-help "Remove clock quality assumed for sources where quality is not signaled";
+    }
+
+    leaf tx-holdover-quality {
+      // Low-level model info: Corresponds to csmEntTxHoldoverQl.
+      type clock-quality-t;
+      default "none";
+      description
+        "The quality level to transmit when in holdover (when the device
+        loses its reference source and transitions to using its internal
+        source).";
+
+      // Check that the quality is valid for the configured quality option.
+      must "((((not(/synchronization/synce/quality-option)) or (/synchronization/synce/quality-option = '1')) and " +
+           "  ((. != 'prs') and (. != 'stu') and (. != 'st2') and (. != 'tnc') and (. != 'st3-e') and (. != 'st3') and (. != 'smc') and (. != 'st4') and (. != 'prov') and (. != 'dus'))) or " +
+           " ((/synchronization/synce/quality-option != '1') and " +
+           "  ((. != 'prc') and (. != 'ssu-a') and (. != 'ssu-b') and (. != 'sec') and (. != 'dnu'))))" {
+        error-message "The tx-holdover-quality value is not valid for the configured quality-option";
+      }
+
+      user-ext:CLI-param-help "Configure quality level to transmit when in holdover";
+      user-ext:CLI-comm-help "Configure quality level to transmit when in holdover";
+      user-ext:CLI-no-comm-help "Remove quality level to transmit when in holdover";
+    }
+
+    leaf tx-freerun-quality {
+      type clock-quality-t;
+      default "none";
+      description
+        "The quality level to transmit when in freerun (when the device
+        is not in holdover and is using its internal source).";
+
+      // Check that the quality is valid for the configured quality option.
+      must "((((not(/synchronization/synce/quality-option)) or (/synchronization/synce/quality-option = '1')) and " +
+           "  ((. != 'prs') and (. != 'stu') and (. != 'st2') and (. != 'tnc') and (. != 'st3-e') and (. != 'st3') and (. != 'smc') and (. != 'st4') and (. != 'prov') and (. != 'dus'))) or " +
+           " ((/synchronization/synce/quality-option != '1') and " +
+           "  ((. != 'prc') and (. != 'ssu-a') and (. != 'ssu-b') and (. != 'sec') and (. != 'dnu'))))" {
+        error-message "The tx-freerun-quality value is not valid for the configured quality-option";
+      }
+
+      user-ext:CLI-param-help "Configure quality level to transmit when in freerun";
+      user-ext:CLI-comm-help "Configure quality level to transmit when in freerun";
+      user-ext:CLI-no-comm-help "Remove quality level to transmit when in freerun";
+    }
+
+  } // synce-global-config
+
+  grouping synce-interface-override-config {
+
+    leaf override {
+      // Low-level model info: Corresponds to esmcInterfaceTxQlOverride or esmcInterfaceRxQlOverride.
+      type clock-quality-t;
+      default "none";
+      description
+        "Specifies a value that should override the transmitted or
+        received value for the clock quality over this interface.
+
+        The transmitted value should not be set to a value for which
+        there is no corresponding SSM code, or the configuration
+        will be rejected.  If this is set to 'none', then no
+        override is carried out and the clock quality is reported
+        unmodified.
+
+        The received value is used for the quality value transmitted
+        over the CQI.  If this is set to 'none', then no override is
+        carried out and the clock quality received over the ESMC
+        protocol is used.";
+
+      // Check that the quality is valid for the configured quality option.
+      must "((((not(/synchronization/synce/quality-option)) or (/synchronization/synce/quality-option = '1')) and " +
+           "  ((. != 'prs') and (. != 'stu') and (. != 'st2') and (. != 'tnc') and (. != 'st3-e') and (. != 'st3') and (. != 'smc') and (. != 'st4') and (. != 'prov') and (. != 'dus'))) or " +
+           " ((/synchronization/synce/quality-option != '1') and " +
+           "  ((. != 'prc') and (. != 'ssu-a') and (. != 'ssu-b') and (. != 'sec') and (. != 'dnu'))))" {
+        error-message "The interface quality override value is not valid for the configured quality-option";
+      }
+
+      user-ext:CLI-param-help "Configure override value";
+      user-ext:CLI-comm-help "Configure override value";
+      user-ext:CLI-no-comm-help "Remove override value";
+    }
+
+  } // synce-interface-override-config
+
+  grouping synce-interface-config {
+
+    leaf protocol-status {
+      // Low-level model info: Corresponds to esmcInterfaceProtoStatus.
+      type protocol-status-t;
+      default "enable";
+      description
+        "The status of the ESMC protocol for this interface.";
+
+      user-ext:CLI-param-help "Configure interface ESMC protocol status";
+      user-ext:CLI-comm-help "Configure interface ESMC protocol status";
+      user-ext:CLI-no-comm-help "Remove interface ESMC protocol status";
+    }
+
+    container quality {
+
+      description
+        "Interface quality parameters.";
+
+      user-ext:CLI-comm-help "Configure interface quality parameters";
+      user-ext:CLI-no-comm-help "Remove interface quality parameters";
+
+      container transmit {
+
+        description
+          "Interface quality transmit parameters.";
+
+        user-ext:CLI-comm-help "Configure interface quality transmit parameters";
+        user-ext:CLI-no-comm-help "Remove interface quality transmit parameters";
+
+        uses synce-interface-override-config;
+
+      } // transmit
+
+      container receive {
+
+        description
+          "Interface quality receive parameters.";
+
+        user-ext:CLI-comm-help "Configure interface quality receive parameters";
+        user-ext:CLI-no-comm-help "Remove interface quality receive parameters";
+
+        uses synce-interface-override-config;
+
+        leaf override-only-if-valid {
+          // Low-level model info: Corresponds to esmcInterfaceRxQlOverrideOnlVld.
+          type boolean;
+          default true;
+          description
+            "If the protocol status of the interface is enable or rx-
+            only, setting this field to true specifies that the
+            override value should only override the received value for
+            the clock quality if a valid clock quality has been
+            received from the neighbor.  Otherwise, the override value
+            will always override the received clock quality,
+            regardless of whether a valid quality has been received.";
+
+          user-ext:CLI-param-help "Configure whether override value should only be used if the received clock quality is valid";
+          user-ext:CLI-comm-help "Configure whether override value should only be used if the received clock quality is valid";
+          user-ext:CLI-no-comm-help "Reset the override value to be used only if the received clock quality is valid";
+        }
+
+      } // receive
+
+    } // quality
+
+  } // synce-interface-config
+
+  grouping synce-clock-source-config {
+
+    leaf lockout {
+      // Low-level model info: Corresponds to csmClockSourceLockout.
+      type boolean;
+      default false;
+      description
+        "Prevent this time source from being included in the possible sources
+        to synchronize from.";
+
+      user-ext:CLI-param-help "Configure whether this source should be included in the set of sources to synchronize from";
+      user-ext:CLI-comm-help "Configure whether this source should be included in the set of sources to synchronize from";
+      user-ext:CLI-no-comm-help "Reset this source to be included in the set of sources to synchronize from";
+    }
+
+    leaf priority {
+      // Low-level model info: Corresponds to csmClockSourcePriority.
+      type uint32 {
+        range "1..1024";
+      }
+      default 512;
+      description
+        "The priority to be applied to this source during the source
+        selection process.  A smaller value represents a higher priority.";
+
+      user-ext:CLI-param-help "Configure priority applied to source during source selection";
+      user-ext:CLI-comm-help "Configure priority applied to source during source selection";
+      user-ext:CLI-no-comm-help "Remove priority applied to source during source selection";
+    }
+
+    leaf hold-off-time {
+      // Low-level model info: Corresponds to csmClockSourceHoldOffTime.
+      type uint32 {
+        range "50..10000";
+      }
+      units "milliseconds";
+      default 300;
+      description
+        "The duration of the hold-off timer to apply to this time source.";
+
+      user-ext:CLI-param-help "Configure hold-off timer duration in ms";
+      user-ext:CLI-comm-help "Configure hold-off timer duration in ms";
+      user-ext:CLI-no-comm-help "Remove hold-off timer duration in ms";
+    }
+
+    leaf wait-to-restore-time {
+      // Low-level model info: Corresponds to csmClockSourceWtrTime.
+      type uint32 {
+        range "0..86400";
+      }
+      units "seconds";
+      default 300;
+      description
+        "The length of the wait to restore timer to apply to this time
+        source.";
+
+      user-ext:CLI-param-help "Configure wait-to-restore timer duration in seconds";
+      user-ext:CLI-comm-help "Configure wait-to-restore timer duration in seconds";
+      user-ext:CLI-no-comm-help "Remove wait-to-restore timer duration in seconds";
+    }
+
+  } // synce-clock-source-config
+
+  grouping synce-global-state {
+
+    leaf reference-clock-type {
+      // Low-level model info: Corresponds to csmEntRefClockType.
+      type identityref {
+        base "clock-source-state-t";
+      }
+      description
+        "The type of the clock source that has been selected as the
+        reference source of the synchronization domain.  Together
+        with clock-id, this uniquely identifies the clock source.";
+      config false;
+    }
+
+    leaf reference-clock-id {
+      // Low-level model info: Corresponds to csmEntRefClockId.
+      type clock-id-t;
+      description
+        "The identifer for the clock source that has been selected
+        as the reference source of the synchronization domain.
+        Together with clock-type, this uniquely identifies the
+        clock source.";
+      config false;
+    }
+
+    leaf reference-clock-quality {
+      // Low-level model info: Corresponds to csmEntRefClockQuality.
+      type clock-quality-t;
+      description
+        "The quality of the primary reference source.
+
+        This contains the quality as calculated by the source
+        selection algorithm, which is the quality of the reference
+        clock for the synchronization domain.";
+      config false;
+    }
+
+    leaf backup-clock-type {
+      // Low-level model info: Corresponds to csmEntBackupClockType.
+      type identityref {
+        base "clock-source-state-t";
+      }
+      description
+        "The type of the clock source that has been selected as the
+        backup source for the synchronization domain.  Together
+        with backup-clock-id, this uniquely identifies the
+        clock source.";
+      config false;
+    }
+
+    leaf backup-clock-id {
+      // Low-level model info: Corresponds to csmEntBackupClockId.
+      type clock-id-t;
+      description
+        "The identifier for the clock source that has been selected
+        as the backup source for the synchronization domain.
+        Together with backup-clock-type, this uniquely
+        identifies the clock source.";
+      config false;
+    }
+
+    leaf backup-clock-quality {
+      // Low-level model info: Corresponds to csmEntBackupClockQuality.
+      type clock-quality-t;
+      description
+        "The quality of the backup reference source.
+
+        This will contain the quality, as calculated by the source
+        selection algorithm, of the backup reference clock for the
+        synchronization domain.";
+      config false;
+    }
+
+    leaf external-reference-clock-type {
+      // Low-level model info: Corresponds to csmEntExtRefClockType.
+      type identityref {
+        base "clock-source-state-t";
+      }
+      description
+        "The type of the clock source that has been selected as the
+        best clock source to provide as a reference to external
+        clock outputs.  This will never be of type external.
+
+        Together with external-reference-clock-id, this uniquely
+        identifies the time source.";
+      config false;
+    }
+
+    leaf external-reference-clock-id {
+      // Low-level model info: Corresponds to csmEntExtRefClockId.
+      type clock-id-t;
+      description
+        "The identifier for the clock source that has been selected
+        as the best clock source to provide as a reference to
+        external clock outputs.
+
+        Together with external-reference-clock-type, this uniquely
+        identifies the time source.";
+      config false;
+    }
+
+    leaf external-reference-clock-quality {
+      // Low-level model info: Corresponds to csmEntExtRefClockQuality.
+      type clock-quality-t;
+      description
+        "The quality of the external reference source.
+
+        This will contain the quality, as calculated by the source
+        selection algorithm, of the external reference clock for
+        the synchronization domain.";
+      config false;
+    }
+
+    leaf current-holdover-duration {
+      // Low-level model info: Corresponds to csmEntCurrentHoldoverDuration.
+      type uint32;
+      description
+        "If this node is currently in holdover, this field reports the
+        number of milliseconds that the node has been in holdover
+        mode.
+
+        If not in holdover, this field is not reported.";
+      config false;
+    }
+
+    leaf previous-holdover-duration {
+      // Low-level model info: Corresponds to csmEntPreviousHoldoverDuration.
+      type uint32;
+      description
+        "The length of time, in milliseconds, that this node was in
+        holdover when last in holdover.
+
+        This field is updated whenever the node leaves holdover
+        state.
+
+        If the node has never been in holdover, this field is not
+        reported.";
+      config false;
+    }
+
+  } // synce-global-state
+
+  grouping synce-interface-state {
+
+    leaf if-name {
+      // Low-level model info: Corresponds to esmcIntfStatusIntfIndex.
+      type custom:iface-name;
+      description
+        "Interface name.";
+      config false;
+    }
+
+    leaf sub-layer-status {
+      // Low-level model info: Corresponds to esmcIntfStatusOperStatus.
+      type meta:oper-status;
+      description
+        "The operational status of the sub-layer of this interface.";
+      config false;
+    }
+
+    leaf protocol-status {
+      // Low-level model info: Corresponds to esmcIntfStatusProtoStatus.
+      type protocol-status-t;
+      description
+        "The configured ESMC protocol status of the interface.";
+      config false;
+    }
+
+    leaf effective-rx-quality {
+      // Low-level model info: Corresponds to esmcIntfStatusEffRxQual.
+      type clock-quality-t;
+      description
+        "The effective quality being received on this interface.
+
+        If ESMC Rx is enabled for this interface, then this will
+        give either:
+        -  the quality configured for receive override,
+        -  the quality in the most recently received PDU if no Rx
+        quality override is occuring, or
+        -  'failed' if the PDU timeout limit has been reached.
+
+        If ESMC Rx is disabled for this interface, this field will
+        contain 'none'.";
+      config false;
+    }
+
+    leaf effective-tx-quality {
+      // Low-level model info: Corresponds to esmcIntfStatusEffTxQual.
+      type clock-quality-t;
+      description
+        "The effective quality being transmitted on this interface.
+
+        If ESMC Tx is enabled for this interface, then this field
+        will give either:
+        -  the quality configured for transmit override, or
+        -  the quality being advertized in ESMC PDUs, which is the
+        quality of the current clock for the synchronization
+        domain with squelching applied.
+
+        If ESMC Tx is disabled for this interface, this field will
+        contain 'none'.";
+      config false;
+    }
+
+    leaf pdus-received {
+      // Low-level model info: Corresponds to esmcIntfStatusPdusRcvd.
+      type uint32;
+      description
+        "Count of ESMC PDUs that have been received on this
+        interface.";
+      config false;
+    }
+
+    leaf pdus-sent {
+      // Low-level model info: Corresponds to esmcIntfStatusPdusSent.
+      type uint32;
+      description
+        "Count of ESMC PDUs that have been sent on this interface.";
+      config false;
+    }
+
+  } // synce-interface-state
+
+  grouping synce-clock-source-state {
+
+    leaf source-type {
+      // Low-level model info: Corresponds to csmClockSourceStatusSourceType.
+      type identityref {
+        base "clock-source-state-t";
+      }
+      description
+        "Identifies the type of the clock source to which this
+        status information applies.";
+      config false;
+    }
+
+    leaf source-id {
+      // Low-level model info: Corresponds to csmClockSourceStatusSourceId.
+      type clock-id-t;
+      description
+        "Identifies the clock source to which this status
+        information applies.";
+      config false;
+    }
+
+    leaf effective-rx-quality {
+      // Low-level model info: Corresponds to csmClockSourceStatusEffRxQl.
+      type clock-quality-t;
+      description
+        "The effective quality being received for this clock
+        source.
+
+        Note that this field displays the quality being used in
+        the clock selection process.  This means that, for
+        example, if the clock source has recently transitioned
+        from 'failed' and the wait-to-restore timer is
+        running then this value will still indicate that the clock
+        quality is 'failed'.";
+      config false;
+    }
+
+    leaf time-failed {
+      // Low-level model info: Corresponds to csmClockSourceStatusTimeFailed.
+      type uint32;
+      units "milliseconds";
+      description
+        "The length of time in milliseconds since the time source
+        transitioned to QL-FAILED.  If the source is not currently
+        in QL-FAILED, this will be zero.";
+      config false;
+    }
+
+    leaf time-up {
+      // Low-level model info: Corresponds to csmClockSourceStatusTimeUp.
+      type uint32;
+      units "milliseconds";
+      description
+        "The length of time in milliseconds since the time source
+        transitioned from QL-FAILED to a non-failed state.  If the
+        source is currently in state QL-FAILED, this will be zero.
+        If the source has never been in state QL-FAILED, this is
+        the length of time since the source was created.";
+      config false;
+    }
+
+  } // synce-clock-source-state
+
+  grouping clock-properties {
+
+    leaf clock-direction {
+        type clock-direction-t;
+        description
+          "Clocking signal direction supported on this interface.";
+
+        user-ext:CLI-comm-help "Set clocking signal direction supported on this interface";
+        user-ext:CLI-no-comm-help "Remove clocking signal direction supported on this interface";
+        user-ext:CLI-param-help "Set clocking signal direction supported on this interface";
+
+        default auto;
+    }
+
+  } // clock-properties
+
+
+  container synchronization {
+
+    description
+      "Synchronization configuration and state";
+
+    user-ext:CLI-comm-help "Configure Synchronization";
+    user-ext:CLI-no-comm-help "Configure Synchronization";
+
+    container synce {
+
+      presence
+        "Configure SyncE.";
+
+      description
+        "SyncE configuration and state";
+
+      user-ext:CLI-comm-help "Configure SyncE";
+      user-ext:CLI-no-comm-help "Configure SyncE";
+
+      uses synce-global-config;
+
+      container interfaces {
+
+        if-feature interfaces:standard-interfaces;
+        user-ext:CLI-not-command;
+
+        description
+          "SyncE interface configuration.";
+
+        list interface {
+
+          description
+            "Per interface ESMC and clock configuration parametere";
+
+          user-ext:CLI-comm-help "Configure SyncE interface";
+          user-ext:CLI-no-comm-help "Remove SyncE interface";
+
+          key "if-name";
+
+          leaf if-name {
+            type custom:iface-name;
+            description
+              "Interface name.";
+
+            user-ext:CLI-param-help "Interface name";
+          }
+
+          uses synce-interface-config;
+          uses synce-clock-source-config;
+
+        } // interface
+
+      } // interfaces
+
+      list clock-source {
+
+        description
+          "This table is used to control selection algorithm behavior
+          on a per-source basis.";
+
+        user-ext:CLI-comm-help "Configure clock source";
+        user-ext:CLI-no-comm-help "Remove clock source";
+
+        key "clock-type clock-id";
+
+        leaf clock-type {
+          // Low-level model info: Corresponds to csmClockSourceClockType.
+          type identityref {
+            base "clock-source-non-if-t";
+          }
+          description
+            "Specifies the type of the time source to which this
+            configuration applies.  Together with clock-id, this
+            uniquely identifies the time source within this entity.";
+
+          user-ext:CLI-param-help "Clock type";
+        }
+
+        leaf clock-id {
+          // Low-level model info: Corresponds to csmClockSourceId.
+          type clock-id-t;
+          description
+            "Specifies the numeric ID of the time source to which this
+            configuration applies.  Together with clock-type, this
+            uniquely identifies the time source within this entity.
+
+            For clock sources of type 'interface', this specifies
+            the interface index.";
+
+          user-ext:CLI-param-help "Clock id";
+        }
+
+        uses synce-clock-source-config;
+
+        leaf quality {
+          // Low-level model info: Corresponds to cqiClockSourceQuality
+          type clock-quality-t;
+          description
+            "The quality to advertise for this clock source.";
+
+          // Check that the quality is valid for the configured quality option.
+          must "((((not(/synchronization/synce/quality-option)) or (/synchronization/synce/quality-option = '1')) and " +
+               "  ((. != 'prs') and (. != 'stu') and (. != 'st2') and (. != 'tnc') and (. != 'st3-e') and (. != 'st3') and (. != 'smc') and (. != 'st4') and (. != 'prov') and (. != 'dus'))) or " +
+               " ((/synchronization/synce/quality-option != '1') and " +
+               "  ((. != 'prc') and (. != 'ssu-a') and (. != 'ssu-b') and (. != 'sec') and (. != 'dnu'))))" {
+            error-message "The clock source quality value is not valid for the configured quality-option";
+          }
+
+          user-ext:CLI-param-help "Configure the quality to advertise for this clock source";
+          user-ext:CLI-comm-help "Configure the quality to advertise for this clock source";
+          user-ext:CLI-no-comm-help "Remove the quality to advertise for this clock source";
+        }
+
+      } // clock-source
+
+    } // synce
+
+    container synce-state {
+
+      description
+        "SyncE state.";
+
+      config false;
+
+      container state {
+
+        description
+          "Global SyncE state.";
+
+        config false;
+
+        uses synce-global-state;
+
+      } // state
+
+      container interface-state-list {
+
+        description
+          "Container to hold SyncE interface state.";
+
+        config false;
+
+        list interface-state {
+
+          description
+            "SyncE interface state";
+
+          config false;
+
+          // Actions in state lists require keyed lists.
+          key "if-name";
+
+          // Low-level model info: Corresponds to AMB_ESMC_INTF_TRIGGER (esmcIntfTriggerTable).
+          action clear-if-statistics {
+
+            description
+              "Clear interface statistics.";
+
+            user-ext:CLI-param-help "Clear interface statistics";
+
+            input {
+
+              leaf clear-pdus-received {
+                // Low-level model info: Corresponds to esmcIntfTriggerClrPdusRcvd.
+                type boolean;
+                default true;
+                description
+                  "Reset the pdus-received counter for this interface.";
+
+                user-ext:CLI-param-help "Reset PDUs received counter";
+              }
+
+              leaf clear-pdus-sent {
+                // Low-level model info: Corresponds to esmcIntfTriggerClrPdusSent.
+                type boolean;
+                default true;
+                description
+                  "Reset the pdus-sent counter for this interface.";
+
+                user-ext:CLI-param-help "Reset PDUs sent counter";
+              }
+
+            } // input
+
+          } // clear-if-statistics
+
+          uses synce-interface-state;
+
+        } // interface-state
+
+      } // interface-state-list
+
+      container clock-source-state-list {
+
+        description
+          "Container to hold clock source state.";
+
+        config false;
+
+        list clock-source-state {
+
+          description
+            "Clock source state";
+
+          config false;
+
+          // Actions in state lists require keyed lists.
+          key "source-type source-id";
+
+          // Low-level model info: Corresponds to AMB_CSM_CLK_SRC_TRG (csmClockSourceTriggerTable).
+          action clock-source-reset-wait-to-restore {
+
+            description
+              "Reset clock wait to restore timer.";
+
+            user-ext:CLI-param-help "Reset clock wait to restore timer";
+
+          } // clock-source-reset-wait-to-restore
+
+          uses synce-clock-source-state;
+
+        } // clock-source-state
+
+      } // clock-source-state-list
+
+    } // synce-state
+
+  } // synchronization
+
+
+  // Low-level model info:  Corresponds to csmClockSourceChange
+  notification clock-source-change {
+
+    description
+      "A clock source, or its quality, has changed.";
+
+    leaf changed-clock {
+      // Low-level model info: Corresponds to csmNotifChangedRefClockType.
+      type ref-clock-t;
+      description
+        "Which clock has changed.";
+    }
+
+    container new-clock {
+
+      uses clock-identifiers-state;
+
+      leaf quality {
+        // Low-level model info: Corresponds to csmNotifNewClockQuality.
+        type clock-quality-t;
+        description
+          "The quality of the new source.";
+      }
+
+    } // new-clock
+
+    container old-clock {
+
+      uses clock-identifiers-state;
+
+      leaf quality {
+        // Low-level model info: Corresponds to csmNotifOldClockQuality.
+        type clock-quality-t;
+        description
+          "The quality of the old source.";
+      }
+
+    } // old-clock
+
+  } // clock-source-change
+
+  // Low-level model info:  Corresponds to csmClockSourceFailStatus
+  notification clock-source-fail-status {
+
+    description
+      "A clock source has transitioned into or out of a failed state.";
+
+    uses clock-identifiers-state;
+
+    leaf is-failed {
+      // Low-level model info: Corresponds to csmcClockFailSttsIsFailed
+      type boolean;
+      description
+        "Whether or not the clock is in a failed state.";
+    }
+
+    leaf new-quality {
+      // Low-level model info: Corresponds to csmClockFailSttsNewQual.
+      type clock-quality-t;
+      description
+        "The quality of the clock source.";
+    }
+
+  } // clock-source-fail
+
+
+  augment "/interface:interfaces/interface:interface" {
+
+    if-feature clock-properties;
+    when
+      "(interface:type = 'interface:ethernet-csmacd')" {
+      description
+        "Clock direction can be applied to an ethernet interface";
+    }
+
+    description
+      "Augments interface with clock properties";
+
+    uses synchronization:clock-properties;
+  }
+
+} // metaswitch-synchronization
+

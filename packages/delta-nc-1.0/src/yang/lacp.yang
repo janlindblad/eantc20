@@ -1,0 +1,1884 @@
+module lacp {
+
+  // if-feature in enum and identity requires Yang version 1.1.
+  // Start yang1.1-only
+  yang-version 1.1;
+  // End yang1.1-only
+
+  namespace "http://metaswitch.com/yang/nbu/lacp/201511110000Z";
+
+  prefix lacp;
+
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix "interfaces"; }
+  import interface { prefix "interface"; }
+  import bfd { prefix "bfd"; }
+  import metaswitch-yang-types { prefix meta; }
+  import metaswitch-custom-yang-types { prefix "custom"; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Link Aggregation Control Protocol";
+
+  revision 2015-11-11 {
+    description "Initial revision.";
+  }
+
+  feature lacp-mpls-label-hash-key {
+    description
+      "This feature means that the device supports hashing on MPLS label.";
+  }
+
+  feature lacp-mc-lag {
+    description
+      "This feature means that the device supports multi-chassis link
+      aggregation groups (MC-LAG).";
+  }
+
+  typedef lacp-if-agg-state {
+    type enumeration {
+      enum inactive                         { value 1; }
+      enum active                           { value 2; }
+      enum bundle-failed                    { value 3; }
+      enum standby                          { value 4; }
+      enum incompatible                     { value 5; }
+      enum too-few-links                    { value 6; }
+      enum lacp-disabled                    { value 7; }
+      enum no-ptnr-info                     { value 8; }
+      enum ptnr-indiv                       { value 9; }
+      enum max-less-min                     { value 10; }
+      enum diff-lag-id                      { value 11; }
+      enum diff-mtu-size                    { value 12; }
+      enum connected                        { value 13; }
+    }
+    description
+      "LACP interface aggregation state.";
+  }
+
+  typedef lacp-mux-state {
+    type enumeration {
+      enum detached                         { value 1; }
+      enum waiting                          { value 2; }
+      enum attached                         { value 3; }
+      enum collecting                       { value 4; }
+      enum distributing                     { value 5; }
+      enum collecting-distributing          { value 6; }
+    }
+    description
+      "Detailed information about the state of the Mux machine for
+      an aggregatable interface.";
+  }
+
+  typedef lacp-bundle-if-agg-state {
+    type enumeration {
+      enum not-added                        { value 1; }
+      enum adding                           { value 2; }
+      enum added                            { value 3; }
+      enum too-few-links                    { value 4; }
+      enum up                               { value 5; }
+      enum going-down                       { value 6; }
+      enum failed-perm                      { value 7; }
+      enum mc-lag-standby                   {
+        // Start yang1.1-only
+        if-feature lacp-mc-lag;
+        // End yang1.1-only
+        value 8;
+      }
+    }
+    description
+      "Aggregation state of a bundle interface.";
+  }
+
+  typedef mclag-role-t {
+    type enumeration {
+      enum none;
+      enum active;
+      enum standby;
+    }
+    description "Role of the device for a bundle.";
+  }
+
+  typedef mclag-role-reason-t {
+    type enumeration {
+      enum none;
+      enum local-best;
+      enum remote-best;
+      enum lockout;
+      enum startup;
+      enum deact;
+    }
+    description "Reason why a particular MC-LAG role has been selected for the bundle.";
+  }
+
+  typedef mclag-sync-status-t {
+    type enumeration {
+      enum down;
+      enum connected;
+      enum synchronized;
+      enum sync-failed;
+    }
+    description "The local connection status of the redundancy group.";
+  }
+
+  typedef mclag-rem-bndl-sync-status-t {
+    type enumeration {
+      enum no-local-bundle;
+      enum local-bundle-not-ready;
+      enum synchronizing;
+      enum mac-address-mismatch;
+      enum actor-key-mismatch;
+      enum synchronized;
+    }
+    description "The local connection status of the redundancy group.";
+  }
+
+  typedef lacp-priority-t {
+    type uint32 {
+      range "1..65535";
+    }
+    description
+      "(1-65535)";
+  }
+
+  typedef lacp-short-duration-t {
+    type uint32 {
+      range "300..6000";
+    }
+    description
+      "MILLISECS (300-6000)";
+  }
+
+  typedef lacp-long-duration-t {
+    type uint32 {
+      range "3..360";
+    }
+    description
+      "SECS (3-360)";
+  }
+
+  typedef lacp-fast-interval-t {
+    type uint32 {
+      range "100..1000";
+    }
+    description
+      "MILLISECS (100-1000)";
+  }
+
+  typedef lacp-slow-interval-t {
+    type uint32 {
+      range "1..60";
+    }
+    description
+      "SECS (1-60)";
+  }
+
+  typedef lacp-port-priority-t {
+    type uint32 {
+      range "0..65535";
+    }
+    description
+      "(0-65535)";
+  }
+
+  typedef lacp-collector-max-delay-t {
+    type uint32 {
+      range "0..65535";
+    }
+    description
+      "TENS OF MICROSECS (0-65535)";
+  }
+
+  typedef lacp-wait-timer-duration-t {
+    type uint32 {
+      range "0..10000";
+    }
+    description
+      "MILLISECS (0-10000)";
+  }
+
+  typedef lacp-active-links-limits-t {
+    type uint32 {
+      range "1..65535";
+    }
+    description
+      "(1-65535)";
+  }
+
+  typedef lacp-mclag-priority-t {
+    type uint32 {
+      range "5..65530";
+    }
+    description
+      "(5-65530)";
+  }
+
+  typedef lacp-mclag-degrade-thrshld-t {
+    type uint32 {
+      range "0..65535";
+    }
+    description
+      "(0-65535)";
+  }
+
+  typedef lacp-mclag-admin-action-t {
+    type enumeration {
+      enum none                             { value 1; description "No action"; }
+      enum manual-switch                    { value 2; description "Boost priority to take active role unless local error"; }
+      enum force-switch                     { value 3; description "Boost priority to take active role ignoring any local error"; }
+      enum lockout                          { value 4; description "Reduce priority to minimum possible value"; }
+    }
+    description
+      "Admin action";
+  }
+
+  typedef lacp-system-priority-t {
+    type uint32 {
+      range "1..65535";
+    }
+    description
+      "(1-65535)";
+  }
+
+  typedef lacp-node-id-t {
+    type uint32 {
+      range "0..7";
+    }
+    description
+      "(0-7)";
+  }
+
+  typedef lacp-connection-timeout-t {
+    type uint32 {
+      range "1..65535";
+    }
+    description
+      "SECS (1-65535)";
+  }
+
+  typedef lacp-rg-id-t {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "(0-4294967295)";
+  }
+
+  typedef lacp-rg-id-non-zero-t {
+    type uint32 {
+      range "1..4294967295";
+    }
+    description
+      "(1-4294967295)";
+  }
+
+  typedef lacp-rg-member-id-t {
+    type string {
+      pattern "([0-9a-fA-F]{2}){4}";
+    }
+    description
+      "Member ID (XXXXXXXX)";
+  }
+
+  typedef lacp-bundle-mode-t {
+    type enumeration {
+      enum off                              { value 1; description "Enable without LACP"; }
+      enum active                           { value 2; description "Active mode (LACP)"; }
+      enum passive                          { value 3; description "Passive mode (LACP)"; }
+    }
+    description
+      "Bundle mode";
+  }
+
+
+  grouping lacp-transmit-state-bits {
+
+    // Low-level model info: Corresponds to AMB_LACP_TX_STATE_FLAGS group.
+
+    description
+      "The Actor and Partner State values from the LACPDU.  These
+      are as defined in 802.1AX-2008 s5.4.2.2.";
+
+    leaf lacp-activity {
+      type boolean;
+      description
+        "Lacp activity.  This flag is set for Active LACP, and not
+        set for Passive LACP.";
+    }
+
+    leaf lacp-timeout {
+      type boolean;
+      description
+        "Lacp timeout.  This flag is set for Short Timeout, and not
+        set for Long Timeout.";
+    }
+
+    leaf aggregation {
+      type boolean;
+      description
+        "Aggregation.  If the System considers this link to be
+        Aggregateable, this flag is set; if the link is considered
+        to be Individual, this flag is not set.";
+    }
+
+    leaf synchronization {
+      type boolean;
+      description
+        "Synchronization.  If the System considers this link to be in
+        sync, this flag is set; otherwise it is not set.";
+    }
+
+    leaf collecting {
+      type boolean;
+      description
+        "Collecting.  If collection of incoming frames on this link
+        is definitely enabled, this flag is set; otherwise it is not
+        set.";
+    }
+
+    leaf distributing {
+      type boolean;
+      description
+        "Distributing.  If distribution of outgoing frames on this
+        link is definitely disabled, this flag is set; otherwise it
+        is not set.";
+    }
+
+    leaf defaulted {
+      type boolean;
+      description
+        "Defaulted.  If the System is using Defaulted operational
+        Partner information for this interface, this flag is set;
+        otherwise it is not set.";
+    }
+
+    leaf expired {
+      type boolean;
+      description
+        "Expired.  If the Actor's Receive machine is in the EXPIRED
+        state, this flag is set; otherwise it is not set.";
+    }
+
+  } // lacp-transmit-state-bits
+
+  grouping global-parameters-for-lacp {
+
+    // Low-level model info: Corresponds to AMB_LACP_LM_ENT (lacpLmEntTable).
+
+    description "Configure LACP";
+
+    user-ext:CLI-comm-help "Configure LACP";
+    user-ext:CLI-no-comm-help "Configure LACP";
+
+    container system {
+
+      description "Configure LACP system";
+
+      user-ext:CLI-comm-help "Configure LACP system";
+      user-ext:CLI-no-comm-help "Configure LACP system";
+
+      leaf priority {
+        type lacp-priority-t;
+        default "32768";
+        description "Set system priority";
+
+        user-ext:CLI-comm-help "Set system priority";
+        user-ext:CLI-no-comm-help "Set default system priority";
+        user-ext:CLI-param-help "Set system priority";
+      }
+
+      leaf mac-address {
+        // Low-level model info: Corresponds to lacpLmEntSystemMacAddr
+        type interfaces:iface-mac-t;
+        default "00:00:00:00:00:00";
+        description "Set system mac address";
+
+        user-ext:CLI-comm-help "Set system mac address";
+        user-ext:CLI-no-comm-help "Remove system mac address";
+        user-ext:CLI-param-help "Set system mac address";
+      }
+
+    } // system
+
+    container state {
+
+      // Low-level model info: Corresponds to read-only fields in AMB_LACP_LM_ENT (lacpLmEntTable).
+
+      description "Link Aggregation Control state.";
+
+      config false;
+
+      leaf max-bundle-links {
+        type uint32;
+        description
+          "The maximum number of links that can be aggregated into a
+          bundle interface.
+
+          The value is the maximum number of links supported by hardware.";
+        config false;
+      }
+
+      leaf system-mac-addr {
+        type interfaces:iface-mac-t;
+        description
+          "The system MAC address to combine with the system priority
+          to form the system ID that is advertised in LACP protocol
+          messages.
+
+          The value may be configured using mac-address.
+
+          If mac-address is all zeros, LACP uses a discovered system MAC
+          address.  If no system MAC address is available, LACP does not go
+          operationally up.";
+        config false;
+      }
+
+      leaf tables-last-changed {
+        type uint32;
+        units "centi-seconds";
+        description
+          "This object indicates the time of the most recent change
+          to the information displayed in the lacpBundleIfTable or
+          lacpIfTable.  This may be changes due to management action
+          or protocol events.";
+        config false;
+      }
+
+    } // state
+
+  } // global-parameters-for-lacp
+
+  grouping bfd {
+
+    container bfd {
+      description "Use Micro-BFD (RFC 7130) for liveness detection on this bundle";
+
+      presence "Use micro BFD";
+
+      choice address-family {
+        mandatory true;
+
+        description
+          "Choice of address family.";
+
+        case ipv4 {
+          description "IPv4.";
+          container ipv4 {
+
+            leaf source-address {
+              type interfaces:iface-ipv4-address-t;
+              mandatory true;
+              description "The source IPv4 address. ";
+              must "/interface:interfaces/interface:interface/interface:ipv4/interface:address[interface:ip = current()]"
+              {
+                error-message "Source address does not belong to any interface";
+              }
+            }
+
+            leaf next-hop-address {
+              type interfaces:iface-ipv4-address-t;
+              mandatory true;
+              description "The next hop IPv4 address.";
+            }
+          } // ipv4
+        } // ipv4
+
+        case ipv6 {
+          description "IPv6.";
+          container ipv6 {
+
+            leaf source-address {
+              type interfaces:iface-ipv6-address-t;
+              mandatory true;
+              description "The source IPv6 address.";
+              must "/interface:interfaces/interface:interface/interface:ipv6/interface:address[interface:ip = current()]"
+              {
+                error-message "Source address does not belong to any interface";
+              }
+            }
+
+            leaf next-hop-address {
+              type interfaces:iface-ipv6-address-t;
+              mandatory true;
+              description "The next hop IPv6 address.";
+            }
+          } // ipv6
+        } // ipv6
+      } // address-family
+
+      leaf min-rx-interval {
+        type bfd:bfd-min-interval-t;
+        units "milliseconds";
+        default "10";
+        description "Minimum BFD receive interval to negotiate";
+      }
+
+      leaf min-tx-interval {
+        type bfd:bfd-min-interval-t;
+        units "milliseconds";
+        default "10";
+        description "Minimum BFD transmission interval to negotiate";
+      }
+
+      leaf detect-mult {
+        type bfd:bfd-multiplier-t;
+        default "3";
+        description "Detection multiplier to apply for liveness changes";
+      }
+    } // bfd
+
+  } // bfd
+
+  grouping interface-parameters-for-lacp {
+
+    // Low-level model info: Corresponds to configuration in AMB_LACP_IF
+    // (lacpIfTable) and state in AMB_LACP_IF (lacpIfTable) and
+    // AMB_LACP_IF_STATS (lacpIfStatsTable).
+
+    container timeout {
+
+      description "Configure timeout";
+
+      user-ext:CLI-comm-help "Set timeout type and duration";
+      user-ext:CLI-no-comm-help "Set timeout type and duration to defaults";
+
+      // Low-level model info: Corresponds to lacpIfUseShortTimeoutDuration, lacpIfShortTimeoutDuration and lacpIfLongTimeoutDuration.
+
+      choice timeout-type {
+
+        case short-type {
+
+          container short {
+
+            description "Configure short timeout";
+
+            user-ext:CLI-comm-help "Set short timeout type and duration";
+            user-ext:CLI-no-comm-help "Set default timeout type or short duration";
+
+            presence "Set short duration";
+
+            leaf duration {
+              type lacp-short-duration-t;
+              default 3000;
+              description "Set short timeout duration";
+
+              user-ext:CLI-comm-help "Set short timeout duration in milliseconds";
+              user-ext:CLI-no-comm-help "Set short timeout duration to default";
+              user-ext:CLI-param-help "Set short timeout duration in milliseconds";
+            }
+          }
+
+        } // short-type
+
+        case long-type {
+
+          container long {
+
+            description "Configure long timeout";
+
+            user-ext:CLI-comm-help "Set long timeout type and duration";
+            user-ext:CLI-no-comm-help "Set default timeout type or long duration";
+
+            presence "Set long duration";
+
+            leaf duration {
+              type lacp-long-duration-t;
+              default 90;
+              description "Set timeout long duration";
+
+              user-ext:CLI-comm-help "Set long timeout duration in seconds";
+              user-ext:CLI-no-comm-help "Set long timeout duration to default";
+              user-ext:CLI-param-help "Set long timeout duration in seconds";
+            }
+          }
+
+        } // long-type
+
+      } // timeout-type
+
+    } // timeout
+
+    container tx {
+
+      description "Configure tx";
+
+      user-ext:CLI-comm-help "Configure transmission interval";
+      user-ext:CLI-no-comm-help "Configure transmission interval";
+
+      leaf fast-interval {
+        type lacp-fast-interval-t;
+        default 1000;
+        description "Set tx fast interval in milliseconds";
+
+        user-ext:CLI-comm-help "Set fast transmission interval in milliseconds";
+        user-ext:CLI-no-comm-help "Set default fast transmission interval";
+        user-ext:CLI-param-help "Set fast transmission interval in milliseconds";
+      }
+
+      leaf slow-interval {
+        type lacp-slow-interval-t;
+        default 30;
+        description "Set tx slow interval in seconds";
+
+        user-ext:CLI-comm-help "Set slow transmission interval in seconds";
+        user-ext:CLI-no-comm-help "Set default slow transmission interval";
+        user-ext:CLI-param-help "Set slow transmission interval in seconds";
+      }
+
+    } // tx
+
+    leaf port-priority {
+      type lacp-port-priority-t;
+      default "32768";
+      description
+        "The configured priority for this interface.  If LACP is
+        enabled and the bundle is not MC-LAG enabled, the value is
+        advertised in LACPDUs.
+
+        If the associated bundle is MC-LAG enabled, this value is
+        ignored.
+
+        The port priority currently in use for the interface is
+        given by port-priority.  If the number of interfaces
+        eligible for selection in a bundle is greater than the
+        maximum number allowed to be selected and the local system
+        has a better system ID than the partner system, the value
+        of the port priority is used to determine which interfaces
+        are selected and which are standby.
+
+        Note that a higher numerical value indicates a lower
+        priority.";
+
+      user-ext:CLI-comm-help "Set the priority for the port";
+      user-ext:CLI-no-comm-help "Set the default priority for the port";
+      user-ext:CLI-param-help "Set port priority";
+    }
+
+    container state {
+
+      config false;
+
+      container aggregation-state {
+
+        // Low-level model info: Corresponds to AMB_LACP_IF (lacpIfTable).
+
+        description
+          "Aggregation interface state";
+
+        config false;
+
+        leaf oper-status {
+          type meta:oper-status;
+          description
+            "The current operational status of this interface table
+            row.
+
+            Note that this only indicates whether DC-LACP is currently
+            attempting to perform aggregation.
+
+            The actual state of the aggregation is given by
+            aggregation-status.";
+          config false;
+        }
+
+        leaf mac-address {
+          type interfaces:iface-mac-t;
+          description
+            "The MAC address of the interface.";
+          config false;
+        }
+
+        leaf aggregation-status {
+          type lacp-if-agg-state;
+          description
+            "The detailed aggregation status of this interface.";
+          config false;
+        }
+
+        leaf mux-state {
+          type lacp-mux-state;
+          description
+            "The state of the Mux machine for this interface.";
+          config false;
+        }
+
+        leaf port-number {
+          type uint32 {
+            range "0..65535";
+          }
+          description
+            "The port number value advertised in LACPDUs on this
+            interface.
+
+            If the associated bundle is not MC-LAG enabled, this is
+            the port number locally assigned to the interface.
+
+            If the associated bundle is MC-LAG enabled, the top bit is
+            set, the next 3 bits equal lacpRgNodeId, and the remaining
+            bits are the port number locally assigned to the
+            interface.
+
+            If the interface is not OperUp, some or all of the above
+            info might be unknown.  If the port number locally
+            assigned to the interface is unknown, this field will be
+            zero.  If that is known, but the MC-LAG bundle or RG info
+            is unknown, this field will be the port number locally
+            assigned to the interface.";
+          config false;
+        }
+
+        leaf port-priority {
+          type uint32 {
+            range "0..65535";
+          }
+          description
+            "The port priority advertised by LACP on this interface.
+
+            The value is set to the configured port-priority unless the
+            associated bundle is MC-LAG enabled.
+
+            If the associated bundle is MC-LAG enabled, all interfaces
+            in the bundle use the same priority, and the port priority
+            may change dynamically as part of MC-LAG operation..";
+          config false;
+        }
+
+      } // aggregation-state
+
+      container lacp-state {
+
+        // Low-level model info: Corresponds to state in AMB_LACP_IF
+        // (lacpIfTable) and statistics in AMB_LACP_IF_STATS
+        // (lacpIfStatsTable).
+
+        description
+          "Aggregation interface LACP-specific state.";
+
+        config false;
+
+        container transmit-state {
+
+          description
+            "A bitfield containing the LACP state information currently
+            being advertised in LACPDUs.
+
+            The value is set to zero if LACP is not operational on the
+            interface.";
+          config false;
+
+          uses lacp-transmit-state-bits;
+        }
+
+        leaf partner-sys-mac-addr {
+          type interfaces:iface-mac-t;
+          description
+            "The system MAC address advertised by the LACP partner on
+            this interface.
+
+            The value is set to all zeros if LACP is not enabled, or
+            if there is no current LACP partner.";
+          config false;
+        }
+
+        leaf partner-sys-priority {
+          type uint32 {
+            range "0..65535";
+          }
+          description
+            "The system priority advertised by the LACP partner on this
+            interface.
+
+            The value is set to zero if LACP is not enabled, or if
+            there is no current LACP partner.";
+          config false;
+        }
+
+        leaf partner-key {
+          type uint32 {
+            range "0..65535";
+          }
+          description
+            "If LACP is in use, this is the LACP key advertised by the
+            current LACP protocol partner.
+
+            If LACP is not in use or there is no current LACP partner,
+            the value is set to zero.";
+          config false;
+        }
+
+        leaf partner-port-number {
+          type uint32 {
+            range "0..65535";
+          }
+          description
+            "The port number advertised by the LACP partner on this
+            interface.
+
+            The value is set to zero if LACP is not enabled, or if
+            there  is no current LACP partner.";
+          config false;
+        }
+
+        leaf partner-port-priority {
+          type uint32 {
+            range "0..65535";
+          }
+          description
+            "The port priority advertised by the LACP partner on this
+            interface.
+
+            The value is set to zero if LACP is not enabled, or if
+            there  is no current LACP partner.";
+          config false;
+        }
+
+        container partner-transmit-state {
+
+          description
+            "A bitfield containing the LACP state information currently
+            being advertised by the partner in LACPDUs.
+
+            The value is set to zero if LACP is not enabled on the
+            interface.";
+          config false;
+
+          uses lacp-transmit-state-bits;
+        }
+
+        leaf lacpdus-rx {
+          type uint32;
+          description
+            "The number of valid LACPDUs received on this interface.";
+          config false;
+        }
+
+        leaf marker-pdus-rx {
+          type uint32;
+          description
+            "The number of valid Marker PDUs received on this
+            interface.";
+          config false;
+        }
+
+        leaf marker-rsp-pdus-rx {
+          type uint32;
+          description
+            "The number of valid Marker Response PDUs received on this
+            interface.";
+          config false;
+        }
+
+        leaf illegal-rx {
+          type uint32;
+          description
+            "The number of LACPDU and Marker Protocol frames received
+            that contain a badly formatted PDU.";
+          config false;
+        }
+
+        leaf lacpdus-tx {
+          type uint32;
+          description
+            "The number of LACPDUs transmitted on this interface.";
+          config false;
+        }
+
+        leaf marker-pdus-tx {
+          type uint32;
+          description
+            "The number of Marker PDUs transmitted on this interface.
+            DC-LACP does not support Marker PDU transmission, so this
+            field is always set to zero.";
+          config false;
+        }
+
+        leaf marker-rsp-pdus-tx {
+          type uint32;
+          description
+            "The number of Marker Response PDUs transmitted on this
+            interface.";
+          config false;
+        }
+
+        leaf up-time {
+          type uint32;
+          units "centi-seconds";
+          description
+            "The time since the statistics counters were last reset,
+            either due to wrapping or re-initializing the interface.
+
+            If the interface is not operational, or LACP is performing
+            static aggregation for this interface, this field is zero.";
+          config false;
+        }
+
+      } // lacp-state
+
+    } // state
+
+  } // interface-parameters-for-lacp
+
+  grouping std-interface-parameters-for-lacp {
+
+    // Low-level model info: Corresponds to configuration in AMB_LACP_IF
+    // (lacpIfTable) and state in AMB_LACP_IF (lacpIfTable) and
+    // AMB_LACP_IF_STATS (lacpIfStatsTable).
+
+    container bundle {
+
+      when
+        "not(/interface:interfaces/interface:interface[interface:name = current()/../if-name]/interface:forwarding-mode = 'interface:network-layer')"
+      {
+        description
+          "Bundles may not be configued for routing ports.";
+      }
+
+      description "Link aggregation per-interface commands";
+
+      user-ext:CLI-comm-help "Configure bundle";
+      user-ext:CLI-no-comm-help "Configure bundle";
+
+      leaf id {
+        type interfaces:bundle-id-t;
+        description "Add the port to an aggregated interface";
+
+        user-ext:CLI-comm-help "Add port to an aggregated interface";
+        user-ext:CLI-no-comm-help "Remove port from an aggregated interface";
+        user-ext:CLI-param-help "Set port bundle id";
+      }
+
+      leaf mode {
+        type lacp-bundle-mode-t;
+        default "off";
+        description "Set adding mode";
+
+        user-ext:CLI-param-help "Set mode of LACP operation for this interface";
+        user-ext:CLI-comm-help "Set the desired mode of LACP operation for this interface";
+        user-ext:CLI-no-comm-help "Set the default mode of LACP operation for this interface";
+      }
+
+    } // bundle
+
+    uses interface-parameters-for-lacp;
+
+  } // std-interface-parameters-for-lacp
+
+  grouping custom-interface-parameters-for-lacp {
+
+    // Low-level model info: Corresponds to configuration in AMB_LACP_IF
+    // (lacpIfTable) and state in AMB_LACP_IF (lacpIfTable) and
+    // AMB_LACP_IF_STATS (lacpIfStatsTable).
+
+    container bundle {
+      description "Link aggregation per-interface commands";
+
+      user-ext:CLI-comm-help "Configure bundle";
+      user-ext:CLI-no-comm-help "Configure bundle";
+
+      leaf id {
+        type interfaces:bundle-id-t;
+        description "Add the port to an aggregated interface";
+
+        user-ext:CLI-comm-help "Add port to an aggregated interface";
+        user-ext:CLI-no-comm-help "Remove port from an aggregated interface";
+        user-ext:CLI-param-help "Set port bundle id";
+      }
+
+      leaf mode {
+        type lacp-bundle-mode-t;
+        default "off";
+        description "Set adding mode";
+
+        user-ext:CLI-param-help "Set mode of LACP operation for this interface";
+        user-ext:CLI-comm-help "Set the desired mode of LACP operation for this interface";
+        user-ext:CLI-no-comm-help "Set the default mode of LACP operation for this interface";
+      }
+
+    } // bundle
+
+    uses interface-parameters-for-lacp;
+
+  } // custom-interface-parameters-for-lacp
+
+  grouping bundle-interface-parameters-for-lacp {
+
+    // Low-level model info: Corresponds to AMB_LACP_BUNDLE_IF (lacpBundleIfTable).
+
+    leaf collector-max-delay {
+      type lacp-collector-max-delay-t;
+      units "tens of microseconds";
+      default "0";
+      description "Set collector-max-delay";
+
+      user-ext:CLI-comm-help "Set collector maximum delay in hundredths of a millisecond";
+      user-ext:CLI-no-comm-help "Set default collector maximum delay";
+      user-ext:CLI-param-help "Set collector maximum delay";
+    }
+
+    leaf wait-timer-duration {
+      type lacp-wait-timer-duration-t;
+      default "2000";
+      units "milliseconds";
+      description "Set wait timer duration";
+
+      user-ext:CLI-comm-help "Set wait timer duration in milliseconds";
+      user-ext:CLI-no-comm-help "Set default wait timer duration";
+      user-ext:CLI-param-help "Set wait timer duration in milliseconds";
+    }
+
+    container active-links {
+
+      user-ext:CLI-comm-help "Configure active links limits";
+      user-ext:CLI-no-comm-help "Configure active links limits";
+
+      // Check that the minimum number of links is not more than the maximum
+      // number of links.
+      must "(not(min) or not(max) or (number(min) <= number(max)))" {
+        error-message "Min active links must not be more than max active links";
+      }
+
+      leaf min {
+        type lacp-active-links-limits-t;
+        default "1";
+        description
+          "The minimum number of links that must be added to the
+          bundle interface before it can become active.
+
+          If there are insufficient interfaces for the bundle to
+          activate, the bundle aggregation status will be
+          too-few-links.";
+
+        user-ext:CLI-comm-help "Set lower bound on the number of active links in the bundle interface";
+        user-ext:CLI-no-comm-help "Set lower bound for the number of active links in the bundle interface to the default";
+        user-ext:CLI-param-help "Set minimum value";
+      }
+
+      leaf max {
+        type lacp-active-links-limits-t;
+        default "65535";
+        description
+          "An upper bound on the number of links that may be active
+          in the bundle interface.";
+
+        user-ext:CLI-comm-help "Set upper bound on the number of active links in the bundle interface";
+        user-ext:CLI-no-comm-help "Set upper bound for the number of active links in the bundle interface to the default";
+        user-ext:CLI-param-help "Set maximum value";
+      }
+
+    } // active-links
+
+    // Low-level model info: Corresponds to lacpBundleIfMclagRgId.
+    leaf mclag-rg-id {
+      if-feature lacp-mc-lag;
+      type lacp-rg-id-t;
+      default "0";
+      description "Set MC-LAG redundancy group to associate to the bundle";
+
+      user-ext:CLI-comm-help "Set MC-LAG redundancy group to associate to the bundle";
+      user-ext:CLI-no-comm-help "Set default MC-LAG redundancy group to associate to the bundle";
+      user-ext:CLI-param-help "Set MC-LAG redundancy group to associate to the bundle";
+    }
+
+    leaf mclag-base-priority {
+      if-feature lacp-mc-lag;
+      type lacp-mclag-priority-t;
+      default "32768";
+      description "Set the base port priority for all interfaces in an MC-LAG enabled bundle";
+
+      user-ext:CLI-comm-help "Set the base port priority for all interfaces in an MC-LAG enabled bundle";
+      user-ext:CLI-no-comm-help "Set the default base port priority for all interfaces in an MC-LAG enabled bundle";
+      user-ext:CLI-param-help "Set the base port priority for all interfaces in an MC-LAG enabled bundle";
+    }
+
+    leaf mclag-degrade-priority {
+      if-feature lacp-mc-lag;
+      type lacp-mclag-priority-t;
+      default "65530";
+      description "Set port priority for all interfaces in an MC-LAG enabled bundle if the link has become degraded";
+
+      user-ext:CLI-comm-help "Set port priority for all interfaces in an MC-LAG enabled bundle if the link has become degraded";
+      user-ext:CLI-no-comm-help "Set default port priority for all interfaces in an MC-LAG enabled bundle if the link has become degraded";
+      user-ext:CLI-param-help "Set port priority for all interfaces in an MC-LAG enabled bundle if the link has become degraded";
+    }
+
+    leaf mclag-degrade-thrshld {
+      if-feature lacp-mc-lag;
+      type lacp-mclag-degrade-thrshld-t;
+      default "1";
+      description "Set the threshold below which the bundle becomes degraded";
+
+      user-ext:CLI-comm-help "Set the threshold below which the bundle becomes degraded";
+      user-ext:CLI-no-comm-help "Set the default threshold below which the bundle becomes degraded";
+      user-ext:CLI-param-help "Set the threshold below which the bundle becomes degraded";
+    }
+
+    leaf mclag-admin-action {
+      if-feature lacp-mc-lag;
+      type lacp-mclag-admin-action-t;
+      default "none";
+      description "Set the administrative action for the bundle";
+
+      user-ext:CLI-comm-help "Set the administrative action for the bundle";
+      user-ext:CLI-no-comm-help "Set the default administrative action for the bundle";
+      user-ext:CLI-param-help "Set the administrative action for the bundle";
+    }
+
+    container load-balance {
+
+      description
+        "Load balance type";
+
+      user-ext:CLI-comm-help "Configure load balancing for the bundle";
+      user-ext:CLI-no-comm-help "Configure load balancing for the bundle";
+      user-ext:CLI-param-help "Configure load balancing for the bundle";
+
+      choice load-balance-type {
+        case type-rr {
+          leaf round-robin {
+            type empty;
+            description
+              "Round robin load balancing";
+            user-ext:CLI-comm-help "Set load balancing algorithm to round robin";
+            user-ext:CLI-no-comm-help "Set load balancing algorithm to hash";
+          }
+        }
+        case type-hash {
+          container hash {
+            description
+              "Load balance based on hash";
+            user-ext:CLI-comm-help "Set load balancing algorithm to hash";
+            user-ext:CLI-no-comm-help "Set load balancing algorithm to hash";
+            user-ext:CLI-param-help "Set load balancing algorithm to hash";
+
+            container key {
+              description
+                "Parameters used to determine the hash key";
+              user-ext:CLI-comm-help "Set parameters used to determine the hash key";
+              user-ext:CLI-no-comm-help "Set parameters used to determine the hash key";
+              user-ext:CLI-param-help "Set parameters used to determine the hash key";
+
+              presence "Set parameters for hash key";
+
+              // If the key container is specified, at least one hash key parameter must be set
+              must "((src-mac) or (dest-mac) or (src-ip) or (dest-ip) or (src-port) or (dest-port) or (mpls-label))" {
+                error-message "At least one hash key parameter must be set";
+              }
+
+              leaf src-mac {
+                type empty;
+                description "Use source MAC in hash key";
+                user-ext:CLI-comm-help "Use source MAC in hash key";
+                user-ext:CLI-no-comm-help "Do not use source MAC in hash key";
+              }
+
+              leaf dest-mac {
+                type empty;
+                description "Use destination MAC in hash key";
+                user-ext:CLI-comm-help "Use destination MAC in hash key";
+                user-ext:CLI-no-comm-help "Do not use destination MAC in hash key";
+              }
+
+              leaf src-ip {
+                type empty;
+                description "Use source IP address in hash key";
+                user-ext:CLI-comm-help "Use source IP address in hash key";
+                user-ext:CLI-no-comm-help "Do not use source IP address in hash key";
+              }
+
+              leaf dest-ip {
+                type empty;
+                description "Use destination IP address in hash key";
+                user-ext:CLI-comm-help "Use destination IP address in hash key";
+                user-ext:CLI-no-comm-help "Do not use destination IP address in hash key";
+              }
+
+              leaf src-port {
+                type empty;
+                description "Use source port in hash key";
+                user-ext:CLI-comm-help "Use source port in hash key";
+                user-ext:CLI-no-comm-help "Do not use source port in hash key";
+              }
+
+              leaf dest-port {
+                type empty;
+                description "Use destination port in hash key";
+                user-ext:CLI-comm-help "Use destination port in hash key";
+                user-ext:CLI-no-comm-help "Do not use destination port in hash key";
+              }
+
+              leaf mpls-label {
+                if-feature lacp-mpls-label-hash-key;
+                type empty;
+                description "Use MPLS label in hash key";
+                user-ext:CLI-comm-help "Use MPLS label in hash key";
+                user-ext:CLI-no-comm-help "Do not use MPLS label in hash key";
+              }
+            }
+          }
+        }
+      }
+    }
+
+    uses bfd;
+
+    container state {
+
+      // Low-level model info: Corresponds to read-only fields in AMB_LACP_BUNDLE_IF (lacpBundleIfTable).
+
+      description
+        "Bundle interface LACP-specific state.";
+
+      config false;
+
+      leaf oper-status {
+        type meta:oper-status;
+        description
+          "The current operational status of this bundle interface.
+
+          Note that this only indicates whether DC-LACP is currently
+          attempting to perform aggregation.
+
+          The actual state of the aggregation is given by
+          lacpBundleIfAggStatus.";
+        config false;
+      }
+
+      leaf agg-status {
+        type lacp-bundle-if-agg-state;
+        description
+          "The current aggregation status of this bundle interface.";
+        config false;
+      }
+
+      leaf if-index {
+        type meta:ro-if-index-or-zero;
+        description
+          "The interface index assigned for this bundle interface.
+
+          A value of zero indicates that no value has been assigned.";
+        config false;
+      }
+
+      leaf mac-addr {
+        type interfaces:iface-mac-t;
+        description
+          "The local MAC address for the bundle, or all zeros if
+          unknown.";
+        config false;
+      }
+
+      leaf mclag-current-prio {
+        if-feature lacp-mc-lag;
+        type uint32;
+        description
+          "The current port priority in use for all interfaces in an
+          MC-LAG enabled bundle.";
+        config false;
+      }
+
+      leaf mclag-role {
+        if-feature lacp-mc-lag;
+        type mclag-role-t;
+        description
+          "The role of this device for this bundle.";
+        config false;
+      }
+
+      leaf mclag-role-reason {
+        if-feature lacp-mc-lag;
+        type mclag-role-reason-t;
+        description
+          "The reason why the MC-LAG role has been selected for the bundle.";
+        config false;
+      }
+
+      container lacp {
+
+        // Low-level model info: Corresponds to LACP-specific read-only fields in AMB_LACP_BUNDLE_IF (lacpBundleIfTable).
+
+        description
+          "Bundle interface LACP-specific state.";
+
+        leaf partner-sys-mac-addr {
+          type interfaces:iface-mac-t;
+          description
+            "If LACP is in use for any members of the bundle, this is
+            the MAC address used as part of the LACP system identifier
+            by the current protocol partner.
+
+            If LACP is not in use or there is no current LACP partner,
+            the value is set to all zeros.";
+          config false;
+        }
+
+        leaf partner-sys-priority {
+          type uint32 {
+            range "0..65535";
+          }
+          description
+            "If LACP is in use, this is the system priority advertised
+            by the current LACP protocol partner.
+
+            If LACP is not in use or there is no current LACP partner,
+            the value is set to zero.";
+          config false;
+        }
+
+        leaf partner-key {
+          type uint32 {
+            range "0..65535";
+          }
+          description
+            "If LACP is in use, this is the LACP key advertised by the
+            current LACP protocol partner.
+
+            If LACP is not in use or there is no current LACP partner,
+            the value is set to zero.";
+          config false;
+        }
+
+      } // lacp
+
+      container mc-lag {
+
+        // Low-level model info: Corresponds to bundle MC-LAG specific read-only fields
+        // in AMB_LACP_RG_LCL_BNDL (lacpRgLclBndlTable) and AMB_LACP_RG_REM_BNDL (lacpRgRemBndlTable).
+
+        if-feature lacp-mc-lag;
+
+        config false;
+
+        // Low-level model info: Corresponds to lacpRgLclBndlPortPriority.
+        leaf port-priority {
+          type uint32;
+          description
+            "The local port priority advertised for all links in the bundle.";
+          config false;
+        }
+
+        list mbr-id {
+
+          // Low-level model info: Corresponds to lacpRgRemBndlMbrId.
+          leaf mbr-id {
+            type lacp-rg-member-id-t;
+            description
+              "The identifier of the redundancy group member advertising
+              the bundle.";
+            config false;
+          }
+
+          // Low-level model info: Corresponds to lacpRgRemBndlRcvdBndlInfo.
+          leaf rcvd-bndl-info {
+            type boolean;
+            description
+              "Whether valid bundle information has been received from the
+              redundancy group member.";
+            config false;
+          }
+
+          // Low-level model info: Corresponds to lacpRgRemBndlActorKey.
+          leaf actor-key {
+            type uint32;
+            description
+              "The bundle key advertised by the redundancy group member.";
+            config false;
+          }
+
+          // Low-level model info: Corresponds to lacpRgRemBndlActorMacAddr.
+          leaf actor-bndl-mac-addr {
+            type interfaces:iface-mac-t;
+            description
+              "The MAC address for the bundle advertised by the redundancy
+              group member.";
+            config false;
+          }
+
+          // Low-level model info: Corresponds to lacpRgRemBndlActorPortPriority.
+          leaf actor-port-priority {
+            type uint32;
+            description
+              "The port priority advertised by the redundancy group member
+              for all links in the bundle.";
+            config false;
+          }
+
+          // Low-level model info: Corresponds to lacpRgRemBndlSyncStatus.
+          leaf sync-status {
+            type mclag-rem-bndl-sync-status-t;
+            description "The synchronization status of the bundle.";
+            config false;
+          }
+
+          // Low-level model info: Corresponds to lacpRgRemBndlRcvdPtnrSysInfo.
+          leaf rcvd-ptnr-sys-info {
+            type boolean;
+            description "Whether valid partner system information has
+                        been received from the redundancy group member.";
+            config false;
+          }
+
+          // Low-level model info: Corresponds to lacpRgRemBndlPartnerSysMacAddr.
+          leaf partner-sys-mac-addr {
+            type interfaces:iface-mac-t;
+            description "The system MAC address advertised by the redundancy group
+                        member's LACP partner.";
+            config false;
+          }
+
+          // Low-level model info: Corresponds to lacpRgRemBndlPartnerSysPriority.
+          leaf partner-sys-priority {
+            type uint32;
+            description "The system priority advertised by the redundancy group
+                        member's LACP partner.";
+            config false;
+          }
+
+          // Low-level model info: Corresponds to lacpRgRemBndlPartnerKey.
+          leaf partner-key {
+            type uint32;
+            description "The bundle key advertised by the redundancy group
+                        member's LACP partner.";
+            config false;
+          }
+
+        } // mbr-id
+
+      } // mc-lag
+
+    } // state
+
+    container bundle-if-list {
+
+      description
+        "Container to hold bundle interface state.";
+
+      config false;
+
+      list bundle-if {
+
+        // Low-level model info: Corresponds to AMB_LACP_BUNDLE_IF_LIST (lacpBundleIfListTable).
+
+        description
+          "Bundle interface list configuration and state.";
+
+        config false;
+
+        leaf if-name {
+          type custom:iface-name;
+          description
+            "The interface name of an interface associated with the
+             key.";
+          config false;
+        }
+
+        leaf if-index {
+          type meta:ro-if-index-or-zero;
+          description
+            "The interface index of an interface associated with the
+             key.";
+          config false;
+        }
+
+        leaf agg-status {
+          type lacp-if-agg-state;
+          description
+            "The aggregation status of this interface.";
+          config false;
+        }
+
+      } // bundle-if
+
+    } // bundle-if-list
+
+  } // bundle-interface-parameters-for-lacp
+
+  grouping redundancy-groups-parameters-for-lacp {
+
+    // Low-level model info: Corresponds to AMB_LACP_RG (lacpRgTable).
+
+    description "Configure LACP MC-LAG properties";
+
+    user-ext:CLI-comm-help "Configure LACP MC-LAG properties";
+    user-ext:CLI-no-comm-help "Configure LACP MC-LAG properties";
+
+    container redundancy-groups {
+
+      description "Configure LACP MC-LAG properties";
+
+      user-ext:CLI-comm-help "Configure LACP MC-LAG properties";
+      user-ext:CLI-no-comm-help "Configure LACP MC-LAG properties";
+
+      list redundancy-group {
+
+        description "Bundle interface";
+
+        user-ext:CLI-comm-help "Add LACP MC-LAG redundancy group";
+        user-ext:CLI-no-comm-help "Remove LACP MC-LAG redundancy group";
+
+        key "id";
+
+        // Low-level model info: Corresponds to lacpRgId
+        leaf id {
+          type lacp-rg-id-t;
+          description "Bundle-ether id";
+          user-ext:CLI-param-help "Redundancy group identifier";
+        }
+
+        // Low-level model info: Corresponds to lacpRgCfgSystemMacAddr
+        leaf system-mac-addr {
+          type interfaces:iface-mac-t;
+          default "00:00:00:00:00:00";
+          description "Set system mac address in the redundancy group";
+
+          user-ext:CLI-comm-help "Set system mac address in the redundancy group";
+          user-ext:CLI-no-comm-help "Set the default system mac address in the redundancy group";
+          user-ext:CLI-param-help "Set system mac address in the redundancy group";
+        }
+
+        // Low-level model info: Corresponds to lacpRgCfgSystemPriority
+        leaf system-priority {
+          type lacp-system-priority-t;
+          default "32768";
+          description "Set system priority in the redundancy group";
+
+          user-ext:CLI-comm-help "Set system priority in the redundancy group";
+          user-ext:CLI-no-comm-help "Set the default system priority in the redundancy group";
+          user-ext:CLI-param-help "Set system priority in the redundancy group";
+        }
+
+        // Low-level model info: Corresponds to lacpRgNodeId
+        leaf node-id {
+          type lacp-node-id-t;
+          default "0";
+          description "Set device node id in the redundancy group";
+
+          user-ext:CLI-comm-help "Set device node id in the redundancy group";
+          user-ext:CLI-no-comm-help "Set the default device node id in the redundancy group";
+          user-ext:CLI-param-help "Set device node id in the redundancy group";
+        }
+
+        // Low-level model info: Corresponds to lacpRgConnectionTimeout
+        leaf connection-timeout {
+          type lacp-connection-timeout-t;
+          units "seconds";
+          default "65535";
+          description "Set the timeout before assuming that another redundancy group member is down";
+
+          user-ext:CLI-comm-help "Set the timeout before assuming that another redundancy group member is down";
+          user-ext:CLI-no-comm-help "Set the default timeout before assuming that another redundancy group member is down";
+          user-ext:CLI-param-help "Set the timeout before assuming that another redundancy group member is down";
+        }
+
+        container state {
+
+          // Low-level model info: Corresponds to read-only fields in AMB_LACP_RG (lacpRgTable)
+          // and AMB_LACP_RG_MBR (lacpRgMbrTable).
+
+          description "MC-LAG state.";
+
+          config false;
+
+          leaf local-conn-status {
+            type string;
+            description
+              "The local connection status of the redundancy group.";
+            config false;
+          }
+
+          container redundancy-group-member-list {
+
+            description
+              "Container to hold  MC-LAG status of each remote member in a redundancy group";
+
+            config false;
+
+            list redundancy-group-member {
+
+              // Low-level model info: Corresponds to AMB_LACP_RG_MBR (lacpRgMbrTable).
+
+              description
+                "Remote member in a redundancy group status.";
+
+              config false;
+
+              // Low-level model info: Corresponds to lacpRgMbrId.
+              leaf id {
+                type lacp-rg-member-id-t;
+                description
+                  "The identifier of the redundancy group member.";
+                config false;
+              }
+
+              // Low-level model info: Corresponds to lacpRgMbrRcvdSysInfo.
+              leaf rcvd-sys-info {
+                type boolean;
+                description
+                  "Whether valid system information has been received from the
+                  redundancy group member.";
+                config false;
+              }
+
+              // Low-level model info: Corresponds to lacpRgMbrSystemMacAddr.
+              leaf system-mac-addr {
+                type interfaces:iface-mac-t;
+                description
+                  "The system MAC address advertised by the redundancy group
+                  member.";
+                config false;
+              }
+
+              // Low-level model info: Corresponds to lacpRgMbrSystemPriority.
+              leaf system-priority {
+                type uint32;
+                description
+                  "The system priority advertised by the redundancy group member.";
+                config false;
+              }
+
+              // Low-level model info: Corresponds to lacpRgMbrNodeId.
+              leaf node-id {
+                type uint32;
+                description
+                  "The node ID advertised by the redundancy group member.";
+                config false;
+              }
+
+              // Low-level model info: Corresponds to lacpRgMbrSyncStatus.
+              leaf sync-status {
+                type mclag-sync-status-t;
+                description
+                  "The synchronization status of the redundancy group member.";
+                config false;
+              }
+
+            } // redundancy-group-member
+
+          } // redundancy-group-member-list
+
+        } // state
+
+      } // redundancy-group
+
+    } // redundancy-groups
+
+  } // redundancy-groups-parameters-for-lacp
+
+  container lacp {
+
+    presence "Enable Link Aggregation Control Protocol.";
+
+    description
+      "LACP configuration and state.";
+
+    user-ext:CLI-comm-help "Configure LACP";
+    user-ext:CLI-no-comm-help "Remove LACP";
+
+    uses global-parameters-for-lacp;
+    uses redundancy-groups-parameters-for-lacp {
+      if-feature lacp-mc-lag;
+    }
+
+    container interfaces {
+
+      if-feature interfaces:standard-interfaces;
+      user-ext:CLI-not-command;
+
+      list interface {
+
+        description "Per-interface LACP configuration and state";
+        user-ext:CLI-comm-help "Configure LACP on interface";
+        user-ext:CLI-no-comm-help "Configure LACP on interface";
+
+        key "if-name";
+
+        leaf if-name {
+          type custom:iface-name;
+          description
+            "A unique identifier identifying the interface.";
+
+          user-ext:CLI-comm-help "Set interface name";
+          user-ext:CLI-param-help "Set interface name";
+        }
+
+        uses std-interface-parameters-for-lacp;
+
+      } // interface
+
+    } // interfaces
+
+    container bundle-interfaces {
+
+      if-feature interfaces:standard-interfaces;
+      user-ext:CLI-not-command;
+
+      list bundle-interface {
+
+        description "Bundle interface";
+        user-ext:CLI-comm-help "Add LACP configuration to bundle interface";
+        user-ext:CLI-no-comm-help "Remove LACP configuration from bundle interface";
+
+        key "bundle-id";
+
+        leaf bundle-id {
+          type interfaces:bundle-id-t;
+          description "Bundle-ether id";
+          user-ext:CLI-param-help "Bundle interface id";
+        }
+
+        uses bundle-interface-parameters-for-lacp;
+
+      } // bundle-interface
+
+    } // bundle-interfaces
+
+    container custom-interfaces {
+
+      if-feature interfaces:custom-interfaces;
+      user-ext:CLI-not-command;
+
+      container interface {
+
+        description "Per-interface LACP configuration and state";
+        user-ext:CLI-comm-help "Configure LACP on interface";
+        user-ext:CLI-no-comm-help "Configure LACP on interface";
+
+        container oneGE {
+
+          user-ext:CLI-not-command;
+
+          list gigabitethernet {
+
+            description "1G interface";
+
+            user-ext:CLI-comm-help "Add LACP configuration to 1G interface";
+            user-ext:CLI-no-comm-help "Remove LACP configuration from 1G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "1G interface name";
+            }
+
+            uses custom-interface-parameters-for-lacp;
+
+          } // gigabitethernet
+
+        } // oneGE
+
+        container tenGE {
+
+          user-ext:CLI-not-command;
+
+          list tengigabitethernet {
+
+            description "10G interface";
+
+            user-ext:CLI-comm-help "Add LACP configuration to 10G interface";
+            user-ext:CLI-no-comm-help "Remove LACP configuration from 10G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "10G interface name";
+            }
+
+            uses custom-interface-parameters-for-lacp;
+
+          } // gigabitethernet
+
+        } // tenGE
+
+        container fortyGE {
+
+          user-ext:CLI-not-command;
+
+          list fortygigabitethernet {
+
+            description "40G interface";
+
+            user-ext:CLI-comm-help "Add LACP configuration to 40G interface";
+            user-ext:CLI-no-comm-help "Remove LACP configuration from 40G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "40G interface name";
+            }
+
+            uses custom-interface-parameters-for-lacp;
+
+          } // gigabitethernet
+
+        } // fortyGE
+
+        container hundredGE {
+
+          user-ext:CLI-not-command;
+
+          list hundredgigabitethernet {
+
+            description "100G interface";
+
+            user-ext:CLI-comm-help "Add LACP configuration to 100G interface";
+            user-ext:CLI-no-comm-help "Remove LACP configuration from 100G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "100G interface name";
+            }
+
+            uses custom-interface-parameters-for-lacp;
+
+          } // gigabitethernet
+
+        } // hundredGE
+
+        container bundle-ifaces {
+
+          user-ext:CLI-not-command;
+
+          list bundle-ether {
+
+            description "Bundle interface";
+
+            user-ext:CLI-comm-help "Add LACP configuration to bundle interface";
+            user-ext:CLI-no-comm-help "Remove LACP configuration from bundle interface";
+
+            key "bundle-id";
+
+            leaf bundle-id {
+              type interfaces:bundle-id-t;
+              description "Bundle-ether id";
+              user-ext:CLI-param-help "Bundle interface id";
+            }
+
+            uses bundle-interface-parameters-for-lacp;
+
+          } // bundle-ether
+
+        } // bundle-ifaces
+
+      } // interface
+
+    } // custom-interfaces
+
+  } // lacp
+
+} // lacp module

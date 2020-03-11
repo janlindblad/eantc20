@@ -1,0 +1,3187 @@
+
+module pim {
+
+  namespace "http://metaswitch.com/yang/nbu/pim/201511040000Z";
+
+  prefix pim;
+
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix "interfaces"; }
+  import metaswitch-yang-types { prefix meta; }
+  import metaswitch-custom-yang-types { prefix "custom"; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Protocol Independent Multicast";
+
+  revision 2015-11-04 {
+    description "Initial revision.";
+  }
+
+  typedef pim-mode-config {
+    type enumeration {
+      enum ssm                              { value 2; description "Source-Specific Multicast with PIM Sparse Mode"; }
+      enum asm                              { value 3; description "Any Source Multicast with PIM Sparse Mode"; }
+    }
+    description
+      "PIM mode";
+  }
+
+  typedef pim-mode-state {
+    type enumeration {
+      enum none                             { value 1; }
+      enum ssm                              { value 2; }
+      enum asm                              { value 3; }
+      enum bidir                            { value 4; }
+      enum other                            { value 5; }
+      enum dense                            { value 6; }
+    }
+    description
+      "PIM mode";
+  }
+
+  typedef pim-gp-map-origin-type {
+    type enumeration {
+      enum static                           { value 1; }
+      enum config                           { value 2; }
+      enum embedded                         { value 4; }
+      enum other                            { value 5; }
+    }
+    description
+      "Group map origin type";
+  }
+
+  typedef pim-upstrm-join-state {
+    type enumeration {
+      enum not-joined                       { value 1; }
+      enum joined                           { value 2; }
+    }
+    description
+      "Upstream Join FSM state.";
+  }
+
+  typedef pim-assert-state {
+    type enumeration {
+      enum no-info                          { value 1; }
+      enum winner                           { value 2; }
+      enum loser                            { value 3; }
+    }
+    description
+      "Assert FSM state.";
+  }
+
+  typedef pim-register-state {
+    type enumeration {
+      enum no-info                          { value 1; }
+      enum join                             { value 2; }
+      enum join-pending                     { value 3; }
+      enum prune                            { value 4; }
+    }
+    description
+      "Register FSM state.";
+  }
+
+  typedef pim-rpt-upstrm-prune-state {
+    type enumeration {
+      enum not-joined                       { value 1; }
+      enum pruned                           { value 2; }
+      enum not-prune                        { value 3; }
+    }
+    description
+      "Upstream Prune FSM state.";
+  }
+
+  typedef pim-hello-interval {
+    type uint32 {
+      range "0..18000";
+    }
+    description
+      "(0-18000)";
+  }
+
+  typedef pim-triggered-hello-interval {
+    type uint32 {
+      range "0..60";
+    }
+    description
+      "(0-60)";
+  }
+
+  typedef pim-join-prune-interval {
+    type uint32 {
+      range "0..18000";
+    }
+    description
+      "(0-18000)";
+  }
+
+  typedef pim-join-prune-holdtime {
+    type uint32 {
+      range "0..65535";
+    }
+    description
+      "(0-65535)";
+  }
+
+  typedef pim-dr-priority {
+    type uint32 {
+      range "1..4294967294";
+    }
+    description
+      "(1-4294967294)";
+  }
+
+  typedef pim-assert-override-interval-t {
+    type uint32 {
+      range "1..180";
+    }
+    description
+      "(1-180)";
+  }
+
+  typedef pim-suppression-time {
+    type uint32 {
+      range "0..65535";
+    }
+    description
+      "(0-65535)";
+  }
+
+  typedef pim-probe-time {
+    type uint32 {
+      range "0..65535";
+    }
+    description
+      "(0-65535)";
+  }
+
+  typedef pim-keep-alive {
+    type uint32 {
+      range "0..65535";
+    }
+    description
+      "(0-65535)";
+  }
+
+  typedef pim-star-g-state-limit {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "(0-4294967295)";
+  }
+
+  typedef pim-sg-state-limit {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "(0-4294967295)";
+  }
+
+
+  grouping pim-global-config {
+
+    // Low-level model info: Corresponds to fields in both AMB_PIM_TM_ENT (pimTmEntTable) and AMB_PIM_NM_ENT (pimNmEntTable).
+
+    container register {
+
+      description
+        "Configure timers for PIM register messages";
+
+      user-ext:CLI-comm-help "Configure timers for PIM register messages";
+      user-ext:CLI-no-comm-help "Configure timers for PIM register messages";
+
+      leaf suppression-time {
+        type pim-suppression-time;
+        units "seconds";
+        default "60";
+        description
+          "The mean value of the randomized interval during which a
+          DR stops Register-encapsulation after receiving a PIM
+          Register-Stop message.  This object corresponds to the
+          'Register_Suppression_Time' defined in the PIM-SM
+          specification (RFC4601).
+
+          Note that configuring different values for this object for
+          different routers in the PIM domain might lead to
+          incorrect protocol operation.";
+
+        user-ext:CLI-comm-help "Set register suppression time in seconds";
+        user-ext:CLI-no-comm-help "Set register suppression time to default";
+        user-ext:CLI-param-help "Set register suppression time in seconds";
+      }
+
+      leaf probe-time {
+        type pim-probe-time;
+        units "seconds";
+        default "5";
+        description
+          "The time to wait for a PIM Register-Stop message after
+          sending a PIM Null-Register message, before resuming
+          Register-encapsulation at a DR.  This object corresponds
+          to the 'Register_Probe_Time' defined in the PIM-SM
+          specification (RFC4601).";
+
+        user-ext:CLI-comm-help "Set register probe time in seconds";
+        user-ext:CLI-no-comm-help "Set register probe time to default";
+        user-ext:CLI-param-help "Set register probe time in seconds";
+      }
+
+    } // register
+
+    leaf keep-alive {
+      type pim-keep-alive;
+      units "seconds";
+      default "210";
+      description
+        "The time to keep (S,G) state alive in the absence of PIM
+        (S,G) Join messages, (S,G) local membership or (S,G) data
+        packets.  This object corresponds to the 'SourceLifetime'
+        defined in the PIM-DM specification (RFC3973) and the
+        'Keepalive_Period' defined in the PIM-SM specification
+        (RFC4601).
+
+        Note that this value must also be configured in the MPF
+        stub, as the duration of its Data Liveness timer.
+
+        Note that configuring different values for this object for
+        different routers in the PIM domain might lead to
+        incorrect protocol operation.";
+
+      user-ext:CLI-comm-help "Set keep alive period in seconds";
+      user-ext:CLI-no-comm-help "Set keep alive period to default";
+      user-ext:CLI-param-help "Set keep alive period in seconds";
+    }
+
+    container trap {
+
+      description
+        "Setting this object to 'true' means that PIM will send an
+        interface-state-Change notification when an interface's operational
+        state changes.";
+
+      user-ext:CLI-comm-help "Enable interface state change notifications";
+      user-ext:CLI-no-comm-help "Disable interface state change notifications";
+
+      container interface {
+
+        description
+          "Setting this object to 'true' means that PIM will send an
+          interface-state-change notification when an
+          interface's operational state changes.";
+
+        user-ext:CLI-comm-help "Enable interface state change notifications";
+        user-ext:CLI-no-comm-help "Disable interface state change notifications";
+
+        container state {
+
+          description
+            "Setting this object to 'true' means that PIM will send an
+            interface-state-change notification when an
+            interface's operational state changes.";
+
+          user-ext:CLI-comm-help "Enable interface state change notifications";
+          user-ext:CLI-no-comm-help "Disable interface state change notifications";
+
+          leaf change {
+            type empty;
+            description
+              "Setting this object to 'true' means that PIM will send an
+              interface-state-change notification when an
+              interface's operational state changes.";
+
+
+            user-ext:CLI-comm-help "Enable interface state change notifications";
+            user-ext:CLI-no-comm-help "Disable interface state change notifications";
+          }
+
+        } // state
+
+      } // interface
+
+    } // trap
+
+  } // pim-global-config
+
+  grouping pim-global-state {
+
+    // Low-level model info: Corresponds to read-only fields in AMB_PIM_TM_ENT (pimTmEntTable).
+
+    leaf g-state-limit {
+      type uint32;
+      description
+        "The maximum number of groups for which PIM is
+        allowed to store non-interface specific (*,G) and/or (S,G) state.
+        A value of zero means that there is no limit.";
+      config false;
+    }
+
+    leaf g-state-warning-threshold {
+      type uint32;
+      description
+        "The warning threshold at which PIM logs an exception
+        if the number of groups for which it is storing non-interface specific
+        (*,G) and/or (S,G) state exceeds this value.  A value of zero means
+        that there is no warning threshold.";
+      config false;
+    }
+
+    leaf g-state-stored {
+      type uint32;
+      description
+        "The number of groups for which PIM is
+        storing non-interface specific (*,G) and/or (S,G) state.";
+      config false;
+    }
+
+    leaf sg-state-limit {
+      type uint32;
+      description
+        "The maximum number of {source, group} pairs for which
+        PIM is allowed to store non-interface specific
+        (S,G) state.  A value of zero means that there is no limit.";
+      config false;
+    }
+
+    leaf sg-state-warning-threshold {
+      type uint32;
+      description
+        "The warning threshold at which PIM logs
+        an exception if the number of {source, group} pairs for
+        which it is storing non-interface specific (S,G) state
+        exceeds this value.  A value of zero means that there is
+        no warning threshold.";
+      config false;
+    }
+
+    leaf sg-state-stored {
+      type uint32;
+      description
+        "The number of {source, group} pairs for which PIM
+        is storing non-interface specific (S,G) state.";
+      config false;
+    }
+
+    leaf star-gi-state-limit {
+      type uint32;
+      description
+        "The maximum number of {group, interface} pairs for which
+        PIM is allowed to store (*,G,I) state.  A
+        value of zero means that there is no limit.";
+      config false;
+    }
+
+    leaf star-gi-state-warning-threshold {
+      type uint32;
+      description
+        "The warning threshold at which PIM logs an
+        exception if the number of {group, interface} pairs for which
+        it is storing (*,G,I) state exceeds this value.  A value of
+        zero means that there is no warning threshold.";
+      config false;
+    }
+
+    leaf star-gi-state-stored {
+      type uint32;
+      description
+        "The number of {group, interface} pairs for which PIM is storing
+        (*,G,I) state.";
+      config false;
+    }
+
+    leaf sgi-state-limit {
+      type uint32;
+      description
+        "The maximum number of {source, group, interface} pairs
+        for which PIM is allowed to store (S,G,I)
+        state.  A value of zero means that there is no limit.";
+      config false;
+    }
+
+    leaf sgi-state-warning-threshold {
+      type uint32;
+      description
+        "The warning threshold at which PIM logs an
+        exception if the number of {source, group, interface}
+        triplets for which it is storing (S,G,I) state exceeds this
+        value.  A value of zero means that there is no warning
+        threshold.";
+      config false;
+    }
+
+    leaf sgi-state-stored {
+      type uint32;
+      description
+        "The number of {source, group, interface} triplets for
+        which PIM is storing (S,G,I) state.";
+      config false;
+    }
+
+    leaf null-reg-count {
+      type uint32;
+      description
+        "Number of Null Register messages received by this entity.
+
+        This counter will wrap at 2^32 messages.";
+      config false;
+    }
+
+    leaf num-sources {
+      type uint32;
+      description
+        "Number of different source addresses known by this entity.";
+      config false;
+    }
+
+    leaf num-rps {
+      type uint32;
+      description
+        "Number of different Rendezvous Point (RP) addresses known
+        by this entity.";
+      config false;
+    }
+
+  } // pim-global-state
+
+  grouping pim-global-stats {
+
+    // Low-level model info: Corresponds to AMB_PIM_NM_ENT_STATS (pimNmEntStatsTable).
+
+    leaf number-sent-register {
+      type uint32;
+      description
+        "The number of PIM Register messages that have been sent by
+        this PIM.
+
+        Note that this only includes PIM Register messages
+        forwarded to other members of Anycast-RP sets, and
+        Null-Register messages.  It does not include
+        Register-encapsulated data packets sent from the DR to the
+        RP; these are sent by the data plane.";
+      config false;
+    }
+
+    leaf number-sent-register-stop {
+      type uint32;
+      description
+        "The number of PIM Register-Stop messages that have been
+        sent by PIM.";
+      config false;
+    }
+
+    leaf number-recv-register {
+      type uint32;
+      description
+        "The number of valid PIM Register messages that have been
+        received by PIM.";
+      config false;
+    }
+
+    leaf number-recv-register-stop {
+      type uint32;
+      description
+        "The number of valid PIM Register-Stop messages that have
+        been received by PIM.";
+      config false;
+    }
+
+    leaf number-error-register {
+      type uint32;
+      description
+        "The number of PIM Register messages that have been
+        received by this that have contained errors.";
+      config false;
+    }
+
+    leaf number-error-register-stop {
+      type uint32;
+      description
+        "The number of PIM Register-Stop messages that have been
+        received by PIM that have contained errors.";
+      config false;
+    }
+
+    leaf number-recv-ignored-type {
+      type uint32;
+      description
+        "The number of PIM messages with a known but unsupported
+        PIM message type that have been received.";
+      config false;
+    }
+
+    leaf number-recv-unknown-type {
+      type uint32;
+      description
+        "The number of PIM messages with an unknown PIM message
+        type that have been received.";
+      config false;
+    }
+
+    leaf number-recv-unknown-version {
+      type uint32;
+      description
+        "The number of PIM messages with an unknown PIM version
+        that have been received by PIM.";
+      config false;
+    }
+
+    leaf number-recv-bad-checksum {
+      type uint32;
+      description
+        "The number of PIM messages with a incorrect PIM checksum
+        that have been received by PIM.";
+      config false;
+    }
+
+    leaf number-recv-bad-length {
+      type uint32;
+      description
+        "The number of PIM messages with a length too short to
+        contain a common PIM header that have been received by
+        PIM.";
+      config false;
+    }
+
+  } // pim-global-stats
+
+  grouping pim-anycast-rp-state {
+
+    // Low-level model info: Corresponds to read-only fields in AMB_PIM_ANYCAST_RP_SET (pimAnycastRPSetTable).
+
+    // Low-level model info: Corresponds to pimAnycastRPSetLocalRouter.
+    leaf local-router {
+      type boolean;
+      description
+        "Whether this entry corresponds to the local router.";
+      config false;
+    }
+
+  } // pim-anycast-rp-state
+
+  grouping pim-interface-config {
+
+    // Low-level model info: Corresponds to AMB_PIM_INTERFACE (pimInterfaceTable).
+
+    description
+      "This table is used to create and manage the {interface, IP
+      version} pairs for which PIM is enabled.";
+
+    user-ext:CLI-comm-help "Configure interface parameters";
+    user-ext:CLI-no-comm-help "Configure interface parameters";
+
+    // Low-level model info: Corresponds to pimInterfaceHelloInterval.
+    leaf hello-interval {
+      type pim-hello-interval;
+      units "seconds";
+      default "30";
+      description
+        "The frequency at which PIM Hello messages are transmitted
+        on this interface.  This object corresponds to the
+        'Hello_Period' timer value defined in the PIM-SM and
+        PIM-DM specifications (RFC4601 and RFC3973 respectively).
+        A value of 0 represents an 'infinite' interval, and
+        indicates that periodic PIM Hello messages should not be
+        sent on this interface.";
+
+      user-ext:CLI-comm-help "Set hello interval in seconds";
+      user-ext:CLI-no-comm-help "Set hello interval to default";
+      user-ext:CLI-param-help "Set hello interval in seconds";
+    }
+
+    leaf triggered-hello-interval {
+      type pim-triggered-hello-interval;
+      units "seconds";
+      default "5";
+      description
+        "The maximum time before this router sends a triggered PIM
+        Hello message on this interface.  This object corresponds
+        to the 'Triggered_Hello_Delay' timer value defined in the
+        PIM-SM and PIM-DM specifications (RFC4601 and
+        RFC3973 respectively).  A value of 0 has no special
+        meaning and indicates that triggered PIM Hello messages
+        should always be sent immediately.";
+
+      user-ext:CLI-comm-help "Set triggered hello interval in seconds";
+      user-ext:CLI-no-comm-help "Set triggered hello interval to default";
+      user-ext:CLI-param-help "Set triggered hello interval in seconds";
+    }
+
+    // Low-level model info: Corresponds to pimInterfaceJoinPruneInterval.
+    leaf join-prune-interval {
+      type pim-join-prune-interval;
+      units "seconds";
+      default "60";
+      description
+        "The frequency at which this router sends PIM Join/Prune
+        messages on this PIM interface.  This object corresponds
+        to the 't_periodic' timer value defined in the PIM-SM
+        specification (RFC4601).  A value of 0 represents an
+        'infinite' interval, and indicates that periodic PIM
+        Join/Prune messages should not be sent on this interface.";
+
+      user-ext:CLI-comm-help "Set join prune interval in seconds (0 => infinite)";
+      user-ext:CLI-no-comm-help "Set join prune interval to default (60s)";
+      user-ext:CLI-param-help "Set join prune interval in seconds (0 => infinite)";
+    }
+
+    // Low-level model info: Corresponds to pimInterfaceJoinPruneHoldtime.
+    leaf join-prune-holdtime {
+      type pim-join-prune-holdtime;
+      units "seconds";
+      default "210";
+      description
+        "The value inserted into the Holdtime field of a PIM
+        Join/Prune message sent on this interface, that is, the
+        amount of time a receiver must keep the Join/Prune state
+        alive, in the absence of further PIM Join/Prune messages.
+        A value of 65535 represents an 'infinite' holdtime.
+
+        PIM-SM implementations are recommended to use a holdtime
+        that is 3.5 times the value of join-prune-interval, or 65535 if
+        join-prune-interval is set to 0.";
+
+      user-ext:CLI-comm-help "Set join prune holdtime in seconds (65535 => infinite)";
+      user-ext:CLI-no-comm-help "Set join prune holdtime to default (210s)";
+      user-ext:CLI-param-help "Set join prune holdtime in seconds (65535 => infinite)";
+    }
+
+    // Low-level model info: Corresponds to pimInterfaceDRPriority.
+    leaf dr-priority {
+      type pim-dr-priority;
+      default "1";
+      description
+        "The Designated Router Priority value inserted into the DR
+        Priority option on this interface.  If all routers on the
+        interface include the DR Priority option in their PIM
+        Hello messages, the router with the highest DR priority
+        value will win the DR election (with highest IP address
+        used as a tie-breaker).";
+
+      user-ext:CLI-comm-help "Set Designated Router priority";
+      user-ext:CLI-no-comm-help "Set Designated Router priority to default";
+      user-ext:CLI-param-help "Set Designated Router priority";
+    }
+
+    // Low-level model info: Corresponds to pimInterfaceStubInterface.
+    leaf passive-interface {
+      type empty;
+      description
+        "Whether this interface is a 'stub interface' with regard
+        to PIM.  If this is set to 'true', no PIM packets are sent
+        or processed (if received) on this interface.  This should
+        be set to 'true' if there are no other PIM routers on the
+        interface but there may be untrusted hosts on the
+        interface, to prevent the router processing forged PIM
+        messages from those hosts.  If there are other PIM routers
+        on this interface, this must be left as 'false'.
+
+        Changing the value of this object while the interface is
+        operational causes the interface to be deactivated and
+        then reactivated.";
+
+      user-ext:CLI-comm-help "Enable passive interface";
+      user-ext:CLI-no-comm-help "Disable passive interface";
+    }
+
+    // Low-level model info: Set pimInterfaceMgmdEntIndex to 1 (for IPv4) or 2 (for IPv6).
+
+    // Low-level model info: The pimInterfaceAssertHoldtime value should be hard-coded to 180.
+    // Low-level model info: Corresponds to (pimInterfaceAssertHoldtime - pimInterfaceAssertInterval).
+    leaf assert-override-interval {
+      type pim-assert-override-interval-t;
+      units "seconds";
+      default "3";
+      description
+        "The value to subtract from 180 to get the interface assert interval.
+
+        The interface assert interval is the frequency at
+        which this router sends PIM Assert messages on this
+        interface when it is the assert winner.  This object
+        corresponds to the 'Assert_Time' minus the
+        'Assert_Override_Interval' defined in the PIM-SM and the
+        PIM-DM specifications (RFC4601 and RFC3973 respectively).
+        ";
+
+      user-ext:CLI-comm-help "Set assert override interval in seconds";
+      user-ext:CLI-no-comm-help "Set assert override interval to default";
+      user-ext:CLI-param-help "Set assert override interval in seconds";
+    }
+
+    // Low-level model info: Corresponds to pimInterfaceStarGStateLimit.
+    leaf star-g-state-limit {
+      type pim-star-g-state-limit;
+      default "0";
+      description
+        "The maximum number of groups for which PIM
+        is allowed to store (*,G,I) state specific to this
+        interface.  A value of zero means that there is no limit.";
+
+      user-ext:CLI-comm-help "Set maximum number of groups";
+      user-ext:CLI-no-comm-help "Set maximum number of groups to default";
+      user-ext:CLI-param-help "Set maximum number of groups";
+    }
+
+    // Low-level model info: Corresponds to pimInterfaceSGStateLimit.
+    leaf sg-state-limit {
+      type pim-sg-state-limit;
+      default "0";
+      description
+        "The maximum number of {source, group} pairs for which
+        PIM is allowed to store (S,G,I) state
+        specific to this interface.  A value of zero means that
+        there is no limit.";
+
+      user-ext:CLI-comm-help "Set maximum number of {source, group} pairs";
+      user-ext:CLI-no-comm-help "Set maximum number of {source, group} pairs to default";
+      user-ext:CLI-param-help "Set maximum number of {source, group} pairs";
+    }
+
+    leaf bsr-border {
+      type empty;
+      description
+        "Whether or not this interface is a PIM domain border.  The
+        effect of being a PIM domain border interface is to
+        disable the BSR protocol, thus allowing each PIM domain to
+        separately determine RPs.";
+
+      user-ext:CLI-comm-help "Set domain border";
+      user-ext:CLI-no-comm-help "Unset domain border";
+    }
+
+    container bfd {
+
+      description
+        "BFD parameters.";
+
+      user-ext:CLI-comm-help "Configure BFD parameters for this interface";
+      user-ext:CLI-no-comm-help "Configure BFD parameters for this interface";
+
+      // Low-level model info: Corresponds to pimInterfaceBfdDesired.
+      leaf fast-detect {
+        type empty;
+        description
+          "Indicates whether Bidirectional Forwarding Detection (BFD)
+          is desired on this interface.";
+
+        user-ext:CLI-comm-help "Enable BFD for this interface";
+        user-ext:CLI-no-comm-help "Disable BFD for this interface";
+      }
+
+    } // bfd
+
+  } // pim-interface-config
+
+  grouping pim-interface-config-parms {
+
+    container interfaces {
+
+      if-feature interfaces:standard-interfaces;
+      user-ext:CLI-not-command;
+
+      list interface {
+
+        description "Per-interface PIM configuration.";
+        user-ext:CLI-comm-help "Configure PIM on interface";
+        user-ext:CLI-no-comm-help "Configure PIM on interface";
+
+        key "if-name";
+
+        leaf if-name {
+          type custom:iface-name;
+          description
+            "The interface name.";
+
+          user-ext:CLI-comm-help "Set interface name";
+          user-ext:CLI-param-help "Set interface name";
+        }
+
+        uses pim-interface-config;
+
+        // If the join-prune-holdtime is not infinite (65535), then the join-prune-interval must not be zero.
+        // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+        // The check made is "either the holdtime is infinite OR the interval is non-zero".
+        must "(((join-prune-holdtime) and (join-prune-holdtime = 65535)) or " +
+             " (not((join-prune-interval) and (join-prune-interval = 0))))" {
+          error-message "If the PIM interface join-prune-holdtime is not infinite, then the join-prune-interval must not be zero";
+        }
+
+        // Check that the join-prune-holdtime is at least 3.5 times the value of join-prune-interval.
+        // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+        must "((not(join-prune-holdtime)) and (not(join-prune-interval)))" +
+             " or ((not(join-prune-interval)) and (join-prune-holdtime >= 210))" +
+             " or ((not(join-prune-holdtime)) and (join-prune-interval <= 60))" +
+             " or (join-prune-holdtime >= join-prune-interval * 3.5)" {
+          error-message "The PIM interface join-prune-holdtime must be at least 3.5 times the value of join-prune-interval";
+        }
+
+      } // interface
+
+    } // interfaces
+
+    container custom-interfaces {
+
+      if-feature interfaces:custom-interfaces;
+      user-ext:CLI-not-command;
+
+      container interface {
+
+        description "Per-interface PIM configuration.";
+        user-ext:CLI-comm-help "Configure PIM on interface";
+        user-ext:CLI-no-comm-help "Configure PIM on interface";
+
+        container oneGE {
+
+          user-ext:CLI-not-command;
+          user-ext:CLI-comm-switch "gigabitethernet/gigabitethernet-sub";
+
+          list gigabitethernet {
+
+            description "1G interface";
+
+            user-ext:CLI-comm-help "Add PIM configuration to 1G interface";
+            user-ext:CLI-no-comm-help "Remove PIM configuration from 1G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "1G interface name";
+            }
+
+            uses pim-interface-config;
+
+            // If the join-prune-holdtime is not infinite (65535), then the join-prune-interval must not be zero.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            // The check made is "either the holdtime is infinite OR the interval is non-zero".
+            must "(((join-prune-holdtime) and (join-prune-holdtime = 65535)) or " +
+                 " (not((join-prune-interval) and (join-prune-interval = 0))))" {
+              error-message "If the PIM interface join-prune-holdtime is not infinite, then the join-prune-interval must not be zero";
+            }
+
+            // Check that the join-prune-holdtime is at least 3.5 times the value of join-prune-interval.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            must "((not(join-prune-holdtime)) and (not(join-prune-interval)))" +
+                 " or ((not(join-prune-interval)) and (join-prune-holdtime >= 210))" +
+                 " or ((not(join-prune-holdtime)) and (join-prune-interval <= 60))" +
+                 " or (join-prune-holdtime >= join-prune-interval * 3.5)" {
+              error-message "The PIM interface join-prune-holdtime must be at least 3.5 times the value of join-prune-interval";
+            }
+
+          } // gigabitethernet
+
+          list gigabitethernet-sub {
+
+            description "1G subinterface";
+
+            user-ext:CLI-comm-help "Add PIM configuration to 1G subinterface";
+            user-ext:CLI-no-comm-help "Remove PIM configuration from 1G subinterface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-subiface-range-t;
+              description "<unit>/<dev>/<port>.<subid>";
+              user-ext:CLI-param-help "1G subinterface name";
+            }
+
+            uses pim-interface-config;
+
+            // If the join-prune-holdtime is not infinite (65535), then the join-prune-interval must not be zero.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            // The check made is "either the holdtime is infinite OR the interval is non-zero".
+            must "(((join-prune-holdtime) and (join-prune-holdtime = 65535)) or " +
+                 " (not((join-prune-interval) and (join-prune-interval = 0))))" {
+              error-message "If the PIM interface join-prune-holdtime is not infinite, then the join-prune-interval must not be zero";
+            }
+
+            // Check that the join-prune-holdtime is at least 3.5 times the value of join-prune-interval.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            must "((not(join-prune-holdtime)) and (not(join-prune-interval)))" +
+                 " or ((not(join-prune-interval)) and (join-prune-holdtime >= 210))" +
+                 " or ((not(join-prune-holdtime)) and (join-prune-interval <= 60))" +
+                 " or (join-prune-holdtime >= join-prune-interval * 3.5)" {
+              error-message "The PIM interface join-prune-holdtime must be at least 3.5 times the value of join-prune-interval";
+            }
+
+          } // gigabitethernet-sub
+
+        } // oneGE
+
+        container tenGE {
+
+          user-ext:CLI-not-command;
+          user-ext:CLI-comm-switch "tengigabitethernet/tengigabitethernet-sub";
+
+          list tengigabitethernet {
+
+            description "10G interface";
+
+            user-ext:CLI-comm-help "Add PIM configuration to 10G interface";
+            user-ext:CLI-no-comm-help "Remove PIM configuration from 10G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "10G interface name";
+            }
+
+            uses pim-interface-config;
+
+            // If the join-prune-holdtime is not infinite (65535), then the join-prune-interval must not be zero.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            // The check made is "either the holdtime is infinite OR the interval is non-zero".
+            must "(((join-prune-holdtime) and (join-prune-holdtime = 65535)) or " +
+                 " (not((join-prune-interval) and (join-prune-interval = 0))))" {
+              error-message "If the PIM interface join-prune-holdtime is not infinite, then the join-prune-interval must not be zero";
+            }
+
+            // Check that the join-prune-holdtime is at least 3.5 times the value of join-prune-interval.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            must "((not(join-prune-holdtime)) and (not(join-prune-interval)))" +
+                 " or ((not(join-prune-interval)) and (join-prune-holdtime >= 210))" +
+                 " or ((not(join-prune-holdtime)) and (join-prune-interval <= 60))" +
+                 " or (join-prune-holdtime >= join-prune-interval * 3.5)" {
+              error-message "The PIM interface join-prune-holdtime must be at least 3.5 times the value of join-prune-interval";
+            }
+
+          } // tengigabitethernet
+
+          list tengigabitethernet-sub {
+
+            description "10G subinterface";
+
+            user-ext:CLI-comm-help "Add PIM configuration to 10G subinterface";
+            user-ext:CLI-no-comm-help "Remove PIM configuration from 10G subinterface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-subiface-range-t;
+              description "<unit>/<dev>/<port>.<subid>";
+              user-ext:CLI-param-help "10G subinterface name";
+            }
+
+            uses pim-interface-config;
+
+            // If the join-prune-holdtime is not infinite (65535), then the join-prune-interval must not be zero.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            // The check made is "either the holdtime is infinite OR the interval is non-zero".
+            must "(((join-prune-holdtime) and (join-prune-holdtime = 65535)) or " +
+                 " (not((join-prune-interval) and (join-prune-interval = 0))))" {
+              error-message "If the PIM interface join-prune-holdtime is not infinite, then the join-prune-interval must not be zero";
+            }
+
+            // Check that the join-prune-holdtime is at least 3.5 times the value of join-prune-interval.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            must "((not(join-prune-holdtime)) and (not(join-prune-interval)))" +
+                 " or ((not(join-prune-interval)) and (join-prune-holdtime >= 210))" +
+                 " or ((not(join-prune-holdtime)) and (join-prune-interval <= 60))" +
+                 " or (join-prune-holdtime >= join-prune-interval * 3.5)" {
+              error-message "The PIM interface join-prune-holdtime must be at least 3.5 times the value of join-prune-interval";
+            }
+
+          } // tengigabitethernet-sub
+
+        } // tenGE
+
+        container fortyGE {
+
+          user-ext:CLI-not-command;
+          user-ext:CLI-comm-switch "fortygigabitethernet/fortygigabitethernet-sub";
+
+          list fortygigabitethernet {
+
+            description "40G interface";
+
+            user-ext:CLI-comm-help "Add PIM configuration to 40G interface";
+            user-ext:CLI-no-comm-help "Remove PIM configuration from 40G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "40G interface name";
+            }
+
+            uses pim-interface-config;
+
+            // If the join-prune-holdtime is not infinite (65535), then the join-prune-interval must not be zero.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            // The check made is "either the holdtime is infinite OR the interval is non-zero".
+            must "(((join-prune-holdtime) and (join-prune-holdtime = 65535)) or " +
+                 " (not((join-prune-interval) and (join-prune-interval = 0))))" {
+              error-message "If the PIM interface join-prune-holdtime is not infinite, then the join-prune-interval must not be zero";
+            }
+
+            // Check that the join-prune-holdtime is at least 3.5 times the value of join-prune-interval.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            must "((not(join-prune-holdtime)) and (not(join-prune-interval)))" +
+                 " or ((not(join-prune-interval)) and (join-prune-holdtime >= 210))" +
+                 " or ((not(join-prune-holdtime)) and (join-prune-interval <= 60))" +
+                 " or (join-prune-holdtime >= join-prune-interval * 3.5)" {
+              error-message "The PIM interface join-prune-holdtime must be at least 3.5 times the value of join-prune-interval";
+            }
+
+          } // fortygigabitethernet
+
+          list fortygigabitethernet-sub {
+
+            description "40G subinterface";
+
+            user-ext:CLI-comm-help "Add PIM configuration to 40G subinterface";
+            user-ext:CLI-no-comm-help "Remove PIM configuration from 40G subinterface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-subiface-range-t;
+              description "<unit>/<dev>/<port>.<subid>";
+              user-ext:CLI-param-help "40G subinterface name";
+            }
+
+            uses pim-interface-config;
+
+            // If the join-prune-holdtime is not infinite (65535), then the join-prune-interval must not be zero.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            // The check made is "either the holdtime is infinite OR the interval is non-zero".
+            must "(((join-prune-holdtime) and (join-prune-holdtime = 65535)) or " +
+                 " (not((join-prune-interval) and (join-prune-interval = 0))))" {
+              error-message "If the PIM interface join-prune-holdtime is not infinite, then the join-prune-interval must not be zero";
+            }
+
+            // Check that the join-prune-holdtime is at least 3.5 times the value of join-prune-interval.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            must "((not(join-prune-holdtime)) and (not(join-prune-interval)))" +
+                 " or ((not(join-prune-interval)) and (join-prune-holdtime >= 210))" +
+                 " or ((not(join-prune-holdtime)) and (join-prune-interval <= 60))" +
+                 " or (join-prune-holdtime >= join-prune-interval * 3.5)" {
+              error-message "The PIM interface join-prune-holdtime must be at least 3.5 times the value of join-prune-interval";
+            }
+
+          } // fortygigabitethernet-sub
+
+        } // fortyGE
+
+        container hundredGE {
+
+          user-ext:CLI-not-command;
+          user-ext:CLI-comm-switch "hundredgigabitethernet/hundredgigabitethernet-sub";
+
+          list hundredgigabitethernet {
+
+            description "100G interface";
+
+            user-ext:CLI-comm-help "Add PIM configuration to 100G interface";
+            user-ext:CLI-no-comm-help "Remove PIM configuration from 100G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "100G interface name";
+            }
+
+            uses pim-interface-config;
+
+            // If the join-prune-holdtime is not infinite (65535), then the join-prune-interval must not be zero.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            // The check made is "either the holdtime is infinite OR the interval is non-zero".
+            must "(((join-prune-holdtime) and (join-prune-holdtime = 65535)) or " +
+                 " (not((join-prune-interval) and (join-prune-interval = 0))))" {
+              error-message "If the PIM interface join-prune-holdtime is not infinite, then the join-prune-interval must not be zero";
+            }
+
+            // Check that the join-prune-holdtime is at least 3.5 times the value of join-prune-interval.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            must "((not(join-prune-holdtime)) and (not(join-prune-interval)))" +
+                 " or ((not(join-prune-interval)) and (join-prune-holdtime >= 210))" +
+                 " or ((not(join-prune-holdtime)) and (join-prune-interval <= 60))" +
+                 " or (join-prune-holdtime >= join-prune-interval * 3.5)" {
+              error-message "The PIM interface join-prune-holdtime must be at least 3.5 times the value of join-prune-interval";
+            }
+
+          } // hundredgigabitethernet
+
+          list hundredgigabitethernet-sub {
+
+            description "100G subinterface";
+
+            user-ext:CLI-comm-help "Add PIM configuration to 100G subinterface";
+            user-ext:CLI-no-comm-help "Remove PIM configuration from 100G subinterface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-subiface-range-t;
+              description "<unit>/<dev>/<port>.<subid>";
+              user-ext:CLI-param-help "100G subinterface name";
+            }
+
+            uses pim-interface-config;
+
+            // If the join-prune-holdtime is not infinite (65535), then the join-prune-interval must not be zero.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            // The check made is "either the holdtime is infinite OR the interval is non-zero".
+            must "(((join-prune-holdtime) and (join-prune-holdtime = 65535)) or " +
+                 " (not((join-prune-interval) and (join-prune-interval = 0))))" {
+              error-message "If the PIM interface join-prune-holdtime is not infinite, then the join-prune-interval must not be zero";
+            }
+
+            // Check that the join-prune-holdtime is at least 3.5 times the value of join-prune-interval.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            must "((not(join-prune-holdtime)) and (not(join-prune-interval)))" +
+                 " or ((not(join-prune-interval)) and (join-prune-holdtime >= 210))" +
+                 " or ((not(join-prune-holdtime)) and (join-prune-interval <= 60))" +
+                 " or (join-prune-holdtime >= join-prune-interval * 3.5)" {
+              error-message "The PIM interface join-prune-holdtime must be at least 3.5 times the value of join-prune-interval";
+            }
+
+          } // hundredgigabitethernet-sub
+
+        } // hundredGE
+
+        container bundle-ifaces {
+
+          user-ext:CLI-not-command;
+          user-ext:CLI-comm-switch "bundle-ether/bundle-ether-sub";
+
+          list bundle-ether {
+
+            description "Bundle interface";
+
+            user-ext:CLI-comm-help "Add PIM configuration to bundle interface";
+            user-ext:CLI-no-comm-help "Remove PIM configuration from bundle interface";
+
+            key "bundle-id";
+
+            leaf bundle-id {
+              type interfaces:bundle-id-t;
+              description "Bundle-ether id";
+              user-ext:CLI-param-help "Bundle interface name";
+            }
+
+            uses pim-interface-config;
+
+            // If the join-prune-holdtime is not infinite (65535), then the join-prune-interval must not be zero.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            // The check made is "either the holdtime is infinite OR the interval is non-zero".
+            must "(((join-prune-holdtime) and (join-prune-holdtime = 65535)) or " +
+                 " (not((join-prune-interval) and (join-prune-interval = 0))))" {
+              error-message "If the PIM interface join-prune-holdtime is not infinite, then the join-prune-interval must not be zero";
+            }
+
+            // Check that the join-prune-holdtime is at least 3.5 times the value of join-prune-interval.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            must "((not(join-prune-holdtime)) and (not(join-prune-interval)))" +
+                 " or ((not(join-prune-interval)) and (join-prune-holdtime >= 210))" +
+                 " or ((not(join-prune-holdtime)) and (join-prune-interval <= 60))" +
+                 " or (join-prune-holdtime >= join-prune-interval * 3.5)" {
+              error-message "The PIM interface join-prune-holdtime must be at least 3.5 times the value of join-prune-interval";
+            }
+
+          } // bundle-ether
+
+          list bundle-ether-sub {
+
+            user-ext:CLI-comm-help "Add PIM configuration to bundle subinterface";
+            user-ext:CLI-no-comm-help "Remove PIM configuration from bundle subinterface";
+
+            key "bundle-id";
+
+            leaf bundle-id {
+              type interfaces:bundle-sub-id-t;
+              description "Bundle-ether subinterface id";
+              user-ext:CLI-param-help "Bundle subinterface name";
+            }
+
+            uses pim-interface-config;
+
+            // If the join-prune-holdtime is not infinite (65535), then the join-prune-interval must not be zero.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            // The check made is "either the holdtime is infinite OR the interval is non-zero".
+            must "(((join-prune-holdtime) and (join-prune-holdtime = 65535)) or " +
+                 " (not((join-prune-interval) and (join-prune-interval = 0))))" {
+              error-message "If the PIM interface join-prune-holdtime is not infinite, then the join-prune-interval must not be zero";
+            }
+
+            // Check that the join-prune-holdtime is at least 3.5 times the value of join-prune-interval.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            must "((not(join-prune-holdtime)) and (not(join-prune-interval)))" +
+                 " or ((not(join-prune-interval)) and (join-prune-holdtime >= 210))" +
+                 " or ((not(join-prune-holdtime)) and (join-prune-interval <= 60))" +
+                 " or (join-prune-holdtime >= join-prune-interval * 3.5)" {
+              error-message "The PIM interface join-prune-holdtime must be at least 3.5 times the value of join-prune-interval";
+            }
+
+          } // bundle-ether-sub
+
+        } // bundle-ifaces
+
+        container spec-ifaces {
+
+          user-ext:CLI-not-command;
+
+          list loopback {
+
+            description "Loopback interface";
+
+            user-ext:CLI-comm-help "Add PIM configuration to loopback subinterface";
+            user-ext:CLI-no-comm-help "Remove PIM configuration from loopback subinterface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:loopback-id-t;
+              description "Loopback ID";
+              user-ext:CLI-param-help "Loopback ID";
+            }
+
+            uses pim-interface-config;
+
+            // If the join-prune-holdtime is not infinite (65535), then the join-prune-interval must not be zero.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            // The check made is "either the holdtime is infinite OR the interval is non-zero".
+            must "(((join-prune-holdtime) and (join-prune-holdtime = 65535)) or " +
+                 " (not((join-prune-interval) and (join-prune-interval = 0))))" {
+              error-message "If the PIM interface join-prune-holdtime is not infinite, then the join-prune-interval must not be zero";
+            }
+
+            // Check that the join-prune-holdtime is at least 3.5 times the value of join-prune-interval.
+            // The default value for join-prune-holdtime is 210; the default value for join-prune-interval is 60.
+            must "((not(join-prune-holdtime)) and (not(join-prune-interval)))" +
+                 " or ((not(join-prune-interval)) and (join-prune-holdtime >= 210))" +
+                 " or ((not(join-prune-holdtime)) and (join-prune-interval <= 60))" +
+                 " or (join-prune-holdtime >= join-prune-interval * 3.5)" {
+              error-message "The PIM interface join-prune-holdtime must be at least 3.5 times the value of join-prune-interval";
+            }
+
+          } // loopback
+
+        } // spec-ifaces
+
+      } // interface
+
+    } // custom-interfaces
+
+  } // pim-interface-config-parms
+
+  grouping pim-interface-state {
+
+    // Low-level model info: Corresponds to read-only fields in AMB_PIM_INTERFACE (pimInterfaceTable).
+
+    leaf primary-address {
+      type interfaces:iface-ip-prefix-allow-zero-t;
+      description
+        "The primary IP address of this router on this PIM interface.";
+      config false;
+    }
+
+    leaf dr {
+      type interfaces:iface-ip-address-allow-zero-t;
+      description
+        "The primary IP address of the Designated Router on this
+        PIM interface.";
+      config false;
+    }
+
+    leaf generation-id-value {
+      type uint32;
+      description
+        "The value of the Generation ID this router inserted in the
+        last PIM Hello message it sent on this interface, that is,
+        an arbitrary value which allows PIM neighbors to detect
+        when the local router has restarted.";
+      config false;
+    }
+
+    leaf lan-delay-enabled {
+      type boolean;
+      description
+        "Evaluates to 'true' if all routers on this interface are
+        using the LAN Prune Delay option.";
+      config false;
+    }
+
+    leaf effect-propagation-delay {
+      type uint32 {
+        range "0..32767";
+      }
+      units "milliseconds";
+      description
+        "The Effective Propagation Delay on this interface.";
+      config false;
+    }
+
+    leaf effect-override-interval {
+      type uint32 {
+        range "0..65535";
+      }
+      units "milliseconds";
+      description
+        "The Effective Override Interval on this interface.";
+      config false;
+    }
+
+    leaf suppression-enabled {
+      type boolean;
+      description
+        "Whether join suppression is enabled on this interface.";
+      config false;
+    }
+
+    leaf dr-priority-enabled {
+      type boolean;
+      description
+        "Evaluates to 'true' if all routers on this interface are
+        using the DR Priority option.";
+      config false;
+    }
+
+    leaf oper-status {
+      type meta:oper-status;
+      description
+        "The current operational state of this interface.";
+      config false;
+    }
+
+    leaf neighbor-count {
+      type uint32;
+      description
+        "The number of PIM neighbors on this interface.
+        ";
+      config false;
+    }
+
+    leaf star-g-state-stored {
+      type uint32;
+      description
+        "The number of groups for which PIM is
+        storing (*,G,I) state specific to this interface.";
+      config false;
+    }
+
+    leaf sg-state-stored {
+      type uint32;
+      description
+        "The number of {source, group} pairs for which PIM is storing
+        (S,G,I) state specific to this interface.";
+      config false;
+    }
+
+    leaf hello-interval {
+      type pim-hello-interval;
+      units "seconds";
+      default "30";
+      description
+        "The frequency at which PIM Hello messages are transmitted
+        on this interface.  This object corresponds to the
+        'Hello_Period' timer value defined in the PIM-SM and
+        PIM-DM specifications (RFC4601 and RFC3973 respectively).
+        A value of 0 represents an 'infinite' interval, and
+        indicates that periodic PIM Hello messages should not be
+        sent on this interface.";
+      config false;
+    }
+
+    leaf dr-priority {
+      type pim-dr-priority;
+      default "1";
+      description
+        "The Designated Router Priority value inserted into the DR
+        Priority option on this interface.  If all routers on the
+        interface include the DR Priority option in their PIM
+        Hello messages, the router with the highest DR priority
+        value will win the DR election (with highest IP address
+        used as a tie-breaker).";
+      config false;
+    }
+
+  } // pim-interface-state
+
+  grouping pim-interface-stats {
+
+    // Low-level model info: Corresponds to AMB_PIM_IF_STATS (pimIfStatsTable).
+
+    leaf number-sent-hello {
+      type uint32;
+      description
+        "The number of PIM Hello messages that have been sent out
+        this interface.";
+      config false;
+    }
+
+    leaf number-sent-join-prune {
+      type uint32;
+      description
+        "The number of PIM Join/Prune messages that have been sent
+        out this interface.";
+      config false;
+    }
+
+    leaf number-sent-assert {
+      type uint32;
+      description
+        "The number of PIM Assert messages that have been sent out
+        this interface.";
+      config false;
+    }
+
+    leaf number-sent-bsm {
+      type uint32;
+      description
+        "The number of PIM Bootstrap Router messages that have been
+        sent out this interface.";
+      config false;
+    }
+
+    leaf number-error-hello {
+      type uint32;
+      description
+        "The number of PIM Hello messages that have been received
+        on this interface that have contained errors.";
+      config false;
+    }
+
+    leaf number-recv-unknown-neighbor {
+      type uint32;
+      description
+        "The number of PIM Join/Prune, Assert and multicast
+        Bootstrap Router messages that have been received on this
+        interface from a neighbor from which we had not previously
+        received a valid PIM Hello message (and for which
+        pimInterfaceP2PNoHellos was 'false').
+
+        Bootstrap Router messages that are sent to a unicast
+        address are not included in this count.";
+      config false;
+    }
+
+    leaf number-unknown-hello-options {
+      type uint32;
+      description
+        "The number of unknown options that have been received in
+        PIM Hello messages on this interface.
+
+        This value will include any PIM Hellos received with the
+        known Cisco proprietary option 65004.";
+      config false;
+    }
+
+  }  // pim-interface-stats
+
+  grouping pim-interface-state-parms {
+
+    uses interfaces:iface-id;
+
+    container state {
+
+      // Low-level model info: Corresponds to read-only fields in AMB_PIM_INTERFACE (pimInterfaceTable).
+
+      config false;
+
+      container ipv4 {
+
+        config false;
+
+        uses pim-interface-state;
+
+      } // ipv4
+
+      container ipv6 {
+
+        config false;
+
+        uses pim-interface-state;
+
+      } // ipv6
+
+    } // state
+
+    container stats {
+
+      // Low-level model info: Corresponds to AMB_PIM_IF_STATS (pimIfStatsTable).
+
+      description
+        "This table lists the statistics for {interface, IP version}
+        pairs for which PIM is enabled.
+
+        This table is not used for MGMD Snooping or Proxy.";
+
+      config false;
+
+      container ipv4 {
+
+        config false;
+
+        uses pim-interface-stats;
+
+      } // ipv4
+
+      container ipv6 {
+
+        config false;
+
+        uses pim-interface-stats;
+
+      } // ipv6
+
+    } // stats
+
+    container neighbor-state-list {
+
+      description
+        "Container to hold Neighbor state.";
+
+      config false;
+
+      list neighbor-state {
+
+        // Low-level model info: Corresponds to AMB_PIM_NEIGHBOR (pimNeighborTable).
+
+        description
+          "The table listing the router's PIM neighbors.
+
+          This table is not used for MGMD Snooping or Proxy.";
+
+        // Low-level model info: MIB index is "address".
+
+        config false;
+
+        leaf address {
+          type interfaces:iface-ip-address-allow-zero-t;
+          description
+            "The primary IP address of this PIM neighbor.";
+          config false;
+        }
+
+        leaf up-time {
+          type uint32;
+          units "TimeTicks";
+          description
+            "The time since this PIM neighbor (last) became a neighbor
+            of the local router.";
+          config false;
+        }
+
+        leaf expiry-time {
+          type uint32;
+          units "TimeTicks";
+          description
+            "The minimum time remaining before this PIM neighbor will
+            be aged out.  The value zero indicates that this PIM
+            neighbor will never be aged out.";
+          config false;
+        }
+
+        leaf lan-prune-delay-present {
+          type boolean;
+          description
+            "Evaluates to 'true' if this neighbor is using the LAN
+            Prune Delay option.";
+          config false;
+        }
+
+        leaf propagation-delay {
+          type uint32 {
+            range "0..32767";
+          }
+          description
+            "The value of the Propagation_Delay field of the LAN Prune
+            Delay option received from this neighbor, that is, the
+            expected propagation delay on the link.";
+          config false;
+        }
+
+        leaf override-interval {
+          type uint32 {
+            range "0..65535";
+          }
+          description
+            "The value of the Override_Interval field of the LAN Prune
+            Delay option received from this neighbor, that is, the
+            preferred maximum value of the randomized interval during
+            which a PIM router can override another PIM router's Prune
+            message.";
+          config false;
+        }
+
+        leaf t-bit {
+          type boolean;
+          description
+            "Whether the T bit was set in the LAN Prune Delay option
+            received from this neighbor.  The T bit specifies the
+            ability of the neighbor to disable join suppression.";
+          config false;
+        }
+
+        // TBD: Are these *-present fields required?  Can we use semantically-relevant presence instead?
+        leaf generation-id-present {
+          type boolean;
+          description
+            "Evaluates to 'true' if this neighbor is using the
+            Generation ID option.";
+          config false;
+        }
+
+        leaf generation-id-value {
+          type uint32;
+          description
+            "The value of the Generation ID from the last PIM Hello
+            message received from this neighbor, that is, an arbitrary
+            value which allows other PIM routers to detect when this
+            PIM neighbor has restarted.";
+          config false;
+        }
+
+        leaf bidir-capable {
+          type boolean;
+          description
+            "Evaluates to 'true' if this neighbor is using the
+            Bidirectional-PIM Capable option.";
+          config false;
+        }
+
+        leaf dr-priority-present {
+          type boolean;
+          description
+            "Evaluates to 'true' if this neighbor is using the DR
+            Priority option.";
+          config false;
+        }
+
+        leaf dr-priority {
+          type uint32;
+          description
+            "The value of the Designated Router Priority from the last
+            PIM Hello message received from this neighbor, that is,
+            the administrative preference for this neighbor to be the
+            DR (a numerically larger value is preferred).";
+          config false;
+        }
+
+        leaf state-refresh-capable {
+          type boolean;
+          description
+            "Evaluates to TRUE if this neighbor is using the State
+            Refresh Capable option.
+
+            State Refresh capability is not relevant for sparse-mode
+            groups.  However, because of commonalities between the
+            Hello messages for PIM-SM and PIM-DM, a neighbor running a
+            3rd party PIM implementation might advertise itself as
+            State Refresh Capable even when the local router is set to
+            sparse mode.";
+          config false;
+        }
+
+        leaf bfd-status {
+          type meta:bfd-sess-states;
+          description
+            "BFD session state for the neighbor.";
+          config false;
+        }
+
+      } // neighbor-state
+
+    } // neighbor-state-list
+
+    container neighbor-stats-list {
+
+      description
+        "Container to hold Neighbor stats.";
+
+      config false;
+
+      list neighbor-stats {
+
+        // Low-level model info: Corresponds to AMB_PIM_NBR_STATS (pimNbrStatsTable).
+
+        description
+          "This table lists the statistics for PIM neighbors.
+
+          Note that if a neighbor's Liveness Timer expires (including
+          on receipt of a PIM Hello message with a zero Holdtime),
+          this event resets all of the statistics in this table.
+          However, if a neighbor's Generation ID value changes, none
+          of the statistics in this table are affected.";
+
+        config false;
+
+        leaf neighbor-address {
+          type interfaces:iface-ip-address-allow-zero-t;
+          description
+            "The address type of this PIM neighbor.";
+          config false;
+        }
+
+        leaf number-recv-hello {
+          type uint32;
+          description
+            "The number of valid PIM Hello messages that have been
+            received from this neighbor.";
+          config false;
+        }
+
+        leaf number-recv-join-prune {
+          type uint32;
+          description
+            "The number of valid PIM Join/Prune messages that have been
+            received from this neighbor.";
+          config false;
+        }
+
+        leaf number-recv-assert {
+          type uint32;
+          description
+            "The number of valid PIM Assert messages that have been
+            received from this neighbor.";
+          config false;
+        }
+
+        leaf number-recv-bsm {
+          type uint32;
+          description
+            "The number of valid PIM Bootstrap messages that have been
+            received from this neighbor.";
+          config false;
+        }
+
+        leaf number-error-join-prune {
+          type uint32;
+          description
+            "The number of PIM Join/Prune messages that have been
+            received from this neighbor that have contained errors.
+            Note that this does not include messages for which the RP
+            in the message differs from the RP known by the local
+            router, nor does it include (*,G) messages received for
+            SSM groups.";
+          config false;
+        }
+
+        leaf number-error-assert {
+          type uint32;
+          description
+            "The number of PIM Assert messages that have been received
+            from this neighbor that have contained errors.";
+          config false;
+        }
+
+        leaf number-error-bsm {
+          type uint32;
+          description
+            "The number of PIM Bootstrap messages that have been received
+            from this neighbor that have contained errors.";
+          config false;
+        }
+
+      } // neighbor-stats
+
+    } // neighbor-stats-list
+
+  } // pim-interface-state-parms
+
+
+  container router {
+
+    description
+      "Configure router";
+
+    user-ext:CLI-comm-help "Configure router";
+    user-ext:CLI-no-comm-help "Configure router";
+
+    container pim {
+
+      // Low-level model info: Corresponds to fields in both AMB_PIM_TM_ENT (pimTmEntTable) and AMB_PIM_NM_ENT (pimNmEntTable).
+
+      presence "Enable Protocol Independent Multicast.";
+
+      description
+        "This table is used to create and manage PIM
+        entities.";
+
+      user-ext:CLI-comm-help "Configure PIM";
+      user-ext:CLI-no-comm-help "Configure PIM";
+
+      // Check that register-probe-time is less than half the value of the register-suppression-time
+      // The default value for register-probe-time is 5 and for register-suppression-time is 60.
+      must "((not(register/suppression-time)) and (not(register/probe-time)))" +
+           " or ((not(register/probe-time)) and (register/suppression-time > 10))" +
+           " or ((not(register/suppression-time)) and (register/probe-time < 30))" +
+           " or (register/suppression-time > register/probe-time * 2)" {
+        error-message "The PIM register-probe-time must be less than half the value of the register-suppression-time";
+      }
+
+      uses pim-global-config;
+
+      container state {
+
+        // Low-level model info: Corresponds to read-only fields in AMB_PIM_TM_ENT (pimTmEntTable).
+
+        config false;
+
+        container ipv4 {
+
+          config false;
+
+          uses pim-global-state;
+
+        } // ipv4
+
+        container ipv6 {
+
+          config false;
+
+          uses pim-global-state;
+
+        } // ipv6
+
+      } // state
+
+      container stats {
+
+        // Low-level model info: Corresponds to AMB_PIM_NM_ENT_STATS (pimNmEntStatsTable).
+
+        description
+          "This table lists the statistics for PIM
+          entities.
+
+          Note that in the case of critical parsing errors, only the
+          first error encountered will be counted.  The checks are
+          made in the following order.
+
+          - Length.
+          - Checksum.
+          - Message type.
+          - Version.
+
+          This table is not used for MGMD Snooping or Proxy.";
+
+        config false;
+
+        container ipv4 {
+
+          config false;
+
+          uses pim-global-stats;
+
+        } // ipv4
+
+        container ipv6 {
+
+          config false;
+
+          uses pim-global-stats;
+
+        } // ipv6
+
+      } // stats
+
+      container address-family {
+
+        description
+          "Configure PIM for address-family";
+
+        user-ext:CLI-comm-help "Configure PIM for address-family";
+        user-ext:CLI-no-comm-help "Configure PIM for address-family";
+
+        container ipv4 {
+
+          description
+            "Configure IPv4 PIM";
+
+          user-ext:CLI-comm-help "Configure IPv4 PIM";
+          user-ext:CLI-no-comm-help "Configure IPv4 PIM";
+
+          list static-rp {
+
+            // Low-level model info: Corresponds to AMB_PIM_STATIC_RP (pimStaticRPTable).
+
+            description
+              "This table is used to create and manage static configuration
+              of RPs and group ranges.
+
+              PIM creates default rows in this table at startup to
+              correspond to the SSM ranges defined by IANA.  The
+              administrator is permitted to modify and destroy these rows,
+              or create other rows for different group prefixes.
+
+              If PIM is running in dense mode or sparse-dense mode, the
+              network administrator must create group ranges in this table
+              to indicate the multicast groups which should be treated as
+              dense mode.";
+
+            user-ext:CLI-comm-help "Configure RP";
+            user-ext:CLI-no-comm-help "Remove RP";
+
+            key "group-prefix";
+
+            leaf group-prefix {
+              type meta:ipv4-multicast-prefix;
+              description
+                "The multicast group address which gives the group prefix for
+                this entry.
+
+                This address object is only significant up to the prefix
+                length.  The remainder of the address bits are zero.";
+
+              user-ext:CLI-param-help "Group prefix";
+            }
+
+            leaf rp-address {
+              type interfaces:iface-ipv4-address-t;
+              description
+                "The IP address of the RP to be used for groups within this
+                group prefix.";
+
+              user-ext:CLI-comm-help "Set RP address";
+              user-ext:CLI-no-comm-help "Remove RP address";
+              user-ext:CLI-param-help "Set RP address";
+            }
+
+            leaf pim-mode {
+              type pim-mode-config;
+              default "asm";
+              description
+                "The PIM mode to be used for groups in this group prefix.
+
+                PIM only supports the values 'ssm', 'asm', 'dm' and
+                'none' for this object.
+
+                If this object is set to 'ssm', 'dm' or 'none', then
+                rp-address must be set to zero.  No RP
+                operations are ever possible for PIM-SSM or PIM-DM, and RP
+                addresses do not make sense for unroutable groups.
+
+                PIM creates default rows in this table at startup with
+                this object set to 'ssm', to correspond to the SSM ranges
+                defined by IANA.  The administrator is permitted to modify
+                and destroy these rows.";
+
+              user-ext:CLI-comm-help "Set PIM mode";
+              user-ext:CLI-no-comm-help "Set PIM mode to default";
+              user-ext:CLI-param-help "Set PIM mode";
+            }
+
+            // If the PIM mode is 'asm', then the RP address must be non-zero.
+            // The default PIM mode is 'asm'.
+            must " (((pim-mode) and (pim-mode != 'asm')) or " +
+                 "  ((rp-address) and (rp-address != '0.0.0.0')))" {
+              error-message "If the PIM mode is 'asm', then the static RP address must be non-zero";
+            }
+
+            // If the PIM mode is not 'asm', then the RP address must be zero.
+            // The default PIM mode is 'asm'.
+            must " ((not(pim-mode) or (pim-mode = 'asm')) or " +
+                 "  (not(rp-address) or (rp-address = '0.0.0.0')))" {
+              error-message "If the PIM mode is not 'asm', then the static RP address must be zero";
+            }
+
+          } // static-rp
+
+          list anycast-rp {
+
+            // Low-level model info: Corresponds to AMB_PIM_ANYCAST_RP_SET (pimAnycastRPSetTable).
+
+            description
+              "This table is used to create and manage Anycast-RP via PIM
+              Register messages (draft-ietf-pim-anycast-rp), as opposed to
+              via other protocols such as MSDP.
+
+              Entries must be configured in this table if and only if the
+              local router is a member of one or more Anycast-RP sets,
+              that is, one or more Anycast-RP addresses are assigned to
+              the local router.  Note that if using static RP
+              configuration, this is in addition to, not instead of, the
+              static-rp entries that must be configured for the Anycast-RPs.
+
+              The set of rows with the same values of anycast-address
+              corresponds to the Anycast-RP set for that Anycast-RP
+              address.
+
+              Exactly one entry per Anycast-RP set corresponds to the
+              local router.  That entry is identified by the
+              local-router leaf and determines the source
+              address used by the local router when forwarding PIM
+              Register messages to the other routers in the Anycast-RP
+              set.";
+
+            user-ext:CLI-comm-help "Configure Anycast RP";
+            user-ext:CLI-no-comm-help "Remove Anycast RP";
+
+            key "anycast-address rp-address";
+
+            // Low-level model info: Corresponds to pimAnycastRPSetAnycastAddress.
+            leaf anycast-address {
+              type interfaces:iface-ipv4-address-t;
+              description
+                "The Anycast-RP address.";
+
+              user-ext:CLI-param-help "Anycast address";
+            }
+
+            // Low-level model info: Corresponds to pimAnycastRPSetRouterAddress.
+            leaf rp-address {
+              type interfaces:iface-ipv4-address-t;
+              description
+                "The address of a router that is a member of the Anycast-RP
+                set.  This must not be the same as anycast-address.";
+
+              user-ext:CLI-param-help "RP address";
+            }
+
+            // Check that anycast-address and rp-address are not equal.
+            must "(anycast-address != rp-address)" {
+              error-message "The PIM Anycast RP ipv4 anycast and rp addresses must be different";
+            }
+
+            container state {
+
+              // Low-level model info: Corresponds to read-only fields in AMB_PIM_ANYCAST_RP_SET (pimAnycastRPSetTable).
+
+              description "Anycast RP state.";
+
+              config false;
+
+              uses pim-anycast-rp-state;
+
+            } // state
+
+          } // anycast-rp
+
+          uses pim-interface-config-parms;
+
+        } // ipv4
+
+        container ipv6 {
+
+          description
+            "Configure IPv6 PIM";
+
+          user-ext:CLI-comm-help "Configure IPv6 PIM";
+          user-ext:CLI-no-comm-help "Configure IPv6 PIM";
+
+          list static-rp {
+
+            // Low-level model info: Corresponds to AMB_PIM_STATIC_RP (pimStaticRPTable).
+
+            description
+              "This table is used to create and manage static configuration
+              of RPs and group ranges.
+
+              PIM creates default rows in this table at startup to
+              correspond to the SSM ranges defined by IANA.  The
+              administrator is permitted to modify and destroy these rows,
+              or create other rows for different group prefixes.
+
+              If PIM is running in dense mode or sparse-dense mode, the
+              network administrator must create group ranges in this table
+              to indicate the multicast groups which should be treated as
+              dense mode.";
+
+            user-ext:CLI-comm-help "Configure RP";
+            user-ext:CLI-no-comm-help "Remove RP";
+
+            key "group-prefix";
+
+            leaf group-prefix {
+              type meta:ipv6-multicast-prefix;
+              description
+                "The multicast group address which gives the group prefix for
+                this entry.
+
+                This address object is only significant up to the prefix
+                length.  The remainder of the address bits are zero.";
+
+              user-ext:CLI-param-help "Group prefix";
+            }
+
+            leaf rp-address {
+              type interfaces:iface-ipv6-address-t;
+              description
+                "The IP address of the RP to be used for groups within this
+                group prefix.";
+
+              user-ext:CLI-comm-help "Set RP address";
+              user-ext:CLI-no-comm-help "Remove RP address";
+              user-ext:CLI-param-help "Set RP address";
+            }
+
+            leaf pim-mode {
+              type pim-mode-config;
+              default "asm";
+              description
+                "The PIM mode to be used for groups in this group prefix.
+
+                PIM only supports the values 'ssm', 'asm', 'dm' and
+                'none' for this object.
+
+                If this object is set to 'ssm', 'dm' or 'none', then
+                rp-ddress must be set to zero.  No RP
+                operations are ever possible for PIM-SSM or PIM-DM, and RP
+                addresses do not make sense for unroutable groups.
+
+                PIM creates default rows in this table at startup with
+                this object set to 'ssm', to correspond to the SSM ranges
+                defined by IANA.  The administrator is permitted to modify
+                and destroy these rows.";
+
+              user-ext:CLI-comm-help "Set PIM mode";
+              user-ext:CLI-no-comm-help "Set PIM mode to default";
+              user-ext:CLI-param-help "Set PIM mode";
+            }
+
+            // If the PIM mode is 'asm', then the RP address must be non-zero.
+            // The default PIM mode is 'asm'.
+            must " (((pim-mode) and (pim-mode != 'asm')) or " +
+                 "  ((rp-address) and ((rp-address != '::') and (rp-address != '0:0:0:0:0:0:0:0'))))" {
+              error-message "If the PIM mode is 'asm', then the static RP address must be non-zero";
+            }
+
+            // If the PIM mode is not 'asm', then the RP address must be zero.
+            // The default PIM mode is 'asm'.
+            must " ((not(pim-mode) or (pim-mode = 'asm')) or " +
+                 "  (not(rp-address) or ((rp-address = '::') or (rp-address = '0:0:0:0:0:0:0:0'))))" {
+              error-message "If the PIM mode is not 'asm', then the static RP address must be zero";
+            }
+
+          } // static-rp
+
+          list anycast-rp {
+
+            // Low-level model info: Corresponds to AMB_PIM_ANYCAST_RP_SET (pimAnycastRPSetTable).
+
+            description
+              "This table is used to create and manage Anycast-RP via PIM
+              Register messages (draft-ietf-pim-anycast-rp), as opposed to
+              via other protocols such as MSDP.
+
+              Entries must be configured in this table if and only if the
+              local router is a member of one or more Anycast-RP sets,
+              that is, one or more Anycast-RP addresses are assigned to
+              the local router.  Note that if using static RP
+              configuration, this is in addition to, not instead of, the
+              static-rp entries that must be configured for the Anycast-RPs.
+
+              The set of rows with the same values of anycast-address
+              corresponds to the Anycast-RP set for that Anycast-RP
+              address.
+
+              Exactly one entry per Anycast-RP set corresponds to the
+              local router.  That entry is identified by the
+              local-router leaf and determines the source
+              address used by the local router when forwarding PIM
+              Register messages to the other routers in the Anycast-RP
+              set.";
+
+            user-ext:CLI-comm-help "Configure Anycast RP";
+            user-ext:CLI-no-comm-help "Remove Anycast RP";
+
+            key "anycast-address rp-address";
+
+            // Low-level model info: Corresponds to pimAnycastRPSetAnycastAddress.
+            leaf anycast-address {
+              type interfaces:iface-ipv6-address-t;
+              description
+                "The Anycast-RP address.";
+
+              user-ext:CLI-param-help "Anycast address";
+            }
+
+            // Low-level model info: Corresponds to pimAnycastRPSetRouterAddress.
+            leaf rp-address {
+              type interfaces:iface-ipv6-address-t;
+              description
+                "The address of a router that is a member of the Anycast-RP
+                set.  This must not be the same as anycast-address.";
+
+              user-ext:CLI-param-help "RP address";
+            }
+
+            // Check that anycast-address and rp-address are not equal.
+            must "(anycast-address != rp-address)" {
+              error-message "The PIM Anycast RP ipv6 anycast and rp addresses must be different";
+            }
+
+            container state {
+
+              // Low-level model info: Corresponds to read-only fields in AMB_PIM_ANYCAST_RP_SET (pimAnycastRPSetTable).
+
+              description "Anycast RP state.";
+
+              config false;
+
+              uses pim-anycast-rp-state;
+
+            } // state
+
+          } // anycast-rp
+
+          uses pim-interface-config-parms;
+
+        } // ipv6
+
+      } // address-family
+
+      container group-state-list {
+
+        description
+          "Container to hold the multicast distribution state at this router.";
+
+        config false;
+
+        list group-address {
+
+          description
+            "Container to hold the lsit of multicast group addresses at this router.";
+
+          config false;
+
+          leaf group-address {
+            type interfaces:iface-ip-address-allow-zero-t;
+            description
+              "The multicast group address.";
+            config false;
+          }
+
+          container star-g-state {
+
+            description
+              "Container to hold the (*,G) state.";
+
+            config false;
+
+            container state {
+
+              // Low-level model info: Corresponds to AMB_PIM_STAR_G (pimStarGTable).
+
+              description
+                "The table listing the non-interface specific
+                (*,G) state that the entity maintains.
+
+                This MIB table is not used for MGMD Snooping or PIM-DM, nor
+                for MGMD Proxy (except in the deprecated mode).";
+
+              // Low-level model info: MIB index is "group-address".
+
+              leaf up-time {
+                type uint32;
+                units "TimeTicks";
+                description
+                  "The time since this entry was created by the local router.";
+                config false;
+              }
+
+              leaf pim-mode {
+                type pim-mode-state;
+                description
+                  "Whether this entry represents an ASM (Any-Source
+                  Multicast, used with PIM-SM), SSM (Single-Source
+                  Multicast, used with PIM-SM), or DM (Dense mode) group.";
+                config false;
+              }
+
+              leaf rp-address {
+                type interfaces:iface-ip-address-allow-zero-t;
+                description
+                  "The address of the Rendezvous Point (RP) for the group.
+
+                  This object is zero if the RP address is unknown.";
+                config false;
+              }
+
+              leaf rp-origin {
+                type pim-gp-map-origin-type;
+                description
+                  "The mechanism by which the RP for the group was learned.";
+                config false;
+              }
+
+              leaf rp-is-local {
+                type boolean;
+                description
+                  "Whether the local router is the RP for the group.";
+                config false;
+              }
+
+              leaf upstream-join-state {
+                type pim-upstrm-join-state;
+                description
+                  "Whether the local router should join the RP tree for the
+                  group.  This corresponds to the state of the upstream
+                  (*,G) state machine in the PIM-SM specification (RFC4601).";
+                config false;
+              }
+
+              leaf upstream-join-timer {
+                type uint32;
+                units "TimeTicks";
+                description
+                  "The time remaining before the local router next sends a
+                  periodic (*,G) Join message on pimStarGRPFIfIndex.  This
+                  timer is called the (*,G) Upstream Join Timer in the
+                  PIM-SM specification (RFC4601).  This object is zero if
+                  the timer is not running.";
+                config false;
+              }
+
+              leaf upstream-neighbor {
+                type interfaces:iface-ip-address-allow-zero-t;
+                description
+                  "The primary address of the neighbor on pimStarGRPFIfIndex
+                  that the local router is sending periodic (*,G) Join
+                  messages to.  The InetAddressType is given by the
+                  pimStarGUpstreamNeighborType object.  This address is
+                  called RPF'(*,G) in the PIM-SM specification.
+
+                  This object is zero if the the RPF next hop is unknown or
+                  is not a PIM neighbor.";
+                config false;
+              }
+
+              leaf rpf-if-base-name {
+                type interfaces:iface-base-name;
+                description
+                  "The base name of the RPF interface towards the RP, or empty
+                  if the RPF interface is unknown.";
+                config false;
+
+              }
+
+              leaf rpf-if-ext-id {
+                type interfaces:iface-ext-id;
+                description
+                  "The extended ID of the RPF interface towards the RP, or
+                  empty if the RPF interface is unknown.";
+                config false;
+              }
+
+              leaf rpf-next-hop {
+                type interfaces:iface-ip-address-allow-zero-t;
+                description
+                  "The address of the RPF next hop towards the RP.
+                  This address is called MRIB.next_hop(RP(G)) in
+                  the PIM-SM specification.";
+                config false;
+              }
+
+              leaf rpf-route-protocol {
+                type meta:route-protocols;
+                description
+                  "The routing mechanism via which the route used to find the
+                  RPF interface towards the RP was learned.";
+                config false;
+              }
+
+              leaf rpf-route-prefix {
+                type interfaces:iface-ip-prefix-t;
+                description
+                  "The IP address which
+                  identifies the route
+                  used to find the RPF interface towards the RP.
+
+                  This address object is only significant up to the prefix
+                  length.  The remainder of the address bits are zero.";
+                config false;
+              }
+
+              leaf rpf-route-metric-pref {
+                type uint32 {
+                  range "0..2147483647";
+                }
+                description
+                  "The metric preference of the route used to find the RPF
+                  interface towards the RP.";
+                config false;
+              }
+
+              leaf rpf-route-metric {
+                type uint32;
+                description
+                  "The routing metric of the route used to find the RPF
+                  interface towards the RP.";
+                config false;
+              }
+            }
+
+            list star-g-if-state {
+
+              uses interfaces:iface-id;
+
+              // Low-level model info: Corresponds to AMB_PIM_STAR_G_I (pimStarGITable).
+
+              description
+                "The table listing the interface-specific (*,G)
+                state that the entity maintains.
+
+                For MGMD Proxy or Snooping, or PIM-DM, (*,G,I) state exists
+                only because of local group membership requirements that
+                PIM has learned from the MGMD Router implementation.";
+
+              // Low-level model info: MIB index is "group-address".
+
+              config false;
+
+              leaf pim-mode {
+                type pim-mode-state;
+                description
+                  "Whether this entry represents an ASM (Any-Source
+                  Multicast, used with PIM-SM), SSM (Single-Source
+                  Multicast, used with PIM-SM), or DM (Dense mode) group.
+
+                  For MGMD Proxy or Snooping, this field is set to 'other'.";
+                config false;
+              }
+
+              leaf up-time {
+                type uint32;
+                units "TimeTicks";
+                description
+                  "The time since this entry was created by the local router.";
+                config false;
+              }
+
+              leaf local-membership {
+                type boolean;
+                description
+                  "Whether the local router has (*,G) local membership on
+                  this interface (resulting from a mechanism such as IGMP or
+                  MLD).  This corresponds to local_receiver_include(*,G,I)
+                  in the PIM-SM specification (RFC4601).";
+                config false;
+              }
+
+              leaf prune-pending-timer {
+                type uint32;
+                units "TimeTicks";
+                description
+                  "The time remaining before the local router acts on a (*,G)
+                  Prune message received on this interface, during which the
+                  router is waiting to see whether another downstream router
+                  will override the Prune message.  This timer is called the
+                  (*,G) Prune-Pending Timer in the PIM-SM specification
+                  (RFC4601).  This object is zero if the timer is not
+                  running.
+
+                  This field is only relevant for PIM-SM.";
+                config false;
+              }
+
+              leaf join-expiry-timer {
+                type uint32;
+                units "TimeTicks";
+                description
+                  "The time remaining before (*,G) Join state for this
+                  interface expires.  This timer is called the (*,G) Join
+                  Expiry Timer in the PIM-SM specification (RFC4601).  This
+                  object is zero if the timer is not running.
+
+                  This field is only relevant for PIM-SM.";
+                config false;
+              }
+
+              leaf assert-state {
+                type pim-assert-state;
+                description
+                  "The (*,G) Assert state for this interface.  This
+                  corresponds to the state of the per-interface (*,G) Assert
+                  state machine in the PIM-SM specification (RFC4601).
+
+                  This field is only relevant for PIM-SM.";
+                config false;
+              }
+
+              leaf assert-timer {
+                type uint32;
+                units "TimeTicks";
+                description
+                  "If pim-assert-state is 'winner', this is the
+                  time remaining before the local router next sends a (*,G)
+                  Assert message on this interface.  If asssert-state
+                  is 'loser', this is the time remaining before the
+                  (*,G) Assert state expires.  This timer is called the (*,G)
+                  Assert Timer in the PIM-SM specification (RFC4601).
+
+                  This field is only relevant for PIM-SM.";
+                config false;
+              }
+
+              leaf assert-winner-address {
+                type interfaces:iface-ip-address-allow-zero-t;
+                description
+                  "If assert-state is 'loser', this is the
+                  address of the assert winner.
+
+                  This field is only relevant for PIM-SM.";
+                config false;
+              }
+
+              leaf assert-winner-metric-pref {
+                type uint32 {
+                  range "0..2147483647";
+                }
+                description
+                  "If assert-state is 'loser', this is the
+                  metric preference of the route to the RP advertised by the
+                  assert winner; otherwise, this object is zero.
+
+                  This field is only relevant for PIM-SM.";
+                config false;
+              }
+
+              leaf assert-winner-metric {
+                type uint32;
+                description
+                  "If assert-state is 'loser', this is the
+                  routing metric of the route to the RP advertised by the
+                  assert winner; otherwise, this object is zero.
+
+                  This field is only relevant for PIM-SM.";
+                config false;
+              }
+
+            } // star-g-if-state
+
+          } // star-g-state
+
+          list source-address {
+
+            description
+              "List of source addresses for which state exists for the parent
+               group address in the multicast tree";
+
+            leaf source-address {
+              type interfaces:iface-ip-address-allow-zero-t;
+              description
+                "The source address for this entry.";
+              config false;
+            }
+
+            container sg-state {
+
+              description
+                "Container to hold the (S,G) state.";
+
+              config false;
+
+              container state {
+
+                // Low-level model info: Corresponds to AMB_PIM_S_G (pimSGTable).
+
+                description
+                  "The table listing the non-interface specific
+                  (S,G) state that the entity maintains.";
+
+                // Low-level model info: MIB indices are "group-address source-address".
+
+                config false;
+
+                leaf up-time {
+                  type uint32;
+                  units "TimeTicks";
+                  description
+                    "The time since this entry was created by the local router.";
+                  config false;
+                }
+
+                leaf pim-mode {
+                  type pim-mode-state;
+                  description
+                    "Whether group-address is an SSM (Source Specific
+                    Multicast, used with PIM-SM), ASM (Any Source Multicast,
+                    used with PIM-SM) or DM (dense mode) group.";
+                  config false;
+                }
+
+                leaf upstream-join-state {
+                  type pim-upstrm-join-state;
+                  description
+                    "Whether the local router should join the shortest-path
+                    tree for the source and group represented by this entry.
+                    This corresponds to the state of the upstream (S,G) state
+                    machine in the PIM-SM specification (RFC4601).
+
+                    This field is only relevant to PIM-SM.  It is set to
+                    'not-joined' if pim-mode is 'dense'.";
+                  config false;
+                }
+
+                leaf upstream-join-timer {
+                  type uint32;
+                  units "TimeTicks";
+                  description
+                    "The time remaining before the local router next sends a
+                    periodic (S,G) Join message on the interface.  This
+                    timer is called the (S,G) Upstream Join Timer in the
+                    PIM-SM specification (RFC4601).  This
+                    object is zero if the timer is not running.
+
+                    This field is only relevant for PIM-SM.";
+                  config false;
+                }
+
+                leaf upstream-neighbor {
+                  type interfaces:iface-ip-address-allow-zero-t;
+                  description
+                    "The primary address of the neighbor on the interface
+                    that is the local router's next hop neighbor towards the
+                    source.  This is zero if the the RPF next hop is unknown
+                    or is not a PIM neighbor.  This address is called
+                    RPF'(S,G) in the PIM-SM and PIM-DM specifications (RFC4601
+                    and RFC3973 respectively).";
+                  config false;
+                }
+
+                leaf rpf-if-base-name {
+                  type interfaces:iface-base-name;
+                  description
+                    "The base name of the RPF interface towards the RP, or empty
+                    if the RPF interface is unknown.";
+                  config false;
+
+                }
+
+                leaf rpf-if-ext-id {
+                  type interfaces:iface-ext-id;
+                  description
+                    "The extended ID of the RPF interface towards the RP, or
+                    empty if the RPF interface is unknown.";
+                  config false;
+                }
+
+                leaf rpf-next-hop {
+                  type interfaces:iface-ip-address-allow-zero-t;
+                  description
+                    "The address of the RPF next hop towards the source.
+                    This address is called MRIB.next_hop(S) in the PIM-SM and
+                    PIM-DM specifications (RFC4601 and RFC3973).";
+                  config false;
+                }
+
+                leaf rpf-route-protocol {
+                  type meta:route-protocols;
+                  description
+                    "The routing mechanism via which the route used to find the
+                    RPF interface towards the source was learned.";
+                  config false;
+                }
+
+                leaf rpf-route-prefix {
+                  type interfaces:iface-ip-prefix-t;
+                  description
+                    "The IP address which identifies the route
+                    used to find the RPF interface towards the source.
+
+                    This address object is only significant up to the prefix
+                    length.  The remainder of the address bits are zero.";
+                  config false;
+                }
+
+                leaf rpf-route-metric-pref {
+                  type uint32 {
+                    range "0..2147483647";
+                  }
+                  description
+                    "The metric preference of the route used to find the RPF
+                    interface towards the source.";
+                  config false;
+                }
+
+                leaf rpf-route-metric {
+                  type uint32;
+                  description
+                    "The routing metric of the route used to find the RPF
+                    interface towards the source.";
+                  config false;
+                }
+
+                leaf spt-bit {
+                  type boolean;
+                  description
+                    "Whether the SPT bit is set; and therefore whether
+                    forwarding is taking place on the shortest-path tree.
+
+                    This field is only relevant for PIM-SM.";
+                  config false;
+                }
+
+                leaf dr-register-state {
+                  type pim-register-state;
+                  description
+                    "Whether the local router should encapsulate (S,G) data
+                    packets in Register messages and send them to the RP.
+                    This corresponds to the state of the per-(S,G) Register
+                    state machine in the PIM-SM specification (RFC4601).
+
+                    This field is only relevant for PIM-SM.";
+                  config false;
+                }
+
+                leaf dr-register-stop-timer {
+                  type uint32;
+                  units "TimeTicks";
+                  description
+                    "If dr-register-state is 'prune', this is the time
+                    remaining before the local router sends a Null-Register
+                    message to the RP.  If dr-register-state is
+                    'join-pending', this is the time remaining before the local
+                    router resumes encapsulating data packets and sending them
+                    to the RP.  Otherwise, this is zero.  This timer is called
+                    the Register-Stop Timer in the PIM-SM specification
+                    (RFC4601).
+
+                    This field is only relevant for PIM-SM.";
+                  config false;
+                }
+
+              } // state
+
+              list sg-if-state {
+
+                // Low-level model info: Corresponds to AMB_PIM_S_G_I (pimSGITable).
+
+                description
+                  "The table listing the interface-specific (S,G)
+                  state that the entity maintains.
+
+                  For MGMD Proxy or Snooping, (S,G,I) state exists only
+                  because of local group membership requirements that PIM
+                  has learned from the MGMD Router implementation.";
+
+                // Low-level model info: MIB indices are "group-address source-address".
+
+                config false;
+
+                uses interfaces:iface-id;
+
+                leaf pim-mode {
+                  type pim-mode-state;
+                  description
+                    "Whether this entry represents an ASM (Any-Source
+                    Multicast, used with PIM-SM), SSM (Single-Source
+                    Multicast, used with PIM-SM), or DM (Dense mode) group.
+
+                    For MGMD Proxy or Snooping, this field is set to 'other'.";
+                  config false;
+                }
+
+                leaf up-time {
+                  type uint32;
+                  units "TimeTicks";
+                  description
+                    "The time since this entry was created by the local router.";
+                  config false;
+                }
+
+                leaf local-membership {
+                  type boolean;
+                  description
+                    "Whether the local router has (S,G) local membership on
+                    this interface (resulting from a mechanism such as IGMPv3
+                    or MLDv2).  This corresponds to
+                    local_receiver_include(S,G,I) in the PIM-SM and
+                    PIM-DM specifications (RFC4601 and RFC3973 respectively).";
+                  config false;
+                }
+
+                leaf prune-pending-timer {
+                  type uint32;
+                  units "TimeTicks";
+                  description
+                    "The time remaining before the local router acts on an
+                    (S,G) Prune message received on this interface, during
+                    which the router is waiting to see whether another
+                    downstream router will override the Prune message.  This
+                    timer is called the (S,G) Prune-Pending Timer in the
+                    PIM-SM and PIM-DM specifications (RFC4601 and RFC3973).
+                    This object is zero if the timer is not running.";
+                  config false;
+                }
+
+                leaf join-expiry-timer {
+                  type uint32;
+                  units "TimeTicks";
+                  description
+                    "The time remaining before (S,G) Join state for this
+                    interface expires.  This timer is called the (S,G) Join
+                    Expiry Timer in the PIM-SM specification (RFC4601).  This
+                    object is zero if the timer is not running.  This timer is
+                    called the (S,G) Prune Timer in the PIM-DM specification
+                    (RFC3973).";
+                  config false;
+                }
+
+                leaf assert-state {
+                  type pim-assert-state;
+                  description
+                    "The (S,G) Assert state for this interface.  This
+                    corresponds to the state of the per-interface (S,G) Assert
+                    state machine in the PIM-SM and PIM-DM specifications
+                    (RFC4601 and RFC3973 respectively).";
+                  config false;
+                }
+
+                leaf assert-timer {
+                  type uint32;
+                  units "TimeTicks";
+                  description
+                    "If assert-state is 'winner', for a PIM-SM
+                    group this is the time remaining before the local router
+                    next sends a (S,G) Assert message on this interface; for a
+                    PIM-DM group this is the time remaining before the (S,G)
+                    Assert state expires.
+
+                    If assert-state is 'loser', this is the time
+                    remaining before the (S,G) Assert state expires.
+
+                    If assert-state is 'no-info', this is zero.
+
+                    This timer is called the (S,G) Assert Timer in the PIM-SM
+                    and PIM-DM specifications (RFC4601 and RFC3973).";
+                  config false;
+                }
+
+                leaf assert-winner-address {
+                  type interfaces:iface-ip-address-allow-zero-t;
+                  description
+                    "If assert-state is 'loser', this is the
+                    address of the assert winner.";
+                  config false;
+                }
+
+                leaf assert-winner-metric-pref {
+                  type uint32 {
+                    range "0..2147483647";
+                  }
+                  description
+                    "If assert-state is 'loser', this is the
+                    metric preference of the route to the source advertised by
+                    the assert winner; otherwise, this object is zero.";
+                  config false;
+                }
+
+                leaf assert-winner-metric {
+                  type uint32;
+                  description
+                    "If assert-state is 'loser', this is the
+                    routing metric of the route to the source advertised by
+                    the assert winner; otherwise, this object is zero.";
+                  config false;
+                }
+
+              } // sg-if-state
+
+            } // sg-state
+
+            container sg-rpt-state {
+
+              description
+                "Container to hold the (S,G,rpt) state.";
+              config false;
+
+              container state {
+
+                // Low-level model info: Corresponds to AMB_PIM_S_G_RPT (pimSGRptTable).
+
+                description
+                  "The table listing the non-interface specific
+                  (S,G,rpt) state that the entity maintains.
+
+                  This MIB table is not used for MGMD Snooping or PIM-DM or
+                  for MGMD Proxy.";
+
+                // Low-level model info: MIB indices are "group-address source-address".
+
+                leaf up-time {
+                  type uint32;
+                  units "TimeTicks";
+                  description
+                    "The time since this entry was created by the local router.";
+                  config false;
+                }
+
+                leaf upstream-prune-state {
+                  type pim-rpt-upstrm-prune-state;
+                  description
+                    "Whether the local router should prune the source off the
+                    RP tree.  This corresponds to the state of the upstream
+                    (S,G,rpt) state machine for triggered messages in the
+                    PIM-SM specification (RFC4601).";
+                  config false;
+                }
+
+                leaf upstream-override-timer {
+                  type uint32;
+                  units "TimeTicks";
+                  description
+                    "The time remaining before the local router sends a
+                    triggered (S,G,rpt) Join message on pimStarGRPFIfIndex.
+                    This timer is called the (S,G,rpt) Upstream Override Timer
+                    in the PIM-SM specification (RFC4601).  This object is
+                    zero if the timer is not running.";
+                  config false;
+                }
+
+                config false;
+
+              } // state
+
+              list sg-rpt-if-state {
+
+                // Low-level model info: Corresponds to AMB_PIM_S_G_RPT_I (pimSGRptITable).
+
+                description
+                  "The table listing the interface-specific
+                  (S,G,rpt) state that the entity maintains.
+
+                  For MGMD Proxy or Snooping, or PIM-DM, (S,G,I,rpt) state
+                  exists only because of local group membership requirements
+                  that PIM has learned from the MGMD Router implementation.";
+
+                // Low-level model info: MIB indices are "group-address source-address".
+
+                config false;
+
+                uses interfaces:iface-id;
+
+                leaf up-time {
+                  type uint32;
+                  units "TimeTicks";
+                  description
+                    "The time since this entry was created by the local router.";
+                  config false;
+                }
+
+                leaf local-membership {
+                  type boolean;
+                  description
+                    "Whether the local router has both (*,G) include local
+                    membership and (S,G) exclude local membership on this
+                    interface (resulting from a mechanism such as IGMPv3 or
+                    MLDv2).  This corresponds to local_receiver_exclude(S,G,I)
+                    in the PIM-SM and PIM-DM specifications (RFC4601 and
+                    RFC3973 respectively).";
+                  config false;
+                }
+
+                leaf prune-pending-timer {
+                  type uint32;
+                  units "TimeTicks";
+                  description
+                    "The time remaining before the local router starts pruning
+                    this source off the RP tree.  This timer is called the
+                    (S,G,rpt) Prune-Pending Timer in the PIM-SM specification
+                    (RFC4601).  This object is zero if the timer is not
+                    running.
+
+                    This field is only relevant for PIM-SM.";
+                  config false;
+                }
+
+                leaf prune-expiry-timer {
+                  type uint32;
+                  units "TimeTicks";
+                  description
+                    "The time remaining before (S,G,rpt) Prune state for this
+                    interface expires.  This timer is called the (S,G,rpt)
+                    Prune Expiry Timer in the PIM-SM specification (RFC4601).
+                    This object is zero if the timer is not running.
+
+                    This field is only relevant for PIM-SM.";
+                  config false;
+                }
+
+              } // sg-rpt-if-state
+
+            } // sg-rpt-state
+
+          } // source-address
+
+        } // group-address
+
+      } // group-state-list
+
+      container group-mapping-state-list {
+
+        description
+          "Container to hold the mappings from multicast group
+            prefixes to the PIM mode and RP address to use for groups
+            within that group prefix.";
+
+        config false;
+
+        list group-mapping-state {
+
+          // Low-level model info: Corresponds to AMB_PIM_GROUP_MAPPING (pimGroupMappingTable).
+
+          description
+            "The table listing mappings from multicast group
+            prefixes to the PIM mode and RP address to use for groups
+            within that group prefix.
+
+            entries in this list are created for a variety of reasons,
+            indicated by origin.
+
+            -  Rows with origin of 'embedded' are created by the router for
+            each Embedded-RP group-to-RP mapping which corresponds to a group
+            for which the PIM router maintains protocol state.
+
+            -  Rows with origin of 'config' are created and destroyed as a
+            result of configuration. Additionally, PIM creates default rows
+            static-rp list table at startup to correspond to the
+            SSM ranges defined by IANA.  The administrator is
+            permitted to modify and destroy the SSM range
+            configuration.
+
+            -  Rows with origin of 'bsr' arecreated as a result of running the
+            PIM Bootstrap Router(BSR) mechanism.  If the local router is not
+            the elected BSR, these rows are created to correspond to group
+            prefixes in the PIM Bootstrap messages received from the
+            elected BSR.  If the local router is the elected BSR,
+            these rows are created to correspond to group prefixes in
+            the PIM Bootstrap messages that the local router sends.
+            In either case, these rows are destroyed when the group
+            prefixes are timed out by the BSR mechanism.
+
+            Given the collection of rows in this table at any point in
+            time, the PIM mode and RP address to use for a particular
+            group is determined using the following algorithm.  This
+            algorithm has minor aspects which are specific to PIM.
+
+            1) If the group corresponds to the well-defined prefixes of
+            link-local and unroutable group addresses, it cannot be used
+            as a PIM group.  There are no rows in the
+            group list corresponding to these prefixes.
+
+            2) If the group corresponds to the format defined in the
+            Embedded-RP mechanism [RFC3956] where the RP address is
+            embedded in the multicast group address, the RP address is
+            extracted from the group address and pim-mode is 'asm'.
+
+            3) From the set of all rows in the greoup list, the
+            subset whose group prefix contains the group in question is
+            selected.
+
+            4) If there are no such rows, the group cannot be used for
+            PIM.
+
+            5) If there are multiple selected rows, and a subset is
+            defined by the static-rp list (origin value of
+            'config') with override-subranges set to TRUE,
+            then this subset is selected.
+
+            6) From the selected subset of rows, the subset that has the
+            greatest prefix lemgth.
+
+            7) If there are still multiple selected rows, the subset
+            that has the highest precedence is selected.
+
+            8) If there are still multiple selected mappings, and a
+            subset is associated with the BIDIR protocol rather than the
+            PIM-SM protocol, this subset is selected.
+
+            9) If there are still multiple selected rows, PIM applies
+            the PIM hash function to select the row.
+
+            10) The group mode to use is given by the value of pim-mode from
+            the single selected row; the RP to use is given by the rp-address.";
+
+          // Low-level model info: MIB indices are "origin group-prefix rp-address".
+
+          config false;
+
+          leaf origin {
+            type pim-gp-map-origin-type;
+            description
+              "The mechanism by which this group mapping was learned.";
+            config false;
+          }
+
+          leaf group-prefix {
+            type interfaces:iface-ip-prefix-t;
+            description
+              "The IP multicast group address which gives the group prefix for
+              this mapping.";
+            config false;
+          }
+
+          leaf rp-address {
+            type interfaces:iface-ip-address-allow-zero-t;
+            description
+              "The IP address of the RP to be used for groups within this
+              group prefix, or zero if no RP is to be used or if the RP
+              address is unknown.
+
+              This field is only relevant for ASM.  It must be set to
+              zero if pim-mode is either 'ssm' or 'dm'.";
+            config false;
+          }
+
+          leaf pim-mode {
+            type pim-mode-state;
+            description
+              "The PIM mode to be used for groups in this group prefix.";
+            config false;
+          }
+
+          // Low-level model info: Corresponds to pimGroupMappingIsInactive.  Note the reversal of the meaning.
+          leaf is-inactive {
+            type boolean;
+            description
+              "Flag indicating whether this Group Mapping is currently
+              inactive.  If this flag is set to 'true' then this row is
+              not currently in use - no group addresses will be matched
+              to this Group Mapping.
+
+              This is always 'false' for any group mappings with origin
+              'embedded'.
+
+              If the row corresponds to an ignored static-rp entry
+              (for example, because pim-mode is set to 'dense' and
+              this is an 'sm' group mapping), this field is always set
+              to 'true'.";
+            config false;
+          }
+
+        } // group-mapping-state
+
+      } // group-mapping-state-list
+
+      container interface-state-list {
+
+        description "Container to hold per-interface PIM state.";
+
+        config false;
+
+        list interface-state {
+
+          description "Per-interface PIM state";
+
+          config false;
+
+          uses pim-interface-state-parms;
+
+        } // interface-state
+
+      } // interface-state-list
+
+    } // pim
+
+  } // router
+
+} // pim
+

@@ -1,0 +1,543 @@
+module metaswitch-vlan {
+
+  namespace "http://metaswitch.com/yang/nbu/metaswitch-vlan/201803200000Z";
+  prefix metaswitch-vlan;
+
+  import metaswitch-yang-types { prefix meta; }
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix "interfaces"; }
+  import interface { prefix "interface"; }
+  import ieee802-types { prefix ieee802; }
+  import metaswitch-igmp-snooping { prefix metaswitch-igmp-snooping; }
+  import metaswitch-custom-yang-types { prefix "custom"; }
+  import metaswitch-fdb-common { prefix "fdb"; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "VLAN switching configuration and state";
+
+  revision 2018-03-20 {
+    description "Initial revision.";
+  }
+
+  typedef vlan-name-t {
+    description
+      "A VLAN name.";
+    type meta:ascii-string {
+      length "0..32";
+      pattern "[ -~]*" {
+        // Restrict to printable ASCII characters 0x20 (space) - 0x7E (~).
+        error-message "VLAN names must be ASCII";
+      }
+    }
+  }
+
+  typedef port-state-t {
+    description
+      "";
+    type enumeration {
+      enum disabled                         { value 1; }
+      enum learning                         { value 2; }
+      enum forwarding                       { value 3; }
+      enum blocked                          { value 4; }
+    }
+  }
+
+  typedef mcast-flood-t {
+    type enumeration {
+      enum all                              { value 1; }
+      enum unknown                          { value 2; }
+      enum none                             { value 3; }
+    }
+    description
+      " all     - all multicast frames should be flooded.
+        unknown - unknown multicast frames should be flooded.
+        none    - frames with known multicast destinations should be forwarded
+                  to the appropriate ports, but unknown frames should be
+                  dropped.";
+  }
+
+  grouping mac-learning-parameters  {
+
+    user-ext:CLI-comm-help "Configure MAC address learning parameters";
+    user-ext:CLI-no-comm-help "Configure MAC address learning parameters";
+
+    leaf mac-learning {
+      type boolean;
+      default true;
+      description
+        "Whether MAC Learning is enabled for this VLAN.";
+
+      user-ext:CLI-comm-help "Configure MAC address learning for this VLAN";
+      user-ext:CLI-no-comm-help "Enable MAC address learning for this VLAN";
+      user-ext:CLI-param-help "Configure MAC address learning for this VLAN";
+    }
+
+    leaf mac-addr-limit {
+      type uint32;
+      default "0";
+      description
+        "The maximum number of learned entries allowed in the VLAN's FDB.
+         A value of zero means no maximum.";
+
+      user-ext:CLI-comm-help "Set maximum number of learned entries";
+      user-ext:CLI-no-comm-help "Remove limit to number of learned entries";
+      user-ext:CLI-param-help "Set maximum number of learned entries";
+    }
+  }
+
+  container vlan-switch {
+
+    description
+      "VLAN configuration.";
+
+    user-ext:CLI-param-help "VLAN Switching";
+
+    list vlan {
+
+      description
+        "VLAN configuration.";
+
+      user-ext:CLI-comm-help "Configure VLAN";
+      user-ext:CLI-no-comm-help "Remove VLAN";
+
+      key "vlan-id";
+
+      leaf vlan-id {
+        // Low-level model info: Corresponds to vlanMgrStaticVlanId.
+        type ieee802:vlanid;
+        description
+          "VLAN identifier of the VLAN.";
+
+        user-ext:CLI-param-help "VLAN identifier of the VLAN";
+      }
+
+      leaf name {
+        // Low-level model info: Corresponds to vlanMgrStaticVlanName.
+        type vlan-name-t;
+        description
+          "Text name identifying the VLAN.";
+
+        user-ext:CLI-comm-help "Set text name identifying the VLAN";
+        user-ext:CLI-no-comm-help "Remove text name identifying the VLAN";
+        user-ext:CLI-param-help "Set text name identifying the VLAN";
+      }
+
+      uses mac-learning-parameters;
+
+      leaf discard-unknown-unicast {
+        // Low-level model info: Corresponds to vlanMgrStaticVlanDiscUnkUnicast.
+        type boolean;
+        default false;
+        description
+          "Whether unknown unicast frames should be discarded.";
+
+        user-ext:CLI-comm-help "Unknown unicast frames should be discarded";
+        user-ext:CLI-no-comm-help "Unknown unicast frames should not be discarded";
+        user-ext:CLI-param-help "Set whether to discard unknown unicast frames";
+      }
+
+      leaf multicast-flood-type {
+        // Low-level model info: Corresponds to vlanMgrStaticVlanMcastFloodType.
+        type mcast-flood-t;
+        default unknown;
+        description
+          "Which (if any) multicast frames should be flooded by this VLAN.";
+
+        user-ext:CLI-comm-help "Set which multicast frames to flood";
+        user-ext:CLI-no-comm-help "Unknown multicast frames should be flooded";
+        user-ext:CLI-param-help "Set which multicast frames to flood";
+      }
+
+      leaf mac-aging-time {
+        // Low-level model info: Corresponds to vlanMgrStaticVlanMacAgingTime.
+        type uint32;
+        default "300";
+        description
+          "The MAC aging time to use for this VLAN, in seconds.";
+
+        user-ext:CLI-comm-help "Set MAC aging time";
+        user-ext:CLI-no-comm-help "Disable MAC aging";
+        user-ext:CLI-param-help "Set MAC aging time";
+      }
+
+      container igmp-snooping {
+
+        if-feature metaswitch-igmp-snooping:igmp-snooping;
+
+        uses metaswitch-igmp-snooping:vlan-igmp-snooping-parameters;
+
+      } // igmp-snooping
+
+      container mld-snooping {
+
+        if-feature metaswitch-igmp-snooping:igmp-snooping;
+
+        uses metaswitch-igmp-snooping:vlan-mld-snooping-parameters;
+
+      } // mld-snooping
+
+      list static-mac {
+
+        description
+          "Table of unicast MAC address entries for a VLAN.";
+
+        user-ext:CLI-comm-help "Configure unicast MAC address entries";
+        user-ext:CLI-no-comm-help "Remove unicast MAC address entries";
+
+        key "mac-address";
+
+        leaf mac-address {
+          // Low-level model info: Corresponds to vlanMgrStaticMacAddr.
+          type meta:unicast-mac-address;
+          description
+            "A unicast MAC address to add to the FDB.";
+
+          user-ext:CLI-param-help "Unicast MAC address.";
+        }
+
+        leaf if-name  {
+          // Low-level model info: Corresponds to vlanMgrStaticMacIfIndex.
+          type leafref {
+            path "/vlan-switch/interfaces/interface/if-name";
+          }
+          description
+            "The interface on which the MAC address can be reached.";
+
+          user-ext:CLI-comm-help "Set interface on which MAC address can be reached";
+          user-ext:CLI-no-comm-help "MAC address cannot be reached on an interface";
+          user-ext:CLI-param-help "Set interface on which MAC address can be reached";
+        }
+
+      } // static-mac
+
+      list static-multicast-mac {
+
+        description
+          "Table of multicast MAC address entries for a VLAN.";
+
+        user-ext:CLI-comm-help "Configure multicast MAC address entries";
+        user-ext:CLI-no-comm-help "Remove multicast MAC address entries";
+
+        key "mac-address if-name";
+
+        leaf mac-address {
+          // Low-level model info: Corresponds to vlanMgrStaticMcstMacAddr.
+          type meta:multicast-mac-address;
+          description
+            "A multicast MAC address to add to the FDB.";
+
+          user-ext:CLI-param-help "Multicast MAC address.";
+        }
+
+        leaf if-name {
+          // Low-level model info: Corresponds to vlanMgrStaticMcstMacIfIndex.
+          type leafref {
+            path "/vlan-switch/interfaces/interface/if-name";
+          }
+          description
+            "The interface on which the MAC address can be reached.";
+
+          user-ext:CLI-param-help "Interface on which MAC address can be reached";
+        }
+
+      } // static-multicast-mac
+
+    } // vlan
+
+
+    container interfaces {
+
+      if-feature interfaces:standard-interfaces;
+      user-ext:CLI-not-command;
+
+      list interface {
+
+        description
+          "Configure static member set for each VLAN.";
+
+        user-ext:CLI-comm-help "Configure interfaces for VLAN";
+        user-ext:CLI-no-comm-help "Remove interfaces for VLAN";
+
+        key "if-name";
+
+        leaf if-name  {
+          // Low-level model info: Corresponds to vlanMgrStaticMemberIfIndex.
+          type custom:iface-name;
+          description
+            "The interface on which to configure VLANs.";
+
+          user-ext:CLI-param-help "The interface on which to configure VLANs";
+        }
+
+        leaf native-vlan {
+          // Low-level model info: Corresponds to limInterfaceCfgVlanId.
+          type ieee802:vlanid;
+          description
+            "The native VLAN ID to be used for this interface";
+
+          user-ext:CLI-comm-help "Set native VLAN ID for interface";
+          user-ext:CLI-no-comm-help "Unset native VLAN ID for interface";
+          user-ext:CLI-param-help "Set native VLAN ID for interface";
+        }
+
+        must "not((./access-vlan/vlan-id) and (./trunk-vlan-range))" {
+          error-message "Trunk VLANs and access VLANs cannot be configured on
+                         the same interface";
+        }
+
+        must "not((./access-vlan/vlan-id) and (./native-vlan))" {
+          error-message "Native VLANs and access VLANs cannot be configured on
+                         the same interface";
+        }
+
+        must "not((./access-vlan/vlan-id) and" +
+             "(/interface:interfaces/interface:interface[interface:name = current()/if-name]/interface:forwarding-mode = 'interface:network-layer'))" {
+          error-message "An access VLAN cannot be configured on a network-layer interface";
+        }
+
+        list trunk-vlan-range {
+          description
+            "Configure static member.";
+
+          user-ext:CLI-comm-help "Configure trunk VLANs on the interface";
+          user-ext:CLI-no-comm-help "Remove trunk VLANs on the interface";
+
+          key "trunk-vlans";
+
+          leaf trunk-vlans {
+            // Low-level model info: Corresponds to vlanMgrStaticMemberVlanId.
+            type meta:vlan-id-ranges;
+            description
+              "VLAN identifier of the VLAN.";
+
+            user-ext:CLI-param-help "Set trunk VLAN ID range";
+          }
+
+          uses mac-learning-parameters;
+
+        }
+
+        container access-vlan {
+
+          description
+            "Configure static member.";
+
+          presence "Configure access VLAN on the interface";
+
+          user-ext:CLI-comm-help "Configure access VLAN on the interface";
+          user-ext:CLI-no-comm-help "Remove access VLAN on the interface";
+
+          leaf vlan-id {
+            // Low-level model info: Corresponds to vlanMgrStaticMemberVlanId.
+            type ieee802:vlanid;
+            mandatory true;
+            description
+              "VLAN identifier of the VLAN.";
+
+            user-ext:CLI-comm-help "Set access VLAN ID";
+            user-ext:CLI-no-comm-help "Unset access VLAN ID";
+            user-ext:CLI-param-help "Set access VLAN ID";
+          }
+
+          uses mac-learning-parameters;
+
+        }
+      } // interface
+    } // interfaces
+
+
+  } // vlan-switch
+
+
+  container vlan-state {
+
+    config false;
+
+    container vlan-state-list {
+
+      list vlan {
+
+        config false;
+
+        description
+          "VLAN state.";
+
+        key "vlan-id";
+
+        leaf vlan-id {
+          // Low-level model info: Corresponds to vlanMgrVlanId.
+          type ieee802:vlanid;
+          description
+            "VLAN identifier for the VLAN.";
+        }
+
+        leaf name {
+          // Low-level model info: Corresponds to vlanMgrVlanName.
+          type string {
+            length "0..64";
+          }
+          description
+            "Name assigned to the VLAN.";
+          config false;
+        }
+
+        leaf oper-status {
+          // Low-level model info: Corresponds to vlanMgrVlanOperStatus.
+          type meta:oper-status;
+          description
+            "Operational status of the VLAN.";
+          config false;
+        }
+
+        leaf if-count {
+          // Low-level model info: Corresponds to vlanMgrVlanIfCount.
+          type uint32;
+          description
+            "Number of interfaces configured to be in this VLAN.";
+          config false;
+        } // if-count
+
+        leaf active-if-count {
+          // Low-level model info: Corresponds to vlanMgrVlanActiveIfCount.
+          type uint32;
+          description
+            "Number of active interfaces in the member set of this
+            VLAN.";
+          config false;
+        } // active-if-count
+
+        container member-interface-list {
+
+          list member-interface {
+
+            description
+              "Interfaces in the member set for VLANs.";
+
+            config false;
+
+            leaf if-name  {
+              // Low-level model info: Corresponds to vlanMgrMemberIfIndex.
+              type custom:iface-name;
+              description
+                "The interface on which the MAC address can be reached.";
+            }
+
+            leaf oper-status {
+              // Low-level model info: Corresponds to vlanMgrMemberOperStatus.
+              type meta:oper-status;
+              description
+                "Operational status of the VLAN member.";
+              config false;
+            }
+
+            leaf port-state {
+              // Low-level model info: Corresponds to vlanMgrMemberState.
+              type port-state-t;
+              description
+                "The current forwarding state of a port as determined by
+                 the Spanning Tree Protocol (STP) or Ethernet Ring
+                 Protection Switching protocol (ERPS). ";
+              config false;
+            }
+
+          }  // member-interface
+
+        } // member-interface-list
+
+      } // vlan
+
+    } // vlan-state-list
+
+    container forwarding-database {
+
+      list vlan-table {
+
+        config false;
+
+        description
+          "VLAN state.";
+
+        key "vlan-id";
+
+        leaf vlan-id {
+          // Low-level model info: Corresponds to bdFdbBdIndex.
+          type ieee802:vlanid;
+          description
+            "VLAN identifier for the VLAN.";
+        }
+
+        leaf vlan-name {
+          // Low-level model info: Corresponds to vlanMgrVlanName.
+          type vlan-name-t;
+          description
+            "Name assigned to the VLAN.";
+          config false;
+        }
+
+        uses fdb:fdb-entry-list;
+
+      } // vlan-table
+
+    } // forwarding-database
+
+    container igmp-snooping-state-list {
+
+      uses metaswitch-igmp-snooping:vlan-mgmd-snooping-state;
+
+    } // igmp-snooping-state-list
+
+    container mld-snooping-state-list {
+
+      uses metaswitch-igmp-snooping:vlan-mgmd-snooping-state;
+
+    } // mld-snooping-state-list
+
+  } // vlan-state
+
+  rpc flush-mac-address-table {
+    description
+      "Flush learned entries in FDB.";
+      // Low-level model info:
+      // the rpc corresponds to vlanMgrStaticVlanTriggerFlush
+      // or vlanMgrStaticMemberTriggerFlush
+
+    input {
+      leaf vlan-id {
+
+        type leafref {
+          path "/vlan-switch/vlan/vlan-id";
+        }
+        description
+          "VLAN identifier of the VLAN.";
+
+        mandatory true;
+
+        user-ext:CLI-param-help "VLAN identifier of the VLAN";
+      }
+
+      leaf if-name {
+        // Low-level model info:
+        // if set, the rpc corresponds to vlanMgrStaticMemberTriggerFlush
+       type leafref {
+         path "/vlan-switch/interfaces/interface/if-name";
+       }
+
+        description
+          "Interface name.";
+
+        user-ext:CLI-param-help "Interface name";
+      }
+    }
+  }
+
+} // vlan

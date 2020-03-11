@@ -1,0 +1,1743 @@
+module ymm-mgmt-api {
+
+  yang-version 1.1;
+
+  namespace "http://metaswitch.com/yang/nbu/ymm-mgmt-api/201720080000Z";
+
+  prefix ymm-mgmt-api;
+
+  import ietf-yang-types {
+    prefix yang;
+  }
+
+  import metaswitch-api-common {
+    prefix api-common;
+  }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    '
+    The YMM Management API
+    ======================
+
+    Overview
+    --------
+
+    The YMM management API is a message-based API between the customer
+    management system and YMM.
+
+    The messages are encoded as JSON objects according to RFC 7951.  They are
+    sent over a TCP connection using HTTP chunked transfer encoding to
+    distinguish message boundaries (see RFC 2616 section 3.6.1).
+
+    The API is a request/response API:
+    - The management system sends request messages to YMM.
+    - YMM sends response messages back to the management system.
+    - YMM also sends notification messages to the management system if
+      the management system subscribes to receive notifications.
+
+    The API consists of the following requests:
+    - edit-config             Management -> YMM
+    - replace-config          Management -> YMM
+    - get                     Management -> YMM
+    - get-block               Management -> YMM
+    - get-config              Management -> YMM
+    - rpc                     Management -> YMM
+    - action                  Management -> YMM
+    - create-subscription     Management -> YMM
+
+    Note: The get-group request is supported on the low level management API
+    between YMM and the AMJ stub but not on the high level management API
+    between the management system and YMM.
+
+    Edit-config Request
+    -------------------
+
+    This applies a list of edits to the existing configuration.
+
+      Management                YMM
+        |                        |
+        |      edit-config       |
+        |----------------------->|
+        |      response          |
+        |<-----------------------|
+        |                        |
+
+    Request (Management -> YMM):
+
+        {
+          "request-id": 1,
+          "edit-config": {
+            "edit": [
+              {
+                "operation": "merge",
+                "target": "/bgp:router",
+                "value": {
+                  "bgp:router": {
+                    "bgp": [
+                      {
+                        "as-num": 100,
+                        "global": {
+                          "neighbor": [
+                            {
+                              "remote-as": 200,
+                              "local-address": "192.0.2.1",
+                              "address": "192.0.2.2"
+                            },
+                            {
+                              "remote-as": 300,
+                              "local-address": "192.0.2.1",
+                              "address": "192.0.2.3"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+
+    Response (YMM -> Management):
+
+        {
+          "request-id": 1
+        }
+
+    Request (Management -> YMM):
+
+        {
+          "request-id": 2,
+          "edit-config": {
+            "edit": [
+              {
+                "operation": "remove",
+                "target": "/bgp:router/bgp=100/global/neighbor=192.0.2.3"
+              }
+            ]
+          }
+        }
+
+    Response (YMM -> Management):
+
+        {
+          "request-id": 2
+        }
+
+    Replace-config Request
+    ----------------------
+
+    This replaces the existing configuration.
+
+      Management                YMM
+        |                        |
+        |      replace-config    |
+        |----------------------->|
+        |      response          |
+        |<-----------------------|
+        |                        |
+
+    Request (Management -> YMM):
+
+        {
+          "request-id": 1,
+          "replace-config": {
+            "edit": [
+              {
+                "operation": "replace",
+                "target": "/bgp:router",
+                "value": {
+                  "bgp:router": {
+                    "bgp": [
+                      {
+                        "as-num": 100,
+                        "global": {
+                          "neighbor": [
+                            {
+                              "remote-as": 200,
+                              "local-address": "192.0.2.1",
+                              "address": "192.0.2.2"
+                            },
+                            {
+                              "remote-as": 300,
+                              "local-address": "192.0.2.1",
+                              "address": "192.0.2.3"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+
+    Response (YMM -> Management):
+
+        {
+          "request-id": 1
+        }
+
+    Edit-config and Replace-config with Continuation Requests
+    ---------------------------------------------------------
+
+    Edit-config and replace-config requests can be split into multiple smaller
+    request messages that can be processed more efficiently.
+
+    In this case the initial request message contains a "more" field indicating
+    that continuation requests follow.  The continuation requests have the same
+    request type and request ID as the initial request, and all except the last
+    also contain a "more" field.  There is a single response.
+
+      Management                YMM
+        |                        |
+        |    edit-config(more)   |
+        |----------------------->|
+        |    edit-config(more)   |
+        |----------------------->|
+        |    edit-config         |
+        |----------------------->|
+        |    response            |
+        |<-----------------------|
+        |                        |
+
+    Request (Management -> YMM):
+
+        {
+          "request-id": 1,
+          "more": [null],
+          "edit-config": {
+            "edit": [
+              {
+                "operation": "merge",
+                "target": "/bgp:router",
+                "value": {
+                  "bgp:router": {
+                    "bgp": [
+                      {
+                        "as-num": 100
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+
+    Request (Management -> YMM):
+
+        {
+          "request-id": 1,
+          "more": [null],
+          "edit-config": {
+            "edit": [
+              {
+                "operation": "merge",
+                "target": "/bgp:router/bgp=100/global",
+                "value": {
+                  "bgp:global": {
+                    "neighbor": [
+                      {
+                        "remote-as": 200,
+                        "local-address": "192.0.2.1",
+                        "address": "192.0.2.2"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+
+    Request (Management -> YMM):
+
+        {
+          "request-id": 1,
+          "edit-config": {
+            "edit": [
+              {
+                "operation": "merge",
+                "target": "/bgp:router/bgp=100/global",
+                "value": {
+                  "bgp:global": {
+                    "neighbor": [
+                      {
+                        "remote-as": 300,
+                        "local-address": "192.0.2.1",
+                        "address": "192.0.2.3"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+
+    Response (YMM -> Management):
+
+        {
+          "request-id": 1
+        }
+
+    In case of error the response may be sent before the last continuation
+    request.  In this case the receiver either closes the connection or
+    drops any remaining continuation requests.
+
+      Management                YMM
+        |                        |
+        |    edit-config(more)   |
+        |----------------------->|
+        |    edit-config(more)   |
+        |----------------------->|
+        |    response(error)     |
+        |<-----------------------|
+        |    edit-config         |
+        |----------------------->|
+        |                        |
+
+    Edit-config and Replace-config with Confirmation
+    ------------------------------------------------
+
+    Edit-config and replace-config requests can apply tentative configuration
+    changes that can then be either confirmed or reverted.
+
+    In this case the request message contains a "wait-config" field indicating
+    that a confirm-config or revert-config request will follow.  If the request
+    is successful then it must be followed immediately by a confirm-config or
+    revert-config request.
+
+      Management                                YMM
+        |                                        |
+        |    edit-config(wait-confirm=true)      |
+        |--------------------------------------->|
+        |                                        | [config applied]
+        |    response(OK)                        |
+        |<---------------------------------------|
+        |    confirm-config                      |
+        |--------------------------------------->|
+        |    response                            |
+        |<---------------------------------------|
+        |                                        |
+
+    or
+
+      Management                                YMM
+        |                                        |
+        |    edit-config(wait-confirm=true)      |
+        |--------------------------------------->|
+        |                                        | [config applied]
+        |    response(OK)                        |
+        |<---------------------------------------|
+        |    revert-config                       |
+        |--------------------------------------->|
+        |                                        | [config reverted]
+        |    response                            |
+        |<---------------------------------------|
+        |                                        |
+
+    Request (Management -> YMM):
+
+        {
+          "request-id": 1,
+          "edit-config": {
+            "wait-confirm": true,
+            "edit": [
+              {
+                "operation": "merge",
+                "target": "/bgp:router",
+                "value": {
+                  "bgp:router": {
+                    "bgp": [
+                      {
+                        "as-num": 100
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+
+    Response (YMM -> Management):
+
+        {
+          "request-id": 1
+        }
+
+    Request (Management -> YMM):
+
+        {
+          "request-id": 2,
+          "confirm-config": {}
+        }
+
+      or
+
+        {
+          "request-id": 2,
+          "revert-config": {}
+        }
+
+    Response (YMM -> Management):
+
+        {
+          "request-id": 2
+        }
+
+    If the edit-config or replace-config request is successful then it MUST be
+    followed immediately by a confirm-config or revert-config request.  The
+    confirm-config or revert-config request MUST be sent on the same management
+    API connection.  Other requests MUST NOT be interleaved on the same
+    connection between the edit-config / replace-config request and the
+    confirm-config / revert-config request.
+
+    If the edit-config or replace-config request fails then it must not be
+    followed by a confirm-config or revert-config request.
+
+      Management                                YMM
+        |                                        |
+        |    edit-config(wait-confirm=true)      |
+        |--------------------------------------->|
+        |    response(error)                     |
+        |<---------------------------------------|
+        |                                        |
+
+    Get Request
+    -----------
+
+    This gets part of the state data tree.
+
+      Management                YMM
+        |                        |
+        |      get               |
+        |----------------------->|
+        |      response          |
+        |<-----------------------|
+        |                        |
+
+    Request (Management -> YMM):
+
+        {
+          "request-id": 1,
+          "get": {
+            "target": "/bgp:router/bgp=100/global/bgp/state"
+          }
+        }
+
+    Response (YMM -> Management):
+
+        {
+          "request-id": 1,
+          "data": {
+            "bgp:state": {
+              "enforce-first-as": true,
+              "graceful-restart-exit-reason": "none",
+              "graceful-restart-remaining-time": 0,
+              "graceful-restart-time": 120,
+              "number-aro-routes": 0,
+              "path-attrs": 1,
+              "peak-number-aro-routes": 0,
+              "remain-delay-time": 0,
+              "update-delay": 120
+            }
+          }
+        }
+
+    Request (Management -> YMM):
+
+        {
+          "request-id": 1,
+          "get": {
+            "target": "/bgp:router/bgp=200/global"
+          }
+        }
+
+    Response (YMM -> Management):
+
+        {
+          "request-id": 1,
+          "errors": {
+            "error": [
+              {
+                "error-message": "No such object",
+                "error-type": "application",
+                "error-tag": "data-missing",
+                "error-path": "/bgp:router/bgp=200/global"
+              }
+            ]
+          }
+        }
+
+    Get-block Request
+    -----------------
+
+    This gets part of the state data tree block by block.
+
+      Management                YMM
+        |                        |
+        |      get-block         |
+        |----------------------->|
+        |      response(more)    |
+        |<-----------------------|
+        |      get-block         |
+        |----------------------->|
+        |      response(more)    |
+        |<-----------------------|
+        |      get-block         |
+        |----------------------->|
+        |      response          |
+        |<-----------------------|
+        |                        |
+
+    Request (Management -> YMM):
+
+        {
+          "request-id": 1,
+          "get-block": {
+            "target": "/routing:router/ipv4-state/route-state-list"
+          }
+        }
+
+    Response (YMM -> Management):
+
+        {
+          "request-id": 1,
+          "data": {
+            "routing:route-state-list": {
+              "route-state": [
+                {
+                  "prefix": "198.51.100.0/28",
+                  "nexthop": "192.0.2.2",
+                  "protocol": "other",
+                  ...
+                },
+                {
+                  "prefix": "198.51.100.32/28",
+                  "nexthop": "192.0.2.2",
+                  "protocol": "other",
+                  ...
+                },
+                ...
+              ]
+            }
+          },
+          "more": [null],
+          "last-block": "{opaque1}"
+        }
+
+    Request (Management -> YMM):
+
+        {
+          "request-id": 2,
+          "get-block": {
+            "target": "/routing:router/ipv4-state/route-state-list",
+            "last-block": "{opaque1}"
+          }
+        }
+
+    Response (YMM -> Management):
+
+        {
+          "request-id": 1,
+          "data": {
+            "routing:route-state-list": {
+              "route-state": [
+                {
+                  "prefix": "198.51.100.128/28",
+                  "nexthop": "192.0.2.2",
+                  "protocol": "other",
+                  ...
+                },
+                {
+                  "prefix": "198.51.100.160/28",
+                  "nexthop": "192.0.2.2",
+                  "protocol": "other",
+                  ...
+                },
+                ...
+              ]
+            }
+          },
+          "last-block": "{opaque2}"
+        }
+
+    Get with Filter
+    ---------------
+
+        {
+          "request-id": 1,
+          "get": {
+            "target": "/routing:router/ipv4-state/route-state-list",
+            "subtree-filter": {
+              "routing:route-state-list": {
+                "route-state": {
+                  "prefix": "198.51.100.0/28"
+                }
+              }
+            }
+          }
+        }
+
+    Response (YMM -> Management):
+
+        {
+          "request-id": 1,
+          "data": {
+            "routing:route-state-list": {
+              "route-state": [
+                {
+                  "prefix": "198.51.100.0/28"
+                  "nexthop": "192.0.2.2",
+                  "protocol": "other",
+                  ...
+                }
+              ]
+            }
+          }
+        }
+
+    Get-config Request
+    ------------------
+
+    This gets part of the configuration data tree.
+
+    The get-config request is intended for use by YMM CLI commands to get
+    configuration data from YMM instead of from the customer management
+    system.  The customer management system retains overall responsibility
+    for maintaining the configuration data, and is not expected to request
+    configuration data from YMM.
+
+      Management                YMM
+        |                        |
+        |      get-config        |
+        |----------------------->|
+        |      response          |
+        |<-----------------------|
+        |                        |
+
+    Request (Management -> YMM):
+
+        {
+          "request-id": 1,
+          "get-config": {
+            "target": "/bgp:router/bgp=100/global/bgp"
+          }
+        }
+
+    Response (YMM -> Management):
+
+        {
+          "request-id": 1,
+          "data": {
+            "bgp:bgp": {
+              "router-id": "192.0.2.1"
+            }
+          }
+        }
+
+    RPC Request
+    -----------
+
+    This executes an RPC operation.
+
+      Management                YMM
+        |                        |
+        |      rpc               |
+        |----------------------->|
+        |      response          |
+        |<-----------------------|
+        |                        |
+
+    Request (Management -> YMM):
+
+        {
+          "request-id": 1,
+          "rpc": {
+            "operation": "lsp-ping:lsp-ping",
+            "lsp-ping:input": {
+              "fec": {
+                "ldp": {
+                  "ip-prefix": "192.0.2.2/32"
+                }
+              }
+            }
+          }
+        }
+
+    Response (YMM -> Management):
+
+        {
+          "request-id": 1,
+          "ok": [null]
+        }
+
+    Request (Management -> YMM):
+
+        {
+          "request-id": 2,
+          "rpc": {
+            "operation": "lsp-ping:lsp-ping-get",
+            "lsp-ping:input": {
+              "fec": {
+                "ldp": {
+                  "ip-prefix": "192.0.2.2/32"
+                }
+              }
+            }
+          }
+        }
+
+    Response (YMM -> Management):
+
+        {
+          "request-id": 2,
+          "lsp-ping:output": {
+            "return-code": "no-rc",
+            "status": "started",
+            "responses": 5,
+            "average-rtt": 150,
+            "max-rtt": 160,
+            "min-rtt": 120
+          }
+        }
+
+    Action Request
+    --------------
+
+    This executes an action operation.
+
+      Management                YMM
+        |                        |
+        |      action            |
+        |----------------------->|
+        |      response          |
+        |<-----------------------|
+        |                        |
+
+    Request (Management -> YMM):
+
+        {
+          "request-id": 1,
+          "action": {
+            "operation": "bgp:dummy-action",
+            "target": "/bgp:router/bgp=100/global/neighbor=5.6.7.8"
+            "bgp:input": {
+              "dummy-input-parameter": 1
+            }
+          }
+        }
+
+    Response (YMM -> Management):
+
+        {
+          "request-id": 1,
+          "bgp:output" {
+            "dummy-output-parameter": 2
+          }
+        }
+
+    Create-subscription Request and Notifications
+    ---------------------------------------------
+
+    A create-subscription request creates an event notification subscription
+    that sends asynchronous event notification messages.
+
+    If the management system wants to receive event notifications it should
+    open a dedicated connection for notifications and send a
+    create-subscription request on that connection.  After a success response
+    YMM sends asynchronous event notification messages on the same connection.
+    Using a dedicated connection helps to separate the notifications from
+    configuration, get, RPC and action messages.
+
+    The create-subscription request creates a single subscription for all
+    supported notifications.  This subscription lasts until the connection is
+    closed.  The subscription cannot be modified or destroyed.
+
+    The create-subscription request and notification message are based on
+    RFC 5277, but filters and notification replay are not supported.
+
+      Management                YMM
+        |                        |
+        |  create-subscription   |
+        |----------------------->|
+        |  response              |
+        |<-----------------------|
+        |                        |
+        |  ...                   |
+        |                        |
+        |  notification          |
+        |<-----------------------|
+        |                        |
+        |  notification          |
+        |<-----------------------|
+        |                        |
+        |  notification          |
+        |<-----------------------|
+        |                        |
+        |  ...                   |
+        |                        |
+
+    Request (Management -> YMM):
+
+        {
+          "request-id": 1
+          "create-subscription": {}
+        }
+
+    Response (YMM -> Management):
+
+        {
+          "request-id": 1
+        }
+
+    Notification (YMM -> Management):
+
+        {
+          "notification": {
+            "eventTime": "2017-07-20T08:05:30+01:00",
+            "erps:fop-event": {
+              "ring-name": "ring1",
+              "ring-id": 1,
+              "aps-vlan": 3,
+              "event-type": "fop-pm"
+            }
+          }
+        }
+
+    Low Level Management API
+    ========================
+
+    Overview
+    --------
+
+    The low level management API is the API between YMM and the AMJ stub in
+    the Metaswitch Integrated Control Plane (ICP).  It has the same overall
+    form as the high level management API between the customer management
+    system and YMM, but there are also some differences.
+
+    The low level management API does not support tentative configuration,
+    confirm-config requests, revert-config requests, RPCs or actions.
+
+    The API consists of the following requests:
+    - edit-config             YMM -> AMJ stub
+    - replace-config          YMM -> AMJ stub
+    - get                     YMM -> AMJ stub
+    - get-block               YMM -> AMJ stub
+    - get-group               YMM -> AMJ stub
+    - create-subscription     YMM -> AMJ stub
+
+    Note: The get-config, rpc and action requests are not supported on the low
+    level management API.
+
+    Low Level Model
+    ---------------
+
+    The low level management API uses a low level model that reflects the
+    structure of the management tables in the ICP.  These management tables
+    are not specified in Yang, but the low level model has the following
+    overall structure:
+
+      +--rw {entity-container}
+         +--rw {entity-list}* [{entity-index}]
+            +--rw {entity-index}
+            +--rw entity
+            |  +--rw {entity-fields}
+            |  ...
+            +--rw subtables
+                +--rw {subtable-container}
+                   +--rw {subtable-list}* [{subtable-keys}]
+                      +--rw {subtable-fields}
+                      ...
+
+    Here {entity-container} and {entity-list} match the text name of an ICP
+    entity, {subtable-container} and {subtable-list} match the text names
+    of the entity management tables, {entity-index} and {subtable-keys}
+    match the text names of the entity and subtable index fields, and
+    {entity-fields} and {subtable-fields} match the text names of the fields
+    in the corresponding management tables.
+
+    Most management tables belong to ICP entities, but there are also some
+    shared management tables that do not belong to ICP entities.  The low
+    level model for shared management tables has the following form:
+
+      +--rw {shared-container}
+         +--rw {shared-list}* [{shared-keys}]
+            +--rw {shared-keys}
+            +--rw {shared-fields}
+            ...
+
+    Here {shared-container} and {shared-list} match the text name of the
+    shared management table, {shared-keys} match the text names of the
+    index fields, and {shared-fields} are the text names of the fields in the
+    corresponding management table.
+
+    The low level management API also restricts the targets in configuration
+    and get requests:
+    - Targets in configuration requests can be an entity container or a
+      single {subtable-list} entry.  For remove operations the target can be
+      an {entity-list} entry or a single {subtable-list} entry.
+    - Targets in get requests can be an entity container, a
+      {subtable-container}, or a single {subtable-list} entry.
+
+    RPCs and actions
+    ----------------
+
+    The ICP management tables do not include RPCs or actions.  Instead
+    RPCs and actions are performed by setting special management fields.
+    On the low level management API this is done using edit-config requests.
+    Therefore the low level management API uses edit-config requests
+    for RPCs and actions as well as for configuration, and does not use RPC or
+    action requests at all.
+
+    The use of edit-config requests for both configuration and RPCs/actions
+    means that the low level configuration splits between "base config" which
+    reflects the high level configuration and "extra config" that reflects
+    operations taken by high level agents acting on high level RPCs/actions.
+    Currently the low level management API does not distinguish between
+    "base config" and "extra config", but this might be required in future
+    to avoid interference between replace-config requests for high level
+    configuration and for high level RPC/action state during graceful restart.
+
+    Get-group Request
+    -----------------
+
+    This gets groups of related MIB rows from a list of related MIBs.  It can
+    be thought of as a get-block request for multiple related MIBs, with a
+    guarantee that related MIB rows are always returned together in the same
+    response.
+
+
+       YMM                    AMJ stub
+        |                        |
+        |      get-group         |
+        |----------------------->|
+        |      response(more)    |
+        |<-----------------------|
+        |      get-group         |
+        |----------------------->|
+        |      response(more)    |
+        |<-----------------------|
+        |      get-group         |
+        |----------------------->|
+        |      response          |
+        |<-----------------------|
+        |                        |
+
+    Request (YMM -> AMJ stub):
+
+        {
+          "request-id": 1,
+          "get-group": {
+            "get": [
+              {
+                "target": "/bgp:rib-manager/bgp:rib-manager=1/subtables/bgp:peer-status"
+              },
+              {
+                "target": "/bgp:rib-manager/bgp:rib-manager=1/subtables/bgp:peer-afi-safi-status"
+              }
+            ],
+            "num-group-keys": 8,
+            "group-limit": 1
+          }
+        }
+
+    Response (AMJ stub -> YMM):
+
+        {
+          "request-id": 1,
+          "get": [
+            {
+              "data": {
+                "bgp:peer-status": {
+                  "bgp:peer-status": [
+                    {
+                      "rm-entity-index": 1,
+                      "local-address-type": "ipv4",
+                      "local-address": "",
+                      "local-port": 0,
+                      "remote-address-type": "ipv4",
+                      "remote-address": "01010101",
+                      "remote-port": 0,
+                      "local-address-scope-id": 0,
+                      ...
+                    }
+                  ]
+                }
+              },
+              "last-block": "{opaque1}"
+            },
+            {
+              "data": {
+                "bgp:peer-afi-safi-status": {
+                  "bgp:peer-afi-safi-status": [
+                    {
+                      "rm-entity-index": 1,
+                      "local-address-type": "ipv4",
+                      "local-address": "",
+                      "local-port": 0,
+                      "remote-address-type": "ipv4",
+                      "remote-address": "01010101",
+                      "remote-port": 0,
+                      "local-address-scope-id": 0,
+                      "afi": "ipv4",
+                      "safi": "unicast",
+                      ...
+                    },
+                    {
+                      "rm-entity-index": 1,
+                      "local-address-type": "ipv4",
+                      "local-address": "",
+                      "local-port": 0,
+                      "remote-address-type": "ipv4",
+                      "remote-address": "01010101",
+                      "remote-port": 0,
+                      "local-address-scope-id": 0,
+                      "afi": "ipv4",
+                      "safi": "multicast",
+                      ...
+                    },
+                    ...
+                  ]
+                }
+              },
+              "last-block": "{opaque2}"
+            }
+          ],
+          "more": [null],
+          "last-group": "{opaque3}"
+        }
+
+   Request (YMM -> AMJ stub):
+
+        {
+          "request-id": 2,
+          "get-group": {
+            "get": [
+              {
+                "target": "/bgp:rib-manager/bgp:rib-manager=1/subtables/bgp:peer-status"
+                "last-block": "{opaque1}",
+              },
+              {
+                "target": "/bgp:rib-manager/bgp:rib-manager=1/subtables/bgp:peer-afi-safi-status"
+                "last-block": "{opaque2}",
+              }
+            ]
+            "num-group-keys": 8,
+            "group-limit": 1,
+            "last-group": "{opaque3}",
+          }
+        }
+
+    Response (AMJ stub -> YMM):
+
+        {
+          "request-id": 2,
+          "get": [
+            {
+              "data": {
+                "bgp:peer-status": {
+                  "bgp:peer-status": [
+                    {
+                      "rm-entity-index": 1,
+                      "local-address-type": "ipv4",
+                      "local-address": "",
+                      "local-port": 0,
+                      "remote-address-type": "ipv4",
+                      "remote-address": "02020202",
+                      "remote-port": 0,
+                      "local-address-scope-id": 0,
+                      "identifier": "00000000",
+                      ...
+                    }
+                  ]
+                }
+              },
+              "last-block": "{opaque4}"
+            },
+            {
+              "data": {
+                "bgp:peer-afi-safi-status": {
+                  "bgp:peer-afi-safi-status": [
+                    {
+                      "rm-entity-index": 1,
+                      "local-address-type": "ipv4",
+                      "local-address": "",
+                      "local-port": 0,
+                      "remote-address-type": "ipv4",
+                      "remote-address": "02020202",
+                      "remote-port": 0,
+                      "local-address-scope-id": 0,
+                      "afi": "ipv4",
+                      "safi": "unicast",
+                      ...
+                    },
+                    {
+                      "rm-entity-index": 1,
+                      "local-address-type": "ipv4",
+                      "local-address": "",
+                      "local-port": 0,
+                      "remote-address-type": "ipv4",
+                      "remote-address": "02020202",
+                      "remote-port": 0,
+                      "local-address-scope-id": 0,
+                      "afi": "ipv4",
+                      "safi": "multicast",
+                      ...
+                    },
+                    ...
+                  ]
+                }
+              },
+              "last-block": "{opaque5}"
+            }
+          ],
+          "more": [null],
+          "last-group": "{opaque6}"
+        }
+    ';
+
+  revision 2019-01-08 {
+    description "Add get-group request.";
+  }
+
+  revision 2018-11-08 {
+    description "Add get-config request.";
+  }
+
+  revision 2018-04-26 {
+    description "Add support for actions.";
+  }
+
+  revision 2017-11-09 {
+    description "Add support for transactions.";
+  }
+
+  revision 2017-08-16 {
+    description "Add support for continuation requests.";
+  }
+
+  revision 2017-07-26 {
+    description "Add support for notifications.";
+  }
+
+  revision 2017-02-08 {
+    description "Initial revision.";
+  }
+
+  typedef request-id-t {
+    description "A request identifier.";
+    type int32 {
+      range 1..max;
+    }
+  }
+
+  grouping message-header {
+    description
+      "The message header for all YMM Management API requests and responses.";
+    leaf request-id {
+      description "The request ID.";
+      type request-id-t;
+      mandatory true;
+    }
+  }
+
+  typedef target-t {
+    description
+      "The target of an edit or get operation.
+      This identifies a data node in the configuration or state.
+      The value is a target URI.  It's format follows RestConf URI format as
+      specified in RFC 8040 section 3.5.3 but without the /restconf/data
+      prefix.";
+    type api-common:ascii-string;
+  }
+
+  typedef edit-operation-t {
+    description "An edit operation.";
+    type enumeration {
+      enum merge;
+      enum replace;
+      enum remove;
+    }
+  }
+
+  grouping edit {
+    description "An edit.";
+    leaf operation {
+      description "The edit operation.";
+      type edit-operation-t;
+      mandatory true;
+    }
+    leaf target {
+      description "The target of the edit operation.";
+      type target-t;
+      mandatory true;
+    }
+    anydata value {
+      description "The value to apply to the target node.";
+    }
+  }
+
+  grouping config-parms {
+    description "Edit-config / replace-config request parameters.";
+    list edit {
+      // The JSON edit list is required but can be empty.
+      description "The edits to apply to the existing configuration.";
+      uses edit;
+      // A value is required for merge or replace operations.
+      must "value or not((operation = 'merge') or (operation = 'replace'))";
+    }
+    leaf wait-confirm {
+      description
+        "True to wait for a confirm-config or revert-config request, false to
+        confirm the configuration immediately.";
+      type boolean;
+    }
+  }
+
+  grouping subtree-filter {
+    anydata subtree-filter {
+      description
+        "A subtree filter.
+
+        Most filtering is intended to be performed by the customer management
+        system rather than YMM.  However YMM supports limited filtering for
+        some very large lists as a performance optimization.  In these cases
+        YMM uses the subtree filter to optimize the information that it
+        fetches.  YMM does not implement filters for other cases and in
+        general it will ignore the filter and return all state unfiltered.
+
+        This filter is a NetConf subtree filter encoded as JSON.
+
+        Intuitively a NetConf subtree filter looks  like a template for the
+        data to be returned (especially when using XML representations).
+
+        A NetConf subtree filter consists of containment nodes, content match
+        nodes, and selection nodes.
+        - A containment node matches a Yang container or list entry.
+          It contains other subtree filter nodes.
+          It is encoded as a JSON object (like a Yang container), optionally
+          in a JSON list (like a Yang list).
+        - A content match node matches a Yang leaf or leaf-list entry with a
+          specified value.  An exact match is required, but leading and
+          trailing whitespace is ignored.
+          A content match node is encoded as a JSON string (like a Yang leaf),
+          optionally in a JSON list (like a Yang leaf-list).
+        - A selection node matches any Yang node so that it is included by
+          the filter.
+          If a containment node contains at least one containment or selection
+          node then the filter only includes children that match the
+          containment and selection nodes, otherwise the filter includes all
+          children.
+          A selection node is encoded as a JSON [null] value (like a Yang
+          empty leaf value).
+
+        NetConf subtree filters are specified in RFC 6241 section 6.";
+    }
+  }
+
+  grouping get-parms {
+    description "Get / get-block request parameters.";
+    leaf target {
+      description "The target of the get operation.";
+      type target-t;
+      mandatory true;
+    }
+    uses subtree-filter;
+  }
+
+  // The YMM Management API message formats follow.
+  //
+  // Yang does not itself support specification of JSON message formats - it
+  // only supports configuration, state, RPCs, actions and notifications.
+  // We therefore use Yang notifications statements to define message formats.
+  // The messages are NOT intended to be Yang notifications, and the line
+  // formats of the messages do NOT include an outer <notification> element
+  // or an <eventTime> element.
+  //
+  // It would be possible to define a Yang extension for message formats,
+  // but then tools such as Pyang would ignore them.  For example,
+  // "pyang -f tree ymm-mgmt-api.yang" would output nothing.
+
+  notification edit-config-req {
+    description
+      "A request that applies a list of edits to the existing configuration.";
+    uses message-header;
+    leaf more {
+      description
+        "If present then continuation requests follow.  If absent then this
+        message completes the request.";
+      type empty;
+    }
+    container edit-config {
+      // The edit-config container is required.
+      description "The edit-config request parameters.";
+      uses config-parms;
+    }
+  }
+
+  notification replace-config-req {
+    description
+      "A request that replaces the existing configuration.";
+    uses message-header;
+    leaf more {
+      description
+        "If present then continuation requests follow.  If absent then this
+        message completes the request.";
+      type empty;
+    }
+    container replace-config {
+      // The replace-config container is required.
+      description "The replace-config request parameters.";
+      uses config-parms;
+    }
+  }
+
+  notification confirm-config-req {
+    description
+      "A request that confirms an edit-config or replace-config request.
+
+      If an edit-config or replace-config request specifies wait-confirm=true
+      and completes successfully then it MUST be followed immediately by a
+      confirm-config or revert-config request, otherwise it MUST NOT be
+      followed by a confirm-config or revert-config request.";
+    uses message-header;
+    container confirm-config {
+      // The confirm-config container is required.
+      description
+        "The confirm-config request parameters (currently none).";
+    }
+  }
+
+  notification revert-config-req {
+    description
+      "A request that reverts an edit-config or replace-config request so that
+      the new configuration is dropped and the old configuration reinstated.
+
+      If an edit-config or replace-config request specifies wait-confirm=true
+      and completes successfully then it MUST be followed immediately by a
+      confirm-config or revert-config request, otherwise it MUST NOT be
+      followed by a confirm-config or revert-config request.";
+    uses message-header;
+    container revert-config {
+      // The revert-config container is required.
+      description
+        "The revert-config request parameters (currently none).";
+    }
+  }
+
+  notification config-rsp {
+    description
+      "A response to an edit-config, replace-config, confirm-config or
+      revert-config request.
+
+      A success response contains the request-id but no errors.
+      Errors in the error list indicate failure.";
+    uses message-header;
+    uses api-common:errors;
+  }
+
+  notification get-req {
+    description
+      "A request that gets part of the state data tree.";
+    uses message-header;
+    container get {
+      // The get container is required.
+      description "The get request parameters.";
+      uses get-parms;
+    }
+  }
+
+  notification get-rsp {
+    description
+      "A response to a get request.
+
+      A success response contains data and no errors.
+      Errors in the error list indicate failure.";
+    uses message-header;
+    anydata data {
+      description "The data returned by the get request.";
+    }
+    uses api-common:errors;
+  }
+
+  notification get-block-req {
+    description
+      "A request that gets part of the state data tree block by block.
+
+      YMM supports 'paged' gets for some very large lists in order to
+      maintain system responsiveness when getting the list contents.
+      In such cases a single get request would return a single very large
+      response and could be slow.  Instead a sequence of get-block requests
+      can return the list contents block by block.  Each get-block request
+      returns a limited number of list entries and quickly returns a small
+      response.
+
+      YMM supports paged gets for some very large lists with simple contents,
+      but not for smaller lists with more complicated contents.  In the latter
+      case a get-block request can still be used but will return the entire
+      list.";
+    uses message-header;
+    container get-block {
+      // The get-block container is required.
+      description "The get-block request parameters.";
+      uses get-parms;
+      leaf entry-limit {
+        description
+          "The maximum number of entries to return in the get-block response,
+          or zero for no limit.";
+        type int32 {
+          range "0..max";
+        }
+      }
+      leaf last-block {
+        description
+          "The last-block value returned in the previous get-block response
+          (omitted in the initial get-block request).";
+        type string;
+      }
+    }
+  }
+
+  notification get-block-rsp {
+    description
+      "A response to a get-block request.
+
+      A success response contains data and no errors.
+      Errors in the error list indicate failure.";
+    uses message-header;
+    anydata data {
+      description "The data returned by the get request.";
+    }
+    leaf more {
+      description
+        "If present then there may be more entries to return on a subsequent
+        get-block request.  If absent then there are no more entries.";
+      type empty;
+    }
+    leaf last-block {
+      description
+        "The last-block value to use on the next get-block request.
+        This must be present, and if there are no more entries then the
+        last-block value should ensure that a subsequent get-block request
+        returns an empty get-block response.  This applies even if the
+        more node is absent and even if the response data is empty.";
+      type string;
+      mandatory true;
+    }
+    uses api-common:errors;
+  }
+
+  notification get-config-req {
+    description
+      "A request that gets part of the config data tree.";
+    uses message-header;
+    container get-config {
+      // The get-config container is required.
+      description "The get-config request parameters.";
+      leaf target {
+        description "The target of the get-config request.";
+        type target-t;
+        mandatory true;
+      }
+      uses subtree-filter;
+    }
+  }
+
+  notification get-config-rsp {
+    description
+      "A response to a get-config request.
+
+      A success response contains data and no errors.
+      Errors in the error list indicate failure.";
+    uses message-header;
+    anydata data {
+      description "The data returned by the get-config request.";
+    }
+    uses api-common:errors;
+  }
+
+  notification get-group-req {
+    description
+      "A get-group request gets groups of related MIB rows from a list of
+      related MIBs.  It can be thought of as a get-block request for multiple
+      related MIBs, with a guarantee that related MIB rows are always returned
+      together in the same response.
+
+      The get-group request is intended for MIBs with the following
+      relationships:
+
+      1) Different MIBs that refer to the same object, such as a state MIB and
+         a statistics MIB.
+
+         In this case the MIBs have the same index fields.
+
+      2) MIBs that have a table / subtable relationship, such as an interface
+         MIB and an interface address MIB with multiple addresses for each
+         interface.
+
+         In this case the MIBs have the same initial index fields, but the
+         subtable MIB has additional index fields after the common initial
+         index fields.
+
+      In both cases the related MIBs share common initial index fields, and
+      related MIB rows share the same common initial index field values.";
+    uses message-header;
+    container get-group {
+      // The get-group container is required.
+      description "The get-group request parameters.";
+      list get {
+        description
+          "The get operation list.";
+        min-elements 1;
+        uses get-parms;
+        leaf last-block {
+          description
+            "The last-block value returned in the previous get-group response
+            (omitted in the initial get-group request).";
+          type string;
+        }
+      }
+      leaf num-group-keys {
+        description
+          "The number of common initial keys (index fields) that identify a
+          MIB row group.";
+        type int32 {
+          range "0..max";
+        }
+        mandatory true;
+      }
+      leaf group-limit {
+        description
+          "The maximum number of MIB row groups to return in the get-group
+          response, or zero for no limit.";
+        type int32 {
+          range "0..max";
+        }
+      }
+      leaf entry-threshold {
+        description
+          "The entry threshold, or zero if none.
+
+          Get-group request processing ends when the response contains complete
+          MIB row groups and the number of MIB row entries reaches this
+          threshold.
+
+          The get-group response always contains complete MIB row groups so the
+          number of entries in the response is likely to exceed this
+          threshold.";
+        type int32 {
+          range "0..max";
+        }
+      }
+      leaf last-group {
+        description
+          "The last-group value returned in the previous get-group response
+          (omitted in the initial get-group request).";
+        type string;
+      }
+    }
+  }
+
+  notification get-group-rsp {
+    description
+      "A response to a get-group request.
+
+      A success response contains a get operation list and no errors.
+      Errors in the error list indicate failure.";
+    uses message-header;
+    list get {
+      description
+        "The get operation list.";
+      anydata data {
+        description "The data returned by the get operation.";
+        mandatory true;
+      }
+      leaf last-block {
+        description
+          "The last-block value to use on the next get-group request.
+          If there are no more entries then the last-block value should ensure
+          that the next get operation returns empty data.";
+        type string;
+      }
+    }
+    leaf more {
+      description
+        "If present then there may be more entries to return on a subsequent
+        get-group request.  If absent then there are no more entries.";
+      type empty;
+    }
+    leaf last-group {
+      description
+        "The last-group value to use on the next get-group request.
+
+        This must be present in a success response.";
+      type string;
+    }
+    uses api-common:errors;
+  }
+
+  notification rpc-req {
+    description
+      "A request that executes an RPC operation.
+
+      The RPC operation is defined by the Yang model and the RPC input
+      parameters depend on the Yang model.";
+    uses message-header;
+    container rpc {
+      // The rpc container is required.
+      description "The rpc request parameters.";
+      leaf operation {
+        description
+          "The RPC operation.
+          This is the qualified RPC name specified by the Yang model,
+          including the Yang module name as a prefix.";
+        type string;
+        mandatory true;
+      }
+      // The RPC input parameters appear here as an input container in the
+      // namespace of the module that defines the RPC.
+      // It is not possible to express this properly in Yang.
+      // It is similar to:
+      //   anydata input;
+      // but the input namespace prefix depends on the RPC operation.
+    }
+  }
+
+  notification rpc-rsp {
+    description
+      "A response to an rpc request.
+
+      The RPC operation is defined by the Yang model and the RPC output
+      parameters depend on the Yang model.
+      A success response contains an ok node or output and no errors.
+      Errors in the error list indicate failure.";
+    uses message-header;
+    uses api-common:errors;
+    leaf ok {
+      description
+        "The presence of an ok node indicates success when there are no output
+        parameters.  This may be omitted when there are output parameters and
+        must be omitted if there are errors.";
+      type empty;
+    }
+    // The RPC output parameters appear here as an output container in the
+    // namespace of the module that defines the RPC.
+    // It is not possible to express this properly in Yang.
+    // It is similar to:
+    //   anydata output;
+    // but the output namespace prefix depends on the RPC operation.
+  }
+
+  notification action-req {
+    description
+      "A request that executes an action.
+
+      The action is defined by the Yang model and the action input parameters
+      depend on the Yang model.";
+    uses message-header;
+    container action {
+      // The action container is required.
+      description "The action request parameters.";
+      leaf operation {
+        description
+          "The action operation.
+          This is the qualified action name specified by the Yang model,
+          including the Yang module name as a prefix.";
+        type string;
+        mandatory true;
+      }
+      leaf target {
+        description "The target of the action.";
+        type target-t;
+        mandatory true;
+      }
+      // The action input parameters appear here as an input container in the
+      // namespace of the module that defines the action.
+      // It is not possible to express this properly in Yang.
+      // It is similar to:
+      //   anydata input;
+      // but the input namespace prefix depends on the action.
+    }
+  }
+
+  notification action-rsp {
+    description
+      "A response to an action request.
+
+      The action is defined by the Yang model and the action output parameters
+      depend on the Yang model.
+      A success response contains an ok node or output and no errors.
+      Errors in the error list indicate failure.";
+    uses message-header;
+    uses api-common:errors;
+    leaf ok {
+      description
+        "The presence of an ok node indicates success when there are no output
+        parameters.  This may be omitted when there are output parameters and
+        must be omitted if there are errors.";
+      type empty;
+    }
+    // The action output parameters appear here as an output container in the
+    // namespace of the module that defines the action.
+    // It is not possible to express this properly in Yang.
+    // It is similar to:
+    //   anydata output;
+    // but the output namespace prefix depends on the action.
+  }
+
+  notification create-subscription-req {
+    description
+      "A request that creates an event notification subscription.
+
+      After a success response YMM sends asynchronous event notification
+      messages on the same connection.";
+    uses message-header;
+    container create-subscription {
+      // The create-subscription container is required.
+      description
+        "The create-subscription request parameters (currently none).";
+    }
+  }
+
+  notification subscription-rsp {
+    description
+      "A response to a create-subscription request.
+
+      A success response contains the request-id but no errors.
+      Errors in the error list indicate failure.";
+    uses message-header;
+    uses api-common:errors;
+  }
+
+  notification notification {
+    description
+      "A notification message.";
+    leaf eventTime {
+      description "The time the event was generated by the event source.";
+      type yang:date-and-time;
+    }
+    // The notification contents appear here as a container.
+    // The container name is the notification name specified by the Yang model,
+    // including the Yang module name as a prefix.
+    // The container contents is the notification contents specified by the
+    // Yang model.
+    // It is not possible to express this properly in Yang.
+  }
+}

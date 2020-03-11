@@ -1,0 +1,451 @@
+module adva-dnos-types {
+
+  namespace "http://www.advaoptical.com/cim/adva-dnos-types";
+
+  prefix "adva-types";
+
+  import openconfig-inet-types { prefix oc-inet; }
+  import openconfig-yang-types { prefix oc-yang; }
+
+  organization  "Adva Optical Networking";
+
+  description   "This module contains a set of common type definitions.";
+
+  revision "2019-02-25" {
+    description "Initial revision.";
+  }
+
+  typedef vlan-tag {
+    type uint32 {
+      range "1 .. 4095";
+    }
+    description "Layer 2 Virtual LAN using 802.1Q";
+  }
+
+  typedef vlan-tag-optional {
+    type uint32 {
+      // 0 = no tag
+      range "0 .. 4095";
+    }
+    description "Optional layer 2 Virtual LAN using 802.1Q";
+  }
+
+  typedef vlan-tag-list {
+    type string {
+      pattern '(([0-9]+(-[0-9]+)?)(,[0-9]+(-[0-9]+)?)*)?';
+    }
+    description "List of layer 2 Virtual LANs using 802.1Q";
+  }
+
+  typedef mef-role-type {
+    type enumeration {
+      enum NNI {
+        description "Network-to-network interface";
+      }
+      enum UNI {
+        description "User-to-network interface";
+      }
+    }
+  }
+
+  typedef lacp-mode-type {
+    type enumeration {
+      enum ACTIVE {
+        description
+          "Interface is an active member, i.e., will detect and
+          maintain aggregates";
+      }
+      enum PASSIVE {
+        description
+          "Interface is a passive member, i.e., it participates
+          with an active partner";
+      }
+    }
+    description
+      "Describes the LACP membership type, disable, active or passive, of the
+      interface in the aggregate";
+    reference "IEEE 802.1AX-2008";
+  }
+
+  typedef profile-name {
+    type string {
+      length "1 .. 64";
+    }
+    description "Profile name";
+  }
+
+  typedef direction-type {
+    type enumeration {
+      enum INGRESS {
+        value 1;
+        description "Ingress direction";
+      }
+      enum EGRESS {
+        value 2;
+        description "Egress direction";
+      }
+    }
+  }
+
+  typedef mpls-lsr-id {
+    type oc-inet:ipv4-address;
+    description   
+      "A unique identifier for an MPLS LSR.";
+  }
+
+  typedef bandwidth {
+    type string {
+      pattern '[0-9]+(\.[0-9]*)?[gmk]';
+    }
+    description "Bandwith in kbit, mbit or gbit units.";
+  }
+
+  typedef up-down-val {
+    type enumeration {
+      enum OTHER {
+        value 0;
+      }
+      enum UP {
+        value 1;
+      }
+      enum DOWN {
+        value 2;
+      }
+    }
+    description "A boolean-like up/down value.";
+  }
+
+  typedef ether_encap {
+    type enumeration {
+      enum ethernet {
+        value 1;
+      }
+      enum vlan {
+        value 2;
+      }
+    }
+    description "Ethernet or VLAN encapsulation.";
+  }
+
+  typedef generic-state-val {
+    type string;
+  }
+
+  typedef eservice-id {
+    type uint32 {
+      range "1..2147483647";
+    }
+    description "Service id for L2 E-LAN and E-LINE services";
+  }
+
+  grouping eservice_ac_data_runtime {
+    leaf ac {
+      type string;
+    }
+
+    leaf mtu {
+      type uint32;
+    }
+
+    leaf speed {
+      type uint64;
+    }
+
+    leaf physical-address {
+      type string;
+    }
+
+    leaf outer-tags {
+      type string;
+    }
+
+    leaf outer-tags-prio {
+      type string;
+    }
+
+    leaf untagged-allowed {
+      type boolean;
+    }
+
+    leaf inner-tag {
+      type string;
+    }
+
+    leaf admin-status {
+      type generic-state-val;
+    }
+
+    leaf oper-status {
+      type generic-state-val;
+    }
+
+    description "Common fields used in runtime-elan and runtime-eline";
+  }
+
+  grouping eservice_vc_data_runtime {
+    leaf name {
+      type string;
+    }
+
+    leaf index {
+      type uint32;
+    }
+
+    leaf id {
+      type uint32;
+    }
+
+    leaf peer {
+      type adva-types:mpls-lsr-id;
+    }
+
+    leaf type {
+      type string;
+    }
+
+    leaf signaled-group {
+      type uint32;
+    }
+
+    leaf split-horizon-group {
+      type uint32;
+    }
+
+    leaf admin-status {
+      type adva-types:generic-state-val;
+    }
+
+    leaf oper-status {
+      type adva-types:generic-state-val;
+    }
+
+    leaf encapsulation {
+      type string;
+    }
+
+    leaf te {
+      type string;
+    }
+
+    leaf tunnel-id {
+      type int32;
+    }
+
+    leaf out-if {
+      type string;
+    }
+
+    leaf if-index {
+      type int32;
+    }
+
+    leaf local-node-status {
+      type string;
+    }
+
+    leaf remote-node-status {
+      type string;
+    }
+
+    leaf local-if-mtu {
+      type uint32;
+    }
+
+    leaf remote-if-mtu {
+      type uint32;
+    }
+
+    leaf local-adv-cap {
+      type string;
+    }
+
+    leaf remote-adv-cap {
+      type string;
+    }
+
+    leaf vccv {
+      type boolean;
+    }
+
+    leaf remote-cap-status {
+      type string;
+    }
+
+    leaf remote-group-id {
+      type string;
+    }
+
+    leaf remote-if-description {
+      type string;
+    }
+
+    leaf out-label {
+      type string;
+    }
+
+    leaf in-label {
+      type string;
+    }
+
+    leaf creation-time {
+      type string;
+      }
+
+    leaf up-time {
+      type string;
+    }
+
+    leaf last-change-time {
+      type string;
+    }
+
+    leaf redundancy-set-id {
+      type uint32;
+    }
+
+    description "Common fields used in runtime-elan and runtime-eline";
+  }
+
+  typedef oam-md-level {
+    type uint32 {
+      range "1 .. 7";
+    }
+    description "Maintenance Domain level";
+  }
+
+  typedef oam-mep-id {
+    type uint32 {
+      range "1 .. 8190";
+    }
+    description "Maintenance association End Point identification";
+  }
+
+  typedef oam-ma-name {
+    type string {
+      length "1 .. 20";
+    }
+    description "Maintenance Association";
+  }
+
+  typedef oam-md-name {
+    type string {
+      length "1 .. 20";
+    }
+    description "Maintenance Domain";
+  }
+
+  typedef oam-measurement-type {
+    type enumeration {
+      enum DELAY-MEASUREMENT {
+        value 0;
+        description "Delay measurement test";
+      }
+      enum LOSS-MEASUREMENT {
+        value 1;
+        description "Loss measurement test";
+      }
+      enum LOOPBACK {
+        value 2;
+        description "Loopback test";
+      }
+      enum Y1564 {
+        value 3;
+        description "Y1564 configuration test";
+      }
+      enum LINKTRACE {
+        value 4;
+        description "Linktrace test";
+      }
+      enum RFC2544 {
+        value 5;
+        description "RFC2544 configuration test";
+      }
+      enum SLM {
+        value 6;
+        description "Synthetic loss measurement test";
+      }
+    }
+    description "Test type";
+  }
+
+  typedef pcp {
+    type uint32 {
+      range "0 .. 7";
+    }
+    description "Priority code point";
+  }
+
+  grouping test-destination {
+    choice destination {
+
+      case remote-mep-id {
+        leaf remote-mep-id {
+          type adva-types:oam-mep-id;
+          description "Destination remote Maintenance association End Point";
+        }
+        description "Destination remote Maintenance association End Point";
+      }
+
+      case mac {
+        leaf mac {
+          type oc-yang:mac-address;
+          description "Destination remote MAC";
+        }
+        description "Destination remote MAC";
+      }
+
+      description "Destination";
+    } // choice destination;
+  } // grouping test-destination
+
+  typedef ttl {
+    type uint32 {
+      range "1 .. 255";
+    }
+    description "Time to live";
+  }
+
+  typedef oam-timeout-type {
+    type enumeration {
+      enum NONE {
+        value 0;
+        description "None";
+      }
+      enum 3MSEC {
+        value 3;
+        description "3 milli seconds, not relevant as tx interval for LM OAM test profile";
+      }
+      enum 10MSEC {
+        value 10;
+        description "10 milli seconds";
+      }
+      enum 100MSEC {
+        value 100;
+        description "100 milli seconds";
+      }
+      enum 1SEC {
+        value 1000;
+        description "1 second";
+      }
+      enum 10SEC {
+        value 10000;
+        description "10 seconds";
+      }
+      enum 1MIN {
+        value 60000;
+        description "1 minute";
+      }
+      enum 10MIN {
+        value 600000;
+        description "10 minutes";
+      }
+      enum RESPONDER {
+        value 2147483647;
+        description "OAM test responder only";
+      }
+    }
+    description "Time interval.";
+  }
+
+}
+

@@ -1,0 +1,1546 @@
+
+module route-map {
+
+  namespace "http://metaswitch.com/yang/nbu/route-map/201602250000Z";
+
+  prefix route-map;
+
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix "interfaces"; }
+  import metaswitch-yang-types { prefix meta; }
+  import bgp { prefix bgp; }
+  import metaswitch-custom-yang-types { prefix "custom"; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Route Map Configuration";
+
+  revision 2016-02-25 {
+    description "Initial revision.";
+  }
+
+  typedef route-map-seq-num {
+    type uint32 {
+      range "0..4294967295";
+    }
+
+    description "SEQ NUMBER (0-4294967295)";
+  }
+
+  typedef route-map-set-weight {
+    type uint32 {
+      range "0..2147483647";
+    }
+
+    description "WEIGHT (0-2147483647)";
+  }
+
+  typedef route-map-set-as-count {
+    type uint32 {
+      range "0..63";
+    }
+    description "AS VALUE (0-63)";
+  }
+
+  typedef route-map-reg-exp {
+    type meta:ascii-string {
+      length 1..300;
+    }
+    description
+      "WORD (1-300)";
+  }
+
+  // Low-level model info: Corresponds to subset of AMB_BGP_AFI and AMB_BGP_SAFI.
+  typedef route-map-afi-safi {
+    type enumeration {
+      enum ipv4                             { value 1; description "IPv4 unicast"; }
+      enum ipv6                             { value 2; description "IPv6 unicast"; }
+      enum vpnv4                            { value 3; description "IPv4 VPN"; }
+      enum vpnv6                            { value 4; description "IPv6 VPN"; }
+    }
+    description
+      "AFI/SAFI type";
+  }
+
+  typedef route-map-med-value {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "(0-4294967295)";
+  }
+
+  typedef route-map-local-preference {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "(0-4294967295)";
+  }
+
+  typedef list-name {
+    type meta:ascii-string {
+      length "1..32";
+    }
+    description
+      "WORD (1-32)";
+  }
+
+  typedef list-entry-num {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description "ENTRY NUMBER (0-4294967295)";
+  }
+
+  typedef list-action {
+    type enumeration {
+      enum permit                          { value 1; description "Permit"; }
+      enum deny                            { value 2; description "Deny"; }
+    }
+    description
+      "Action";
+  }
+
+  typedef comm-list-ext-type {
+    type enumeration {
+      enum rt                              { value 1; description "Route Target Community"; }
+      enum soo                             { value 2; description "Site of Origin Community"; }
+    }
+    description
+      "Type";
+  }
+
+  typedef route-map-metric-value {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "(0-4294967295)";
+  }
+
+  typedef route-map-tag-value {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "(0-4294967295)";
+  }
+
+  // Low-level model info: Corresponds to the AMB_RTM_RM_RT_TYPE group.
+  typedef route-map-path-types {
+    type enumeration {
+      enum none                             { value 0; description "No path type associated with this route"; }
+      enum other                            { value 1; description "Path type asscoiated with this route is unknown"; }
+      enum connected                        { value 2; description "Path is directly connected or to a static route"; }
+      enum i3-local                         { value 3; description "Path to address on a local interface"; }
+      enum i3-connected                     { value 4; description "Path to address directly connected to a local interface"; }
+      enum static                           { value 5; description "Path to static route"; }
+      enum ospf-intra-area                  { value 6; description "Path to dest in attached OSPF area"; }
+      enum ospf-inter-area                  { value 7; description "Path to dest in another OSPF area"; }
+      enum ospf-type1-external              { value 8; description "Path to dest external to OSPF with metric in same units"; }
+      enum ospf-type2-external              { value 9; description "Path to dest external to OSPF with a much larger metric"; }
+      enum ospf-type1-nssa                  { value 10; description "Path to dest external to OSPF through NSSA with metric in same units"; }
+      enum ospf-type2-nssa                  { value 11; description "Path to dest external to OSPF through NSSA with a much larger metric"; }
+      enum bgp-internal                     { value 12; description "Path learned from iBGP peer"; }
+      enum bgp-external                     { value 13; description "Path learned from eBGP peer"; }
+      enum bgp-vpn                          { value 14; description "Path to a VPN destination"; }
+      enum isis-level1-internal             { value 15; description "Level 1 route to dest internal to ISIS"; }
+      enum isis-level2-internal             { value 16; description "Level 2 route to dest internal to ISIS"; }
+      enum isis-level1-external             { value 17; description "Level 1 route to dest external to ISIS"; }
+      enum isis-level2-external             { value 18; description "Level 2 route to dest external to ISIS"; }
+      enum igrp                             { value 19; description "IGRP Route"; }
+      enum rip                              { value 20; description "RIP Route"; }
+      enum hello                            { value 21; description "HELLO protocol Route"; }
+      enum egp                              { value 22; description "EGP Route"; }
+      enum ggp                              { value 23; description "GGP Route"; }
+      enum eigpr-summary                    { value 24; description "Enhanced IGRP summary route"; }
+      enum eigpr-internal                   { value 25; description "Enhanced internal IGRP route"; }
+      enum eigpr-external                   { value 26; description "Enhanced external IGRP route"; }
+      enum esis                             { value 27; description "ESIS route"; }
+      enum bbn-spf-igp                      { value 28; description "BBNSPFIGP route"; }
+      enum idpr                             { value 29; description "IDRP route"; }
+      enum dvmrp                            { value 30; description "DVMRP route"; }
+      enum icmp                             { value 31; description "ICMP route"; }
+      enum lfa                              { value 32; description "LFA route"; }
+      enum summ-addr                        { value 33; description "Summary address generated locally"; }
+      enum def-info-orig                    { value 34; description "Default route generated locally"; }
+      enum local                            { value 35; description "Locally generated route"; }
+    }
+    description
+      "Route map path type";
+  }
+
+  // Low-level model info: Corresponds to the AMB_RTM_ISIS_LEVEL group.
+  typedef route-map-isis-level {
+    type enumeration {
+      enum isis-level1             { value 1; description "IS-IS Level 1"; }
+      enum isis-level2             { value 2; description "IS-IS Level 2"; }
+    }
+    description
+      "IS-IS level";
+  }
+
+  // Low-level model info: Corresponds to the AMB_RTM_BGP_ORIGIN_CODE and AMB_BGP_ORIGIN_CODE groups.
+  typedef route-map-bgp-origin {
+    type enumeration {
+      enum igp             { value 0; description "Path interior to originating AS."; }
+      enum egp             { value 1; description "Path learned via EGP protocol."; }
+      enum incomplete      { value 2; description "Path was learned by some other means."; }
+    }
+    description
+      "BGP origin";
+  }
+
+  // Low-level model info: Corresponds to the AMB_METRIC_CONVERSION group.
+  typedef route-map-metric-conversions {
+    type enumeration {
+      enum same             { value 1; description "Leave metric unchanged."; }
+      enum constant         { value 2; description "Use the configured value."; }
+      enum inverse          { value 3; description "Map high metric values to low ones."; }
+      enum scale-up         { value 4; description "Scale up by configured scale factor"; }
+      enum scale-down       { value 5; description "Scale down by configured scale factor"; }
+      enum truncate         { value 6; description "Use the smaller of the supplied and configured values"; }
+    }
+    description
+      "Metric conversion types";
+  }
+
+  // Low-level model info: Corresponds to the AMB_RTM_METRIC_TYPE group.
+  typedef route-map-metric-type {
+    type enumeration {
+      enum internal               { value 1; description "OSPF or ISIS internal metric."; }
+      enum external               { value 2; description "ISIS external metric."; }
+      enum ext-type-1             { value 3; description "OSPF external type 1 metric."; }
+      enum ext-type-2             { value 4; description "OSPF external type 2 metric."; }
+    }
+  }
+
+  grouping route-map-config {
+
+    // Low-level model info: Corresponds to AMB_BGP_ROUTE_MAP (bgpRouteMapTable).
+
+    description
+      "The list of Route Maps.";
+
+    container match {
+
+      description
+        "Matching conditions for this clause.";
+
+      user-ext:CLI-comm-help "Set matching conditions for this clause";
+      user-ext:CLI-no-comm-help "Remove matching conditions for this clause";
+
+      leaf address-family {
+        type route-map-afi-safi;
+        description
+          "The address family to match against.  This value
+          must be set if the nexthop leaf is defined.";
+
+        user-ext:CLI-comm-help "Set address family";
+        user-ext:CLI-no-comm-help "Remove address family";
+        user-ext:CLI-param-help "Set address family";
+      }
+
+      // Low-level model info: Corresponds to bgpRouteMapMaAs.
+      leaf as {
+        type route-map-reg-exp;
+        description
+          "Contains the regular expression to use when matching the
+          AS-Path for a route.";
+
+        user-ext:CLI-comm-help "Set AS path regular expression";
+        user-ext:CLI-no-comm-help "Remove AS path regular expression";
+        user-ext:CLI-param-help "Set AS path regular expression";
+      }
+
+      container comm-list {
+
+        description
+          "Community List match configuration.";
+
+        user-ext:CLI-comm-help "Set community list configuration";
+        user-ext:CLI-no-comm-help "Remove community list configuration";
+
+        // Low-level model info: Corresponds to bgpRouteMapMaCommList.
+        leaf name {
+          type list-name;
+          description
+            "The name of the Community List to use when matching
+            communities in a route.
+
+            A value of zero means that no Community List is used for
+            matching.";
+
+          user-ext:CLI-comm-help "Set Community list name to match communities";
+          user-ext:CLI-no-comm-help "Remove Community list name that matches communities";
+          user-ext:CLI-param-help "Set Community list name to match communities";
+        }
+
+        // Low-level model info: Corresponds to bgpRouteMapCommListExact.
+        leaf exact {
+          type empty;
+          description
+            "Whether the set of communities in the route must exactly
+            match the set of communities in the community list.
+
+            If configured, then there must be an exact match of all
+            communities in the route with all communities in the list.
+
+            If not configured, for a match on the list, any
+            community in the route must match any community in the
+            list.";
+
+          user-ext:CLI-comm-help "Community list matching must be exact";
+          user-ext:CLI-no-comm-help "Community list matching need not be exact";
+        }
+
+      } // comm-list
+
+      container ext-comm-list {
+
+        description
+          "Extended Community List match configuration.";
+
+        user-ext:CLI-comm-help "Set extended community list configuration";
+        user-ext:CLI-no-comm-help "Remove extended community list configuration";
+
+        // Low-level model info: Corresponds to bgpRouteMapMaExtCommList.
+        leaf name {
+          type list-name;
+          description
+            "The name of the Extended Community List to use when
+            matching extended communities in a route.
+
+            A value of zero means that no Extended Community List is
+            used for matching.";
+
+          user-ext:CLI-comm-help "Set Ext Comm list name to match extended communities";
+          user-ext:CLI-no-comm-help "Remove Ext Comm list name that matches extended communities";
+          user-ext:CLI-param-help "Set Ext Comm list name to match extended communities";
+        }
+
+        // Low-level model info: Corresponds to bgpRouteMapExtCommListExact.
+        leaf exact {
+          type empty;
+          description
+            "Whether the set of extended communities in the route must
+            exactly match the set of extended communities in the
+            extended community list.
+
+            If configured, then there must be an exact match of all
+            extended communities in the route with all extended
+            communities in the list.
+
+            If not configured then, for a match on the list, any
+            extended community in the route must match any extended
+            community in the list.";
+
+          user-ext:CLI-comm-help "Ext Comm list matching must be exact";
+          user-ext:CLI-no-comm-help "Ext Comm list matching need not be exact";
+        }
+
+      } // ext-comm-list
+
+      container prefix-list {
+
+        description
+          "IP Prefix access lists used to match the route.";
+
+        user-ext:CLI-comm-help "Set IP prefix matching conditions";
+        user-ext:CLI-no-comm-help "Remove IP prefix matching conditions";
+
+        // Low-level model info: Corresponds to bgpRouteMapMaAddrAallPre and
+        // rtmRouteMapMaDestPrefixList.
+        leaf destination {
+          type meta:ip-prefix-name;
+          description
+            "The name of the IP Prefix access list used to match the address
+            attribute against.";
+
+          user-ext:CLI-comm-help "Set IP Prefix list name to match destination";
+          user-ext:CLI-no-comm-help "Remove IP Prefix list name that matches destination";
+          user-ext:CLI-param-help "Set IP Prefix list name to match destination";
+        }
+
+        // Low-level model info: Corresponds to bgpRouteMapMaNextAallPre and
+        // rtmRouteMapMaNextHopPrefixList.
+        leaf nexthop {
+          type meta:ip-prefix-name;
+          description
+            "The name of the IP Prefix access list used to match the next
+            hop address against.";
+
+          user-ext:CLI-comm-help "Set IP Prefix list name to match next hop";
+          user-ext:CLI-no-comm-help "Remove IP Prefix list name that matches next hop";
+          user-ext:CLI-param-help "Set IP Prefix list name to match next hop";
+        }
+
+        // Low-level model info: Corresponds to bgpRouteMapMaSourceAallPre
+        // and rtmRouteMapMaRouteSrcPrefixList.
+        leaf source {
+          type meta:ip-prefix-name;
+          description
+            "The name of the IP Prefix access list used to match the source
+            address against.";
+
+          user-ext:CLI-comm-help "Set IP Prefix list name to match source";
+          user-ext:CLI-no-comm-help "Remove IP Prefix list name that matches source";
+          user-ext:CLI-param-help "Set IP Prefix list name to match source";
+        }
+
+      } // prefix-list
+
+      // Low-level model info: Corresponds to bgpRouteMapAsPathList.
+      leaf as-path-list {
+        type leafref {
+          path "/as-path-list/name";
+        }
+        description
+          "The name of the AS Path List to use when matching AS paths in
+           a route.";
+
+        user-ext:CLI-comm-help "Set AS Path list name to match AS Paths";
+        user-ext:CLI-no-comm-help "Remove AS Path list name to match AS Paths";
+        user-ext:CLI-param-help "Set AS Path list name to match AS Paths";
+      }
+
+      // Low-level model info: Corresponds to rtmRouteMapMaIfIndexDef and rtmRouteMapMaIfIndex.
+      leaf output-interface {
+        type custom:iface-name;
+        description
+          "The name of the output network interface to match against.";
+
+        user-ext:CLI-comm-help "Set output-interface name";
+        user-ext:CLI-no-comm-help "Remove output-interface name";
+        user-ext:CLI-param-help "Set output-interface name";
+      }
+
+      // Low-level model info: Corresponds to rtmRouteMapMaTagDef and rtmRouteMapMaTag.
+      leaf tag {
+        type route-map-tag-value;
+        description
+          "The tag to match against.";
+
+        user-ext:CLI-comm-help "Set route tag to match on";
+        user-ext:CLI-no-comm-help "Remove route tag to match on";
+        user-ext:CLI-param-help "Set route tag to match on";
+      }
+
+      // Low-level model info: Corresponds to rtmRouteMapMaRouteTypeDef and rtmRouteMapMaRouteType.
+      leaf path-types {
+        type route-map-path-types;
+        description
+          "The path type to match against.";
+
+        user-ext:CLI-comm-help "Set path type to match on";
+        user-ext:CLI-no-comm-help "Remove path type to match on";
+        user-ext:CLI-param-help "Set path type to match on";
+      }
+
+      // Low-level model info: Corresponds to rtmRouteMapMaBgpOriginDef and rtmRouteMapMaBgpOrigin.
+      leaf origin {
+        type route-map-bgp-origin;
+        description
+          "The value to match the BGP origin against.";
+
+        user-ext:CLI-comm-help "Set BGP origin to match on";
+        user-ext:CLI-no-comm-help "Remove BGP origin to match on";
+        user-ext:CLI-param-help "Set BGP origin to match on";
+      }
+
+      // Low-level model info: Corresponds to bgpRouteMapMaLocPref and bgpRouteMapMaLocPrefDef
+      // and rtmRouteMapMaBgpLocalPref and rtmRouteMapMaBgpLocalPrefDef.
+      leaf local-preference {
+        type route-map-local-preference;
+        description
+          "The value to match the BGP local preference against.";
+
+        user-ext:CLI-comm-help "Set BGP local preference to match on";
+        user-ext:CLI-no-comm-help "Remove  BGP local preference to match on";
+        user-ext:CLI-param-help "Set BGP local preference to match on";
+      }
+
+      container metric {
+
+        description
+          "Metric match configuration.";
+
+        user-ext:CLI-comm-help "Set metric match configuration";
+        user-ext:CLI-no-comm-help "Remove metric match configuration";
+
+        // Low-level model info: Corresponds to rtmRouteMapMaMetricDef and rtmRouteMapMaMetric.
+        leaf value {
+          type route-map-metric-value;
+          description
+            "The metric value to match against.";
+
+          user-ext:CLI-comm-help "Set metric value to match on";
+          user-ext:CLI-no-comm-help "Remove metric value to match on";
+          user-ext:CLI-param-help "Set metric value to match on";
+        }
+
+        // Low-level model info: Corresponds to rtmRouteMapMaMetricDev
+        leaf deviation {
+          type route-map-metric-value;
+          description
+            "Allowable deviation from the configured metric-value.  A metric
+             will be considered a match if it is in the range
+             metric-value +/- metric-deviation";
+
+          user-ext:CLI-comm-help "Set metric deviation";
+          user-ext:CLI-no-comm-help "Reset metric deviation to zero";
+          user-ext:CLI-param-help "Set metric deviation";
+        }
+      } // metric
+
+    } // match
+
+    // Low-level model info: Corresponds to bgpRouteMapType and rtmRouteMapType.
+    leaf action {
+      type meta:route-map-action;
+      description
+        "Include or exclude any matching routes.";
+
+      user-ext:CLI-comm-help "Permit or deny matching routes";
+      user-ext:CLI-no-comm-help "Permit or deny matching routes";
+      user-ext:CLI-param-help "Permit or deny matching routes";
+    }
+
+    container set {
+
+      description
+        "Set attributes for the routes matching this clause.";
+
+      user-ext:CLI-comm-help "Set attributes for the routes matching this clause";
+      user-ext:CLI-no-comm-help "Remove attributes for the routes matching this clause";
+
+      container comm-list {
+
+        description
+          "Community List set configuration.";
+
+        user-ext:CLI-comm-help "Set community list configuration";
+        user-ext:CLI-no-comm-help "Remove community list configuration";
+
+        // Low-level model info: Corresponds to bgpRouteMapSeCommListDel.
+        leaf delete {
+          type list-name;
+          description
+            "Specifies the Community List used to delete
+            communities from routes matching this route-map.
+
+            A value of zero means that no Community List is used.";
+
+          user-ext:CLI-comm-help "Set Community list name to delete communities";
+          user-ext:CLI-no-comm-help "Remove Community list name that deletes communities";
+          user-ext:CLI-param-help "Set Community list name to delete communities";
+        }
+
+        // Low-level model info: Corresponds to bgpRouteMapSeCommListAdd.
+        leaf add {
+          type list-name;
+          description
+            "Specifies Community List used to add
+            communities to routes matching this route-map.
+
+            A value of zero means that no Community List is used.";
+
+          user-ext:CLI-comm-help "Set Community list name to add communities";
+          user-ext:CLI-no-comm-help "Remove Community list name that adds communities";
+          user-ext:CLI-param-help "Set Community list name to add communities";
+        }
+
+      } // comm-list
+
+      container ext-comm-list {
+
+        description
+          "Extended Community List set configuration.";
+
+        user-ext:CLI-comm-help "Set extended community list configuration";
+        user-ext:CLI-no-comm-help "Remove extended community list configuration";
+
+        // Low-level model info: Corresponds to bgpRouteMapSeXCommListDel.
+        leaf delete {
+          type list-name;
+          description
+            "Specifies Extended Community List used to
+            delete extended communities from routes matching this
+            route-map.
+
+            A value of zero means that no Extended Community List is
+            used.";
+
+          user-ext:CLI-comm-help "Set Ext Comm list name to delete extended communities";
+          user-ext:CLI-no-comm-help "Remove Ext Comm list name that deletes extended communities";
+          user-ext:CLI-param-help "Set Ext Comm list name to delete extended communities";
+        }
+
+        // Low-level model info: Corresponds to bgpRouteMapSeXCommListAdd.
+        leaf add {
+          type list-name;
+          description
+            "Specifies Extended Community List used to
+            add extended communities to routes matching this
+            route-map.
+
+            A value of zero means that no Extended Community List is
+            used.";
+
+          user-ext:CLI-comm-help "Set Ext Comm list name to add extended communities";
+          user-ext:CLI-no-comm-help "Remove Ext Comm list name that adds extended communities";
+          user-ext:CLI-param-help "Set Ext Comm list name to add extended communities";
+        }
+
+      } // ext-comm-list
+
+      container community {
+
+        description
+          "Set BGP community.";
+
+        user-ext:CLI-comm-help "Set community attributes";
+        user-ext:CLI-no-comm-help "Remove community attributes";
+
+        // Low-level model info: Corresponds to bgpRouteMapSeCommAct and rtmRouteMapSeCommAct
+        // Low-level model info: Action should be set to none if the community container is not present.
+
+        choice community {
+
+          case remove-all {
+            leaf remove-all {
+              type empty;
+              description "Remove all communities.";
+
+              user-ext:CLI-comm-help "Remove all communities";
+              user-ext:CLI-no-comm-help "Do not remove all communities";
+            }
+          } // remove-all
+
+          case remove-specific {
+            container remove-specific {
+
+              description "Remove all communities that match the specified
+                           regular expression";
+
+              user-ext:CLI-comm-help "Remove communities matching regexp";
+              user-ext:CLI-no-comm-help "Do not remove communities matching regexp";
+
+              leaf value {
+                type route-map-reg-exp;
+                description
+                  "Contains the regular expression used when executing the
+                  action on the community.";
+
+                user-ext:CLI-comm-help "Set regular expression for action";
+                user-ext:CLI-no-comm-help "Remove regular expression for action";
+                user-ext:CLI-param-help "Set regular expression for action";
+              }
+            }
+          } // remove-specific
+
+          case set-specific {
+            container set-specific {
+              description "Append the specified community to the communities list";
+
+              user-ext:CLI-comm-help "Append specified community";
+              user-ext:CLI-no-comm-help "Do not append specified community";
+
+              leaf value {
+                type meta:bgp-community;
+                description
+                  "Contains the community value to set.";
+
+                user-ext:CLI-comm-help "Set community for action";
+                user-ext:CLI-no-comm-help "Remove community for action";
+                user-ext:CLI-param-help "Set community for action";
+              }
+            }
+          } // set-specific
+
+          case remove-all-and-set {
+            container remove-all-and-set {
+              description "Remove all communities and replace them with the
+                           specified community";
+              user-ext:CLI-comm-help "Remove all and append specified community";
+              user-ext:CLI-no-comm-help "Do not remove all and append specified community";
+
+              leaf value {
+                type meta:bgp-community;
+                description
+                  "Contains the community value to set.";
+
+                user-ext:CLI-comm-help "Set community for action";
+                user-ext:CLI-no-comm-help "Remove community for action";
+                user-ext:CLI-param-help "Set community for action";
+              }
+            }
+          } // remove-all-and-set
+
+        } // community (choice)
+
+      } // community (container)
+
+      container extcommunity {
+
+        description
+          "Set BGP extended community.";
+
+        user-ext:CLI-comm-help "Set extended community attributes";
+        user-ext:CLI-no-comm-help "Remove extended community attributes";
+
+        // Low-level model info: Corresponds to bgpRouteMapSeExtCommAct and rtmRouteMapSeExtCommAct
+        // Low-level model info: Action should be set to none if the extended community container is not present.
+
+        choice extcommunity {
+
+          case remove-all {
+            leaf remove-all {
+              type empty;
+              description "Remove all extended communities.";
+              must "((not(../remove-specific)) and (not(../set-specific)) and (not(../remove-all-and-set)))" {
+                error-message "Only one of remove-all, remove-specific, set-specific
+                               and remove-all-and-set may be set for route map extended community";
+              }
+
+              user-ext:CLI-comm-help "Remove all extended communities";
+              user-ext:CLI-no-comm-help "Do not remove all extended communities";
+            }
+          } // remove-all
+
+          case remove-specific {
+            container remove-specific {
+
+              description "Remove all extended communities that match the specified
+                           regular expression";
+
+              user-ext:CLI-comm-help "Remove extended communities matching regexp";
+              user-ext:CLI-no-comm-help "Do not remove extended communities matching regexp";
+
+              must "((not(../remove-all)) and (not(../set-specific)) and (not(../remove-all-and-set)))" {
+                error-message "Only one of remove-all, remove-specific, set-specific
+                               and remove-all-and-set may be set for route map extended community";
+              }
+
+              leaf value {
+                type route-map-reg-exp;
+                description
+                  "Contains the regular expression used when executing the
+                  action on the extended community.";
+
+                user-ext:CLI-comm-help "Set regular expression for action";
+                user-ext:CLI-no-comm-help "Remove regular expression for action";
+                user-ext:CLI-param-help "Set regular expression for action";
+              }
+            }
+          } // remove-specific
+
+          case set-specific {
+
+            container set-specific {
+
+              description "Append the specified community to the communities list";
+
+              user-ext:CLI-comm-help "Append specified extended community";
+              user-ext:CLI-no-comm-help "Do not append specified extended community";
+
+              must "((not(../remove-all)) and (not(../remove-specific)) and (not(../remove-all-and-set)))" {
+                error-message "Only one of remove-all, remove-specific, set-specific
+                               and remove-all-and-set may be set for route map extended community";
+              }
+
+              uses bgp:bgp-ext-community;
+
+            } // set-specific
+
+          } // set-specific
+
+          case remove-all-and-set {
+
+            container remove-all-and-set {
+
+              description "Remove all communities and replace them with the
+                           specified community";
+
+              user-ext:CLI-comm-help "Remove all and append specified extended community";
+              user-ext:CLI-no-comm-help "Do not remove all and append specified extended community";
+
+              must "((not(../remove-all)) and (not(../remove-specific)) and (not(../set-specific)))" {
+                error-message "Only one of remove-all, remove-specific, set-specific
+                               and remove-all-and-set may be set may be set for route map extended community";
+              }
+
+              uses bgp:bgp-ext-community;
+
+            }
+          } // remove-all-and-set
+
+        } // extcommunity (choice)
+
+      } // extcommunity (container)
+
+      // Low-level model info: Corresponds to bgpRouteMapSeWeight and bgpRouteMapSeWeightDef
+      // and rtmRouteMapSeWeightDef and rtmRouteMapSeWeight
+      container weight {
+
+        description
+          "Weight to set.";
+
+        user-ext:CLI-comm-help "Set weight attribute";
+        user-ext:CLI-no-comm-help "Remove weight attribute";
+        user-ext:CLI-param-help "Set weight attribute";
+
+        presence "Enable weight attribute.";
+
+        // Low-level model info: Corresponds to bgpRouteMapSeWeight and rtmRouteMapSeWeight
+        leaf value {
+          type route-map-set-weight;
+          description
+            "Weight to set.";
+
+          user-ext:CLI-comm-help "Set weight attribute";
+          user-ext:CLI-no-comm-help "Set weight attribute to default";
+          user-ext:CLI-param-help "Set weight attribute";
+        }
+
+      } // weight
+
+      container med {
+
+        user-ext:CLI-comm-help "Set MED attributes";
+        user-ext:CLI-no-comm-help "Remove MED attributes";
+
+        // Low-level model info: Corresponds to bgpRouteMapSeMedDef and bgpRouteMapSeMed or bgpRouteMapSeMedDelta.
+        leaf value {
+          type route-map-med-value;
+          description
+            "Multi-Exit Discriminator value to set, add or substract.";
+
+          user-ext:CLI-comm-help "Set MED value";
+          user-ext:CLI-no-comm-help "Remove MED value";
+          user-ext:CLI-param-help "Set MED value";
+        }
+
+        choice med {
+
+          case increment {
+
+            // Low-level model info: Corresponds to bgpRouteMapSeMedDelta and bgpRouteMapSeMedDeltaTyp.
+            leaf increment {
+              type empty;
+              description
+                "This object indicates whether Multi-Exit Discriminator
+                should be incremented.";
+
+              user-ext:CLI-comm-help "Increment Multi-Exit Discriminator";
+              user-ext:CLI-no-comm-help "Do not increment Multi-Exit Discriminator.";
+            }
+
+          } // increment
+
+          case decrement {
+
+            // Low-level model info: Corresponds to bgpRouteMapSeMedDelta and bgpRouteMapSeMedDeltaTyp.
+            leaf decrement {
+              type empty;
+              description
+                "This object indicates whether Multi-Exit Discriminator
+                should be decremented.";
+
+              user-ext:CLI-comm-help "Decrement Multi-Exit Discriminator";
+              user-ext:CLI-no-comm-help "Do not decrement Multi-Exit Discriminator.";
+            }
+
+          } // decrement
+
+          case igp {
+
+            // Low-level model info: Corresponds to bgpRouteMapSeMedIgp.
+            leaf igp {
+              type empty;
+              description
+                "This object indicates whether Multi-Exit Discriminator
+                should be set to the IGP distance to the next hop.";
+
+              user-ext:CLI-comm-help "Set Multi-Exit Discriminator to the IGP distance to the next hop";
+              user-ext:CLI-no-comm-help "Do not set Multi-Exit Discriminator to the IGP distance to the next hop.";
+            }
+
+          } // igp
+
+        } // med (choice)
+
+      } // med (container)
+
+      // Low-level model info: Corresponds to bgpRouteMapSeNext, rtmRouteMapSeNextHopAddrType
+      //                       and rtmRouteMapSeNextHopAddr.
+      leaf nexthop {
+        type interfaces:iface-ip-address-t;
+        description
+          "The next-hop IP address to set.";
+
+        // Low-level model info: Check that the next hop address type matches the address family.
+        must "((../../match/address-family) and " +
+             " ((((../../match/address-family = 'ipv4') or (../../match/address-family = 'vpnv4')) and " +
+             "   (substring-after(.,':') = '')) or " +
+             "  (((../../match/address-family = 'ipv6') or (../../match/address-family = 'vpnv6')) and " +
+             "   (substring-after(.,':') != ''))))" {
+          error-message "The route map address-family must be set and must match the nexthop type";
+        }
+
+        user-ext:CLI-comm-help "Set next-hop IP address";
+        user-ext:CLI-no-comm-help "Remove next-hop IP address";
+        user-ext:CLI-param-help "Set next-hop IP address";
+      }
+
+      // Low-level model info: Corresponds to bgpRouteMapSeNextHopPeer
+      leaf next-hop-peer {
+        type boolean;
+        default "false";
+
+        description
+          "Whether routes matching this route map should have their Next Hop
+          set to the peer's address.  This is only applicable to route maps
+          being used for import.";
+
+        user-ext:CLI-comm-help "Set next-hop IP address to that of the peer";
+        user-ext:CLI-param-help "Set next-hop IP address to that of the peer";
+      }
+
+      container as {
+
+        description
+          "Set AS path attributes.";
+
+        user-ext:CLI-comm-help "Set AS path attributes";
+        user-ext:CLI-no-comm-help "Remove AS path attributes";
+
+        // Low-level model info: Corresponds to bgpRouteMapSeAs and bgpRouteMapSeAsAct.  The action
+        //                       should be set to none if this leaf is not present.
+        // Low-level model info: This count does not include the "normal" export prepending.
+        leaf prepend-count {
+          type route-map-set-as-count;
+          description
+            "The number of times the local AS number is prepended to
+            the AS path if there is a match.  This is only relevant if
+            the route map is being used for exporting routes, or for
+            setting attributes for an aggregate route which does not
+            have the AS_SET option set.";
+
+          user-ext:CLI-comm-help "Set prepend AS path count";
+          user-ext:CLI-no-comm-help "Set prepend AS path count to default";
+          user-ext:CLI-param-help "Set prepend AS path count";
+        }
+
+        // Low-level model info: Corresponds to bgpRouteMapSeAsRemove.
+        leaf remove {
+          type route-map-reg-exp;
+          description
+            "Contains the regular expression to use to remove AS
+            numbers from an AS-Path for a route.";
+
+          user-ext:CLI-comm-help "Set 'remove AS path' regular expression";
+          user-ext:CLI-no-comm-help "Remove 'remove AS path' regular expression";
+          user-ext:CLI-param-help "Set 'remove AS path' regular expression";
+        }
+
+      } // as
+
+      // Low-level model info: Corresponds to bgpRouteMapSeLocPref and bgpRouteMapSeLocPrefDef
+      // and rtmRouteMapSeLocalPrefDef and rtmRouteMapSeLocalPref.
+      leaf local-preference {
+        type route-map-local-preference;
+        description
+          "Local preference to set.";
+
+        user-ext:CLI-comm-help "Set local preference";
+        user-ext:CLI-no-comm-help "Remove local preference";
+        user-ext:CLI-param-help "Set local preference";
+      }
+
+      // Low-level model info: Corresponds to rtmRouteMapSeTagDef and rtmRouteMapSeTag
+      leaf tag {
+        type route-map-tag-value;
+        description
+          "The tag to set.";
+
+        user-ext:CLI-comm-help "Set route tag to set";
+        user-ext:CLI-no-comm-help "Remove route tag to set";
+        user-ext:CLI-param-help "Set route tag to set";
+      }
+
+      // Low-level model info: Corresponds to rtmRouteMapSeLevel.
+      leaf isis-level {
+        must "((../metric/type = 'internal') or (../metric/type = 'external'))" {
+          error-message "IS-IS level can only be set if metric type is for IS-IS";
+
+        }
+        type route-map-isis-level;
+        description
+          "The level to set when redistributing to IS-IS.";
+
+        user-ext:CLI-comm-help "Set IS-IS level to set";
+        user-ext:CLI-no-comm-help "Remove IS-IS level to set";
+        user-ext:CLI-param-help "Set IS-IS level to set";
+      }
+
+      // Low-level model info: Corresponds to bgpRouteMapSeOrigin, bgpRouteMapSeOriginDef,
+      // rtmRouteMapSeOriginDef and rtmRouteMapSeOrigin.
+      leaf origin {
+        type route-map-bgp-origin;
+        description
+          "The origin value to use.";
+
+        user-ext:CLI-comm-help "Set BGP origin to set";
+        user-ext:CLI-no-comm-help "Remove BGP origin to set";
+        user-ext:CLI-param-help "Set BGP origin to set";
+      }
+
+      container metric {
+
+        description
+          "Metric configuration.";
+
+        user-ext:CLI-comm-help "Set metric configuration";
+        user-ext:CLI-no-comm-help "Remove metric configuration";
+
+        // Low-level model info: Corresponds to rtmRouteMapSeMetricConv
+        leaf conversion {
+          type route-map-metric-conversions;
+          description
+            "How to act on the value of the metric in the routing
+             information received from the source to create a value for
+             the metric in the routing information sent to the
+             destination.";
+
+          user-ext:CLI-comm-help "Set metric conversion";
+          user-ext:CLI-no-comm-help "Reset metric conversion to the default";
+          user-ext:CLI-param-help "Set metric conversion";
+        }
+
+        // Low-level model info: Corresponds to rtmRouteMapSeMetric
+        leaf value {
+          type route-map-metric-value;
+          description
+            "The metric value to set.";
+
+          user-ext:CLI-comm-help "Set metric value";
+          user-ext:CLI-no-comm-help "Remove metric";
+          user-ext:CLI-param-help "Set metric value";
+        }
+
+        // Low-level model info: Corresponds to rtmRouteMapSeMetricTypeDef and rtmRouteMapSeMetricType.
+        leaf type {
+          type route-map-metric-type;
+          description
+            "The type of metric to set.";
+
+          user-ext:CLI-comm-help "Set metric type";
+          user-ext:CLI-no-comm-help "Remove type";
+          user-ext:CLI-param-help "Set metric type";
+        }
+      } // metric
+
+    }  // set
+
+  } // route-map-config
+
+
+  list route-map {
+
+    // Low-level model info: Corresponds to AMB_BGP_ROUTE_MAP (bgpRouteMapTable)
+    // and AMB_CIPR_RTM_ROUTE_MAP (rtmRouteMapTable).
+
+    description
+      "The list of Route Maps.";
+
+    user-ext:CLI-comm-help "Define a route map";
+    user-ext:CLI-no-comm-help "Remove a route map";
+
+    key "name";
+
+    // Low-level model info: Generate unique bgpRouteMapIndex or
+    // rtmRouteMapIndex for each name.
+    leaf name {
+      type meta:route-map-name;
+      description
+        "The name of this route map.  This is the Index used to reference the
+        Route Map.";
+
+      user-ext:CLI-param-help "Set route map name";
+    }
+
+    list seq-num {
+
+      user-ext:CLI-comm-help "Configure route map sequence entry";
+      user-ext:CLI-no-comm-help "Remove route map sequence entry";
+
+      key "number";
+
+      // Low-level model info: Corresponds to bgpRouteMapNumber and rtmRouteMapNumber.
+      leaf number {
+        type route-map-seq-num;
+        description
+          "The route map sequence number.";
+
+        user-ext:CLI-param-help "Route map sequence number";
+      }
+
+      must "(action)" {
+        error-message "the action must be defined for a route map sequence entry";
+      }
+
+      uses route-map-config;
+
+    } // seq-num
+
+  } // route-map
+
+  list ip-community {
+
+    // Low-level model info: Corresponds to AMB_BGP_COMM_LIST (bgpCommunityListTable)
+    // and AMB_CIPR_RTM_COMM_LIST (rtmCommunityListTable).
+
+    key "name";
+
+    description
+      "The list of DC-BGP Community List entries.";
+
+    user-ext:CLI-comm-help "Configure a community list";
+    user-ext:CLI-no-comm-help "Remove a community list";
+
+    // Low-level model info: Corresponds to bgpCommunityListIndex and
+    // rtmCommunityListIndex.
+    leaf name {
+      type list-name;
+      description
+        "The Community List.  This identifies the Community List.";
+
+      user-ext:CLI-param-help "Community list name";
+    }
+
+    list entry-num {
+
+      key "number";
+
+      description
+        "The list of BGP Community List entries.";
+
+      user-ext:CLI-comm-help "Configure a community list entry";
+      user-ext:CLI-no-comm-help "Remove a community list entry";
+
+      // Low-level model info: Corresponds to bgpCommunityListEntryIndex and
+      // rtmCommunityListEntryIndex.
+      leaf number {
+        type list-entry-num;
+        description
+          "The index of this entry in the Community List.
+
+          This ordering is important when the Community List is used
+          to match against communities in a route.";
+
+        user-ext:CLI-param-help "Community list entry number";
+      }
+
+      // Low-level model info: Corresponds to bgpCommunityListPermit and
+      // rtmCommunityListPermit.
+      leaf action {
+        type list-action;
+        default "permit";
+        description
+          "When matching routes, this field indicates whether the set
+          of matched routes should be permitted or denied.
+
+          When setting routes, this Community List entry is ignored
+          if this field is 'deny'.";
+
+        user-ext:CLI-comm-help "Permit or deny routes matching the entry's communities";
+        user-ext:CLI-no-comm-help "Permit routes matching the entry's communities";
+        user-ext:CLI-param-help "Permit or deny routes matching the entry's communities";
+      }
+
+      container type {
+
+        description
+          "This field indicates how this entry is used to match route
+          commmunities.
+
+          -  If 'standard', the route extended communities
+          are matched against a group of extended community values.
+
+          -  If 'expanded', the route extended communities
+          are matched against a regular expression.";
+
+        user-ext:CLI-comm-help "Set community list entry type";
+        user-ext:CLI-no-comm-help "Set community list entry type";
+
+        // Low-level model info: Corresponds to bgpCommunityListEntryType and
+        // rtmCommunityListEntryType.
+        choice entry-type {
+
+          description
+            "Choice of standard (community group) or expanded (regular
+            expression).";
+
+          case standard {
+
+            container standard {
+
+              user-ext:CLI-comm-help "Configure standard list entry";
+              user-ext:CLI-no-comm-help "Configure standard list entry";
+
+              description
+                "Standard type (community group).  Configure permit / deny
+                action and a group of communities.";
+
+              presence "Use community group";
+
+              list community {
+
+                // Low-level model info: Corresponds to AMB_BGP_COMM_GROUP (bgpCommunityGroupTable)
+                // and AMB_CIPR_RTM_COMM_GROUP (rtmCommunityGroupTable).
+
+                key "comm-value";
+
+                description
+                  "The list of DC-BGP Community Group entries.";
+
+                user-ext:CLI-comm-help "Configure a community for this entry";
+                user-ext:CLI-no-comm-help "Remove a community from this entry";
+
+                // Low-level model info: Corresponds to bgpCommunityGroupCommunity
+                // and rtmCommunityGroupCommunity.
+                leaf comm-value {
+                  type meta:bgp-community;
+                  description
+                    "The community value to use when matching against or
+                    setting the route communities.";
+
+                  user-ext:CLI-param-help "Value";
+                }
+
+              } // community
+
+            } // standard
+
+          } // standard
+
+          case expanded {
+
+            container expanded {
+
+              user-ext:CLI-comm-help "Configure expanded list entry";
+              user-ext:CLI-no-comm-help "Configure expanded list entry";
+
+              description
+                "Expanded type (regular expression).  Configure a regular
+                expression";
+
+              // Low-level model info: Corresponds to bgpCommunityListRegexp
+              // and rtmCommunityListRegexp.
+              leaf regular-expression {
+                type route-map-reg-exp;
+                description
+                  "Contains the regular expression to use when matching
+                  elements of the community list for a route.";
+
+                user-ext:CLI-comm-help "Set the regular expression for the entry";
+                user-ext:CLI-no-comm-help "Remove the regular expression for the entry";
+                user-ext:CLI-param-help "Set the regular expression for the entry";
+              }
+
+            } // expanded
+
+          } // expanded
+
+        } // entry-type
+
+      } // type
+
+    } // entry-num
+
+  } // ip-community
+
+  list ip-extcommunity {
+
+    // Low-level model info: Corresponds to AMB_BGP_EXT_COMM_LIST (bgpExtCommListTable)
+    // and AMB_CIPR_RTM_EXT_COMM_LIST (rtmExtCommListTable).
+
+    key "name";
+
+    description
+      "BGP Extended Community List entries.";
+
+    user-ext:CLI-comm-help "Configure an extended community list";
+    user-ext:CLI-no-comm-help "Remove an extended community list";
+
+    // Low-level model info: Corresponds to bgpExtCommListIndex.
+    leaf name {
+      type list-name;
+      description
+        "The Extended Community List.";
+
+      user-ext:CLI-param-help "Extended community list name";
+    }
+
+    list entry-num {
+
+      key "number";
+
+      description
+        "BGP Extended Community List entries.";
+
+      user-ext:CLI-comm-help "Configure an extended community list entry";
+      user-ext:CLI-no-comm-help "Remove an extended community list entry";
+
+      // Low-level model info: Corresponds to bgpExtCommListEntryIndex and
+      // rtmExtCommListEntryIndex.
+      leaf number {
+        type list-entry-num;
+        description
+          "The index of this entry in the Extended Community List.
+
+          This ordering is important when the Extended Community
+          List is used to match against extended communities in a
+          route.";
+
+        user-ext:CLI-param-help "Extended Community list entry number";
+      }
+
+      // Low-level model info: Corresponds to bgpExtCommListPermit and
+      // rtmExtCommListPermit.
+      leaf action {
+        type list-action;
+        default "permit";
+        description
+          "When matching routes, this field indicates whether the set
+          of matched routes should be permitted or denied.
+
+          When setting routes, this Extended Community List entry is
+          ignored if this field is 'deny'.";
+
+        user-ext:CLI-comm-help "Permit or deny routes matching the entry's communities";
+        user-ext:CLI-no-comm-help "Permit routes matching the entry's communities";
+        user-ext:CLI-param-help "Permit or deny routes matching the entry's communities";
+      }
+
+      container type {
+
+        description
+          "The extended community list entry type.
+
+          -  If 'standard', the route extended communities
+          are matched against a group of extended community values.
+
+          -  If 'expanded', the route extended communities
+          are matched against a regular expression.";
+
+        user-ext:CLI-comm-help "Set extended community list entry type";
+        user-ext:CLI-no-comm-help "Set extended community list entry type";
+
+        // Low-level model info: Corresponds to bgpExtCommListEntryType and
+        // rtmExtCommListEntryType.
+
+        choice entry-type {
+
+          description
+            "Choice of standard (community group) or expanded (regular
+            expression).";
+
+          case standard {
+
+            container standard {
+
+              user-ext:CLI-comm-help "Configure standard list entry";
+              user-ext:CLI-no-comm-help "Configure standard list entry";
+
+              description
+                "Standard type (community group).  Configure permit / deny
+                action and a group of communities.";
+
+              presence "Use extended community group";
+
+              list ext-community {
+
+                // Low-level model info: Corresponds to AMB_BGP_EXT_COMM_GROUP (bgpExtCommGroupTable)
+                // and AMB_CIPR_RTM_EXT_COMM_GROU (rtmExtCommGroupTable).
+
+                key "ext-comm-type ext-comm-value";
+
+                description
+                  "The list of DC-BGP Extended Community Group entries.";
+
+                user-ext:CLI-comm-help "Configure an extended community for this entry";
+                user-ext:CLI-no-comm-help "Remove an extended community from this entry";
+
+                // Low-level model info: Corresponds to bgpExtCommGroupCommunity
+                // and rtmExtCommGroupCommunity.
+                leaf ext-comm-type {
+                  type comm-list-ext-type;
+                  description
+                    "The type of the extended community value";
+
+                  user-ext:CLI-param-help "Extended Community Type";
+                }
+
+                // Low-level model info: Corresponds to bgpExtCommGroupCommunity
+                // and rtmExtCommGroupCommunity.
+                leaf ext-comm-value {
+                  type meta:bgp-extended-community;
+                  description
+                    "The extended community value to use when matching against
+                    or setting the route extended communities.";
+
+                  user-ext:CLI-param-help "Value";
+                }
+
+              } // ext-community
+
+            } // standard
+
+          } // standard
+
+          case expanded {
+
+            container expanded {
+
+              user-ext:CLI-comm-help "Configure expanded list entry";
+              user-ext:CLI-no-comm-help "Configure expanded list entry";
+
+              description
+                "Expanded type (regular expression).  Configure a regular
+                expression";
+
+              // Low-level model info: Corresponds to bgpExtCommListRegexp and
+              // rtmExtCommListRegexp.
+              leaf regular-expression {
+                type route-map-reg-exp;
+                description
+                  "Contains the regular expression to use when matching
+                  elements of the extended community list for a route.";
+
+                user-ext:CLI-comm-help "Set the regular expression for the entry";
+                user-ext:CLI-no-comm-help "Remove the regular expression for the entry";
+                user-ext:CLI-param-help "Set the regular expression for the entry";
+              }
+
+            } // expanded
+
+          } // expanded
+
+        } // entry-type
+
+      } // type
+
+    } // entry-num
+
+  } // ip-extcommunity
+
+  list as-path-list {
+
+    // Low-level model info: Corresponds to AMB_BGP_AS_PATH_LIST (bgpAsPathAccessListTable).
+
+    key "name";
+
+    description
+      "The table of AS Path List entries.
+
+       An AS Path List is used to test whether the AS Path in a route
+       matches the list.  The AS Path is matched against each entry in the
+       entry-num list.  If the AS Path does not match any entry in the list,
+       then there is no match.";
+
+    user-ext:CLI-comm-help "Configure an AS Path list";
+    user-ext:CLI-no-comm-help "Remove an AS Path list";
+
+    // Low-level model info: Corresponds to bgpAsPathListIndex.
+    leaf name {
+      type list-name;
+      description
+        "The AS Path List name.";
+
+      user-ext:CLI-param-help "AS Path List name";
+    }
+
+    list entry-num {
+
+      key "number";
+
+      description
+        "The table of AS Path List entries.";
+
+      user-ext:CLI-comm-help "Configure an AS Path list entry";
+      user-ext:CLI-no-comm-help "Remove an AS Path list entry";
+
+      // Low-level model info: Corresponds to bgpAsPathListAsPathIndex.
+      leaf number {
+        type list-entry-num;
+        description
+          "The index of this entry in the AS Path List.
+
+          This ordering is important when the AS Path List is used to match
+          against AS Paths  in a route.";
+
+        user-ext:CLI-param-help "AS Path list entry number";
+      }
+
+      // Low-level model info: Corresponds to bgpAsPathListMatchType.
+      leaf action {
+        type list-action;
+        default "permit";
+        description
+          "When matching routes, this field indicates whether the set
+           of matched routes should be permitted or denied.
+
+           A list entry with an action of permit returns true if
+           the AS Path matches the regular expression and false if it
+           does not.
+
+           A list entry with an action of deny returns false if
+           the AS Path matches the regular expression and true if it
+           does not.";
+
+        user-ext:CLI-comm-help "Permit or deny routes matching the entry's AS Path";
+        user-ext:CLI-no-comm-help "Permit routes matching the entry's AS Path";
+        user-ext:CLI-param-help "Permit or deny routes matching the entry's AS Path";
+      }
+
+      leaf regular-expression {
+        type route-map-reg-exp;
+        description
+          "Contains the regular expression used when matching the AS Path.";
+
+        user-ext:CLI-comm-help "Set regular expression for AS Path";
+        user-ext:CLI-no-comm-help "Remove regular expression for AS Path";
+        user-ext:CLI-param-help "Set regular expression for AS Path";
+      }
+
+      // Low-level model info: Corresponds to rtmAsPathListMaOriginDef and
+      // rtmAsPathListMaOrigin,and bgpAsPathListMaOriginDef and
+      // bgpAsPathListMaOrigin.
+      leaf origin {
+        type route-map-bgp-origin;
+        description
+          "The value to match the Origin attribute against.";
+
+        user-ext:CLI-comm-help "Set Origin attribute to match on";
+        user-ext:CLI-no-comm-help "Remove Origin attribute to match on";
+        user-ext:CLI-param-help "Set Origin attribute to match on";
+      }
+
+    } // entry-num
+
+  } // as-path-list
+
+} // route-map
+

@@ -1,0 +1,945 @@
+module adva-dnos-hqos {
+
+  namespace "http://www.advaoptical.com/cim/adva-dnos-hqos";
+
+  prefix "hqos";
+
+  import adva-dnos-types { prefix adva-types; }
+  import adva-dnos-extensions { prefix adva-ext; }
+  import openconfig-interfaces { prefix "oc-if"; }
+
+  organization
+    "Adva Optical Networking";
+
+  contact
+    "For technical support, please contact your service channel";
+
+  description
+    "Definitions for OP-X hierarchial quality of service related commands";
+
+  revision "2019-07-15" {
+    description
+      "Integrating to ADVA YANG models.";
+  }
+
+
+  typedef rate-type {
+    type uint32 {
+      range "384 .. 100000000";
+    }
+    description "Rate in Kbps. Max is 10Gbps";
+  }
+
+  typedef rate-type-shaper {
+    type uint32 {
+      range "384 .. 100000000";//tmp return to 384 from 50000
+    }
+    description "Rate in Kbps. Max is 10Gbps";
+  }
+
+  typedef rate-type-min0 {
+    type uint32 {
+      range "0 .. 100000000";
+    }
+    description "Rate in percent 0-100% or in Kbps. Max is 10Gbps";
+  }
+
+  typedef res-bw-type {
+    type uint32 {
+      range "0 .. 100";
+    }
+    description "Bandwidth in percent";
+  }
+
+  typedef burst-size-type {
+    type uint32 {
+      range "1024 .. 131072";
+    }
+    description "Burst size in bytes";
+  }
+
+  typedef burst-size-shaper-type {
+    type uint32 {
+      range "16384 .. 524288";
+    }
+    description "Burst size in bytes";
+  }
+  
+  typedef burst-size-policer-type {
+    type uint32 {
+      range "0 | 16384 .. 512000";
+    }
+    description "Burst size in bytes or 0";
+  }
+
+  typedef burst-size-egress-type {
+    type uint32 {
+      range "16384 .. 524288";
+    }
+    description "Burst size in bytes";
+  }
+
+  typedef burst-size-ingress-type {
+    type uint32 {
+      range "16384 .. 131072";
+    }
+    description "Burst size in bytes";
+  }
+
+  typedef tc-type {
+    type uint32 {
+      range "0 .. 7";
+    }
+    description "TC Traffic class";
+  }
+
+  typedef pcp-type {
+    type uint32 {
+      range "0 .. 7";
+    }
+    description "PCP Traffic class";
+  }
+
+  typedef exp-type {
+    type uint32 {
+      range "0 .. 7";
+    }
+    description "EXP Traffic class";
+  }
+
+  typedef dscp-type {
+    type uint32 {
+      range "0 .. 63";
+    }
+    description "DSCP Traffic class";
+  }
+
+  typedef dei {
+    type uint32 {
+      range "0 .. 1";
+    }
+    description "Drop eligible indicator";
+  }
+
+  typedef compensation {
+    type int8 {
+      range "-80 .. 80";
+    }
+    description "Delta compensation";
+  }
+
+  typedef egress-compensation {
+    type int8 {
+      range "-64 .. 64";
+    }
+    description "Egress delta compensation";
+  }
+
+  typedef color {
+    type enumeration {
+      enum GREEN {
+        value 1;
+      }
+      enum YELLOW {
+        value 2;
+      }
+      enum RED {
+        value 3;
+      }
+    }
+    description "Color green/yellow/red";
+  }
+
+  typedef weight-type { 
+    type uint32 {
+      range "1 .. 64";
+    }
+    description "Weight equal to 1/2/4/8/16/32/64";
+  }
+
+  typedef cos-weight-type {
+    type uint32 {
+      range "1 .. 2";
+    }
+    description "Cos-weight";
+  }
+
+  typedef cos-type {
+    type enumeration {
+      enum TOP-CLASS {
+        value 1;
+        description "Class serve expedited forwarding delay sensitive traffic";
+      }
+      enum HIGH-CLASS {
+        value 2;
+        description "Class serve assured forwarding (AF1/2) traffic type";
+      }
+      enum MEDIUM-CLASS {
+        value 3;
+        description "Class serve assured forwarding (AF3/4) traffic type";
+      }
+      enum LOW-CLASS {
+        value 4;
+        description "Class serve best effort traffic type";
+      }
+    }
+    description "Class of service types";
+  }
+
+
+  typedef single-direction-type {
+    type enumeration {
+      enum EGRESS {
+        value 2;
+        description "Egress direction";
+      }
+    }
+  }
+  
+  typedef priority-map-type {
+    type enumeration {
+      enum IN-MAP {
+        value 0;
+        description "Ingress map-type";
+      }
+      enum OUT-MAP {
+        value 1;
+        description "Egress map-type";
+      }
+    }
+  }
+
+  typedef classification-criteria {
+    type enumeration {
+      enum PCP {
+        value 0;
+        description "PCP criteria direction";
+      }
+      enum DSCP {
+        value 1;
+        description "DSCP criteria direction";
+      }
+      enum EXP {
+        value 2;
+        description "EXP criteria direction";
+      }
+      enum UNKNOWN {
+        value 3;
+        description "Unknown criteria direction";
+      }
+    }
+  }
+
+  typedef remark-criteria {
+    type enumeration {
+      enum PCP {
+        value 0;
+        description "PCP criteria direction";
+      }
+      enum EXP {
+        value 1;
+        description "EXP criteria direction";
+      }
+    }
+  }
+
+  typedef mapping-criteria {
+    type enumeration {
+      enum PCP {
+        value 0;
+        description "PCP criteria direction";
+      }
+      enum DSCP {
+        value 1;
+        description "DSCP criteria direction";
+      }
+      enum EXP {
+        value 2;
+        description "EXP criteria direction";
+      }
+      enum OUT {
+        value 3;
+        description "Out criteria direction";
+      }
+      enum UNIFIED {
+        value 4;
+        description "Unified ingress criteria ";
+      }
+    }
+  }
+
+  typedef port-bw-type {
+    type enumeration {
+      enum BUM {
+        value 1;
+        description "Broadcast, unknown unicast and multicast bandwidth";
+      }
+      enum CONTROL-TRAFFIC {
+        value 2;
+        description "Total control traffic bandwidth";
+      }
+    }
+  }
+
+  grouping base-bandwidth-profile {
+    leaf cir {
+      type rate-type;
+      description "Committed information rate";
+    }
+    leaf eir {
+      type rate-type;
+      description "Excess information rate";
+    }
+    leaf cbs {
+      type burst-size-egress-type;
+      description "Committed burst size";
+    }
+    leaf ebs {
+      type burst-size-egress-type;
+      description "Excess burst size";
+    }
+    description "Common fields used in bandwidth profiles";
+  }
+
+  grouping base-policer-profile {
+    leaf cir {
+      type rate-type-min0;
+      description "Committed information rate";
+    }
+    leaf eir {
+      type rate-type-min0;
+      description "Excess information rate";
+    }
+    leaf cbs {
+      type burst-size-policer-type;
+      description "Committed burst size";
+    }
+    leaf ebs {
+      type burst-size-policer-type;
+      description "Excess burst size";
+    }
+    description "Common fields used in bandwidth profiles";
+  }
+
+
+  grouping base-cos-ingress-profile {
+    leaf cir {
+      type rate-type-min0;
+      description "Committed information rate";
+    }
+    leaf eir {
+      type rate-type-min0;
+      description "Excess information rate";
+    }
+    leaf cbs {
+      type burst-size-ingress-type;
+      description "Committed burst size";
+    }
+    leaf ebs {
+      type burst-size-ingress-type;
+      description "Excess burst size";
+    }
+    description "Common fields used in bandwidth profiles";
+  }
+
+
+  grouping policer-bandwidth-profile {
+    uses base-policer-profile;
+    leaf max-cir {
+      type rate-type-min0;
+      description "Maximum committed information rate";
+    }
+    leaf max-eir {
+      type rate-type-min0;
+      description "Maximum exceed information rate";
+    }
+    description "Common fields used in policer bandwidth profiles";
+  }
+
+  grouping cos-ingress-profile {
+    uses base-cos-ingress-profile;
+    leaf max-cir {
+      type rate-type-min0;
+      description "Maximum committed information rate";
+    }
+    leaf max-eir {
+      type rate-type-min0;
+      description "Maximum exceed information rate";
+    }
+    description "Common fields used in policer bandwidth profiles";
+  }
+
+  grouping shaper-bandwidth-profile {
+    leaf rate-limit {
+      type rate-type;
+      description "Rate limiter";
+    }
+    leaf burst-size {
+      type burst-size-type;
+      description "Burst size";
+    }
+    description "Common fields used in shaper bandwidth profiles";
+  }
+
+  grouping shaper-bandwidth-egress-profile {
+    leaf rate-limit {
+      type rate-type;
+      description "Rate limiter";
+    }
+    leaf burst-size {
+      type burst-size-egress-type;
+      description "Burst size";
+    }
+    description "Common fields used in shaper bandwidth profiles";
+  }
+
+  grouping shaper-bandwidth-profile-min0 {
+    leaf rate-limit {
+      type rate-type-min0;
+      description "Rate limiter in percent or real value";
+    }
+    leaf burst-size {
+      type burst-size-type;
+      description "Burst size";
+    }
+    description "Common fields used in shaper bandwidth profiles";
+  }
+
+// Shaper and policer
+
+  grouping priority-profile {
+    leaf tc {
+      type tc-type;
+      description "Traffic class";
+    }
+    leaf color {
+      type color;
+      description "Color green/yellow/red";
+    }
+    description "Common fields used in priority profiles";
+  }
+
+  container hqos-objects {
+    container config-hqos {
+//
+//EGRESS-COMPENSATION Profile definition
+//
+      list egress-compensation-profiles {
+        key "name";
+        description "HQOS egress-compensation profile configuration";
+        max-elements 1;
+        leaf name {
+          type adva-types:profile-name;
+          description "Profile name";
+        } 
+        leaf egress-compensation {
+          type egress-compensation;
+          description "Egress delta compensation on port";
+        }
+      } //Egress-compensation-profiles list END
+//
+//SHAPER Profile definition
+//
+      list shaper-profiles {
+        key "name";
+        description
+          "HQOS egress shaper profile configuration";
+        leaf name {
+          type adva-types:profile-name;
+          description "Profile name";
+        }
+        leaf enable {
+          type boolean;
+          description "Profile administrative status";
+          adva-ext:agema-default "false";
+        }
+        leaf rate-limit {
+          type rate-type-shaper;
+          description "Rate limiter of shaper";
+        }
+        leaf burst-size {
+          type burst-size-shaper-type;
+          description "Burst size";
+        }
+      } // egress-shaper-profile list END
+//
+//POLICER Profile definition
+//
+      list policer-profiles {
+        key "name";
+        description
+          "HQOS policer profile configuration";
+        leaf name {
+          type adva-types:profile-name;
+          description "Profile name";
+        }
+        leaf enable {
+          type boolean;
+          description "Profile administrative status";
+          adva-ext:agema-default "false";
+        }
+        uses base-policer-profile;
+      } // ingress-policer-profile list END
+//
+//FLOW-PRIORITY-OUT-MAP Profile definition
+//
+      list flow-priority-out-map-profiles {
+        key "name ref-profile-name";
+        description "HQOS flow priority profile, which is associated with specific out-map profile";
+        leaf name {
+          type adva-types:profile-name;
+          description "Profile name";
+        }
+        leaf ref-profile-name {
+          type leafref {
+            path "/hqos-objects/config-hqos/priority-mapping-profiles/name";
+          }
+          description "Reference to priority out map profile name";
+        }
+        leaf enable {
+          type boolean;
+          description "Profile administrative status";
+          adva-ext:agema-default "false";
+        }
+        list priority-map {
+          key "tc";
+          description "Flow priority HQOS TC map";
+          leaf tc {
+            type tc-type;
+            description "Flow priority Traffic class";
+          }
+          leaf weight {
+            type weight-type;
+            description "Weight associated with specific flow priority";
+          }
+          uses shaper-bandwidth-profile;
+        }
+      } //FLOW-PRIORITY-OUT-MAP Profile END
+
+//
+//REMARK-PRIORITY Profile definition
+//
+      list remark-priority-profiles {
+        key "name";
+        description "HQOS remark priority profile";
+        leaf name {
+          type adva-types:profile-name;
+          description "Profile name";
+        }
+        leaf enable {
+          type boolean;
+          description "Profile administrative status";
+          adva-ext:agema-default "false";
+        }
+        leaf classifier {
+          type remark-criteria;
+          mandatory true;
+          description "Remark criteria";
+        }
+        choice remark-criteria {
+          case pcp-out-profile {
+            list pcp-tc-map {
+              key "tc color";
+              description "HQOS TC map";
+              leaf tc {
+                type tc-type;
+                description "Traffic class";
+              }
+              leaf dei {
+                type dei;
+                description "Outgoing drop eligible indicator";
+              }
+              leaf pcp {
+                type adva-types:pcp;
+                description "Outgoing priority code point";
+              }
+              leaf color {
+                type color;
+                description "Color green/yellow";
+              }
+            }
+          } // case pcp-out-profile;
+          case exp-out-profile {
+            list exp-tc-map {
+              key "tc color";
+              description "HQOS TC map";
+              leaf tc {
+                type tc-type;
+                description "Traffic class";
+              }
+              leaf exp {
+                type adva-types:pcp; //Same as exp type
+                description "Outgoing experimental";
+              }
+              leaf color {
+                type color;
+                description "Color green/yellow";
+              }
+            }
+            list dscp-exp-map {
+              key "dscp";
+              description "HQOS DSCP map";
+              leaf dscp {
+                type dscp-type;
+                description "Traffic class";
+              }
+              leaf exp {
+                type adva-types:pcp; //Same as exp type
+                description "Outgoing experimental";
+              }
+            }
+          }
+        } // choice remark-criteria
+      } //remark-priority-profile list END
+//
+//PRIORITY-MAPPING Profile definition
+//
+      list priority-mapping-profiles {
+        key "name";
+        description "HQOS priority mapping profile per direction, classification criteria and type";
+        leaf name {
+          type adva-types:profile-name;
+          description "Profile name";
+        }
+        leaf enable {
+          type boolean;
+          description "Profile administrative status";
+          adva-ext:agema-default "false";
+        }
+        leaf classifier {
+          type mapping-criteria;
+          mandatory true;
+          description "Mapping criteria";
+        }
+        choice classification-criteria {
+          case pcp-in-profile {
+            list pcp-map {
+              key "pcp dei";
+              description "HQOS PCP map";
+              leaf pcp {
+                type pcp-type;
+                description "PCP Traffic class";
+              }
+              leaf dei {
+                type dei;
+                description "Incoming drop eligible indicator";
+              }
+              uses priority-profile;
+            }
+          } //END case pcp-in-profile;
+          case dscp-in-profile {
+            list dscp-map {
+              key "dscp";
+              description "HQOS DCSP map";
+              leaf dscp {
+                type dscp-type;
+                description "DSCP Traffic class";
+              }
+              uses priority-profile;
+            }
+          } // case dscp-in-profile;
+          case exp-in-profile {
+            list exp-map {
+              key "exp";
+              description "HQOS EXP map";
+              leaf exp {
+                type exp-type;
+                description "Incoming experimental";
+              }
+              uses priority-profile;
+            }
+          } // case exp-in-profile;
+          case unified {
+              leaf pcp {
+                type adva-types:profile-name;
+                description "pcp profile name";
+              }
+              leaf dscp {
+                type adva-types:profile-name;
+                description "dscp profile name";
+              }
+              leaf exp {
+                type adva-types:profile-name;
+                description "exp profile name";
+              }
+          }//UNIFIED Profile
+          case out-profile {
+            list out-tc-map {
+              key "tc";
+              description "HQOS TC map";
+              leaf tc {
+                type tc-type;
+                description "TC Traffic class";
+              }
+              leaf cos {
+                type cos-type;
+                description "Class of service";
+              }
+            }
+          } // case out-profile;
+        } // choice classification-criteria
+      } // priority-mapping-in-map-profiles list END
+//
+//WRED Profile definition
+//
+      list wred-profiles {
+        key "name";
+        description "HQOS weighted random early drop profile";
+        leaf name {
+          type adva-types:profile-name;
+          description "Profile name";
+        }
+        leaf enable {
+          type boolean;
+          description "Profile administrative status";
+          adva-ext:agema-default "false";
+        }
+        list wred-map {
+          key "tc";
+          description "HQOS TC map";
+          leaf tc {
+            type tc-type;
+            description "Traffic class";
+          }
+          leaf max-threshold {
+            type uint32;
+            description "Maximum queue depth threshold";
+          }
+          leaf min-threshold {
+            type uint32;
+            description "Minimum queue depth threshold";
+          }
+          leaf drop-probability {
+            type uint32 {
+              range "0 .. 100";
+            }
+            description "Drop probability";
+          }
+          leaf color {
+            type color;
+            description "Color green/yellow/red";
+          }
+        }
+      }//WRED-profiles list END
+//
+//COS (INGRESS/EGRESS - TOP,HIGH,MEDIUM,LOW) Profile definition
+//
+      list cos-profiles {
+        key "name";
+        description "HQOS flow priority profile, which is associated with specific out-map profile";
+        leaf name {
+          type adva-types:profile-name;
+          description "Profile name";
+        }
+        leaf enable {
+          type boolean;
+          description "Profile administrative status";
+          adva-ext:agema-default "false";
+        }
+        leaf class {
+          type cos-type;
+          mandatory true;
+          description "Class of service";
+        }
+        leaf direction {
+          type adva-types:direction-type;
+          mandatory true;
+          description "Direction of service";
+        }
+        choice criteria {
+          case egress-top-profile {
+            container egress-top {
+              uses shaper-bandwidth-egress-profile;
+            } // container egress-top;
+          } // case egress-top-profile;
+          case egress-high-profile {
+            container egress-high {
+              leaf cos-weight {
+                type cos-weight-type;
+                description "Weight associated with specific cos";
+              }
+              uses base-bandwidth-profile;
+            } // container egress-high;
+          } // case egress-high-profile;
+          case egress-medium-profile {
+            container egress-medium {
+              leaf cos-weight {
+                type cos-weight-type;
+                description "Weight associated with specific cos";
+              }
+              uses base-bandwidth-profile;
+            } // container egress-medium;
+          } // case egress-medium-profile;
+          case egress-low-profile {
+            container egress-low {
+              uses shaper-bandwidth-egress-profile;
+            } // container egress-low;
+          } // case egress-low-profile;
+          case ingress-profile {
+            container ingress {
+              uses cos-ingress-profile;
+            } // container ingress;
+          } // case ingress-profile;
+        } // choice criteria
+      } // cos-profiles list END
+//
+//COS-TYPE-NAMING Profile definition
+//
+      container cos-type-naming {
+        leaf top {
+          type string {
+            length "1 .. 63";
+          }
+          description "Class serve expedited forwarding delay sensitive traffic";
+        }
+        leaf high {
+          type string {
+            length "1 .. 63";
+          }
+          description "Class serve assured forwarding (AF1/2) traffic type";
+        }
+        leaf medium {
+          type string {
+            length "1 .. 63";
+          }
+          description "Class serve assured forwarding (AF3/4) traffic type";
+        }
+        leaf low {
+          type string {
+            length "1 .. 63";
+          }
+          description "Class serve best effort traffic type";
+        }
+      } //Cos Renaming container END
+
+      list hqos-interface {
+        key "name";
+        description "HQOS configuration";
+        leaf name {
+          type leafref {
+            path "/oc-if:interfaces/oc-if:interface/oc-if:name";
+          }
+          description "interface name";
+        }
+        container reservable {
+          leaf rate-limit {
+            type res-bw-type;
+            description "Reservable rate limiter";
+          }
+          leaf burst-size {
+            type burst-size-type;
+            description "Reservable burst size";
+          }
+        }
+        container best-effort {
+          leaf be-weight {
+            type weight-type;
+            description "Best-effort weight on port [AC]. Default: 1";
+          }
+          leaf be-eir-weight {
+            type weight-type;
+            description "Best-effort eir weight on port [AC]. Default: 1";
+          }
+        }
+        leaf intermediate-strict-priority {
+          type boolean;
+          description "intermediate-strict-priority between queues.";
+        }
+        leaf delta-compensation {
+          type compensation;
+          description "Delta compensation on port [AC]";
+        }
+        leaf adjust-metering {
+          type compensation;
+          description "Adjust-metering on port [AC]";
+        }
+        list bandwidth { // equal to cli commands:bum-bandwidth egress,control-traffic-bandwidth egress
+          key "type direction";
+          description "Configures broadcast, unknown unicast, multicast and total control traffic bandwidth";
+          leaf type {
+            type port-bw-type;
+            description "Bandwidth type";
+          }
+          leaf direction {
+            type single-direction-type;
+            description "Direction of service";
+          }
+          uses shaper-bandwidth-profile-min0;
+          must "(direction = 'EGRESS')" {
+            error-message "Wrong configuration";
+          }
+        }
+//////////////////////////////////////////////////////////////////////// 
+        list total-bandwidth-profile { // equal to cli command:total-bandwidth-profile (ingress/egress)
+          key "name direction";
+          leaf name {
+            type adva-types:profile-name;
+            description "Bind to either ingress policer or egress shaper profile";
+          }
+          leaf direction {
+            type adva-types:direction-type;
+            description "Direction of service";
+          }
+        }
+        list flow-priority-map-profile { // equal to cli command:flow-priority-map
+          key "name";
+          leaf name {
+            type leafref {
+              path "/hqos-objects/config-hqos/flow-priority-out-map-profiles/name";
+              }
+            description "Bind to ingress flow-priority profile";
+            }
+          }
+        list wred-profile { // equal to cli command:wred
+          key "name";
+          leaf name {
+            type leafref {
+              path "/hqos-objects/config-hqos/wred-profiles/name";
+              }
+            description "Bind to wred profile";
+            }
+          }
+        list bind-cos-profile { // equal to cli command:bind-cos-profile
+          key "name";
+          leaf name {
+            type leafref {
+              path "/hqos-objects/config-hqos/cos-profiles/name";
+              }
+            description "Bind to class-of-service profile";
+            }
+        }
+        list egress-compensation-profile { // equal to cli command:egress-compensation
+          key "name";
+          leaf name {
+            type leafref {
+              path "/hqos-objects/config-hqos/egress-compensation-profiles/name";
+              }
+            description "Bind to egress-compensation profile";
+            }
+        }
+        list remark-priority-profile { // equal to cli command:remark-priority
+          key "name";
+          leaf name {
+            type leafref {
+              path "/hqos-objects/config-hqos/remark-priority-profiles/name";
+              }
+            description "Bind to priority code point remark priority profile";
+            }
+        }
+        list priority-map-profile { // equal to cli command:priority-map
+          key "name direction";
+          leaf name {
+            type leafref {
+              path "/hqos-objects/config-hqos/priority-mapping-profiles/name";
+              }
+              description "Bind to priority map profile";
+            }
+          leaf direction {
+            type adva-types:direction-type;
+            description "Direction of service";
+          }
+        }
+      } // hqos-interface 
+    } // config-hqos
+  } // hqos-objects
+}

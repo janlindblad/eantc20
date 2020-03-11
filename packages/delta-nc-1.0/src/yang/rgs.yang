@@ -1,0 +1,209 @@
+module rgs {
+
+  namespace "http://metaswitch.com/yang/nbu/rgs";
+
+  prefix rgs;
+
+  import interfaces { prefix "interfaces"; }
+  import user-extensions { prefix "user-ext"; }
+  import metaswitch-yang-types { prefix meta; }
+  import lacp { prefix lacp; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Redundancy Group Stub";
+
+  revision 2016-01-01 {
+    description
+      "Initial revision.";
+  }
+
+  typedef rgs-port-t {
+    type uint32 {
+      range "1..65535";
+    }
+    description
+      "(1-65535)";
+  }
+
+
+  container redundancy-groups {
+
+    // Low-level model info: Corresponds to AMB_STUBS_RGS_RG_CFG (rgsRgCfgTable).
+
+    description
+      "Configure redundancy groups";
+
+    user-ext:CLI-comm-help "Configure redundancy groups";
+    user-ext:CLI-no-comm-help "Remove redundancy groups";
+
+    list redundancy-group {
+
+      description
+        "Redundancy group";
+
+      user-ext:CLI-comm-help "Configure redundancy group";
+      user-ext:CLI-no-comm-help "Remove redundancy group";
+
+      key "rg-id";
+
+      // Low-level model info: Corresponds to rgsRgCfgRgId.
+      leaf rg-id {
+        type lacp:lacp-rg-id-non-zero-t;
+
+        description
+          "Redundancy group id";
+
+        user-ext:CLI-param-help "Redundancy group identifier";
+      } // rg-id
+
+      // Low-level model info: Corresponds to rgsRgCfgAdminStatus.
+      leaf admin-status {
+        type meta:admin-status;
+        default up;
+
+        description
+          "Set the administrative status of the redundancy group.";
+
+        user-ext:CLI-comm-help "Set administrative status";
+        user-ext:CLI-no-comm-help "Set default administrative status";
+        user-ext:CLI-param-help "Set administrative status";
+      } // admin-status
+
+      // Low-level model info: Corresponds to rgsRgCfgRgMemberId.
+      leaf member-id {
+        type lacp:lacp-rg-member-id-t;
+
+        description
+          "Set the local member id of the redundancy group.";
+
+        user-ext:CLI-comm-help "Set local member id";
+        user-ext:CLI-no-comm-help "Set default local member id";
+        user-ext:CLI-param-help "Set local member id";
+      } // member-id
+
+      // Low-level model info: Corresponds to rgsRgCfgForcedFailover.
+      leaf forced-failover {
+        type boolean;
+
+        description
+          "Indicate or clear a local failure for this redundancy group";
+
+        user-ext:CLI-comm-help "Indicate or clear a local failure";
+        user-ext:CLI-no-comm-help "Clear a local failure";
+        user-ext:CLI-param-help "Indicate or clear a local failure";
+      } // rg-id
+
+      container redundancy-group-member-list {
+
+        // Low-level model info: Corresponds to AMB_STUBS_RGS_RMT_RGM (rgsRmtRgmTable).
+
+        description
+          "Configure remote redundancy group members";
+
+        user-ext:CLI-comm-help "Configure remote redundancy group members";
+        user-ext:CLI-no-comm-help "Remove remote redundancy group members";
+
+        list redundancy-group-member {
+
+          description
+            "Remote redundancy group member";
+
+          user-ext:CLI-comm-help "Configure remote redundancy group member";
+          user-ext:CLI-no-comm-help "Remove remote redundancy group member";
+
+          key "member-id";
+
+          // Low-level model info: Corresponds to rgsRmtRgmRgMemberId.
+          leaf member-id {
+            type lacp:lacp-rg-member-id-t;
+
+            description
+              "Remote member id of the redundancy group";
+
+            user-ext:CLI-param-help "Redundancy group member identifier";
+          } // member-id
+
+          // Low-level model info: Corresponds to rgsRmtRgmAdminStatus.
+          leaf admin-status {
+            type meta:admin-status;
+            default up;
+
+            description
+              "Set the administrative status of the remote redundancy group member.";
+
+            user-ext:CLI-comm-help "Set administrative status";
+            user-ext:CLI-no-comm-help "Set default administrative status";
+            user-ext:CLI-param-help "Set administrative status";
+          } // admin-status
+
+          // Low-level model info: Corresponds to rgsRmtRgmAddressType and rgsRmtRgmAddress.
+          leaf address {
+            type interfaces:iface-ip-address-t;
+
+            description
+              "Set the IP address of this remote redundancy group member to establish a BFD session to";
+
+            user-ext:CLI-comm-help "Set IP address to establish a BFD session to";
+            user-ext:CLI-no-comm-help "Remove IP address used to establish a BFD session";
+            user-ext:CLI-param-help "Set IP address to establish a BFD session to";
+          } // address
+
+          // Low-level model info: Corresponds to part of the rgsRmtRgmCcmUserData.
+          leaf remote-address {
+            type interfaces:iface-ipv4-address-t;
+
+            description
+              "Set the remote IP address to try to open a TCP connection to";
+
+            user-ext:CLI-comm-help "Set remote IP address to open TCP connection to";
+            user-ext:CLI-no-comm-help "Remove IP address used for the TCP connection";
+            user-ext:CLI-param-help "Set remote IP address to open TCP connection to";
+          } // remote-address
+
+          // Low-level model info: Corresponds to part of the rgsRmtRgmCcmUserData.
+          leaf local-port {
+            type rgs-port-t;
+
+            description
+              "Set the local port number to listen for TCP connections on";
+
+            user-ext:CLI-comm-help "Set local port to listen for TCP connections on";
+            user-ext:CLI-no-comm-help "Remove local port for TCP connections";
+            user-ext:CLI-param-help "Set local port to listen for TCP connections on";
+          } // local-port
+
+          // Low-level model info: Corresponds to part of the rgsRmtRgmCcmUserData.
+          leaf remote-port {
+            type rgs-port-t;
+
+            description
+              "Set the remote port number to try to open a TCP connections to";
+
+            user-ext:CLI-comm-help "Set remote port to open a TCP connection to";
+            user-ext:CLI-no-comm-help "Remove remote port for TCP connections";
+            user-ext:CLI-param-help "Set remote port to open a TCP connections to";
+          } // remote-port
+
+          must "((remote-address) and (local-port) and (remote-port))" {
+            error-message "The remote address, remote port and local port must be defined for a redundancy group member";
+          }
+
+        } // redundancy-group-member
+
+      } // redundancy-group-member-list
+
+    } // redundancy-group
+
+  } // redundancy-groups
+
+} // rgs

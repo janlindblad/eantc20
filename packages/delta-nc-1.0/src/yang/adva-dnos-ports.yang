@@ -1,0 +1,125 @@
+module adva-dnos-ports {
+
+  yang-version "1";
+
+  // namespace
+  namespace  "http://www.advaoptical.com/cim/adva-dnos-ports";
+
+  prefix "adva-dnos-ports";
+
+  import iana-if-type { prefix ift; }
+  import openconfig-vlan-types { prefix oc-vlan-types; }
+  import openconfig-interfaces { prefix oc-if; }
+  import openconfig-if-ethernet { prefix oc-eth; }
+  import openconfig-extensions { prefix oc-ext; }
+  import adva-dnos-types { prefix adva-types; }
+  
+  // meta
+  organization "ADVA Optical Networking";
+
+  contact
+    "ADVA Optical Networking
+    www.advaoptical.com";
+
+  description
+    "This module defines data related to ADVA port components in the
+    OpenConfig interface model for Agema family.";
+
+  oc-ext:openconfig-version "0.1.1";
+
+  revision "2019-02-27" {
+    description
+      "Initial revision.";
+    reference "0.1.0";
+  }
+
+  // OpenConfig specific extensions for module metadata.
+
+  // identity statements
+
+  // typedef statements
+
+  // grouping statements
+
+  grouping adva-port-config {
+    description
+      "Data for ADVA port";
+
+    leaf force-link-up {
+      type boolean;
+      default false;
+      description
+        "Set simulated port UP oper-link";
+    }
+
+    leaf rs-fec {
+      type enumeration {
+        enum AUTO {
+          description "RS FEC auto";
+        }
+        enum ON {
+          description "RS FEC on";
+        }
+        enum OFF {
+          description "RS FEC off";
+        }
+      }
+      default OFF;
+      description
+        "Set RS FEC of 100G port";
+    }
+  }
+  
+  grouping adva-port-state {
+    description
+      "Data for ADVA port";
+
+    leaf link {
+      type string;
+      description
+        "Port link status";
+    }
+
+    leaf phy {
+      type string;
+      description
+        "Physical port type";
+    }
+
+    leaf blocking {
+      type string;
+      description
+        "Port blocking status";
+    }
+
+	uses adva-port-config;
+  }
+
+  // data definition statements
+
+  // augment statements
+
+  augment /oc-if:interfaces/oc-if:interface/oc-eth:ethernet/oc-eth:state {
+    when "../../oc-if:config/oc-if:type = 'ift:ethernetCsmacd' and " +
+         "starts-with(../../oc-if:config/oc-if:name, 'eth-')";
+
+    description
+      "Adding ADVA port state data to ethernet interface model";
+
+    uses adva-port-state;
+  }
+
+  augment /oc-if:interfaces/oc-if:interface/oc-eth:ethernet/oc-eth:config {
+    when "../../oc-if:config/oc-if:type = 'ift:ethernetCsmacd' and " +
+         "starts-with(../../oc-if:config/oc-if:name, 'eth-')";
+
+    description
+      "Adding ADVA port config data to ethernet interface model";
+
+    uses adva-port-config;
+  }
+
+  // deviate statements
+
+}
+

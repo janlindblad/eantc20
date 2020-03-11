@@ -1,0 +1,768 @@
+module lsp-ping {
+
+  namespace "http://metaswitch.com/yang/nbu/lsp-ping/201701090000Z";
+
+  prefix lsp-ping;
+
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix interfaces; }
+  import l2vpn { prefix l2vpn; }
+  import l3vpn { prefix l3vpn; }
+  import ldp { prefix ldp; }
+  import rsvp-te { prefix "rsvp-te"; }
+  import mpls-static { prefix "static"; }
+  import metaswitch-yang-types { prefix meta; }
+  import metaswitch-features { prefix features; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Label Switched Path Ping";
+
+  revision 2017-01-09 {
+    description "Initial draft.";
+  }
+
+  feature pw-lsp-ping {
+    description
+      "This feature means that the device supports LSP Ping over pseudowires";
+  }
+
+  typedef lspp-status-t {
+    type enumeration {
+      enum started {
+        value 1;
+        description "Transaction is under way";
+      }
+      enum completed {
+        value 2;
+        description "Transaction has completed";
+      }
+    }
+    description
+      "Status of LSP Ping transaction";
+  }
+
+  typedef lspp-return-code-t {
+    type enumeration {
+      enum no-rc {
+        value 0;
+        description "No return code";
+      }
+      enum bad-request-sent {
+        value 1;
+        description "Malformed echo request sent";
+      }
+      enum unrecognized-tlv {
+        value 2;
+        description "One or more TLVs not understood";
+      }
+      enum egress {
+        value 3;
+        description "Replying router is egress for FEC";
+      }
+      enum no-mapping {
+        value 4;
+        description "Replying router has no mapping for FEC";
+      }
+      enum mapping-mismatch {
+        value 5;
+        description "Downstream mapping mismatch";
+      }
+      enum interface-unknown {
+        value 6;
+        description "Upstream interface index unknown";
+      }
+      enum label-switch {
+        value 8;
+        description "Label switch";
+      }
+      enum no-forwarding {
+        value 9;
+        description "No forwarding";
+      }
+      enum wrong-label {
+        value 10;
+        description "Wrong label";
+      }
+      enum no-label {
+        value 11;
+        description "No label";
+      }
+      enum unknown-fec {
+        value 12;
+        description "Unknown FEC";
+      }
+      enum single-label {
+        value 13;
+        description
+          "Premature termination due to label stack shrinking to single label";
+      }
+      enum timeout {
+        value 256;
+        description "Timeout";
+      }
+      enum request-not-sent {
+        value 257;
+        description "Request not sent";
+      }
+      enum resource-failure {
+        value 258;
+        description "Resource failure";
+      }
+      enum bad-reply-received {
+        value 259;
+        description "Bad reply received";
+      }
+      enum ttl-limit-reached {
+        value 260;
+        description "TTL limit reached";
+      }
+    }
+
+    description
+      "Result of LSP Ping operation";
+  }
+
+  typedef count-t {
+    type uint32 {
+      range "1..1024";
+    }
+    description
+      "(1-1024)";
+  }
+
+  typedef interval-t {
+    type uint32 {
+      range "1..60000";
+    }
+    description
+      "Milliseconds (1-60000)";
+  }
+
+  typedef timeout-t {
+    type uint32 {
+      range "1..10000";
+    }
+    description
+      "Milliseconds (1-10000)";
+  }
+
+  typedef ttl-t {
+    type uint32 {
+      range "1..255";
+    }
+    description
+      "(1-255)";
+  }
+
+  typedef traffic-class-t {
+    type uint32 {
+      range "0..255";
+    }
+    description
+      "(0-255)";
+  }
+
+  grouping fec {
+
+    description
+      "The identifiers of an entity over which to run an LSP Ping
+      or Traceroute transaction.";
+
+    container fec {
+
+      description
+        "Set transaction target.";
+
+      user-ext:CLI-comm-help "Set transaction target";
+      user-ext:CLI-no-comm-help "Remove transaction target";
+
+      choice fec {
+
+        mandatory true;
+
+        container ldp {
+
+          if-feature ldp:ldp-lsps;
+          description
+            "LDP FEC identifier";
+
+          user-ext:CLI-comm-help "Set LDP FEC identifier";
+          user-ext:CLI-no-comm-help "Remove LDP FEC identifier";
+
+          leaf ip-prefix {
+            type interfaces:iface-ip-prefix-t;
+            mandatory true;
+            description
+              "The LDP FEC prefix.";
+
+            user-ext:CLI-param-help "Set LDP FEC prefix";
+            user-ext:CLI-comm-help "Set LDP FEC prefix";
+            user-ext:CLI-no-comm-help "Remove LDP FEC prefix";
+          }
+
+        } // ldp
+
+        container rsvp {
+
+          if-feature rsvp-te:rsvp-te-lsps;
+
+          description
+            "RSVP tunnel name";
+
+          user-ext:CLI-comm-help "Set RSVP tunnel name";
+          user-ext:CLI-no-comm-help "Remove RSVP tunnel name";
+
+          leaf tunnel-name {
+            type leafref {
+              path "/rsvp-te:mpls/rsvp-te:rsvp-te/rsvp-te:tunnel/rsvp-te:name";
+            }
+            mandatory true;
+            description
+              "The RSVP-TE tunnel name.";
+
+            user-ext:CLI-param-help "Set tunnel name";
+            user-ext:CLI-comm-help "Set tunnel name";
+            user-ext:CLI-no-comm-help "Remove tunnel name";
+          }
+
+          leaf lsp-name {
+            type leafref {
+              path "/rsvp-te:mpls/rsvp-te:rsvp-te/rsvp-te:tunnel/rsvp-te:tunnel-lsp/rsvp-te:name";
+            }
+            mandatory true;
+            description
+              "The RSVP-TE tunnel LSP instance name.";
+
+            user-ext:CLI-param-help "Set tunnel LSP name";
+            user-ext:CLI-comm-help "Set tunnel LSP name";
+            user-ext:CLI-no-comm-help "Remove tunnel LSP name";
+          }
+        } // rsvp
+
+        container pw {
+
+          if-feature l2vpn:l2vpns;
+          if-feature pw-lsp-ping;
+
+          description
+            "PW identifier";
+
+          user-ext:CLI-comm-help "Set PW identifier";
+          user-ext:CLI-no-comm-help "Remove PW identifier";
+
+          leaf pw-id {
+            type l2vpn:l2vpn-pw-id-t;
+            mandatory true;
+            description
+              "The PW ID.
+              This corresponds to l2vpn/bridge-domain/pw/pw-id.";
+
+
+            user-ext:CLI-param-help "Set PW ID";
+            user-ext:CLI-comm-help "Set PW ID";
+            user-ext:CLI-no-comm-help "Remove PW ID";
+          }
+
+          leaf peer-addr {
+            type interfaces:iface-ip-address-t;
+            mandatory true;
+            description
+              "The peer address.
+              This corresponds to l2vpn/bridge-domain/pw/peer-addr.";
+
+
+            user-ext:CLI-param-help "Set PW peer address";
+            user-ext:CLI-comm-help "Set PW peer address";
+            user-ext:CLI-no-comm-help "Remove PW peer address";
+          }
+
+        } // pw
+
+        container static-lsp {
+
+          if-feature static:static-lsps;
+          description
+            "Static LSP tunnel name";
+
+          user-ext:CLI-comm-help "Set static LSP tunnel name";
+          user-ext:CLI-no-comm-help "Remove static LSP tunnel name";
+
+          leaf tunnel-name {
+            type leafref {
+              path "/static:mpls/static:static/static:static-lsp/static:name";
+            }
+            mandatory true;
+            description
+              "The static MPLS tunnel name.";
+
+            user-ext:CLI-param-help "Set tunnel name";
+            user-ext:CLI-comm-help "Set tunnel name";
+            user-ext:CLI-no-comm-help "Remove tunnel name";
+          }
+        } // static-lsp
+
+        container l3vpn {
+
+          if-feature l3vpn:l3vpns;
+          description
+            "Set VPN identifiers";
+
+          user-ext:CLI-comm-help "Set VPN identifiers";
+          user-ext:CLI-no-comm-help "Remove VPN identifiers";
+
+          leaf vrf-name {
+            type meta:l3vpn-vrf-name;
+            description
+              "The VRF Name.
+               This corresponds to l3vpn/vrf/name.";
+
+            mandatory true;
+
+            user-ext:CLI-param-help "Set VRF name";
+            user-ext:CLI-comm-help "Set VRF name";
+            user-ext:CLI-no-comm-help "Remove VRF name";
+
+          }
+
+          leaf ip-prefix {
+            type interfaces:iface-ip-prefix-t;
+            description
+              "IP prefix on the VPN.";
+
+            mandatory true;
+
+            user-ext:CLI-param-help "Set VPN IP prefix";
+            user-ext:CLI-comm-help "Set VPN IP prefix";
+            user-ext:CLI-no-comm-help "Remove VPN IP prefix";
+
+          }
+
+        } // l3vpn
+
+        container sr-prefix {
+
+          if-feature features:segment-routing-mpls;
+          description
+            "Segment Routing prefix identifier";
+
+          user-ext:CLI-comm-help "Set Segment Routing FEC identifier";
+          user-ext:CLI-no-comm-help "Remove Segment Routing FEC identifier";
+
+          leaf ip-prefix {
+            type interfaces:iface-ip-prefix-t;
+            mandatory true;
+            description
+              "The IP prefix.";
+
+            user-ext:CLI-param-help "Set Segment Routing prefix";
+            user-ext:CLI-comm-help "Set Segment Routing prefix";
+            user-ext:CLI-no-comm-help "Remove Segment Routing prefix";
+          }
+
+        } // sr-prefix
+
+      } // fec (choice)
+    } // fec (container)
+  } // fec (grouping)
+
+  rpc lsp-ping {
+
+    description "Configure LSP Ping";
+
+    user-ext:CLI-param-help "Configure LSP Ping";
+
+    // This RPC configures and initializes an LSP Ping transaction.
+    // It is possible for the RPC to fail, notably in the case where an
+    // existing LSP Ping or LSP Traceroute transaction is already underway
+    // to the same target.
+
+    input {
+
+      uses fec;
+
+      container parameters {
+
+        // Low-level model info: Corresponds to mplsCvTrMpTable.
+
+        description
+          "Configure LSP Ping parameters";
+
+        user-ext:CLI-param-help "Configure LSP Ping parameters";
+
+        // Low-level model info: Corresponds to mplsCvTrMpCvMessages.
+        leaf count {
+          type count-t;
+          default "10";
+          description
+            "The number of LSP Ping Echo Requests to be transmitted in
+            this transaction.";
+        }
+
+        // Low-level model info: Corresponds to mplsCvTrMpCvInterval.
+        leaf interval {
+          type interval-t;
+          units "milliseconds";
+          default "1000";
+          description
+            "This attribute specifies the period between LSP Ping Echo
+            Request transmissions in an LSP Ping transaction.
+            Granularity of 100ms is required.  The transmission of the
+            next LSP Ping message is not dependent upon the reception
+            of the previous LSP Ping response.  An interval count of
+            '0' indicates that the subsequent LSP Ping is sent with
+            the minimum possible delay.";
+        }
+
+        // Low-level model info: Corresponds to mplsCvTrMpTimeout.
+        leaf timeout {
+          type timeout-t;
+          units "milliseconds";
+          default "5000";
+          description
+            "This attribute specifies the maximum amount of time that
+            the originator waits for a response before considering the
+            request lost.";
+        }
+
+        // Low-level model info: Corresponds to mplsCvTrMpCvTtl.
+        leaf ttl {
+          type ttl-t;
+          default "255";
+          description
+            "This field specifies the TTL to be set in each LSP Ping
+            Packet.";
+        }
+
+        // Low-level model info: Corresponds to mplsCvTrMpTos.
+        leaf traffic-class {
+          type traffic-class-t;
+          default "0";
+          description
+            "This field specifies the Type of service (TOS) value for
+             LSP Ping messages.  A value of zero means that no specific
+             TOS is defined.";
+        }
+
+      } // parameters
+
+    } // input
+
+  } // lsp-ping
+
+  rpc lsp-ping-get {
+
+    description "Get state for an LSP Ping transaction";
+
+    user-ext:CLI-param-help "Get state for an LSP Ping transaction";
+
+    input {
+
+      uses fec;
+
+    }
+
+    output {
+
+      // Low-level model info: Corresponds to mplsCvTrMpTable.
+
+      leaf status {
+        type lspp-status-t;
+        description
+          "The status of the current LSP Ping transaction";
+      }
+
+      // Low-level model info: Corresponds to mplsCvTrMpCvReturnCode.
+      leaf return-code {
+        type lspp-return-code-t;
+        description
+          "This field contains the result of the LSP Ping transaction.";
+      }
+
+      // Low-level model info: Corresponds to mplsCvTrMpCvRepliesRcvd.
+      leaf responses {
+        type uint32;
+        description
+          "The number of valid LSP Ping replies received.";
+      }
+
+      // Low-level model info: Corresponds to mplsCvTrMpCvRoundTripMin.
+      leaf min-rtt {
+        type uint32;
+        units "milliseconds";
+        default "0";
+        description
+          "The minimum time between sending an LSP Ping Request and
+          receiving the response.";
+      }
+
+      // Low-level model info: Corresponds to mplsCvTrMpCvRoundTripMax.
+      leaf max-rtt {
+        type uint32;
+        units "milliseconds";
+        default "0";
+        description
+          "The maximum time between sending an LSP Ping Request and
+          receiving the response.";
+      }
+
+      // Low-level model info: Corresponds to mplsCvTrMpCvRoundTripAve.
+      leaf average-rtt {
+        type uint32;
+        units "milliseconds";
+        default "0";
+        description
+          "The average time between sending an LSP Ping Request and
+          receiving the response.";
+      }
+
+    } // output
+
+  } // lsp-ping-get
+
+  rpc lsp-ping-disable {
+
+    description "Disable an LSP Ping transaction";
+
+    user-ext:CLI-param-help "Disable an LSP Ping transaction";
+
+    input {
+
+      uses fec;
+
+    }
+
+  } // lsp-ping-disable
+
+  rpc lsp-ping-destroy {
+
+    description "Cleanup resources for an LSP Ping transaction";
+
+    user-ext:CLI-param-help "Cleanup resources for an LSP Ping transaction";
+
+    input {
+
+      uses fec;
+
+    }
+
+  } // lsp-ping-destroy
+
+  rpc lsp-traceroute {
+
+    description
+      "Configure Traceroute";
+
+    user-ext:CLI-param-help "Configure Traceroute";
+
+    // This RPC configures and initializes an LSP Traceroute transaction.
+    // It is possible for the RPC to fail, notably in the case where an
+    // existing LSP Ping or LSP Traceroute transaction is already underway
+    // to the same target.
+
+    input {
+
+      uses fec;
+
+      container parameters {
+
+        // Low-level model info: Corresponds to mplsCvTrMpTable.
+
+        description
+          "Configure Traceroute parameters";
+
+        user-ext:CLI-param-help "Configure Traceroute parameters";
+
+        // Low-level model info: Corresponds to mplsCvTrMpTimeout.
+        leaf timeout {
+          type timeout-t;
+          units "milliseconds";
+          default "5000";
+          description
+            "This attribute specifies the maximum amount of time that
+            the originator waits for a response before considering the
+            request lost.";
+        }
+
+      } // parameters
+
+    } // input
+
+  } // lsp-traceroute
+
+  rpc lsp-traceroute-get {
+
+    description "Get state for an LSP Traceroute transaction";
+
+    user-ext:CLI-param-help "Get state for an LSP Traceroute transaction";
+
+    input {
+
+      uses fec;
+
+    }
+
+    output {
+
+      // Low-level model info: Corresponds to mplsCvTrMpTable.
+
+      leaf status {
+        type lspp-status-t;
+        description
+          "The status of the current Traceroute transaction";
+      }
+
+      container traceroute-hops {
+
+        // Low-level model info: Corresponds to mplsTrHopMpTable.
+
+        description
+          "The hops from the latest Traceroute transaction.  Each
+           entry represents a node along the path of the LSP.";
+
+        list hops {
+
+          // Low-level model info: Corresponds to mplsTrHopNumber.
+
+          leaf hop-number {
+            type uint32;
+            description
+              "The hop number of the responding node.";
+          }
+
+          // Low-level model info: Corresponds to mplsTrHopMpReturnCode.
+
+          leaf return-code {
+            type lspp-return-code-t;
+            description
+              "The result of the Traceroute transaction for this hop.";
+          }
+
+          // Low-level model info: Corresponds to mplsTrHopMpNextHopAddress.
+
+          leaf next-hop-address {
+            type interfaces:iface-ip-address-t;
+            description
+              "The address of the next hop.
+
+               For an MPLS-TP FEC, the next hop address is the Downstream IP
+               Address obtained from the Downstream Mapping TLV (if present).
+               This field is not used if the Downstream Mapping TLV
+               Address Type is non-IP.
+
+               For any other FEC, the next hop address is an address on the
+               node sending the Traceroute response.
+
+               If the responding node does not provide an IP address in the
+               Downstream Mapping TLV then this field is set to zero.";
+          }
+
+          // Low-level model info: Corresponds to mplsTrHopMpLabel.
+
+          leaf label {
+            type uint32;
+            description
+              "The top label pushed by the responding node.";
+          }
+
+          // Low-level model info: Corresponds to mplsTrHopMpRoundTrip.
+
+          leaf rtt {
+            type uint32;
+            description
+              "The time between sending the traceroute or LSP Ping
+               request and receiving the response.";
+          }
+
+          // Low-level model info: Corresponds to mplsTrHopMpMtu.
+
+          leaf mtu {
+            type uint32;
+            description
+              "The size in octets of the largest MPLS frame (including
+               label stack) that can be received by the next hop router.";
+          }
+
+          // Low-level model info: Corresponds to mplsTrHopMpDownstreamIfAddr.
+
+          leaf downstream-if-address {
+            type interfaces:iface-ip-address-t;
+            description
+              "The downstream interface address.
+
+               If the Downstream Mapping TLV is present and the TLV
+               Address Type is numbered, then this is set to the
+               downstream LSR's interface address (and is taken from the
+               Downstream Interface Address in the Downstream Mapping
+               TLV).
+
+               If the responding node does not provide an IP address in
+               the Downstream Mapping TLV then this is set to all zeros.";
+          }
+
+          // Low-level model info: Corresponds to mplsTrHopMpDownstreamIfIndex.
+
+          leaf downstream-if-index {
+            type interfaces:interf-index;
+            description
+              "The downstream interface index.
+
+               If the interface to the next hop is unnumbered, then this
+               is set to the index assigned by the upstream LSR to the
+               interface (and is taken from the Downstream Interface
+               Address in the Downstream Mapping TLV).
+
+               If this MP uses non-IP addressing and the responding node
+               supplied an Egress IF_Num, then this is set to the Egress
+               IF_Num in the Downstream Mapping TLV.
+
+               Otherwise this field is not used and is set to zero.";
+          }
+
+        } // hops
+
+      } // traceroute-hops
+
+    } // output
+
+  } // lsp-traceroute-get
+
+  rpc lsp-traceroute-disable {
+
+    description "Disable an LSP Traceroute transaction";
+
+    user-ext:CLI-param-help "Disable an LSP Traceroute transaction";
+
+    input {
+
+      uses fec;
+
+    }
+
+  } // lsp-traceroute-disable
+
+  rpc lsp-traceroute-destroy {
+
+    description "Cleanup resources for an LSP Traceroute transaction";
+
+    user-ext:CLI-param-help
+      "Cleanup resources for an LSP Traceroute transaction";
+
+    input {
+
+      uses fec;
+
+    }
+
+  } // lsp-traceroute-destroy
+
+} // lsp-ping

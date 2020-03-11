@@ -1,0 +1,110 @@
+module metaswitch-api-common {
+
+  yang-version 1.1;
+
+  namespace
+    "http://metaswitch.com/yang/nbu/metaswitch-api-common/201720080000Z";
+
+  prefix index-api;
+
+  import ietf-netconf {
+    prefix netconf;
+  }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Common Yang definitions for Metaswitch API Yang modules.";
+
+  revision 2017-02-08 {
+    description "Initial revision.";
+  }
+
+  typedef ascii-string {
+    type string {
+      pattern '[ -~]*';
+    }
+    description
+      "Printable ASCII string with no length restrictions.  Allowed characters
+      are 0x20 (space) - 0x7E (~).";
+  }
+
+  typedef dotted-quad {
+    description
+      "An unsigned 32-bit integer in dotted decimal notation.";
+    type string {
+      pattern
+        '(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}' +
+        '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])';
+    }
+  }
+
+  typedef router-id {
+    description "A router ID.";
+    type dotted-quad;
+  }
+
+  typedef error-type-t {
+    description "NetConf error types.";
+    reference "RFC 6241 section 4.3";
+    type enumeration {
+      enum transport;
+      enum rpc;
+      enum protocol;
+      enum application;
+    }
+  }
+
+  grouping error {
+    description
+      "Error information for a single error.
+      This is based on NetConf error information as specified in RFC 6241
+      section 4.3.";
+    leaf error-type {
+      description "The NetConf error-type.";
+      type error-type-t;
+      mandatory true;
+    }
+    leaf error-tag {
+      description "The NetConf error-tag.";
+      type netconf:error-tag-type;
+      mandatory true;
+    }
+    leaf error-app-tag {
+      description "The NetConf error-app-tag.";
+      type string;
+    }
+    leaf error-path {
+      description "The NetConf error-path.";
+      type string;
+    }
+    leaf error-message {
+      description "The error message.";
+      type string;
+      mandatory true;
+    }
+    anydata error-info {
+      description "The NetConf error-info.";
+    }
+  }
+
+  grouping errors {
+    description "Error information (including multiple errors).";
+    container errors {
+      description "The errors (if any).";
+      list error {
+        // The JSON list is required but can be empty.
+        uses error;
+      }
+    }
+  }
+
+} // metaswitch-api-common

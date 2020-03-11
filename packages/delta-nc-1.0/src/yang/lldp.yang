@@ -1,0 +1,1457 @@
+
+module lldp {
+
+  namespace "http://metaswitch.com/yang/nbu/lldp/201512170000Z";
+
+  prefix lldp;
+
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix "interfaces"; }
+  import metaswitch-yang-types { prefix "meta"; }
+  import metaswitch-custom-yang-types { prefix "custom"; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "Link Layer Discovery Protocol";
+
+  revision 2015-12-17 {
+    description "Initial revision.";
+  }
+
+  typedef lldp-agent-type {
+    type enumeration {
+      enum nearest-bridge                   { value 1; description "Nearest bridge"; }
+      enum nearest-non-tpmr-bridge          { value 2; description "Nearest non-TPMR bridge"; }
+      enum nearest-customer-bridge          { value 3; description "Nearest Customer bridge"; }
+    }
+    description
+      "Agent type";
+  }
+
+  typedef lldp-chassis-id-subtype {
+    type enumeration {
+      enum chassis-component                { value 1; }
+      enum interface-alias                  { value 2; }
+      enum port-component                   { value 3; }
+      enum mac-address                      { value 4; }
+      enum network-address                  { value 5; }
+      enum interface-name                   { value 6; }
+      enum local                            { value 7; }
+    }
+    description
+      "TYPE (chassis-component/interface-alias/port-component/mac-address/network-address/interface-name/local)";
+  }
+
+  typedef lldp-port-id-subtype {
+    type enumeration {
+      enum interface-alias                  { value 1; }
+      enum port-component                   { value 2; }
+      enum mac-address                      { value 3; }
+      enum network-address                  { value 4; }
+      enum interface-name                   { value 5; }
+      enum agent-circuit-id                 { value 6; }
+      enum local                            { value 7; }
+    }
+    description
+      "TYPE (interface-alias/port-component/mac-address/network-address/interface-name/agent-circuit-id/local)";
+  }
+
+  typedef lldp-chassis-id {
+    type string {
+      pattern "([0-9a-fA-F]{2})(:[0-9a-fA-F]{2}){5}";
+    }
+    description
+      "MAC (XX:XX:XX:XX:XX:XX)";
+  }
+
+  typedef lldp-port-id {
+    type string {
+      length "1..255";
+    }
+    description
+      "Port component identifier.";
+  }
+
+  typedef lldp-port-desc {
+    type meta:ascii-string {
+      length "0..255";
+    }
+    description
+      "WORD (1-255)";
+  }
+
+  typedef lldp-sys-desc {
+    type meta:ascii-string {
+      length "0..255";
+    }
+    description
+      "WORD (1-255)";
+  }
+
+  typedef lldp-sys-name {
+    type meta:ascii-string {
+      length "0..255";
+    }
+    description
+      "WORD (1-255)";
+  }
+
+  typedef lldp-switch-t {
+    type enumeration {
+      enum enable                           { value 1; description "Enable"; }
+      enum disable                          { value 2; description "Disable"; }
+    }
+    description
+      "TYPE (enable/disable)";
+  }
+
+  typedef lldp-man-addr-if-subtype {
+    type enumeration {
+      enum unknown;
+      enum index;
+      enum port;
+    }
+    description
+      "TYPE (unknown/index/port)";
+  }
+
+  typedef lldp-interval-t {
+    type uint32 {
+      range "5..32768";
+    }
+    description
+      "SECS (5-32768)";
+  }
+
+  typedef lldp-hold-multiplier-t {
+    type uint32 {
+      range "2..10";
+    }
+    description
+      "(2-10)";
+  }
+
+  typedef lldp-reinit-t {
+    type uint32 {
+      range "1..10";
+    }
+    description
+      "(1-10)";
+  }
+
+  typedef lldp-notification-interval-t {
+    type uint32 {
+      range "5..3600";
+    }
+    description
+      "SECS (5-3600)";
+  }
+
+  typedef lldp-pps-t {
+    type uint32 {
+      range "1..100";
+    }
+    description
+      "(1-100)";
+  }
+
+  typedef lldp-fast-interval-t {
+    type uint32 {
+      range "1..3600";
+    }
+    description
+      "SECS (1-3600)";
+  }
+
+  typedef lldp-fast-count-t {
+    type uint32 {
+      range "1..10";
+    }
+    description
+      "(1-10)";
+  }
+
+  typedef lldp-neighbors-limit-t {
+    type uint32 {
+      range "1..2147483647";
+    }
+    description
+      "(1-2147483647)";
+  }
+
+
+  grouping lldp-system-cap-bits {
+
+    // Low-level model info: Corresponds to the bit flags in the AMB_LLDP_V2_SYSTEM_CAP_MAP group.
+
+    description
+      "LLDP system capabilities.";
+
+    leaf other {
+      type empty;
+    }
+
+    leaf repeater {
+      type empty;
+    }
+
+    leaf bridge {
+      type empty;
+    }
+
+    leaf wlan-access-point {
+      type empty;
+    }
+
+    leaf router {
+      type empty;
+    }
+
+    leaf telephone {
+      type empty;
+    }
+
+    leaf docsis-cable-device {
+      type empty;
+    }
+
+    leaf station-only {
+      type empty;
+    }
+
+    leaf c-vlancomponent {
+      type empty;
+    }
+
+    leaf s-vlancomponent {
+      type empty;
+    }
+
+    leaf two-port-macrelay {
+      type empty;
+    }
+
+  } // lldp-system-cap-bits
+
+  grouping lldp-optional-tlv-config {
+
+    container optional-tlv {
+
+      // Low-level model info: Corresponds to lldpIfConfigTLVsTxEnable config.
+
+      description
+        "The optional TLVs that are to be transmitted by the LLDP
+        agent for this interface and destination MAC address.
+
+        802.3 Organizationally Specific TLVs may be enabled only
+        if destination mac address on interface is on the same individual
+        LAN as the local system.
+
+        -  If destination mac address on interface is 01-80-C2-00-00-0E
+        ('Nearest bridge'), this condition will be satisfied.
+
+        -  If destination mac address on interface is 01-80-C2-00-00-03
+        ('Nearest non-TPMR bridge') or 01-80-C2-00-00-00
+        ('Nearest Customer Bridge'), this condition is not
+        guaranteed to be satisfied.  As specified in
+        802.1AB-2009 sF.1, lldp agent will reject any attempt to
+        enable these TLVs for these MAC addresses.
+
+        -  For any other value of destination mac address on interface, the
+        administrator should not enable these TLVs unless this
+        condition is guaranteed to be satisfied.  Lldp agent does
+        not have enough info to police this.
+
+        -  The reason for this condition is that, for some
+        destination MAC addresses, an 802.1 relay device might
+        forward the LLDPDU, so the sender and receiver might
+        not be attached to the same individual LAN.  Hence the
+        MAC characteristics for the sender and receiver might
+        differ, so the 802.3 information might not make sense,
+        and would be potentially misleading (see 802.1AB-2009
+        sF.1).
+
+        TIA Organizationally Specific TLVs for LLDP-MED may only
+        be enabled if the LLDP-MED Capabilities TLV is also
+        enabled.
+
+        Additionally, to conform to ANSI/TIA-1057 s10.2.1, there
+        are requirements and restrictions on which TIA
+        Organizationally Specific TLVs are enabled on an LLDP-MED
+        device, as follows.  In order to give the administrator
+        flexibility, lldp agent does not enforce these conformance
+        rules in management requests.
+
+        -  If the device supports LLDP-MED, 'xMedCap' must be set
+        (and TX and RX mode must be activated both').
+
+        -  If Power-over-Ethernet is enabled on the interface,
+        'xMedPower' must be set.
+
+        -  If the local device is an Endpoint Class I or Class II,
+        'xMedLocation' must not be set.
+
+        -  If the local device is an Endpoint Class II or Class
+        III, 'xMedPolicy' must be set.";
+
+      user-ext:CLI-comm-help "Configure optional TLV parameters";
+      user-ext:CLI-no-comm-help "Configure optional TLV parameters";
+
+      container port-desc {
+
+        user-ext:CLI-comm-help "Configure port description TLV";
+        user-ext:CLI-no-comm-help "Configure port description TLV";
+
+        leaf disable {
+          type empty;
+
+          description
+            "Enable/disable port description TLV";
+
+          user-ext:CLI-comm-help "Disable port description TLV";
+          user-ext:CLI-no-comm-help "Enable port description TLV";
+        }
+
+      } // port-desc
+
+      container system-name {
+
+        user-ext:CLI-comm-help "Configure system name TLV";
+        user-ext:CLI-no-comm-help "Configure system name TLV";
+
+        leaf disable {
+          type empty;
+
+          description
+            "Enable/disable system name TLV";
+
+          user-ext:CLI-comm-help "Disable system name TLV";
+          user-ext:CLI-no-comm-help "Enable system name TLV";
+        }
+
+      } // system-name
+
+      container system-desc {
+
+        user-ext:CLI-comm-help "Configure system description TLV";
+        user-ext:CLI-no-comm-help "Configure system description TLV";
+
+        leaf disable {
+          type empty;
+
+          description
+            "Enable/disable system description TLV";
+
+          user-ext:CLI-comm-help "Disable system description TLV";
+          user-ext:CLI-no-comm-help "Enable system description TLV";
+        }
+
+      } // system-desc
+
+      container system-cap {
+
+        user-ext:CLI-comm-help "Configure system capabilities TLV";
+        user-ext:CLI-no-comm-help "Configure system capabilities TLV";
+
+        leaf disable {
+          type empty;
+
+          description
+            "Enable/disable system capabilities TLV";
+
+          user-ext:CLI-comm-help "Disable system capabilities TLV";
+          user-ext:CLI-no-comm-help "Enable system capabilities TLV";
+        }
+
+      } // system-cap
+
+      container mgmt-addr {
+
+        user-ext:CLI-comm-help "Configure management address TLV";
+        user-ext:CLI-no-comm-help "Configure management address TLV";
+
+        leaf disable {
+          type empty;
+
+          description
+            "Enable/disable management address TLV";
+
+          user-ext:CLI-comm-help "Disable management address TLV";
+          user-ext:CLI-no-comm-help "Enable management address TLV";
+        }
+
+      } // mgmt-addr
+
+    } // optional-tlv
+
+  } // lldp-optional-tlv-config
+
+  grouping lldp-optional-tlv-state {
+
+    container optional-tlv {
+
+      // Low-level model info: Corresponds to lldpIfConfigTLVsTxEnable state.
+
+      description
+        "The optional TLVs that are to be transmitted by the LLDP
+        agent for this interface and destination MAC address.";
+
+      leaf port-desc {
+        type boolean;
+        description
+          "Port description TLV";
+        config false;
+      }
+
+      leaf system-name {
+        type boolean;
+        description
+          "System name TLV";
+        config false;
+      }
+
+      leaf system-desc {
+        type boolean;
+        description
+          "System description TLV";
+        config false;
+      }
+
+      leaf system-cap {
+        type boolean;
+        description
+          "System capabilities TLV";
+        config false;
+      }
+
+      leaf mgmt-addr {
+        type boolean;
+        description
+          "Management address TLV";
+        config false;
+      }
+
+    } // optional-tlv
+
+  } // lldp-optional-tlv-state
+
+  grouping global-config-for-lldp {
+
+    // Low-level model info: Corresponds to AMB_LLDP_ENT (lldpEntTable).
+
+    description
+      "Each entry in this table represents a DC-LLDP entity.";
+
+    // Low-level model info: Corresponds to lldpIfConfigTLVsTxEnable in AMB_LLDP_IF_CONFIG (lldpIfConfigTable) in AMB_LLDP_ALL_INTERFACES mode.
+    uses lldp-optional-tlv-config;
+
+    leaf mac-address {
+      type meta:mac-address;
+      description "Set destination mac address";
+
+      user-ext:CLI-comm-help "Set destination mac address";
+      user-ext:CLI-no-comm-help "Remove destination mac address";
+      user-ext:CLI-param-help "Set destination mac address";
+    }
+
+    // Low-level model info: Corresponds to lldpEntMessageTxInterval.
+    leaf interval {
+      type lldp-interval-t;
+      default "30";
+
+      description
+        "The interval at which LLDP frames are transmitted during
+        normal transmission periods.";
+
+      user-ext:CLI-comm-help "Set transmission packet interval";
+      user-ext:CLI-no-comm-help "Set transmission packet interval to default";
+      user-ext:CLI-param-help "Set interval in seconds";
+    }
+
+    // Low-level model info: Corresponds to lldpEntMessageTxHoldMultiplier.
+    leaf hold-multiplier {
+      type lldp-hold-multiplier-t;
+      default "4";
+      description
+        "The time-to-live value (TTL) expressed as a multiple of
+        the lldpEntMessageTxInterval object.
+
+        The actual TTL value used in LLDP frames is given by the
+        following formula:
+
+        TTL = min(65535, ((interval * hold-multiplier) + 1)).
+
+        For example, if the value of interval is '30' and the value of
+        holdmultiplier is '4', then the value '121' is encoded in the TTL
+        field in the LLDP header.";
+
+      user-ext:CLI-comm-help "Set transmit hold multiplier";
+      user-ext:CLI-no-comm-help "Set transmit hold multiplier to default";
+      user-ext:CLI-param-help "Set multiplier";
+    }
+
+    // Low-level model info: Corresponds to lldpEntReinitDelay.
+    leaf reinit {
+      type lldp-reinit-t;
+      default "2";
+
+      description
+        "This field indicates the delay (in units of seconds) from
+        when an agent deactivates until re-initialization is
+        attempted.";
+
+      user-ext:CLI-comm-help "Set minimal re-initialization delay in seconds";
+      user-ext:CLI-no-comm-help "Set minimal re-initialization delay to default";
+      user-ext:CLI-param-help "Set delay in seconds";
+    }
+
+    leaf notification-interval {
+      type lldp-notification-interval-t;
+      default "30";
+
+      description
+        "This is the minimum interval between transmission of two
+        LLDP notifications that have the same notification type.";
+
+      user-ext:CLI-comm-help "Set notifications interval in seconds";
+      user-ext:CLI-no-comm-help "Set notifications interval to default";
+      user-ext:CLI-param-help "Set notification interval in seconds";
+    }
+
+    // Low-level model info: Corresponds to lldpEntTxCreditMax.
+    leaf pps {
+      type lldp-pps-t;
+      default "5";
+
+      description
+        "The maximum number of consecutive LLDPDUs that can be
+        transmitted in a second as a result of local information
+        changes.";
+
+      user-ext:CLI-comm-help "Set packets per second maximum limit";
+      user-ext:CLI-no-comm-help "Set packets per second maximum limit to default";
+      user-ext:CLI-param-help "Set packets per second maximum limit";
+    }
+
+    // Low-level model info: Corresponds to lldpEntMessageFastTx.
+    leaf fast-interval {
+      type lldp-fast-interval-t;
+      default "1";
+
+      description
+        "The interval at which LLDP frames are transmitted during
+        fast transmission period (for example, when a new neighbor
+        is detected).";
+
+      user-ext:CLI-comm-help "Set transmission packet interval in fast mode";
+      user-ext:CLI-no-comm-help "Set transmission packet interval in fast mode to default";
+      user-ext:CLI-param-help "Set interval in seconds";
+    }
+
+    // Low-level model info: Corresponds to lldpEntTxFastInit.
+    leaf fast-count {
+      type lldp-fast-count-t;
+      default "4";
+
+      description
+        "The value used to initialize the txFast variable, which
+        determines the number of transmissions that are made in
+        fast transmission mode.";
+
+      user-ext:CLI-comm-help "Set count of packets to transmit in fast mode";
+      user-ext:CLI-no-comm-help "Set count of packets to transmit in fast mode to default";
+      user-ext:CLI-param-help "Set count";
+    }
+
+  } // global-config-for-lldp
+
+  grouping global-state-for-lldp {
+
+    // Low-level model info: Corresponds to read-only fields in AMB_LLDP_ENT (lldpEntTable).
+
+    // Low-level model info: Corresponds to lldpEntLocChassisIdSubtype.
+    leaf chassis-id-subtype {
+      type lldp-chassis-id-subtype;
+      description
+        "The type of encoding in use for the chassis identifier.
+
+        This is set to 'macAddress(4)' and a local MAC address is advertised as
+        the chassis ID.";
+      config false;
+    }
+
+    // Low-level model info: Corresponds to lldpEntLocChassisId.
+    leaf chassis-id {
+      type lldp-chassis-id;
+      description
+        "The chassis identifier.  The encoding is determined by the
+        value of lldpEntLocChassisIdSubtype.
+
+        LLDP uses the system MAC address as the chassis ID.  If no system MAC
+        address is javailable, LLDP uses an interface MAC address as the
+        chassis ID.";
+      config false;
+    }
+
+    leaf rem-tables-last-change-time {
+      type uint32;
+      description
+        "The value of the sysUpTime object (defined in IETF RFC
+        3418) the last time there was an update to the data that
+        this entity has stored about remote systems.
+
+        A network management station may use this object to
+        determine whether state has changed since it last queried
+        the remote system MIB tables.";
+      config false;
+    }
+
+    leaf rem-tables-inserts {
+      type uint32;
+      units "table entries";
+      description
+        "The number of times the complete set of information
+        advertised by a particular remote endpoint has been
+        inserted into LLDP state.";
+      config false;
+    }
+
+    leaf rem-tables-deletes {
+      type uint32;
+      units "table entries";
+      description
+        "The number of times the complete set of information
+        advertised by a particular remote endpoint has been
+        deleted from LLDP state.";
+      config false;
+    }
+
+    leaf rem-tables-drops {
+      type uint32;
+      units "table entries";
+      description
+        "The number of times the complete set of information
+        advertised by a particular remote endpoint could not be
+        inserted into LLDP state because of insufficient
+        resources.";
+      config false;
+    }
+
+    leaf rem-tables-ageouts {
+      type uint32;
+      units "table entries";
+      description
+        "The number of times the complete set of information
+        advertised by a particular remote endpoint has been
+        deleted from LLDP state because the information has aged
+        out.";
+      config false;
+    }
+
+  } // global-state-for-lldp
+
+  grouping lldp-agent-config {
+
+    // Low-level model info: Corresponds to lldpIfConfigTxRxStatus.
+    leaf receive {
+      type lldp-switch-t;
+      default enable;
+
+      description
+        "The administratively desired status of the local LLDP
+        agent.
+
+        Indicates whether LLDP should receive LLDP frames and store
+        information about remote systems.";
+
+      user-ext:CLI-comm-help "Enable/disable receive packets";
+      user-ext:CLI-no-comm-help "Set receive rule for packets to default";
+      user-ext:CLI-param-help "Set receive mode";
+    }
+
+    // Low-level model info: Corresponds to lldpIfConfigTxRxStatus.
+    leaf transmit {
+      type lldp-switch-t;
+      default enable;
+
+      description
+        "The administratively desired status of the local LLDP
+        agent.
+
+        Indicates whether LLDP should transmit LLDP frames on this
+        port.";
+
+      user-ext:CLI-comm-help "Enable/disable transmit packets";
+      user-ext:CLI-no-comm-help "Set transmit rule for packets to default";
+      user-ext:CLI-param-help "Set transmit mode";
+    }
+
+    container notification {
+
+      description "Notifications on interface";
+
+      user-ext:CLI-comm-help "Configure notification on interface";
+      user-ext:CLI-no-comm-help "Configure notification on interface";
+
+      // Low-level model info: Corresponds to lldpIfConfigRemTablesNtfyEnable.
+      leaf tables {
+        type lldp-switch-t;
+        default enable;
+
+        description
+          "Whether or not a change to remote endpoint information for
+          this LLDP agent should trigger an remote-tables-change
+          notification, which indicates a change in remote endpoint
+          information.
+
+          A notification is only generated if remote-table-change
+          notifications are enabled globally
+          (lldpEntRemTablesChgNtfyEnable is 'true').";
+
+        user-ext:CLI-comm-help "Enable/disable tables notification on interface";
+        user-ext:CLI-no-comm-help "Set tables notification on interface to default";
+        user-ext:CLI-param-help "Enable/disable notification on interface";
+      }
+
+      // Low-level model info: Corresponds to lldpIfConfigRemDeviceNtfyEnable.
+      leaf device {
+        type lldp-switch-t;
+        default enable;
+
+        description
+          "Whether or not a change to remote devices for this LLDP
+          agent should trigger an device-change notification.
+
+          A notification is only generated if device-change
+          notifications are enabled globally
+          (lldpEntRemDeviceChgNtfyEnable is 'true').";
+
+        user-ext:CLI-comm-help "Enable/disable device notification on interface";
+        user-ext:CLI-no-comm-help "Set device notification on interface to default";
+        user-ext:CLI-param-help "Enable/disable notification on interface";
+      }
+
+    } // notification
+
+    // Low-level model info: Corresponds to lldpIfConfigMaxNeighbors.
+    leaf neighbors-limit {
+      type lldp-neighbors-limit-t;
+      default "100";
+
+      description
+        "The maximum number of entries that LLDP will create in the
+        neighbor-state list for this LLDP agent.
+
+        This puts a limit on the quantity of information stored,
+        which helps to guard against denial-of-service attacks.";
+
+      user-ext:CLI-comm-help "Set maximum neighbors limit";
+      user-ext:CLI-no-comm-help "Set default maximum neighbors limit";
+      user-ext:CLI-param-help "Set limit value";
+    }
+
+    // Low-level model info: Corresponds to lldpIfConfigTLVsTxEnable in AMB_LLDP_IF_CONFIG (lldpIfConfigTable).
+    uses lldp-optional-tlv-config;
+
+  } // lldp-agent-config
+
+  grouping lldp-agent-state {
+
+    container tx-stats {
+
+      config false;
+
+      // Low-level model info: Corresponds to read-only fields in AMB_LLDP_V2_STATS_TX_PORT (lldpV2StatsTxPortTable).
+
+      description
+        "A read-only table containing LLDP transmission statistics
+        for individual port/destination address combinations.
+
+        When operating in 'all-interfaces' mode there may be
+        multiple entries in this table for a single
+        lldpIfConfigTable entry.";
+
+      leaf frames-total {
+        type uint32;
+        units "LLDP frames";
+        description
+          "The number of LLDP frames transmitted by this LLDP agent
+          on the indicated port to the destination MAC address
+          associated with this row of the table.";
+        config false;
+      }
+
+      leaf pdu-length-errors {
+        type uint32;
+        units "LLDP frames";
+        description
+          "The number of LLDPDU Length Errors recorded for the Port.";
+        config false;
+      }
+
+    } // tx-stats
+
+    container rx-stats {
+
+      config false;
+
+      // Low-level model info: Corresponds to read-only fields in AMB_LLDP_V2_STATS_RX_PORT (lldpV2StatsRxPortTable).
+
+      description
+        "A read-only table containing LLDP reception statistics for
+        individual port/destination address combinations.
+
+        When operating in 'all-interfaces' mode there may be
+        multiple entries in this table for a single configured interface.";
+
+      leaf frames-discarded {
+        type uint32;
+        units "LLDP frames";
+        description
+          "The number of LLDP frames received by this LLDP agent on
+          the indicated port, and then discarded for any reason.
+          This counter can provide an indication that LLDP header
+          formatting problems may exist with the local LLDP agent in
+          the sending system or that LLDPDU validation problems may
+          exist with the local LLDP agent in the receiving system.";
+        config false;
+      }
+
+      leaf frames-errors {
+        type uint32;
+        units "LLDP frames";
+        description
+          "The number of invalid LLDP frames received by this LLDP
+          agent on the indicated port, while this LLDP agent is
+          enabled.";
+        config false;
+      }
+
+      leaf frames-total {
+        type uint32;
+        units "LLDP frames";
+        description
+          "The number of LLDP frames received by this LLDP agent on
+          the indicated port, while this LLDP agent is enabled.";
+        config false;
+      }
+
+      leaf tlvs-discarded {
+        type uint32;
+        units "TLVs";
+        description
+          "The number of LLDP TLVs discarded for any reason by this
+          LLDP agent on the indicated port.";
+        config false;
+      }
+
+      leaf tlvs-unknown {
+        type uint32;
+        units "TLVs";
+        description
+          "The number of LLDP TLVs received on the given port that
+          are not recognized by this LLDP agent on the indicated
+          port.
+
+          An unrecognized TLV is referred to as the TLV whose type
+          value is in the range of reserved TLV types (9 - 126) in
+          Table 9.1 of IEEE Std 802.1AB-2004.  An unrecognized TLV
+          may be a basic management TLV from a later LLDP version.
+
+          Organizationally Specific TLVs (TLV type 127) whose OUI or
+          organizationally defined subtype is not recognized are
+          also treated as unrecognized TLVs (802.1AB 9.2.7.7.1 (g)).";
+        config false;
+      }
+
+      leaf ageouts-total {
+        type uint32;
+        description
+          "The number of age-outs that occurred on a given port.
+
+          In other words, the number of times the complete set of
+          information advertised by a particular remote endpoint has
+          been deleted from the LLDP MIB tables because the
+          information has aged out.
+
+          This counter is similar to rem-tables-ageouts, except
+          that the counter is on a per port basis.";
+        config false;
+      }
+
+    } // rx-stats
+
+    container config-state {
+
+        config false;
+
+        container notification {
+
+          description "Notifications on interface";
+
+          // Low-level model info: Corresponds to lldpIfConfigRemTablesNtfyEnable.
+          leaf tables {
+            type lldp-switch-t;
+
+            description
+              "Whether or not a change to remote endpoint information for
+              this LLDP agent will trigger an remote-tables-change
+              notification, which indicates a change in remote endpoint
+              information.
+
+              A notification is only generated if remote-tables-change
+              notifications are enabled globally.";
+          }
+
+          // Low-level model info: Corresponds to lldpIfConfigRemDeviceNtfyEnable.
+          leaf device {
+            type lldp-switch-t;
+
+            description
+              "Whether or not a change to remote devices for this LLDP
+              agent will trigger an device-change notification.
+
+              A notification is only generated if device-change
+              notifications are enabled globally.";
+          }
+
+        } // notification
+
+        uses lldp-optional-tlv-state;
+
+    } // config-state
+
+    container state {
+
+      config false;
+
+      // Low-level model info: Corresponds to read-only fields in AMB_LLDP_V2_LOC_PORT (lldpV2LocPortTable).
+
+      description
+        "The state of the local LLDP agent";
+
+      leaf port-id-subtype {
+        type lldp-port-id-subtype;
+        description
+          "The type of port identifier encoding used by the local LLDP agent.";
+        config false;
+      }
+
+      leaf port-id {
+        type lldp-port-id;
+        description
+          "The value used to identify the port component associated with the
+          local LLDP agent.";
+        config false;
+      }
+
+    } // state
+
+  } // lldp-agent-state
+
+  grouping lldp-agent-parameters {
+
+    uses lldp-agent-config;
+
+    uses lldp-agent-state;
+
+  } // lldp-agent-parameters
+
+  grouping neighbor-state {
+
+   // Low-level model info: Corresponds to read-only fields in AMB_LLDP_V2_REM (lldpV2RemTable).
+
+    leaf time-mark {
+      type uint32;
+      description
+        "The time at which the remote information was last
+        modified.
+
+        Note that in this implementation, this field is not used
+        as an index to the table and as such is implemented as a
+        TimeStamp rather than a TimeFilter.  Instead, the primary
+        index is the local interface index, which allows other
+        components to request information about remote systems
+        connected to a specific local interface.";
+      config false;
+    }
+
+    leaf src-mac-address {
+      type meta:mac-address;
+      description
+        "The source MAC address taken from the Ethernet header of
+        LLDPDUs received from the remote system.";
+      config false;
+    }
+
+    leaf chassis-id-subtype {
+      type lldp-chassis-id-subtype;
+      description
+        "The type of encoding used to identify the chassis
+        associated with the remote system.";
+      config false;
+    }
+
+    leaf chassis-id {
+      type lldp-chassis-id;
+      description
+        "The value used to identify the chassis component
+        associated with the remote system.";
+      config false;
+    }
+
+    leaf port-id-subtype {
+      type lldp-port-id-subtype;
+      description
+        "The type of port identifier encoding used in the
+        associated 'lldpV2RemPortId' object.";
+      config false;
+    }
+
+    leaf port-id {
+      type lldp-port-id;
+      description
+        "The value used to identify the port component associated
+        with the remote system.";
+      config false;
+    }
+
+    leaf port-desc {
+      type lldp-port-desc;
+      description
+        "The string value used to identify the description of the
+        given port associated with the remote system.";
+      config false;
+    }
+
+    leaf sys-name {
+      type lldp-sys-name;
+      description
+        "The string value used to identify the system name of the
+        remote system.";
+      config false;
+    }
+
+    leaf sys-desc {
+      type lldp-sys-desc;
+      description
+        "The string value used to identify the system description
+        of the remote system.";
+      config false;
+    }
+
+    container sys-cap-supported {
+      uses lldp-system-cap-bits;
+      description
+        "The bitmap value used to identify which system
+        capabilities are supported on the remote system.";
+      config false;
+    }
+
+    container sys-cap-enabled {
+      uses lldp-system-cap-bits;
+      description
+        "The bitmap value used to identify which system
+        capabilities are enabled on the remote system.";
+      config false;
+    }
+
+    leaf too-many-neighbors {
+      type boolean;
+      description
+        "Indicates that the configured limit for the number of
+        neighbors stored by the owning LLDP agent
+        (lldpIfConfigMaxNeighbors) has been exceeded.
+
+        In other words, if the value of this field is 'true', it
+        indicates that querying the lldpV2RemTable is likely to
+        result in an incomplete list of remote endpoints.";
+      config false;
+    }
+
+  } // neighbor-state
+
+  grouping neighbor-mgmt-addr-state {
+
+   // Low-level model info: Corresponds to read-only fields in AMB_LLDP_V2_REM_MAN_ADDR (lldpV2RemManAddrTable).
+
+   description
+     "This read-only table contains a row for each management
+     address TLV received from a remote endpoint.";
+
+   // Low-level model info: Corresponds to lldpV2RemManAddrIfSubtype.
+   leaf if-subtype {
+     type lldp-man-addr-if-subtype;
+     description
+       "The enumeration value that identifies the interface
+       numbering method used for defining the interface number,
+       associated with the remote system.";
+     config false;
+   }
+
+   // Low-level model info: Corresponds to lldpV2RemManAddrIfId.
+   // TBD: Interface integer value (ro-if-index)?  Use iface-id instead?
+   leaf if-id {
+     type uint32;
+     description
+       "The integer value used to identify the interface number
+       regarding the management address component associated with
+       the remote system.  The value depends upon the value of
+       the if-subtype.";
+     config false;
+   }
+
+  } // neighbor-mgmt-addr-state
+
+  grouping interface-parameters-for-lldp {
+
+    list agent {
+
+      user-ext:CLI-comm-help "Enable LLDP-agent instance on interface";
+      user-ext:CLI-no-comm-help "Disable LLDP-agent instance on interface";
+
+      key "agent-type";
+      min-elements "1";
+
+      leaf agent-type {
+        type lldp-agent-type;
+        description
+          "The agent type for the interface.  This is 'Nearest bridge',
+          'Nearest non-TPMR bridge' or 'Nearest Customer Bridge'";
+
+        user-ext:CLI-param-help "Agent type for interface";
+      }
+
+      uses lldp-agent-parameters;
+
+    } // agent
+
+    container neighbor-state-list {
+
+      description
+        "Container to hold Neighbor state.";
+
+      config false;
+
+      list neighbor-state {
+
+        // Low-level model info: Corresponds to AMB_LLDP_V2_REM (lldpV2RemTable).
+        // Low-level model info: The interface index corresponds to lldpV2RemLocalIfIndex.
+
+        description
+          "This read-only table reports information about remote
+          devices as discovered by an LLDP agent.";
+
+        config false;
+
+        // Low-level model info: Corresponds to lldpV2RemLocalMacAddress.
+        leaf local-mac-address {
+          type meta:mac-address;
+          description
+            "The destination MAC address used by the agent which
+            received this information.
+
+            This is used to identify the LLDP agent that learnt the
+            information.";
+          config false;
+        }
+
+        // Low-level model info: Corresponds to lldpV2RemIndex.
+        leaf index {
+          type uint32 {
+            range "1..2147483647";
+          }
+          description
+            "This object represents an arbitrary local integer value
+            used by this agent to identify a particular connection
+            instance, unique only for the indicated remote system.
+
+            The values are assigned to new entries in a monotonically
+            increasing order.
+
+            The first value assigned after each activation of a configured
+            interface entry is one.";
+          config false;
+        }
+
+        uses neighbor-state;
+
+      } // neighbor-state
+
+    } // neighbor-state-list
+
+    container neighbor-mgmt-addr-list {
+
+      description
+        "Container to hold Neighbor Management Addresses.";
+
+      config false;
+
+      list neighbor-mgmt-addr {
+
+        // Low-level model info: Corresponds to AMB_LLDP_V2_REM_MAN_ADDR (lldpV2RemManAddrTable).
+        // Low-level model info: The interface index corresponds to lldpV2RemLocalIfIndex.
+
+        description
+          "This read-only table contains a row for each management
+          address TLV received from a remote endpoint.";
+
+        config false;
+
+        // Low-level model info: Corresponds to lldpV2RemLocalMacAddress.
+        leaf local-mac-address {
+          type meta:mac-address;
+          description
+            "The destination MAC address used by the agent which
+            received this information.
+
+            This is used to identify the LLDP agent that learnt the
+            information.";
+          config false;
+        }
+
+        // Low-level model info: Corresponds to lldpV2RemIndex.
+        leaf index {
+          type uint32 {
+            range "1..2147483647";
+          }
+          description
+            "This object represents an arbitrary local integer value
+            used by this agent to identify a particular connection
+            instance, unique only for the indicated remote system.
+
+            The values are assigned to new entries in a monotonically
+            increasing order.
+
+            The first value assigned after each activation of a configured
+            interface entry is one.";
+          config false;
+        }
+
+        // Low-level model info: Corresponds to lldpV2RemLocalIfIndex.
+        leaf local-interface-name {
+          type interfaces:iface-base-name;
+          description
+            "The interface name on which this information was
+            discovered.
+
+            This corresponds to an interface used to identify the LLDP agent
+            that learnt the information.";
+          config false;
+        }
+
+        leaf local-interface-ext-id {
+          type interfaces:iface-ext-id;
+          description
+            "The interface extended id on which this information was
+            discovered.
+
+            This corresponds to an interface used to identify the LLDP agent
+            that learnt the information.";
+          config false;
+        }
+
+        // Low-level model info: Corresponds to lldpV2RemManAddrSubtype and lldpV2RemManAddr.
+        // Low-level model info: Note that only ipv4 and ipv6 address subtypes are currently supported.
+        leaf rem-man-addr {
+          type interfaces:iface-ip-address-t;
+          description
+            "The value used to identify the management address
+            component associated with the remote system.  The purpose
+            of this address is to contact the management entity.";
+          config false;
+        }
+
+        uses neighbor-mgmt-addr-state;
+
+      } // neighbor-mgmt-addr
+
+    } // neighbor-mgmt-addr-list
+
+  } // interface-parameters-for-lldp
+
+
+  container lldp {
+
+    description
+      "Configure LLDP";
+
+    user-ext:CLI-comm-help "Configure LLDP";
+    user-ext:CLI-no-comm-help "Remove LLDP";
+
+    presence "Enable LLDP";
+
+    leaf enable {
+      type empty;
+      description "Enable LLDP";
+
+      user-ext:CLI-comm-help "Enable LLDP";
+      user-ext:CLI-no-comm-help "Disable LLDP";
+    }
+
+    uses global-config-for-lldp;
+
+    container state {
+
+      config false;
+
+      uses global-state-for-lldp;
+
+    } // state
+
+    container interfaces {
+
+      if-feature interfaces:standard-interfaces;
+      user-ext:CLI-not-command;
+
+      list interface {
+
+        description "Per-interface LLDP configuration and state";
+        user-ext:CLI-comm-help "Configure LLDP on interface";
+        user-ext:CLI-no-comm-help "Configure LLDP on interface";
+
+        key "if-name";
+
+        leaf if-name {
+          type custom:iface-name;
+          description
+            "A unique identifier identifying the interface.";
+
+          user-ext:CLI-comm-help "Set interface name";
+          user-ext:CLI-param-help "Set interface name";
+        }
+
+        uses interface-parameters-for-lldp;
+
+      } // interface
+
+    } // interfaces
+
+    container custom-interfaces {
+
+      if-feature interfaces:custom-interfaces;
+      user-ext:CLI-not-command;
+
+      container interface {
+
+        description "Per-interface LLDP configuration and state";
+        user-ext:CLI-comm-help "Configure LLDP on interface";
+        user-ext:CLI-no-comm-help "Configure LLDP on interface";
+
+        container oneGE {
+
+          user-ext:CLI-not-command;
+
+          list gigabitethernet {
+
+            description "1G interface";
+
+            user-ext:CLI-comm-help "Add LLDP configuration to 1G interface";
+            user-ext:CLI-no-comm-help "Remove LLDP configuration from 1G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "1G interface name";
+            }
+
+            uses interface-parameters-for-lldp;
+
+          } // gigabitethernet
+
+        } // oneGE
+
+        container tenGE {
+
+          user-ext:CLI-not-command;
+
+          list tengigabitethernet {
+
+            description "10G interface";
+
+            user-ext:CLI-comm-help "Add LLDP configuration to 10G interface";
+            user-ext:CLI-no-comm-help "Remove LLDP configuration from 10G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "10G interface name";
+            }
+
+            uses interface-parameters-for-lldp;
+
+          } // tengigabitethernet
+
+        } // tenGE
+
+        container fortyGE {
+
+          user-ext:CLI-not-command;
+
+          list fortygigabitethernet {
+
+            description "40G interface";
+
+            user-ext:CLI-comm-help "Add LLDP configuration to 40G interface";
+            user-ext:CLI-no-comm-help "Remove LLDP configuration from 40G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "40G interface name";
+            }
+
+            uses interface-parameters-for-lldp;
+
+          } // fortygigabitethernet
+
+        } // fortyGE
+
+        container hundredGE {
+
+          user-ext:CLI-not-command;
+
+          list hundredgigabitethernet {
+
+            description "100G interface";
+
+            user-ext:CLI-comm-help "Add LLDP configuration to 100G interface";
+            user-ext:CLI-no-comm-help "Remove LLDP configuration from 100G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "100G interface name";
+            }
+
+            uses interface-parameters-for-lldp;
+
+          } // hundredgigabitethernet
+
+        } // hundredGE
+
+      } // interface
+
+    } // custom-interfaces
+
+  } // lldp
+
+} // lldp
+

@@ -1,0 +1,1326 @@
+module rip {
+
+  namespace "http://metaswitch.com/yang/nbu/rip/201609090000Z";
+
+  prefix rip;
+
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix "interfaces"; }
+  import metaswitch-yang-types { prefix meta; }
+  import redist { prefix redist; }
+  import metaswitch-custom-yang-types { prefix "custom"; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "RIP";
+
+  revision 2016-09-09 {
+    description "Initial revision.";
+  }
+
+  typedef rip-update-interval {
+    type uint32 {
+      range "1..50000";
+    }
+    description
+      "(1-50000)";
+  }
+
+  typedef rip-invalid-interval {
+    type uint32 {
+      range "1..2147483647";
+    }
+    description
+      "(1-2147483647)";
+  }
+
+  typedef rip-holddown-interval {
+    type uint32 {
+      range "1..255";
+    }
+    description
+      "(1-255)";
+  }
+
+  typedef rip-flush-interval {
+    type uint32 {
+      range "1..255";
+    }
+    description
+      "(1-255)";
+  }
+
+  typedef rip-metric-value {
+    type uint32 {
+      range "0..4294967295";
+    }
+    description
+      "(0-4294967295)";
+  }
+
+  typedef rip-authentication-type {
+    type enumeration {
+      enum no-authentication                { value 1; }
+      enum simple-password                  { value 2; }
+      enum md5                              { value 3; }
+      enum hmac-sha1                        { value 4; }
+      enum hmac-sha256                      { value 5; }
+      enum hmac-sha384                      { value 6; }
+      enum hmac-sha512                      { value 7; }
+    }
+    description
+      "RIP authentication type";
+  }
+
+  grouping rip-interface-config {
+
+    // Low-level model info: Corresponds to fields in AMB_RIP_IF_CONF (ripIfConfTable).
+
+    container send {
+
+      user-ext:CLI-comm-help "Configure outbound routing updates on interface";
+      user-ext:CLI-no-comm-help "Configure outbound routing updates on interface";
+
+      leaf disable {
+        type empty;
+        description
+          "Disable sending of RIP packets.";
+
+        user-ext:CLI-comm-help "Disable outbound routing updates on interface";
+        user-ext:CLI-no-comm-help "Enable outbound routing updates on interface";
+      }
+
+    }
+
+    container receive {
+
+      user-ext:CLI-comm-help "Configure inbound routing updates on interface";
+      user-ext:CLI-no-comm-help "Configure inbound routing updates on interface";
+
+      leaf disable {
+        type empty;
+        description
+          "Disable receiving of RIP packets.";
+
+        user-ext:CLI-comm-help "Disable inbound routing updates on interface";
+        user-ext:CLI-no-comm-help "Enable inbound routing updates on interface";
+      }
+
+    }
+
+    container bfd {
+
+      description
+        "BFD parameters.";
+
+      user-ext:CLI-comm-help "Configure BFD parameters on interface";
+      user-ext:CLI-no-comm-help "Configure BFD parameters on interface";
+
+      // Low-level model info: Corresponds to ripIfConfBfdDesired.
+      // Low-level model info: Note that the default is flipped.
+      leaf fast-detect {
+        type empty;
+        description
+          "Whether Bidirectional Forwarding Detection (BFD)
+          is desired on this interface.";
+
+        user-ext:CLI-comm-help "Enable BFD for this interface";
+        user-ext:CLI-no-comm-help "Disable BFD for this interface";
+      }
+
+    } // bfd
+
+  } // rip-interface-config
+
+  grouping rip-global-config {
+
+    // Low-level model info: Corresponds to fields in AMB_RIP_PM_ENT (ripPmEntTable).
+
+    container timers {
+
+      description
+        "RIP timers";
+
+      user-ext:CLI-comm-help "Configure RIP timers";
+      user-ext:CLI-no-comm-help "Configure RIP timers";
+
+      leaf update-interval {
+        type rip-update-interval;
+        units "seconds";
+        default "30";
+        description
+          "The frequency at which DC-RIP sends RIP periodic updates
+          to all of its peers.
+
+          A change to this value takes effect after the next
+          periodic update is sent.
+
+          This parameter has units of seconds, and must be non-zero.";
+
+        user-ext:CLI-comm-help "Set update interval in seconds";
+        user-ext:CLI-no-comm-help "Set update interval to default";
+        user-ext:CLI-param-help "Set update interval in seconds";
+      }
+
+      leaf invalid-interval {
+        type rip-invalid-interval;
+        units "milliseconds";
+        default "1000";
+        description
+          "The frequency with which RIP checks the routing table
+          for expired routes.
+
+          A change to this value takes effect after the next
+          scheduled route check.
+
+          This parameter has units of milliseconds, and must be
+          non-zero.";
+
+        user-ext:CLI-comm-help "Set invalid interval in milliseconds";
+        user-ext:CLI-no-comm-help "Set invalid interval to default";
+        user-ext:CLI-param-help "Set invalid interval in milliseconds";
+      }
+
+      leaf holddown-interval {
+        type rip-holddown-interval;
+        default "180";
+        description
+          "The period from the point of the last refresh after which
+          a route received from a peer times out and is marked as
+          expired.
+
+          This period is expressed as a multiple of the
+          invalid-interval.
+
+          A change to this value takes effect at the next scheduled
+          route check.";
+
+        user-ext:CLI-comm-help "Set holddown interval (multiple of invalid interval)";
+        user-ext:CLI-no-comm-help "Set holddown interval to default";
+        user-ext:CLI-param-help "Set holddown interval (multiple of invalid interval)";
+      }
+
+      leaf flush-interval {
+        type rip-flush-interval;
+        default "120";
+        description
+          "The period from the point of route expiry that a route is
+          finally removed from the routing table, also known as the
+          'garbage collection time'.
+
+          This period is expressed as a multiple of the
+          invalid-interval.
+
+          A change to this value takes effect at the next scheduled
+          route check.";
+
+        user-ext:CLI-comm-help "Set flush interval (multiple of invalid interval)";
+        user-ext:CLI-no-comm-help "Set flush interval to default";
+        user-ext:CLI-param-help "Set flush interval (multiple of invalid interval)";
+      }
+
+    } // timers
+
+    // Low-level model info: Following three fields correspond to fields in AMB_RIP_IF_CONF (ripIfConfTable) for default row.
+
+    container send {
+
+      user-ext:CLI-comm-help "Configure global outbound routing updates";
+      user-ext:CLI-no-comm-help "Configure global outbound routing updates";
+
+      leaf enable {
+        type empty;
+        description
+          "Enable sending of RIP packets.";
+
+        user-ext:CLI-comm-help "Enable global outbound routing updates";
+        user-ext:CLI-no-comm-help "Disable global outbound routing updates";
+      }
+
+    }
+
+    container receive {
+
+      user-ext:CLI-comm-help "Configure global inbound routing updates";
+      user-ext:CLI-no-comm-help "Configure global inbound routing updates";
+
+      leaf enable {
+        type empty;
+        description
+          "Enable receiving of RIP packets.";
+
+        user-ext:CLI-comm-help "Enable global inbound routing updates";
+        user-ext:CLI-no-comm-help "Disable global inbound routing updates";
+      }
+
+    }
+
+    container bfd {
+
+      description
+        "BFD parameters.";
+
+      user-ext:CLI-comm-help "Configure BFD parameters";
+      user-ext:CLI-no-comm-help "Configure BFD parameters";
+
+      // Low-level model info: Corresponds to ripIfConfBfdDesired.
+      // Low-level model info: Note that the default is flipped.
+      leaf fast-detect {
+        type empty;
+        description
+          "Whether Bidirectional Forwarding Detection (BFD)
+          is desired.";
+
+        user-ext:CLI-comm-help "Enable BFD";
+        user-ext:CLI-no-comm-help "Disable BFD";
+      }
+
+    } // bfd
+
+  } // rip-global-config
+
+  grouping rip-interface-config-parms {
+
+    container interfaces {
+
+      if-feature interfaces:standard-interfaces;
+      user-ext:CLI-not-command;
+
+      list interface {
+
+        description
+          "Configuration information defining protocol behavior on
+          all RIP adjacencies.  Rows are indexed either 1) by a
+          combination of a filter and a local IP address or 2) by
+          interface index, depending on the mode in which RIP is
+          configured to run.
+
+          In RIPv2 mode, the configuration is defined by a
+          combination of filter and local IP address.  The filter
+          defines the number of leading bits to use from the IP
+          address for matching the subnet's address, so that groups
+          of subnets can match a single inerface configuration.
+          However, currently the only values supported for the
+          filter are 0 and 32.  See the description of the filter
+          field for the usage of these values.
+
+          In RIPng mode, configuration is defined by an interface
+          index.
+
+          In both modes, the first entry in the table has a filter
+          length and interface index of zero, is created
+          automatically, and cannot be deleted.  This is the default
+          adjacency configuration for RIP.";
+
+        user-ext:CLI-comm-help "Configure RIP on interface";
+        user-ext:CLI-no-comm-help "Configure RIP on interface";
+
+        key "if-name";
+
+        leaf if-name {
+          type custom:iface-name;
+          description
+            "A unique identifier identifying the interface.";
+
+          user-ext:CLI-comm-help "Set interface name";
+          user-ext:CLI-param-help "Set interface name";
+        }
+
+        uses rip-interface-config;
+
+      } // interface
+
+    } // interfaces
+
+    container custom-interfaces {
+
+      if-feature interfaces:custom-interfaces;
+      user-ext:CLI-not-command;
+
+      container interface {
+
+        description
+          "Configuration information defining protocol behavior on
+          all RIP adjacencies.  Rows are indexed either 1) by a
+          combination of a filter and a local IP address or 2) by
+          interface index, depending on the mode in which RIP is
+          configured to run.
+
+          In RIPv2 mode, the configuration is defined by a
+          combination of filter and local IP address.  The filter
+          defines the number of leading bits to use from the IP
+          address for matching the subnet's address, so that groups
+          of subnets can match a single inerface configuration.
+          However, currently the only values supported for the
+          filter are 0 and 32.  See the description of the filter
+          field for the usage of these values.
+
+          In RIPng mode, configuration is defined by an interface
+          index.
+
+          In both modes, the first entry in the table has a filter
+          length and interface index of zero, is created
+          automatically, and cannot be deleted.  This is the default
+          adjacency configuration for the RIP entity.";
+
+        user-ext:CLI-comm-help "Configure RIP on interface";
+        user-ext:CLI-no-comm-help "Configure RIP on interface";
+
+        container oneGE {
+
+          user-ext:CLI-not-command;
+
+          list gigabitethernet {
+
+            description "1G interface";
+
+            user-ext:CLI-comm-help "Add RIP configuration to 1G interface";
+            user-ext:CLI-no-comm-help "Remove RIP configuration from 1G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "1G interface name";
+            }
+
+            uses rip-interface-config;
+
+          } // gigabitethernet
+
+        } // oneGE
+
+        container tenGE {
+
+          user-ext:CLI-not-command;
+
+          list tengigabitethernet {
+
+            description "10G interface";
+
+            user-ext:CLI-comm-help "Add RIP configuration to 10G interface";
+            user-ext:CLI-no-comm-help "Remove RIP configuration from 10G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "10G interface name";
+            }
+
+            uses rip-interface-config;
+
+          } // tengigabitethernet
+
+        } // tenGE
+
+        container fortyGE {
+
+          user-ext:CLI-not-command;
+
+          list fortygigabitethernet {
+
+            description "40G interface";
+
+            user-ext:CLI-comm-help "Add RIP configuration to 40G interface";
+            user-ext:CLI-no-comm-help "Remove RIP configuration from 40G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "40G interface name";
+            }
+
+            uses rip-interface-config;
+
+          } // fortygigabitethernet
+
+        } // fortyGE
+
+        container hundredGE {
+
+          user-ext:CLI-not-command;
+
+          list hundredgigabitethernet {
+
+            description "100G interface";
+
+            user-ext:CLI-comm-help "Add RIP configuration to 100G interface";
+            user-ext:CLI-no-comm-help "Remove RIP configuration from 100G interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:eth-iface-num-t;
+              description "<unit>/<dev>/<port>";
+              user-ext:CLI-param-help "100G interface name";
+            }
+
+            uses rip-interface-config;
+
+          } // hundredgigabitethernet
+
+        } // hundredGE
+
+        container bundle-ifaces {
+
+          user-ext:CLI-not-command;
+          user-ext:CLI-comm-switch "bundle-ether/bundle-ether-sub";
+
+          list bundle-ether {
+
+            description "Specify the attachment bundle-ether interface";
+
+            user-ext:CLI-comm-help "Specify the attachment bundle-ether interface";
+            user-ext:CLI-no-comm-help "Specify the attachment bundle-ether interface";
+
+            key "bundle-id";
+
+            leaf bundle-id {
+              type interfaces:bundle-id-t;
+              description "Bundle-ether id";
+              user-ext:CLI-param-help "Bundle-ether interface";
+            }
+
+            uses rip-interface-config;
+          }
+
+          list bundle-ether-sub {
+
+            description "Specify the attachment bundle-ether sub-interface";
+
+            user-ext:CLI-comm-help "Configure attachment bundle-ether sub-interface";
+            user-ext:CLI-no-comm-help "Remove attachment bundle-ether sub-interface";
+
+            key "bundle-id";
+
+            leaf bundle-id {
+              type interfaces:bundle-sub-id-t;
+              description "Bundle-ether id";
+              user-ext:CLI-param-help "Bundle-ether sub-interface";
+            }
+
+            uses rip-interface-config;
+          }
+
+        } // bundle-ifaces
+
+        container spec-ifaces {
+
+          user-ext:CLI-not-command;
+
+          list loopback {
+
+            description "Loopback interface";
+
+            user-ext:CLI-comm-help "Add RIP configuration to loopback interface";
+            user-ext:CLI-no-comm-help "Remove RIP configuration from loopback interface";
+
+            key "if-num";
+
+            leaf if-num {
+              type interfaces:loopback-id-t;
+              description "Loopback ID";
+              user-ext:CLI-param-help "Loopback ID";
+            }
+
+            uses rip-interface-config;
+
+          } // loopback
+
+        } // spec-ifaces
+
+      } // interface
+
+    } // custom-interfaces
+
+  } // rip-interface-config-parms
+
+  grouping rip-redist {
+
+    // Low-level model info: Corresponds to new route attributes in AMB_CIPR_RTM_REDIST (rtmRedistTable)
+
+    user-ext:CLI-comm-help "Configure OSPFv2 redistribution parameters";
+    user-ext:CLI-no-comm-help "Configure OSPFv2 redistribution parameters";
+
+    // Low-level model info: Corresponds to rtmRedistMetricConv
+    leaf metric-conversion {
+      type redist:rtm-metric-conversion;
+      default "constant";
+
+      description
+        "How to act on the value of the metric in the routing information received from the source.";
+
+      user-ext:CLI-comm-help "Set metric conversion action";
+      user-ext:CLI-no-comm-help "Set metric conversion action to default";
+      user-ext:CLI-param-help "Set metric conversion action";
+    }
+
+    // Low-level model info: Corresponds to rtmRedistMetricValue
+    leaf metric-value {
+      type rip-metric-value;
+      description
+        "Use when creating a value for the metric in the routing information sent to the destination.";
+
+      user-ext:CLI-comm-help "Set metric value";
+      user-ext:CLI-no-comm-help "Set metric value to default";
+      user-ext:CLI-param-help "Set metric value";
+    }
+
+  } // rip-redist
+
+  grouping rip-interface-state {
+
+    // Low-level model info: Corresponds to read-only fields in AMB_RIP_IF_STAT (ripIfStatTable).
+
+    leaf authentication-type {
+      type rip-authentication-type;
+      description
+        "The authentication type of this adjacency.";
+      config false;
+    }
+
+    leaf send {
+      type boolean;
+      description
+        "The send setting for this adjacency.";
+      config false;
+    }
+
+    leaf receive {
+      type boolean;
+      description
+        "The send setting for this adjacency.";
+      config false;
+    }
+
+    leaf default-metric {
+      type int32;
+      description
+        "The default metric configuration for this adjacency.";
+      config false;
+    }
+
+  } // rip-interface-state
+
+  grouping rip-interface-stats {
+
+    // Low-level model info: Corresponds to read-only fields in AMB_RIP_IF_STAT (ripIfStatTable).
+
+    leaf number-received-bad-packets {
+      type uint32;
+      description
+        "The number of RIP packets received which were
+        subsequently discarded for any reason.  This includes
+        invalid version, unknown command type, local resource
+        failure and authentication failure.";
+      config false;
+    }
+
+    leaf number-received-bad-routes {
+      type uint32;
+      description
+        "The number of routes, in valid RIP packets, which were
+        ignored for any reason.  This includes unknown address
+        family, invalid metric or a local resource failure.  It
+        does not include routes ignored for policy reasons.";
+      config false;
+    }
+
+    leaf number-sent-updates {
+      type uint32;
+      description
+        "The number of triggered RIP updates actually sent on this
+        interface.  This explicitly does NOT include full updates
+        sent containing new information.";
+      config false;
+    }
+
+  }  // rip-interface-stats
+
+  grouping rip-interface-state-parms {
+
+    uses interfaces:iface-id;
+
+    container state {
+
+      // Low-level model info: Corresponds to read-only fields in AMB_RIP_IF_STAT (ripIfStatTable).
+
+      config false;
+
+      container ipv4 {
+
+        config false;
+
+        uses rip-interface-state;
+
+      } // ipv4
+
+      container ipv6 {
+
+        config false;
+
+        uses rip-interface-state;
+
+      } // ipv6
+
+    } // state
+
+    container stats {
+
+      // Low-level model info: Corresponds to read-only fields in AMB_RIP_IF_STAT (ripIfStatTable).
+
+      config false;
+
+      container ipv4 {
+
+        config false;
+
+        uses rip-interface-stats;
+
+      } // ipv4
+
+      container ipv6 {
+
+        config false;
+
+        uses rip-interface-stats;
+
+      } // ipv6
+
+    } // stats
+
+  } // rip-interface-state-parms
+
+  grouping rip-route-administrative-distance {
+
+    container admin-distance {
+
+      description
+        "Configure administrative distances for RIP routes";
+
+      user-ext:CLI-comm-help "Configure administrative distances for RIP routes";
+      user-ext:CLI-no-comm-help "Configure administrative distances for RIP routes";
+
+      // Low-level model info: Corresponds to rtmEntityDsRip
+      leaf rip {
+        type redist:rtm-admin-distance;
+        default "120";
+
+        user-ext:CLI-comm-help "Set administrative distance used for RIP routes";
+        user-ext:CLI-no-comm-help "Set administrative distance used for RIP routes to default";
+        user-ext:CLI-param-help "Set administrative distance used for RIP routes";
+        description
+          "The administrative distance to use for RIP routes.  The lower the
+          administrative distance for a type of route, the more likely a route
+          of this type will be used as the active route for the given destination.";
+      }
+    }
+
+  } // rip-route-administrative-distance
+
+  grouping rip-instance {
+
+    // Low-level model info: Corresponds to fields in both AMB_RIP_TM_ENT (ripTmEntTable) and AMB_RIP_NM_ENT (ripNmEntTable).
+
+    uses rip-global-config;
+
+    uses rip-interface-config-parms;
+
+    container address-family {
+
+      description
+        "Configure RIP for address-family";
+
+      user-ext:CLI-comm-help "Configure RIP for address-family";
+      user-ext:CLI-no-comm-help "Configure RIP for address-family";
+
+      container ipv4 {
+
+        description
+          "Configure IPv4 RIP";
+
+        user-ext:CLI-comm-help "Configure IPv4 RIP";
+        user-ext:CLI-no-comm-help "Configure IPv4 RIP";
+
+        container redistribution {
+
+          // Low-level model info: Corresponds to AMB_CIPR_RTM_REDIST (rtmRedistTable).
+
+          description
+            "Redistribution information entries.
+            This list is used to determine how routing information is
+            redistributed to routing protocol managers (RPMs). The RPM to which
+            the information may be redistributed is called the
+            destination RPM.  Routing information is received from RPMs
+            and from configuration (for static routes); these are referred to
+            as the routing information source.";
+
+          user-ext:CLI-comm-help "Configure redistribution information";
+          user-ext:CLI-no-comm-help "Configure or remove redistribution information";
+
+        // Low-level model info: Corresponds to rtmRedistInfoSrc = bgp.
+          list bgp {
+
+            key "name";
+
+            // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+            leaf name {
+              type redist:redist-name-string;
+
+              user-ext:CLI-param-help "Set redistribution rule name";
+              description
+                "Session name";
+            }
+
+            user-ext:CLI-comm-help "Configure BGP redistribution rule";
+            user-ext:CLI-no-comm-help "Configure BGP redistribution rule";
+
+            uses redist:common-redist-ipv4;
+
+            leaf path-type-filter {
+              type redist:bgp-redist-path-types;
+              default "bgp-external";
+              description
+                "Value of BGP path type filter, if in use.  If the filter is in
+                use then do not match the source routing information to
+                this entry if the path type in the source routing
+                information does not match this filter value.";
+
+              user-ext:CLI-comm-help "Set path type filter";
+              user-ext:CLI-no-comm-help "Set path type filter to default";
+              user-ext:CLI-param-help "Set path type filter";
+            }
+
+            uses rip-redist;
+          }
+
+          // Low-level model info: Corresponds to rtmRedistInfoSrc = isis.
+          list isis {
+
+            key "name";
+
+            // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+            leaf name {
+              type redist:redist-name-string;
+
+              user-ext:CLI-param-help "Rule name";
+              description
+                "Redistribution rule name";
+            }
+
+            user-ext:CLI-comm-help "Configure IS-IS redistribution rule";
+            user-ext:CLI-no-comm-help "Configure IS-IS redistribution rule";
+
+            uses redist:common-redist-ipv4;
+
+            leaf path-type-filter {
+              type redist:isis-redist-path-types;
+              default "none";
+              description
+                "Value of IS-IS path type filter, if in use.  If the filter is in
+                use then do not match the source routing information to
+                this entry if the path type in the source routing
+                information does not match this filter value.";
+
+              user-ext:CLI-comm-help "Set path type filter";
+              user-ext:CLI-no-comm-help "Set path type filter to default";
+              user-ext:CLI-param-help "Set path type filter";
+            }
+
+            uses rip-redist;
+
+            // Low-level model info: Corresponds to rtmRedistIsisTag and rtmRedistIsisTagFlt
+            leaf admin-tag {
+              type redist:redist-admin-tag;
+              description
+                "Value of IS-IS tag filter.";
+
+              user-ext:CLI-comm-help "Set IS-IS tag filter";
+              user-ext:CLI-no-comm-help "Set IS-IS tag filter to default";
+              user-ext:CLI-param-help "Set IS-IS tag filter";
+            }
+          }
+
+          // Low-level model info: Corresponds to rtmRedistInfoSrc = ospf.
+          list ospf {
+
+            user-ext:CLI-comm-help "Configure OSPF redistribution rule";
+            user-ext:CLI-no-comm-help "Remove OSPF redistribution rule";
+
+            key "name";
+
+            // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+            leaf name {
+              type redist:redist-name-string;
+
+              user-ext:CLI-param-help "Rule name";
+              description
+                "Redistribution rule name";
+            }
+
+            uses redist:common-redist-ipv4;
+
+            leaf path-type-filter {
+              type redist:ospf-redist-path-types;
+              default "none";
+              description
+                "Value of OSPF path type filter, if in use.  If the filter is in
+                use then do not match the source routing information to
+                this entry if the path type in the source routing
+                information does not match this filter value.";
+
+              user-ext:CLI-comm-help "Set path type filter";
+              user-ext:CLI-no-comm-help "Set path type filter to default";
+              user-ext:CLI-param-help "Set path type filter";
+            }
+
+            uses rip-redist;
+          }
+
+          // Low-level model info: Corresponds to rtmRedistInfoSrc = static.
+          list static {
+
+            user-ext:CLI-comm-help "Configure static redistribution rule";
+            user-ext:CLI-no-comm-help "Configure static redistribution rule";
+
+            key "name";
+
+            // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+            leaf name {
+              type redist:redist-name-string;
+
+              user-ext:CLI-param-help "Rule name";
+              description
+                "Redistribution rule name";
+            }
+
+            uses redist:common-redist-ipv4;
+            uses rip-redist;
+          }
+
+          // Low-level model info: Corresponds to rtmRedistInfoSrc = i3-connected.
+          list connected {
+
+            key "name";
+
+            // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+            leaf name {
+              type redist:redist-name-string;
+
+              user-ext:CLI-param-help "Rule name";
+              description
+                "Redistribution rule name";
+            }
+
+            user-ext:CLI-comm-help "Configure connected redistribution rule";
+            user-ext:CLI-no-comm-help "Configure connected redistribution rule";
+
+            uses redist:common-redist-ipv4;
+            uses rip-redist;
+          }
+
+          // Low-level model info: Corresponds to rtmRedistPathType  = i3-local.
+          list local {
+
+            user-ext:CLI-comm-help "Configure local redistribution rule";
+            user-ext:CLI-no-comm-help "Remove local redistribution rule";
+
+            key "name";
+
+            // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+            leaf name {
+              type redist:redist-name-string;
+
+              user-ext:CLI-param-help "Rule name";
+              description
+                "Redistribution rule name";
+            }
+
+            uses redist:common-redist-ipv4;
+            uses rip-redist;
+
+            // Low-level model info: Corresponds to rtmRedistFullSpecFilter.
+            uses redist:fully-specified;
+          }
+
+        } // redistribution
+
+        uses rip-route-administrative-distance;
+
+      } // ipv4
+
+      container ipv6 {
+
+        description
+          "Configure IPv4 RIP";
+
+        user-ext:CLI-comm-help "Configure IPv4 RIP";
+        user-ext:CLI-no-comm-help "Configure IPv4 RIP";
+
+        container redistribution {
+
+          // Low-level model info: Corresponds to AMB_CIPR_RTM_REDIST (rtmRedistTable).
+
+          description
+            "Redistribution information entries.
+            This list is used to determine how routing information is
+            redistributed to routing protocol managers (RPMs). The RPM to which
+            the information may be redistributed is called the
+            destination RPM.  Routing information is received from RPMs
+            and from configuration (for static routes); these are referred to
+            as the routing information source.";
+
+          user-ext:CLI-comm-help "Configure redistribution information";
+          user-ext:CLI-no-comm-help "Configure or remove redistribution information";
+
+        // Low-level model info: Corresponds to rtmRedistInfoSrc = bgp.
+          list bgp {
+
+            key "name";
+
+            // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+            leaf name {
+              type redist:redist-name-string;
+
+              user-ext:CLI-param-help "Set redistribution rule name";
+              description
+                "Session name";
+            }
+
+            user-ext:CLI-comm-help "Configure BGP redistribution rule";
+            user-ext:CLI-no-comm-help "Configure BGP redistribution rule";
+
+            uses redist:common-redist-ipv6;
+
+            leaf path-type-filter {
+              type redist:bgp-redist-path-types;
+              default "bgp-external";
+              description
+                "Value of BGP path type filter, if in use.  If the filter is in
+                use then do not match the source routing information to
+                this entry if the path type in the source routing
+                information does not match this filter value.";
+
+              user-ext:CLI-comm-help "Set path type filter";
+              user-ext:CLI-no-comm-help "Set path type filter to default";
+              user-ext:CLI-param-help "Set path type filter";
+            }
+
+            uses rip-redist;
+          }
+
+          // Low-level model info: Corresponds to rtmRedistInfoSrc = isis.
+          list isis {
+
+            key "name";
+
+            // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+            leaf name {
+              type redist:redist-name-string;
+
+              user-ext:CLI-param-help "Rule name";
+              description
+                "Redistribution rule name";
+            }
+
+            user-ext:CLI-comm-help "Configure IS-IS redistribution rule";
+            user-ext:CLI-no-comm-help "Configure IS-IS redistribution rule";
+
+            uses redist:common-redist-ipv6;
+
+            leaf path-type-filter {
+              type redist:isis-redist-path-types;
+              default "none";
+              description
+                "Value of IS-IS path type filter, if in use.  If the filter is in
+                use then do not match the source routing information to
+                this entry if the path type in the source routing
+                information does not match this filter value.";
+
+              user-ext:CLI-comm-help "Set path type filter";
+              user-ext:CLI-no-comm-help "Set path type filter to default";
+              user-ext:CLI-param-help "Set path type filter";
+            }
+
+            uses rip-redist;
+
+            // Low-level model info: Corresponds to rtmRedistIsisTag and rtmRedistIsisTagFlt
+            leaf admin-tag {
+              type redist:redist-admin-tag;
+              description
+                "Value of IS-IS tag filter.";
+
+              user-ext:CLI-comm-help "Set IS-IS tag filter";
+              user-ext:CLI-no-comm-help "Set IS-IS tag filter to default";
+              user-ext:CLI-param-help "Set IS-IS tag filter";
+            }
+          }
+
+          // Low-level model info: Corresponds to rtmRedistInfoSrc = ospf.
+          list ospf {
+
+            user-ext:CLI-comm-help "Configure OSPF redistribution rule";
+            user-ext:CLI-no-comm-help "Remove OSPF redistribution rule";
+
+            key "name";
+
+            // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+            leaf name {
+              type redist:redist-name-string;
+
+              user-ext:CLI-param-help "Rule name";
+              description
+                "Redistribution rule name";
+            }
+
+            uses redist:common-redist-ipv6;
+
+            leaf path-type-filter {
+              type redist:ospf-redist-path-types;
+              default "none";
+              description
+                "Value of OSPF path type filter, if in use.  If the filter is in
+                use then do not match the source routing information to
+                this entry if the path type in the source routing
+                information does not match this filter value.";
+
+              user-ext:CLI-comm-help "Set path type filter";
+              user-ext:CLI-no-comm-help "Set path type filter to default";
+              user-ext:CLI-param-help "Set path type filter";
+            }
+
+            uses rip-redist;
+          }
+
+          // Low-level model info: Corresponds to rtmRedistInfoSrc = static.
+          list static {
+
+            user-ext:CLI-comm-help "Configure static redistribution rule";
+            user-ext:CLI-no-comm-help "Configure static redistribution rule";
+
+            key "name";
+
+            // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+            leaf name {
+              type redist:redist-name-string;
+
+              user-ext:CLI-param-help "Rule name";
+              description
+                "Redistribution rule name";
+            }
+
+            uses redist:common-redist-ipv6;
+            uses rip-redist;
+          }
+
+          // Low-level model info: Corresponds to rtmRedistInfoSrc = i3-connected.
+          list connected {
+
+            key "name";
+
+            // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+            leaf name {
+              type redist:redist-name-string;
+
+              user-ext:CLI-param-help "Rule name";
+              description
+                "Redistribution rule name";
+            }
+
+            user-ext:CLI-comm-help "Configure connected redistribution rule";
+            user-ext:CLI-no-comm-help "Configure connected redistribution rule";
+
+            uses redist:common-redist-ipv6;
+            uses rip-redist;
+          }
+
+          // Low-level model info: Corresponds to rtmRedistPathType  = i3-local.
+          list local {
+
+            user-ext:CLI-comm-help "Configure local redistribution rule";
+            user-ext:CLI-no-comm-help "Remove local redistribution rule";
+
+            key "name";
+
+            // Low-level model info: An unique rtmRedistEntryId will be generated for each entry
+            leaf name {
+              type redist:redist-name-string;
+
+              user-ext:CLI-param-help "Rule name";
+              description
+                "Redistribution rule name";
+            }
+
+            uses redist:common-redist-ipv6;
+            uses rip-redist;
+
+            // Low-level model info: Corresponds to rtmRedistFullSpecFilter.
+            uses redist:fully-specified;
+          }
+
+        } // redistribution
+
+        uses rip-route-administrative-distance;
+
+      } // ipv6
+
+    } // address-family
+
+    container interface-state-list {
+
+      description "Container to hold per-interface RIP state.";
+
+      config false;
+
+      list interface-state {
+
+        description "Per-interface RIP state";
+
+        config false;
+
+        uses rip-interface-state-parms;
+
+      } // interface-state
+
+    } // interface-state-list
+
+    container neighbor-state-list {
+
+      description
+        "Container to hold Neighbor state.";
+
+      config false;
+
+      list neighbor-state {
+
+        // Low-level model info: Corresponds to AMB_RIP_PEER (ripPeerTable).
+
+        config false;
+
+        leaf address {
+          type interfaces:iface-ip-address-t;
+          description
+            "The IP Address that the peer is using as its source
+            address.  Note that on an unnumbered link, this may not be
+            a member of any subnet on the system.";
+          config false;
+        }
+
+        leaf last-update {
+          type uint32;
+          description
+            "The value of sysUpTime when the most recent RIP update was
+            received from this system.";
+          config false;
+        }
+
+        leaf version {
+          type int32;
+          description
+            "The RIP version number in the header of the last RIP
+            packet received.";
+          config false;
+        }
+
+        leaf bfd-status {
+          type meta:bfd-sess-states;
+          description
+            "BFD session state for this peer.";
+          config false;
+        }
+
+        container stats {
+
+          config false;
+
+          leaf number-received-bad-packets {
+            type uint32;
+            description
+              "The number of RIP response packets from this peer
+              discarded as invalid.";
+            config false;
+          }
+
+          leaf number-received-bad-routes {
+            type uint32;
+            description
+              "The number of routes from this peer that were ignored
+              because the entry format was invalid.";
+            config false;
+          }
+
+        } //stats
+
+      } // neighbor-state
+
+    } // neighbor-state-list
+
+  } // rip-instance
+
+  container router {
+
+    description
+      "Configure router";
+
+    user-ext:CLI-comm-help "Configure router";
+    user-ext:CLI-no-comm-help "Configure router";
+
+    container rip {
+
+      presence "Enable Protocol Independent Multicast.";
+
+      description
+        "This table is used to create and manage RIP.";
+
+      user-ext:CLI-comm-help "Configure RIP";
+      user-ext:CLI-no-comm-help "Configure RIP";
+
+      container global {
+
+        user-ext:CLI-not-command;
+        uses rip-instance;
+
+      } // global
+
+      list vrf {
+
+        description
+            "VRF RIP configuration";
+
+        user-ext:CLI-comm-help "Configure RIP in VRF";
+        user-ext:CLI-no-comm-help "Remove RIP in VRF";
+
+        key "vrf-name";
+
+        leaf vrf-name {
+          type meta:l3vpn-vrf-name;
+          description
+            "The name of this VRF.  This MAY be equivalent to the RFC2685 VPN-ID.";
+
+          user-ext:CLI-comm-help "Associate configuration with VRF";
+          user-ext:CLI-no-comm-help "Clear VRF association";
+        }
+
+        uses rip-instance;
+
+      } // vrf
+
+    } // rip
+
+  } // router
+
+} // rip

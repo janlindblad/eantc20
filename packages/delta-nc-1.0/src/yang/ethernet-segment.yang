@@ -1,0 +1,345 @@
+module ethernet-segment {
+
+  namespace "http://metaswitch.com/yang/nbu/ethernet-segment/201703160000Z";
+
+  prefix ethernet-segment;
+
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix "interfaces"; }
+  import metaswitch-yang-types { prefix meta; }
+  import metaswitch-custom-yang-types { prefix "custom"; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "EVPN Ethernet Segments";
+
+  revision 2017-03-16 {
+    description "Initial revision.";
+  }
+
+
+  typedef evpn-status-t {
+    type enumeration {
+      enum up {
+        description "Status is up";
+      }
+
+      enum down {
+        description "Status is down";
+      }
+    }
+    description "Status values";
+  }
+
+  typedef esi-t {
+    type string {
+      pattern "([0-9a-fA-F]{2})(:[0-9a-fA-F]{2}){9}";
+    }
+    description "Ethernet Segment Identifier";
+  }
+
+  typedef election-wait-time-t {
+    type uint32 {
+      range "0..3600";
+    }
+    description "(0..3600)";
+  }
+
+  grouping bgp-params {
+
+    description
+      "BGP parameters";
+
+    leaf rd {
+      type meta:bgp-route-distinguisher;
+      description
+        "The configured route distinguisher for this EVI";
+
+      user-ext:CLI-comm-help "Set the Route Distinguisher";
+      user-ext:CLI-no-comm-help "Use default Route Distinguisher";
+      user-ext:CLI-param-help "Set the Route Distinguisher";
+    }
+
+    leaf rt {
+      type meta:route-target-value-t;
+      description
+        "The route target for this EVPN instance";
+
+      user-ext:CLI-comm-help "Set the Route Target";
+      user-ext:CLI-no-comm-help "Use default Route Target";
+      user-ext:CLI-param-help "Set the Route Target";
+    }
+
+  } // bgp-params
+
+  /* EVPN Ethernet Segment YANG Model */
+
+  grouping ethernet-segment-config {
+
+    // Low-level model info: Corresponds to evpnEsTable
+    description "Ethernet segment configuration";
+
+    container evpn-ethernet-segment {
+
+      description
+        "Ethernet segment configuration";
+
+      user-ext:CLI-comm-help "Configure an EVPN Ethernet Segment";
+      user-ext:CLI-no-comm-help "Remove an EVPN Ethernet Segment";
+
+      // Low-level model info: Corresponds to evpnEsIdentifier
+      leaf esi {
+        type esi-t;
+        description "Ethernet segment identifier (ESI)";
+
+        user-ext:CLI-comm-help "Set the Ethernet Segment Identifier";
+        user-ext:CLI-no-comm-help "Remove the Ethernet Segment Identifier";
+        user-ext:CLI-param-help "Set the Ethernet Segment Identifier";
+      }
+
+      must "(single-homed-mode) or (all-active-mode)" {
+         error-message "Multi-homing mode must be specified";
+      }
+
+      // Low-level model info: Corresponds to evpnEsMode
+      choice active-mode {
+        description "Choice of multi-homing mode";
+        case single-homed {
+          leaf single-homed-mode {
+            type empty;
+            description "single-homed-mode";
+
+            user-ext:CLI-comm-help "Force single-homed";
+            user-ext:CLI-no-comm-help "Reset multi-homed mode to default";
+          }
+        }
+        case all-active {
+          leaf all-active-mode {
+            type empty;
+            description "all-active-mode";
+
+            user-ext:CLI-comm-help "Enable all-active multi-homing";
+            user-ext:CLI-no-comm-help "Reset multi-homed mode to default";
+          }
+        }
+      } // active-mode
+
+      // Low-level model info: Corresponds to evpnEsRouteDistinguisher
+      // and evpnEsRouteTarget
+      container bgp {
+        description
+          "BGP parameters";
+
+        user-ext:CLI-comm-help "Configure BGP parameters";
+        user-ext:CLI-no-comm-help "Remove BGP parameter configuration";
+
+        uses bgp-params;
+      } // bgp
+
+      // Low-level model info: Corresponds to evpnEsDfElectionWaitTime
+      container df-election {
+        description
+          "df-election";
+
+        user-ext:CLI-comm-help "Configure DF election parameters";
+        user-ext:CLI-no-comm-help "Remove DF election configuration";
+
+        leaf wait-time {
+          type election-wait-time-t;
+          units "seconds";
+          default 3;
+          description
+            "DF election wait time";
+
+          user-ext:CLI-comm-help "Set the DF election wait time";
+          user-ext:CLI-no-comm-help "Reset DF election wait time to default";
+          user-ext:CLI-param-help "Set the DF election wait time";
+        }
+      } // df-election
+    } // evpn-ethernet-segment
+  } // ethernet-segment-config
+
+  grouping ethernet-segment-state {
+    description "Ethernet segment operational state";
+
+    // Low-level model info: Corresponds to evpnEsStateTable
+    container evpn-ethernet-segment-state {
+      config false;
+      description "Ethernet segment operational state";
+
+      // Low-level model info: Corresponds to evpnEsStateStatus
+      leaf status {
+        type evpn-status-t;
+        description
+          "Ethernet Segment status";
+      }
+
+      // Low-level model info: Corresponds to evpnEsStateIfStatus
+      leaf interface-status {
+        type evpn-status-t;
+        description
+          "Interface status";
+      }
+
+      // Low-level model info: Corresponds to evpnEsStateIdentifier
+      leaf esi {
+        type esi-t;
+        description
+          "Ethernet segment identifier (ESI)";
+      }
+
+      // Low-level model info: Corresponds to evpnEsStateMode
+      leaf active-mode {
+        type string;
+        description
+          "Single-homed-mode/all-active-mode";
+      }
+
+      // Low-level model info: Corresponds to evpnEsStateRouteDistinguisher
+      // and evpnEsStateTarget
+      container bgp {
+
+        config false;
+
+        description
+          "BGP parameters";
+
+        uses bgp-params;
+      }
+
+      container df-election {
+
+        config false;
+        description
+          "DF election parameters";
+
+        // Low-level model info: Corresponds to evpnEsStateDfElectionWaitTime
+        leaf wait-time {
+          type election-wait-time-t;
+          description
+            "DF election wait time";
+        }
+      }
+
+      // Low-level model info: Corresponds to evpnEsMemberTable
+      container member-list {
+
+        config false;
+        description
+          "Members of the Ethernet Segment";
+
+        list member {
+
+          description
+            "Member of the Ethernet Segment";
+
+          // Low-level model info: Corresponds to evpnEsMemberAddr
+          leaf ip-address {
+            type interfaces:iface-ip-address-t;
+            description "IP address of an ES member";
+          }
+        }
+      }
+
+      // Low-level model info: Corresponds to evpnEsDfTable
+      container df-list {
+
+        config false;
+        description
+          "Ethernet Segment Designated Forwarder list";
+
+        list df {
+
+          config false;
+          description
+            "Ethernet Segment Designated Forwarder on a VLAN";
+
+          // Low-level model info: Corresponds to evpnEsDfVlan
+          leaf vlan {
+            type uint32;
+            description
+              "VLAN identifier";
+          }
+
+          // Low-level model info: Corresponds to evpnEsDfAddr
+          leaf ip-address {
+            type interfaces:iface-ip-address-t;
+            description
+              "Designated forwarder IP address";
+          }
+        }
+      } // df-list
+    } // evpn-ethernet-segment-state
+  } // ethernet-segment-state
+
+  container ethernet-segment {
+
+    user-ext:CLI-not-command;
+    description
+      "Ethernet Segments";
+
+    container interfaces {
+
+      user-ext:CLI-not-command;
+      description
+        "Ethernet Segment configuration";
+
+      list interface {
+
+        if-feature interfaces:standard-interfaces;
+        key "if-name";
+        description
+          "EVPN Ethernet Segment configuration.";
+
+        user-ext:CLI-comm-help "Configure interface as EVPN Ethernet Segment";
+        user-ext:CLI-no-comm-help "Remove EVPN Ethernet Segment configuration";
+
+        leaf if-name {
+          type custom:iface-name;
+          description
+            "A unique identifier identifying the interface.";
+
+          user-ext:CLI-comm-help "Interface name";
+          user-ext:CLI-param-help "Interface name";
+        }
+
+        uses ethernet-segment-config;
+
+      } // interface
+    } // interfaces
+
+    container interface-state {
+
+      config false;
+      user-ext:CLI-not-command;
+      description
+        "Ethernet Segment state";
+
+      list interface {
+
+        if-feature interfaces:standard-interfaces;
+
+        description "Per-interface EVPN configuration and state.";
+
+        leaf if-name {
+          type interfaces:iface-name;
+          description
+            "A unique identifier identifying the interface.";
+        }
+
+        uses ethernet-segment-state;
+
+      } // interface
+    } // interface-state
+  } // ethernet-segment
+}
+

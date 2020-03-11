@@ -1,0 +1,159 @@
+module adva-dnos-lags {
+
+  yang-version "1";
+
+  // namespace
+  namespace  "http://www.advaoptical.com/cim/adva-dnos-lags";
+
+  prefix "adva-dnos-lags";
+
+  import iana-if-type { prefix ift; }
+  import openconfig-vlan-types { prefix oc-vlan-types; }
+  import openconfig-interfaces { prefix oc-if; }
+  import openconfig-if-ethernet { prefix oc-eth; }
+  import openconfig-extensions { prefix oc-ext; }
+  import openconfig-if-aggregate { prefix oc-lag; }
+  import adva-dnos-types { prefix adva-types; }
+  
+  // meta
+  organization "ADVA Optical Networking";
+
+  contact
+    "ADVA Optical Networking
+    www.advaoptical.com";
+
+  description
+    "This module defines data related to ADVA LAG components in the
+    OpenConfig interface model for Agema family.";
+
+  oc-ext:openconfig-version "0.1.1";
+
+  revision "2019-03-03" {
+    description
+      "Initial revision.";
+    reference "0.1.0";
+  }
+
+  // OpenConfig specific extensions for module metadata.
+
+  // identity statements
+
+  // typedef statements
+
+  // grouping statements
+
+  grouping adva-lag-config {
+    description
+      "Data for ADVA LAG";
+
+    // empty now, maybe we'll need it later
+  }
+  
+  grouping adva-lag-state {
+    description
+      "Data for ADVA LAG";
+
+    leaf link {
+      type string;
+      description
+        "Port link status";
+    }
+
+    leaf blocking {
+      type string;
+      description
+        "Port blocking status";
+    }
+
+	  uses adva-lag-config;
+  }
+  
+  grouping adva-lag-members {
+    description
+      "Replace conditional OC member leaf with not conditional";
+
+    leaf-list member {
+      type oc-if:base-interface-ref;
+      description
+        "List of current member interfaces for the aggregate,
+        expressed as references to existing interfaces";
+    }
+  }
+
+ grouping adva-lag-lacp-config {
+    description
+      "Data for ADVA LAG LACP";
+
+    leaf lacp-mode {
+      type adva-types:lacp-mode-type;
+      description
+        "Set LAG LACP mode";
+    }
+ }
+ 
+  // data definition statements
+
+  // augment statements
+
+  augment /oc-if:interfaces/oc-if:interface/oc-eth:ethernet/oc-eth:state {
+    when "../../oc-if:config/oc-if:type = 'ift:ieee8023adLag'";
+
+    description
+      "Adding ADVA LAG state data to ethernet interface model";
+
+    uses adva-lag-state;
+  }
+
+  augment /oc-if:interfaces/oc-if:interface/oc-eth:ethernet/oc-eth:config {
+    when "../../oc-if:config/oc-if:type = 'ift:ieee8023adLag'";
+
+    description
+      "Adding ADVA LAG config data to ethernet interface model";
+
+    uses adva-lag-config;
+  }
+
+  augment /oc-if:interfaces/oc-if:interface/oc-lag:aggregation/oc-lag:state {
+    when "../../oc-if:config/oc-if:type = 'ift:ieee8023adLag'";
+
+    description
+      "Adding ADVA LAG LACP state data to ethernet interface model";
+
+    uses adva-lag-lacp-config;
+  }
+
+  augment /oc-if:interfaces/oc-if:interface/oc-lag:aggregation/oc-lag:config {
+    when "../../oc-if:config/oc-if:type = 'ift:ieee8023adLag'";
+
+    description
+      "Adding ADVA LAG LACP config data to ethernet interface model";
+
+    uses adva-lag-lacp-config;
+  }
+
+  augment /oc-if:interfaces/oc-if:interface/oc-lag:aggregation/oc-lag:state {
+    when "../../oc-if:config/oc-if:type = 'ift:ieee8023adLag'";
+
+    description
+      "Adding ADVA LAG members data to aggregation interface model";
+
+		uses adva-lag-members;
+  }
+
+  augment /oc-if:interfaces/oc-if:interface/oc-lag:aggregation/oc-lag:config {
+    when "../../oc-if:config/oc-if:type = 'ift:ieee8023adLag'";
+
+    description
+      "Adding ADVA LAG members data to aggregation interface model";
+
+		uses adva-lag-members;
+  }
+
+  // deviate statements
+
+  deviation "/oc-if:interfaces/oc-if:interface/oc-lag:aggregation/oc-lag:state/oc-lag:member" {
+    deviate not-supported;
+  }  
+  
+}
+

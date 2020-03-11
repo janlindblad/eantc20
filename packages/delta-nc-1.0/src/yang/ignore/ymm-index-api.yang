@@ -1,0 +1,401 @@
+module ymm-index-api {
+
+  yang-version 1.1;
+
+  namespace "http://metaswitch.com/yang/nbu/ymm-index-api/201720080000Z";
+
+  prefix ymm-index-api;
+
+  import metaswitch-api-common {
+    prefix api-common;
+  }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    '
+    The YMM Index API
+    =================
+
+    Overview
+    --------
+
+    The YMM index API is a message-based API between the customer management
+    system and YMM.
+
+    YMM can operate without an index API connection.  If required the
+    connection is opened by the customer management system connecting to YMM on
+    a well-known port.  Only a single connection is supported.
+
+    The messages are encoded as JSON objects according to RFC 7951.  They are
+    sent over a TCP connection using HTTP chunked transfer encoding to
+    distinguish message boundaries (see RFC 2616 section 3.6.1).
+
+    The API is a request/response API.
+
+    The API consists of the following messages:
+    - get-name-req    Management -> YMM
+    - get-name-rsp    YMM -> Management
+    - get-index-req   Management -> YMM
+    - get-index-rsp   YMM -> Management
+    - get-info-req    Management -> YMM
+    - get-info-rsp    YMM -> Management
+
+    Get Name Request
+    ----------------
+
+    This gets the names for a specified info-type and list of index values.
+
+      Management        YMM
+        |                |
+        |  get-name-req  |
+        |--------------->|
+        |  get-name-rsp  |
+        |<---------------|
+        |                |
+
+    Request (Management -> YMM):
+
+        {
+          "message": "get-name-req",
+          "request-id": 1,
+          "info-type": "vpls-bridge-domain",
+          "index": [1, 2, 3, 4, 5]
+        }
+
+    Response (YMM -> Management):
+
+        {
+          "message": "get-name-rsp",
+          "request-id": 1,
+          "info-type": "vpls-bridge-domain",
+          "info": [
+            {
+              "name": "BD1",
+              "index": 1
+            },
+            {
+              "name": "BD2",
+              "index": 2
+            },
+            {
+              "name": "BD3",
+              "index": 3
+            }      ],
+          "unknown-index": [4, 5]
+        }
+
+    Get Index Request
+    -----------------
+
+    This gets the index values for a specified info-type and list of names.
+
+      Management        YMM
+        |                |
+        | get-index-req  |
+        |--------------->|
+        | get-index-rsp  |
+        |<---------------|
+        |                |
+
+    Request (Management -> YMM):
+
+        {
+          "message": "get-index-req",
+          "request-id": 1,
+          "info-type": "vpls-bridge-domain",
+          "name": ["BD1", "BD2", "BD3", "BD4", "BD5"]
+        }
+
+    Response (YMM -> Management):
+
+        {
+          "message": "get-index-rsp",
+          "request-id": 1,
+          "info-type": "vpls-bridge-domain",
+          "info": [
+            {
+              "name": "BD1",
+              "index": 1
+            },
+            {
+              "name": "BD2",
+              "index": 2
+            },
+            {
+              "name": "BD3",
+              "index": 3
+            }      ],
+          "unknown-name": ["BD4", "BD5"]
+        }
+
+    Get Info Request
+    ----------------
+
+    This gets all information for a specified info-type.
+
+      Management        YMM
+        |                |
+        |  get-info-req  |
+        |--------------->|
+        |  get-info-rsp  |
+        |<---------------|
+        |                |
+
+    Request (Management -> YMM):
+
+        {
+          "message": "get-info-req",
+          "request-id": 1,
+          "info-type": "vpls-bridge-domain"
+        }
+
+    Response (YMM -> Management):
+
+        {
+          "message": "get-info-rsp",
+          "request-id": 1,
+          "info-type": "vpls-bridge-domain",
+          "info": [
+            {
+              "name": "BD1",
+              "index": 1
+            },
+            {
+              "name": "BD2",
+              "index": 2
+            },
+            {
+              "name": "BD3",
+              "index": 3
+            }
+          ],
+        }
+    ';
+
+  revision 2017-02-08 {
+    description "Initial revision.";
+  }
+
+  typedef message-type-t {
+    description "A message type.";
+    type enumeration {
+      enum get-name-req;
+      enum get-name-rsp;
+      enum get-index-req;
+      enum get-index-rsp;
+      enum get-info-req;
+      enum get-info-rsp;
+      enum error-rsp;
+    }
+  }
+
+  typedef request-id-t {
+    description "A request identifier.";
+    type int32 {
+      range 1..max;
+    }
+  }
+
+  grouping message-header {
+    description "The message header for all YMM Index API messages.";
+    leaf message {
+      description "The message type.";
+      type message-type-t;
+      mandatory true;
+    }
+    leaf request-id {
+      description "The request ID.";
+      type request-id-t;
+      mandatory true;
+    }
+  }
+
+  typedef info-type-t {
+  	description "An information type for which index values are assigned.";
+  	type string;
+  }
+
+  typedef index-name-t {
+  	description "A name that is associated with an index value.";
+    type api-common:ascii-string;
+  }
+
+  typedef index-value-t {
+  	description "An index value.";
+    type uint32;
+  }
+
+  grouping name-index-info {
+  	description "Name and index information.";
+    leaf name {
+    	description "The name.";
+      type index-name-t;
+      mandatory true;
+    }
+    leaf index {
+    	description "The index value.";
+      type index-value-t;
+      mandatory true;
+    }
+  }
+
+  // The YMM Index API message formats follow.
+  //
+  // Yang does not itself support specification of JSON message formats - it
+  // only supports configuration, state, RPCs and notifications.
+  // We therefore use Yang notifications statements to define message formats.
+  // The messages are NOT intended to be Yang notifications, and the line
+  // formats of the messages do NOT include an outer <notification> element
+  // or an <eventTime> element.
+  //
+  // It would be possible to define a Yang extension for message formats,
+  // but then tools such as Pyang would ignore them.  For example,
+  // "pyang -f tree ymm-index-api.yang" would output nothing.
+
+  notification get-name-req {
+    description
+      "A request that looks up names for a specified information type and
+      specified index values.";
+    uses message-header {
+    	refine message {
+        must ". == 'get-name-req'";
+    	}
+    }
+    leaf info-type {
+    	description "The information type to look up.";
+      type info-type-t;
+      mandatory true;
+    }
+    leaf-list index {
+    	description "The index values to look up.";
+      type index-value-t;
+    }
+  }
+
+  notification get-name-rsp {
+    description
+      "A response to a get-name-req request.";
+    uses message-header {
+    	refine message {
+        must ". == 'get-name-rsp'";
+    	}
+    }
+    leaf info-type {
+    	description "The requested information type.";
+      type info-type-t;
+      mandatory true;
+    }
+    list info {
+    	description "The requested name and index information";
+    	uses name-index-info;
+    }
+    leaf-list unknown-index {
+    	description "Any unknown index values in the request.";
+      type index-value-t;
+    }
+    uses api-common:errors;
+  }
+
+  notification get-index-req {
+    description
+      "A request that looks up index values for a specified information type
+      and specified index values.";
+    uses message-header {
+    	refine message {
+        must ". == 'get-index-req'";
+      }
+    }
+    leaf info-type {
+    	description "The information type to look up.";
+      type info-type-t;
+      mandatory true;
+    }
+    leaf-list name {
+    	description "The names to look up.";
+      type index-name-t;
+    }
+  }
+
+  notification get-index-rsp {
+    description
+      "A response to a get-index-req request.";
+    uses message-header {
+    	refine message {
+        must ". == 'get-index-rsp'";
+    	}
+    }
+    leaf info-type {
+    	description "The requested information type.";
+      type info-type-t;
+      mandatory true;
+    }
+    list info {
+    	description "The requested name and index information.";
+    	uses name-index-info;
+    }
+    leaf-list unknown-name {
+    	description "Any unknown names in the request.";
+      type index-name-t;
+    }
+    uses api-common:errors;
+  }
+
+  notification get-info-req {
+    description
+      "A request that looks up all names and index values for a specified
+      information type.";
+    uses message-header {
+    	refine message {
+        must ". == 'get-info-req'";
+    	}
+    }
+    leaf info-type {
+    	description "The information type to look up.";
+      type info-type-t;
+      mandatory true;
+    }
+  }
+
+  notification get-info-rsp {
+    description
+      "A response to a get-info-req request.";
+    uses message-header {
+    	refine message {
+        must ". == 'get-info-rsp'";
+    	}
+    }
+    leaf info-type {
+    	description "The requested information type.";
+      type info-type-t;
+      mandatory true;
+    }
+    list info {
+    	description "The requested name and index information.";
+    	uses name-index-info;
+    }
+    uses api-common:errors;
+  }
+
+  notification error-rsp {
+    description
+      "An error response.
+      This may be used instead of a request-specific response message, for
+      example if the request message is invalid.";
+    uses message-header {
+      refine message {
+        must ". == 'error-rsp'";
+      }
+    }
+    uses api-common:errors;
+  }
+
+}

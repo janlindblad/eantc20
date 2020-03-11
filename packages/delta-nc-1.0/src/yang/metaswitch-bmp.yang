@@ -1,0 +1,243 @@
+module metaswitch-bmp {
+
+  namespace "http://metaswitch.com/yang/nbu/bmp/201811010000Z";
+
+  prefix "bmp";
+
+  import user-extensions { prefix "user-ext"; }
+  import interfaces { prefix "interfaces"; }
+  import metaswitch-yang-types { prefix "meta"; }
+  import ietf-inet-types { prefix inet; }
+  import bgp { prefix "bgp"; }
+
+  organization "Metaswitch Networks";
+
+  contact "Postal: Metaswitch Networks
+                   100 Church Street
+                   Enfield
+                   EN2 6BQ
+                   United Kingdom
+           Tel:    +44 20 8366 1177
+           E-mail: info@metaswitch.com";
+
+  description
+    "BGP monitoring protocol";
+
+  revision 2018-11-01 {
+    description "Initial revision.";
+  }
+
+  typedef bmp-server-index {
+    type uint32 {
+      range "1";
+    }
+
+    description
+      "BMP server index (1)";
+  }
+
+  typedef bmp-server-password-string {
+    type string {
+      length "1..128";
+    }
+
+    description
+      "WORD (1-128)";
+  }
+
+  typedef bmp-server-timer {
+    type uint32 {
+      range "0..4294967295";
+    }
+
+    description
+      "BMP timer (s)";
+  }
+
+  typedef bmp-buffer-limit {
+    type uint32 {
+        range "0..4294967295";
+    }
+
+    description
+      "Memory limit (megabytes)";
+  }
+
+  typedef server-oper-reason {
+    type enumeration {
+      enum none         { value 1; description "BMP server is up or going up"; }
+      enum no-tcp-conn  { value 2; description "No TCP connection has been made"; }
+      enum queue-limit  { value 3; description "Memory limit has been reached in queued messages"; }
+      enum other        { value 4; description "An internal error has caused the BMP server to fail"; }
+    }
+    description "Reason for the state of the BMP server.";
+  }
+
+  typedef bmp-monitoring-states {
+    type enumeration {
+      enum monitoring   { value 1; description "Peer is being actively monitored"; }
+      enum rib-dumping  { value 2; description "RIB dump for this peer is in progress"; }
+      enum peer-down    { value 3; description "Peer not monitored because it is down"; }
+      enum server-down  { value 4; description "Peer not monitored because the server connection down"; }
+    }
+    description "The state of BMPs monitoring of a BGP peer";
+  }
+
+  grouping server-address{
+    description "The IP address and port number of the server ";
+
+    leaf address {
+      type interfaces:iface-ip-address-t;
+      description "The IP address of the BMP server.";
+      mandatory true;
+      user-ext:CLI-comm-help "Configure server IP address";
+    }
+
+    leaf port-number {
+      type inet:port-number;
+      description "The port number of the BMP server.";
+      mandatory true;
+
+      user-ext:CLI-comm-help "Configure server port";
+    }
+
+  } // bmp:server-address
+
+  grouping bmp-server-state {
+    // Low-level server info: Corresponds to the read only state in AMB_BMP_SERVER (bmpServerTable).
+    description "BMP server state";
+
+    container server-state {
+      config false;
+
+      leaf oper-status {
+        type meta:oper-status;
+        description "The current operational state of this server";
+      }
+
+      leaf oper-reason {
+        type server-oper-reason;
+        description "The reason for the operational state of this server";
+      }
+
+    } // bmp-server-state:server-state
+
+  } // bmp-server-state
+
+  grouping bmp-neighbor-state-list {
+    description "State associated with monitored BGP peers.";
+
+    container neighbor-state-list {
+      config false;
+      list bmp-neighbor-state {
+        description "State associated with a monitored BGP peer.";
+
+        key "peer-address";
+
+        leaf peer-address {
+          type interfaces:iface-ip-address-t;
+          description "Peer address";
+        }
+
+        leaf peer-state{
+          type bmp-monitoring-states;
+          description "The monitoring state of the peer.";
+        }
+
+      } // bmp:bmp-neighbor-state
+
+    } // bmp:bmp-neighbor-state-list
+
+  }
+
+  augment "/bgp:router/bgp:bgp/bgp:global" {
+
+    container bmp {
+      presence "enable BMP";
+
+      description "BGP Monitoring protocol";
+
+      user-ext:CLI-comm-help "Configure BMP parameters";
+      user-ext:CLI-no-comm-help "Remove BMP parameters";
+
+      leaf msg-memory-limit {
+        type bmp-buffer-limit;
+        units "megabytes";
+        default 0;
+        description
+          "The maximum amount of memory that queued BMP messages may
+          occupy.";
+
+        user-ext:CLI-comm-help "Configure BMP memory limit";
+        user-ext:CLI-no-comm-help "Remove BMP memory limit";
+        user-ext:CLI-param-help "Configure BMP memory limit";
+
+      } // bmp:msg-memory-limit
+
+      list server {
+
+        description
+            "BMP monitoring station configuration";
+
+        user-ext:CLI-comm-help "Configure BMP monitoring station";
+        user-ext:CLI-no-comm-help "Remove BMP monitoring station";
+        user-ext:CLI-max-elements-errmsg "maximum elements for 'server bmp' exceeded";
+
+        max-elements "1";
+
+        key "server-index";
+
+        leaf server-index {
+          type bmp-server-index;
+            description
+              "An abitrary index used to identify the server.";
+
+            user-ext:CLI-param-help "Configure BMP station's index";
+
+        } // bmp:server:server-index
+
+        leaf enable {
+          type empty;
+
+          user-ext:CLI-comm-help "Enable BMP server";
+          user-ext:CLI-no-comm-help "Disable BMP server";
+
+        } // bmp:server:enable
+
+        leaf stats-timer {
+          type bmp-server-timer;
+          units "seconds";
+          default 0;
+          description "The time interval between stats messages.";
+
+          user-ext:CLI-comm-help "Configure statistics timer";
+          user-ext:CLI-no-comm-help "Remove statistics timer";
+          user-ext:CLI-param-help "Interval in seconds, when set to zero no timer will be run";
+
+        } // bmp:server:stats-timer
+
+        uses server-address;
+
+        leaf password {
+          type bmp-server-password-string;
+          description
+            "The password used by this client when connecting to
+            the monitoring station";
+
+          user-ext:CLI-comm-help "Configure server password";
+          user-ext:CLI-no-comm-help "Remove server password";
+          user-ext:CLI-param-help "Configure server password";
+
+        } // bmp:server:password
+
+        uses bmp-server-state;
+
+        uses bmp-neighbor-state-list;
+
+      } // bmp:server
+
+    } // bmp
+
+  } // augment "/bgp:router/bgp:bgp/bgp:global"
+
+} // bmp

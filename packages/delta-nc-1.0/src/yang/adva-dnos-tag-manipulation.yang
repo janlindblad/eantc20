@@ -1,0 +1,216 @@
+
+module adva-dnos-tag-manipulation {
+
+  namespace "http://www.advaoptical.com/cim/adva-dnos-tag-manipulation";
+
+  prefix "tman";
+
+  import openconfig-vlan-types { prefix oc-vlan-types; }
+  import adva-dnos-types { prefix adva-types; }
+
+  organization
+    "Adva Optical Networking";
+
+  contact
+    "For technical support, please contact your service channel";
+
+  description
+    "Definitions for tag manipulation profile.";
+
+  revision "2019-07-08" {
+    description
+      "Integrating to ADVA YANG models.";
+  }
+
+  revision "2015-09-10" {
+    description
+      "First draft version.";
+  }
+
+  container profile_objects {
+    description 
+      "Tag manipulation profiles.";
+
+    list profile {
+      key "name";
+
+      description
+        "Tag manipulation profile configuration.";
+
+      leaf name {
+        type adva-types:profile-name;
+        description "Profile name";
+      }
+
+      container egress-inner-tag-action {
+        description 
+          "Egress inner tag action.";
+
+        choice action {
+
+          case add {
+            leaf add_tag {
+              type adva-types:vlan-tag-optional;
+              description "Add tag value";
+            }
+
+            description "Add tag action command";
+          }
+
+          case replace {
+            leaf replace_tag {
+              type adva-types:vlan-tag-optional;
+              description "Replace tag value";
+            }
+
+            description "Replace tag action command";
+          }
+
+          case remove {
+            leaf remove_tag {
+              type adva-types:vlan-tag-optional {
+	        range "0";
+	      }
+              description "Enable remove tag";
+            }
+
+            description "Remove tag action command";
+          }
+
+          description "Tag action command";
+        } // choice action;
+      }
+
+      container egress-outer-tag-action {
+        description 
+          "Egress outer tag action.";
+
+        choice action {
+ 
+          case add {
+            leaf add_tag {
+              type adva-types:vlan-tag-optional;
+              description "Add tag value";
+            }
+
+            leaf add_tpid {
+              type identityref {
+                base oc-vlan-types:TPID_TYPES;
+              }
+              description "TPID configuration";
+            }
+
+            description "Add tag action command";
+          }
+
+          case replace {
+            leaf replace_tag {
+              type adva-types:vlan-tag-optional;
+              description "Replace tag value";
+            }
+
+            leaf replace_tpid {
+              type identityref {
+                base oc-vlan-types:TPID_TYPES;
+              }
+              description "TPID configuration";
+            }
+
+            description "Replace tag action command";
+          }
+
+          case remove {
+            leaf remove_tag {
+              type adva-types:vlan-tag-optional {
+	        range "0";
+	      }
+              description "Enable remove tag";
+            }
+
+            description "Remove tag action command";
+          }
+
+          description "Tag action command";
+        } // choice action;
+      }
+
+      container ingress-inner-tag-action {
+        description 
+          "Ingress inner tag action.";
+
+        choice action {
+
+          case add {
+            leaf add_tag {
+              type adva-types:vlan-tag-optional;
+              description "Add tag value";
+            }
+
+            description "Add tag action command";
+          }
+
+          case replace {
+            leaf replace_tag {
+              type adva-types:vlan-tag-optional;
+              description "Replace tag value";
+            }
+
+            description "Replace tag action command";
+          }
+
+          case remove {
+            leaf remove_tag {
+              type adva-types:vlan-tag-optional {
+	        range "0";
+	      }
+              description "Enable remove tag";
+            }
+
+            description "Remove tag action command";
+          }
+
+          description "Tag action command";
+        } // choice action;
+      }
+
+      container ingress-outer-tag-action {
+        description 
+          "Ingress outer tag action.";
+
+        choice action {
+
+          case add {
+            leaf add_tag {
+              type adva-types:vlan-tag-optional;
+              description "Add tag value";
+            }
+
+            description "Add tag action command";
+          }
+
+          case replace {
+            leaf replace_tag {
+              type adva-types:vlan-tag-optional;
+              description "Replace tag value";
+            }
+
+            description "Replace tag action command";
+          }
+
+          case remove {
+            leaf remove_tag {
+              type adva-types:vlan-tag-optional {
+	        range "0";
+	      }
+              description "Enable remove tag";
+            }
+
+            description "Remove tag action command";
+          }
+
+          description "Tag action command";
+        } // choice action;
+      }
+    } // profile list
+  } // tag_manipulation_objects
+}
