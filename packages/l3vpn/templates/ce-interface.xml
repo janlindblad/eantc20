@@ -2,67 +2,104 @@
  <devices xmlns="http://tail-f.com/ns/ncs">
   <device tags="nocreate">
     <name>{$DEVICE}</name>
-      <config>
+    <config>
 
-        <!-- NOKIA -->
-        <configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf">
-          <service>
-            <vprn>
-              <service-name>{$VPN_NAME}</service-name>
-              <interface>
-                <interface-name>local</interface-name>
-                <admin-state>enable</admin-state>
-                <sap>
-                  <sap-id>{$PHYS_INTERFACE}:{$VLANID}</sap-id>
-                </sap>
-                <ipv4>
-                  <primary>
-                    <address>{$NET}</address>
-                    <prefix-length>{$PREFIXLEN}</prefix-length>
-                  </primary>
-                </ipv4>
-                <ipv6>
-                  <address>
-                    <ipv6-address>{$NET6}</ipv6-address>
-                    <prefix-length>{$PREFIXLEN6}</prefix-length>
-                  </address>
-                </ipv6>
-              </interface>
-            </vprn>
-          </service>
-        </configure>
-        <!-- END NOKIA -->
+      <!-- NOKIA -->
+      <?if-ned-id
+        nokia_sros_20_2_r1-nc-1.0:nokia_sros_20_2_r1-nc-1.0?>
+      <configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf" tags="merge">
+        <service>
+          <vprn>
+            <service-name>{$VPN_NAME}</service-name>
+            <interface>
+              <interface-name>{$INTERFACE}</interface-name>
+              <admin-state>enable</admin-state>
+              <sap>
+                <sap-id>{$PHYS_INTERFACE}</sap-id>
+              </sap>
+              <ipv4>
+                <primary>
+                  <address>{$NET}</address>
+                  <prefix-length>{$PREFIXLEN}</prefix-length>
+                </primary>
+              </ipv4>
+              <ipv6>
+                <address>
+                  <ipv6-address>{$NET6}</ipv6-address>
+                  <prefix-length>{$PREFIXLEN6}</prefix-length>
+                </address>
+              </ipv6>
+            </interface>
+          </vprn>
+        </service>
+      </configure>
+      <!-- END NOKIA -->
 
-        <!-- METASWITCH -->
-        <interfaces xmlns="http://metaswitch.com/yang/nbu/interface/201709270000Z">
+      <!-- METASWITCH -->
+      <?elif-ned-id
+        meta_130-nc-1.0:meta_130-nc-1.0?>
+      <interfaces xmlns="http://metaswitch.com/yang/nbu/interface/201709270000Z" tags="merge">
+        <interface>
+          <name>{$INTERFACE}</name>
+          <description>Spirent 167 2/14</description>
+          <enabled>true</enabled>
+          <forwarding-mode>network-layer</forwarding-mode>
+          <ipv4>
+            <forwarding>true</forwarding>
+            <address>
+              <ip>{$NET}</ip>
+              <prefix-length>{$PREFIXLEN}</prefix-length>
+            </address>
+          </ipv4>
+          <ipv6>
+            <forwarding>true</forwarding>
+            <address>
+              <ip>{$NET6}</ip>
+              <prefix-length>{$PREFIXLEN6}</prefix-length>
+            </address>
+          </ipv6>
+          <ethernet>
+            <auto-negotiate>false</auto-negotiate>
+            <duplex-mode>full</duplex-mode>
+            <port-speed>SPEED_10GB</port-speed>
+          </ethernet>
+          <bind-vrf-name xmlns="http://metaswitch.com/yang/nbu/routing/201512140000Z">{$VPN_NAME}</bind-vrf-name>
+        </interface>
+      </interfaces>
+      <!-- END METASWITCH -->
+
+      <!-- JUNIPER -->
+      <?elif-ned-id
+        juniper-junos-18_4R1-nc-1.0:juniper-junos-18_4R1-nc-1.0?>
+      <configuration xmlns="http://yang.juniper.net/junos/conf/root" tags="merge">
+        <interfaces xmlns="http://yang.juniper.net/junos/conf/interfaces">
           <interface>
-            <name>TOPO spirent CE xe9</name>
-            <description>Spirent 167 2/14</description>
-            <enabled>true</enabled>
-            <forwarding-mode>network-layer</forwarding-mode>
-            <ipv4>
-              <forwarding>true</forwarding>
-              <address>
-                <ip>TOPO local address towards spirent: 20.134.167.134</ip>
-                <prefix-length>TOPO 24</prefix-length>
-              </address>
-            </ipv4>
-            <ipv6>
-              <forwarding>true</forwarding>
-              <address>
-                <ip>TOPO local address towards spirent 2001:0:134:167::134</ip>
-                <prefix-length>64</prefix-length>
-              </address>
-            </ipv6>
-            <ethernet>
-              <auto-negotiate>false</auto-negotiate>
-              <duplex-mode>full</duplex-mode>
-              <port-speed>SPEED_10GB</port-speed>
-            </ethernet>
-            <bind-vrf-name xmlns="http://metaswitch.com/yang/nbu/routing/201512140000Z">ALLOC same as below: netconf</bind-vrf-name>
+            <name>{$INTERFACE}</name>
+            <description>To_Spirent_168_port4_slot_1</description>
+            <flexible-vlan-tagging/>
+            <encapsulation>flexible-ethernet-services</encapsulation>
+            <unit>
+              <name>0</name>
+              <vlan-id>400</vlan-id>
+              <family>
+                <inet>
+                  <address>
+                    <name>{$NET}/{$PREFIXLEN}</name>
+                  </address>
+                </inet>
+                <inet6>
+                  <address>
+                    <name>{$NET6}/{$PREFIXLEN6}</name>
+                  </address>
+                </inet6>
+              </family>
+            </unit>
           </interface>
         </interfaces>
-        <!-- END METASWITCH -->
+      </configuration>
+      <!-- JUNIPER -->
+
+      <? end?>
 
         <!-- ECI -->
         <!--?ned-id eci6-nc-1.0:eci6-nc-1.0?>

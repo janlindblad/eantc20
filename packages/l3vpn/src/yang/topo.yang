@@ -25,14 +25,21 @@ module topo {
     leaf phys-interface {
       type string;
     }
-    leaf address {
-      type inet:ipv4-address;
-    }
+    // Only used by IOSXR????
+    //leaf address {
+    //  type inet:ipv4-address;
+    //}
     leaf remote-net {
       type inet:ipv4-address;
     }
     leaf remote-prefixlen {
       type uint32 { range 0..32; }
+    }
+    leaf remote-net6 {
+      type inet:ipv6-address;
+    }
+    leaf remote-prefixlen6 {
+      type uint32 { range 0..64; }
     }
     leaf locator {
       type string {

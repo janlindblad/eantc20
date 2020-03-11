@@ -2252,7 +2252,7 @@ module ietf-l3vpn-svc {
            "derived-from-or-self(../management/type, 'l3vpn-svc:co-managed')" {
         description
           "Applicable only for provider-managed or
-   co-managed device.";
+           co-managed device.";
       }
       list device {
         key device-id;
@@ -2383,7 +2383,7 @@ module ietf-l3vpn-svc {
               }
               description
                 "List of filters used on the site.  This list can
-         be augmented.";
+                 be augmented.";
             }
             description
               "If a more-granular VPN attachment is necessary, filtering can
@@ -2547,8 +2547,8 @@ module ietf-l3vpn-svc {
             }
             description
               "Reference to a VPN policy.  When referencing VPN
-      policy for attachment, the vpn-policy-id must be
-      configured.";
+               policy for attachment, the vpn-policy-id must be
+               configured.";
           }
         }
         case vpn-id {

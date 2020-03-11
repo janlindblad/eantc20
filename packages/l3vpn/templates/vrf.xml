@@ -5,7 +5,9 @@
       <config xmlns:eci="http://tail-f.com/ns/ned-id/eci5-nc-1.0">
 
       <!-- NOKIA -->
-      <configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf">
+      <?if-ned-id
+        nokia_sros_20_2_r1-nc-1.0:nokia_sros_20_2_r1-nc-1.0?>
+      <configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf" tags="merge">
         <service>
           <vprn>
             <service-name>{$VPN_NAME}</service-name>
@@ -22,29 +24,52 @@
           </vprn>
         </service>
       </configure>
-      </vprn>
       <!-- END NOKIA -->
 
       <!-- METASWITCH -->
-      <router xmlns="http://metaswitch.com/yang/nbu/routing/201512140000Z">
+      <?elif-ned-id
+        meta_130-nc-1.0:meta_130-nc-1.0?>
+      <router xmlns="http://metaswitch.com/yang/nbu/routing/201512140000Z" tags="merge">
         <vrf>
-          <vrf-name>ALLOC same as above: netconf</vrf-name>
+          <vrf-name>{$VPN_NAME}</vrf-name>
           <import>
             <route-target>
-              <rt>65000:ALLOC match other side: 20</rt>
+              <rt>65000:{$VLANID}</rt>
             </route-target>
           </import>
           <export>
             <route-target>
-              <rt>65000:ALLOC match above 20</rt>
+              <rt>65000:{$VLANID}</rt>
             </route-target>
           </export>
-          <rd xmlns="http://metaswitch.com/yang/nbu/l3vpn/201511130000Z">ALLOC unique per vrf. 10:100</rd>
+          <rd xmlns="http://metaswitch.com/yang/nbu/l3vpn/201511130000Z">{$RD}</rd>
         </vrf>
       </router>
       <!-- END METASWITCH -->
 
-
+      <!-- JUNIPER -->
+      <?elif-ned-id
+        juniper-junos-18_4R1-nc-1.0:juniper-junos-18_4R1-nc-1.0?>
+      <configuration xmlns="http://yang.juniper.net/junos/conf/root" tags="merge">
+        <routing-instances xmlns="http://yang.juniper.net/junos/conf/routing-instances">
+          <instance>
+            <name>L3VPN</name>
+            <instance-type>vrf</instance-type>
+            <interface>
+              <name>{$INTERFACE}.{$PHYS_INTERFACE}</name>
+            </interface>
+            <route-distinguisher>
+              <rd-type>100.0.0.105:{$VLANID}</rd-type>
+            </route-distinguisher>
+            <vrf-target>
+              <community>target:65000:{$VLANID}</community>
+            </vrf-target>
+            <vrf-table-label/>
+          </instance>
+        </routing-instances>
+      </configuration>
+      <!-- JUNIPER -->
+      <?end?>
 
         <!-- ECI -->
         <!--?ned-id eci5-nc-1.0:eci5-nc-1.0?>
