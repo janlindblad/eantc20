@@ -1,100 +1,14 @@
+=====[#1]=====>
+=====[#3]=====>
+=====[#4]=====>
+
 18:16:00 admin@ncs# devices device adva6 sync-f                                                   
 result true
-18:17:12 admin@ncs# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999                               
-                       ^
-% Invalid input detected at '^' marker.
-18:17:12 admin@ncs# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999                               
------------------------^
-syntax error: unknown element
+
+=====[#5]=====>
+
 18:19:04 admin@ncs# con
 Entering configuration mode terminal
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
-18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
-Possible completions:
-  config  hold-time  routed-vlan  subinterfaces  <cr>
 18:19:08 admin@ncs(config)# no devices device adva6 config oc-if:interfaces interface eth-1/0/9.999 
 Possible completions:
   config  hold-time  routed-vlan  subinterfaces  <cr>
@@ -107,6 +21,9 @@ devices device adva6
 !
 18:19:17 admin@ncs(config)# commit
 Commit complete.
+
+=====[#6]=====>
+
 18:19:31 admin@ncs(config)# rollback c
 18:19:59 admin@ncs(config)# show c
 devices device adva6
@@ -129,6 +46,9 @@ devices device adva6
 18:23:21 admin@ncs(config)# commit
 Commit complete.
 18:23:35 admin@ncs(config)#                                                                        
+
+=====[#7]=====>
+
 18:24:09 admin@ncs# show devices device adva6 live-status oc-if:interfaces interface eth-1/0/9.999
 live-status oc-if:interfaces interface eth-1/0/9.999
  config name eth-1/0/9.999
