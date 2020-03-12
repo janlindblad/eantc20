@@ -1,0 +1,17 @@
+<ncs-package xmlns="http://tail-f.com/ns/ncs-packages">
+  <name>lsa-upper-lsa-upper-l2vpn</name>
+  <package-version>1.0</package-version>
+  <description>Generated netconf package</description>
+  <ncs-min-version>5.3</ncs-min-version>
+  <component>
+    <name>lsa-upper-l2vpn</name>
+    <ned>
+      <netconf>
+        <ned-id xmlns:id="http://tail-f.com/ns/ncs-ned">id:lsa-netconf</ned-id>
+      </netconf>
+      <device>
+        <vendor>Acme</vendor>
+      </device>
+    </ned>
+  </component>
+</ncs-package>

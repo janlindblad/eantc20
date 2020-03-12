@@ -1,0 +1,32 @@
+module topo-l2 {
+  namespace "http://example.com/eantc/topology-l2";
+  prefix topo-l2;
+
+  import tailf-ncs {
+    prefix ncs;
+  }
+  import ietf-inet-types {
+    prefix inet;
+  }
+
+  list topo-l2 {
+    key "vpn-name device-name";
+    leaf vpn-name {
+      type string;
+    }
+    leaf device-name {
+      type leafref {
+        path /ncs:devices/ncs:device/ncs:name;
+      }
+    }
+    leaf interface {
+      type string;
+    }
+    leaf locator {
+      type string;
+    }
+    leaf router-id {
+      type inet:ipv4-address;
+    }
+  }
+}

@@ -1,0 +1,13 @@
+<ncs-package xmlns="http://tail-f.com/ns/ncs-packages">
+  <name>lsa-lower-l2vpn</name>
+  <package-version>1.0</package-version>
+  <description>EANTC20 Use Case 4.5</description>
+  <ncs-min-version>5.3</ncs-min-version>
+
+  <component>
+    <name>main</name>
+    <application>
+      <python-class-name>lsa_lower_l2vpn.main.Main</python-class-name>
+    </application>
+  </component>
+</ncs-package>

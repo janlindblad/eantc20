@@ -1,0 +1,31 @@
+module lsa-topo-l2 {
+  namespace "http://example.com/eantc/lsa-topology-l2";
+  prefix lsa-topo-l2;
+
+  import tailf-ncs {
+    prefix ncs;
+  }
+  import ietf-inet-types {
+    prefix inet;
+  }
+
+  list topo-l2 {
+    key "vpn-name device-name";
+    leaf vpn-name {
+      type string;
+    }
+    leaf device-name {
+      type string;
+      // LSA plugin converted 'leafref' to string.
+    }
+    leaf interface {
+      type string;
+    }
+    leaf locator {
+      type string;
+    }
+    leaf router-id {
+      type inet:ipv4-address;
+    }
+  }
+}
