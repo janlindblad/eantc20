@@ -1,0 +1,462 @@
+4.5 l2vpn nokia-juniper
+
+=====[#1]=====>
+=====[#2]=====>
+
+12:29:15 admin@ncs(config)# devices device jun105 sync-f   
+result true
+12:29:24 admin@ncs(config)# show full-configuration l2vpn-svc 
+% No entries found.
+12:29:32 admin@ncs(config)# 
+12:30:20 admin@ncs(config)# devices device nok150 sync-f     
+result true
+
+=====[#3]=====>
+
+12:31:16 admin@ncs(config)# l2vpn-svc vpn-services vpn-service 45
+12:31:57 admin@ncs(config-vpn-service-45)#  frame-delivery multicast-gp-port-mapping static-mapping
+12:31:57 admin@ncs(config-vpn-service-45)#  ce-vlan-preservation     true
+12:31:57 admin@ncs(config-vpn-service-45)#  ce-vlan-cos-preservation true
+12:32:03 admin@ncs(config-vpn-service-45)# l2vpn-svc sites site berlin
+12:32:49 admin@ncs(config-site-berlin)#  management type provider-managed
+12:32:57 admin@ncs(config-site-berlin)#  locations location center
+12:32:57 admin@ncs(config-location-center)#  !
+12:32:57 admin@ncs(config-location-center)#  vpn-policies vpn-policy 1
+12:32:57 admin@ncs(config-vpn-policy-1)#   entries 1
+12:32:57 admin@ncs(config-entries-1)#    vpn 45
+12:32:57 admin@ncs(config-vpn-45)#    !
+12:32:57 admin@ncs(config-vpn-45)# 
+12:32:57 admin@ncs(config-vpn-45)# 
+12:32:58 admin@ncs(config-vpn-45)# l2vpn-svc sites site berlin
+12:33:02 admin@ncs(config-site-berlin)# devices device nok150 location center 
+12:33:12 admin@ncs(config-device-nok150)# commit no-deploy 
+Aborted: 'l2vpn-svc sites site berlin default-ce-vlan-id' is not configured
+12:33:17 admin@ncs(config-device-nok150)#  default-ce-vlan-id 1
+12:33:25 admin@ncs(config-site-berlin)#  site-network-accesses site-network-access 1
+12:33:25 admin@ncs(config-site-network-access-1)#   device-reference nok150
+12:33:25 admin@ncs(config-site-network-access-1)#   connection oam md-name 1
+12:33:25 admin@ncs(config-site-network-access-1)#   connection oam md-level 1
+12:33:25 admin@ncs(config-site-network-access-1)#   vpn-attachment vpn-policy-id 1
+12:33:25 admin@ncs(config-site-network-access-1)#   service svc-mtu 1500
+12:33:25 admin@ncs(config-site-network-access-1)# 
+12:33:26 admin@ncs(config-site-network-access-1)# l2vpn-svc sites site paris
+12:33:32 admin@ncs(config-site-paris)#  management type provider-managed
+12:33:43 admin@ncs(config-site-paris)#  locations location center
+12:33:43 admin@ncs(config-location-center)#  !
+12:33:43 admin@ncs(config-location-center)#  vpn-policies vpn-policy 1
+12:33:43 admin@ncs(config-vpn-policy-1)#   entries 1
+12:33:43 admin@ncs(config-entries-1)#    vpn 45
+12:33:43 admin@ncs(config-vpn-45)#    !
+12:33:43 admin@ncs(config-vpn-45)#   !
+12:33:43 admin@ncs(config-vpn-45)#  !
+12:33:43 admin@ncs(config-vpn-45)#  default-ce-vlan-id 1
+12:33:43 admin@ncs(config-site-paris)#  site-network-accesses site-network-access 1
+12:33:43 admin@ncs(config-site-network-access-1)#   device-reference jun105
+12:33:43 admin@ncs(config-site-network-access-1)#   connection oam md-name A
+12:33:43 admin@ncs(config-site-network-access-1)#   connection oam md-level 1
+12:33:43 admin@ncs(config-site-network-access-1)#   vpn-attachment vpn-policy-id 1
+12:33:43 admin@ncs(config-site-network-access-1)#   service svc-mtu 1500
+12:33:43 admin@ncs(config-site-network-access-1)#  !
+12:33:43 admin@ncs(config-site-network-access-1)# !
+12:33:43 admin@ncs(config-site-network-access-1)# 
+12:33:44 admin@ncs(config-site-network-access-1)#  management type provider-managed
+12:33:49 admin@ncs(config-site-paris)#  locations location center
+12:33:49 admin@ncs(config-location-center)#  !
+12:33:49 admin@ncs(config-location-center)#  vpn-policies vpn-policy 1
+12:33:49 admin@ncs(config-vpn-policy-1)#   entries 1
+12:33:49 admin@ncs(config-entries-1)#    vpn 45
+12:33:49 admin@ncs(config-vpn-45)#    !
+12:33:49 admin@ncs(config-vpn-45)#   !
+12:33:49 admin@ncs(config-vpn-45)#  !
+12:33:49 admin@ncs(config-vpn-45)#  default-ce-vlan-id 1
+12:33:49 admin@ncs(config-site-paris)#  site-network-accesses site-network-access 1
+12:33:49 admin@ncs(config-site-network-access-1)#   device-reference jun105
+12:33:49 admin@ncs(config-site-network-access-1)#   connection oam md-name A
+12:33:49 admin@ncs(config-site-network-access-1)#   connection oam md-level 1
+12:33:49 admin@ncs(config-site-network-access-1)#   vpn-attachment vpn-policy-id 1
+12:33:49 admin@ncs(config-site-network-access-1)#   service svc-mtu 1500
+12:33:49 admin@ncs(config-site-network-access-1)#  !
+12:33:49 admin@ncs(config-site-network-access-1)# !
+12:33:49 admin@ncs(config-site-network-access-1)# l2vpn-svc sites site paris
+12:33:54 admin@ncs(config-site-paris)#  devices device jun105
+12:33:58 admin@ncs(config-device-jun105)#   location center
+12:33:58 admin@ncs(config-device-jun105)# 
+12:33:59 admin@ncs(config-device-jun105)# 
+12:34:01 admin@ncs(config-device-jun105)# top
+12:34:03 admin@ncs(config)# sh c
+l2vpn-svc vpn-services vpn-service 45
+ frame-delivery multicast-gp-port-mapping static-mapping
+ ce-vlan-preservation     true
+ ce-vlan-cos-preservation true
+!
+l2vpn-svc sites site berlin
+ devices device nok150
+ !
+ locations location center
+ !
+ devices device nok150
+  location center
+ !
+ management type provider-managed
+ vpn-policies vpn-policy 1
+  entries 1
+   vpn 45
+   !
+  !
+ !
+ default-ce-vlan-id 1
+ site-network-accesses site-network-access 1
+  device-reference nok150
+  connection oam md-name 1
+  connection oam md-level 1
+  vpn-attachment vpn-policy-id 1
+  service svc-mtu 1500
+ !
+!
+l2vpn-svc sites site paris
+ devices device jun105
+ !
+ locations location center
+ !
+ devices device jun105
+  location center
+ !
+ management type provider-managed
+ vpn-policies vpn-policy 1
+  entries 1
+   vpn 45
+   !
+  !
+ !
+ default-ce-vlan-id 1
+ site-network-accesses site-network-access 1
+  device-reference jun105
+  connection oam md-name A
+  connection oam md-level 1
+  vpn-attachment vpn-policy-id 1
+  service svc-mtu 1500
+ !
+!
+12:34:05 admin@ncs(config)# commit dry-run 
+cli {
+    local-node {
+        data  devices {
+                  device jun105 {
+                      config {
+                          configuration {
+                              protocols {
+                                  l2circuit {
+             +                        # first
+             +                        neighbor 100.0.0.150 {
+             +                            interface xe-0/1/7.0 {
+             +                                virtual-circuit-id 4049;
+             +                            }
+             +                        }
+                                  }
+                              }
+                          }
+                      }
+                  }
+                  device nok150 {
+                      config {
+                          configure {
+                              service {
+             +                    epipe 4049 {
+             +                        service-id 4049;
+             +                        customer 1;
+             +                        admin-state enable;
+             +                        spoke-sdp 4049:4049 {
+             +                            admin-state enable;
+             +                        }
+             +                        sap esat-2/1/10:45 {
+             +                            admin-state enable;
+             +                        }
+             +                    }
+             +                    sdp 4049 {
+             +                        admin-state enable;
+             +                        delivery-type mpls;
+             +                        ldp true;
+             +                        far-end {
+             +                            ip-address 100.0.0.105;
+             +                        }
+             +                    }
+                              }
+                          }
+                      }
+                  }
+              }
+              l2vpn-svc {
+                  vpn-services {
+             +        vpn-service 45 {
+             +            frame-delivery {
+             +                multicast-gp-port-mapping static-mapping;
+             +            }
+             +            ce-vlan-preservation true;
+             +            ce-vlan-cos-preservation true;
+             +        }
+                  }
+                  sites {
+             +        site berlin {
+             +            devices {
+             +                device nok150 {
+             +                    location center;
+             +                }
+             +            }
+             +            management {
+             +                type provider-managed;
+             +            }
+             +            locations {
+             +                location center;
+             +            }
+             +            vpn-policies {
+             +                vpn-policy 1 {
+             +                    entries 1 {
+             +                        vpn 45;
+             +                    }
+             +                }
+             +            }
+             +            default-ce-vlan-id 1;
+             +            site-network-accesses {
+             +                site-network-access 1 {
+             +                    device-reference nok150;
+             +                    connection {
+             +                        oam {
+             +                            md-name 1;
+             +                            md-level 1;
+             +                        }
+             +                    }
+             +                    vpn-attachment {
+             +                        vpn-policy-id 1;
+             +                    }
+             +                    service {
+             +                        svc-mtu 1500;
+             +                    }
+             +                }
+             +            }
+             +        }
+             +        site paris {
+             +            devices {
+             +                device jun105 {
+             +                    location center;
+             +                }
+             +            }
+             +            management {
+             +                type provider-managed;
+             +            }
+             +            locations {
+             +                location center;
+             +            }
+             +            vpn-policies {
+             +                vpn-policy 1 {
+             +                    entries 1 {
+             +                        vpn 45;
+             +                    }
+             +                }
+             +            }
+             +            default-ce-vlan-id 1;
+             +            site-network-accesses {
+             +                site-network-access 1 {
+             +                    device-reference jun105;
+             +                    connection {
+             +                        oam {
+             +                            md-name A;
+             +                            md-level 1;
+             +                        }
+             +                    }
+             +                    vpn-attachment {
+             +                        vpn-policy-id 1;
+             +                    }
+             +                    service {
+             +                        svc-mtu 1500;
+             +                    }
+             +                }
+             +            }
+             +        }
+                  }
+              }
+    }
+}
+12:34:10 admin@ncs(config)# commit
+Commit complete.
+12:34:49 admin@ncs(config)# *** ALARM final-commit-error: RPC error towards nok150: operation_failed: 
+            command failed
+            MINOR: CLI Command not allowed for this user.
+        
+=====[#6]=====>
+
+12:34:49 admin@ncs(config)# rollback c
+12:36:06 admin@ncs(config)# commit dry-run 
+cli {
+    local-node {
+        data  devices {
+                  device jun105 {
+                      config {
+                          configuration {
+                              protocols {
+                                  l2circuit {
+             -                        neighbor 100.0.0.150 {
+             -                            interface xe-0/1/7.0 {
+             -                                virtual-circuit-id 4049;
+             -                            }
+             -                        }
+                                  }
+                              }
+                          }
+                      }
+                  }
+                  device nok150 {
+                      config {
+                          configure {
+                              service {
+             -                    epipe 4049 {
+             -                        service-id 4049;
+             -                        customer 1;
+             -                        admin-state enable;
+             -                        spoke-sdp 4049:4049 {
+             -                            admin-state enable;
+             -                        }
+             -                        sap esat-2/1/10:45 {
+             -                            admin-state enable;
+             -                        }
+             -                    }
+             -                    sdp 4049 {
+             -                        admin-state enable;
+             -                        delivery-type mpls;
+             -                        ldp true;
+             -                        far-end {
+             -                            ip-address 100.0.0.105;
+             -                        }
+             -                    }
+                              }
+                          }
+                      }
+                  }
+              }
+              l2vpn-svc {
+                  vpn-services {
+             -        vpn-service 45 {
+             -            frame-delivery {
+             -                multicast-gp-port-mapping static-mapping;
+             -            }
+             -            ce-vlan-preservation true;
+             -            ce-vlan-cos-preservation true;
+             -        }
+                  }
+                  sites {
+             -        site berlin {
+             -            devices {
+             -                device nok150 {
+             -                    location center;
+             -                }
+             -            }
+             -            management {
+             -                type provider-managed;
+             -            }
+             -            locations {
+             -                location center;
+             -            }
+             -            vpn-policies {
+             -                vpn-policy 1 {
+             -                    entries 1 {
+             -                        vpn 45;
+             -                    }
+             -                }
+             -            }
+             -            default-ce-vlan-id 1;
+             -            site-network-accesses {
+             -                site-network-access 1 {
+             -                    device-reference nok150;
+             -                    connection {
+             -                        oam {
+             -                            md-name 1;
+             -                            md-level 1;
+             -                        }
+             -                    }
+             -                    vpn-attachment {
+             -                        vpn-policy-id 1;
+             -                    }
+             -                    service {
+             -                        svc-mtu 1500;
+             -                    }
+             -                }
+             -            }
+             -        }
+             -        site paris {
+             -            devices {
+             -                device jun105 {
+             -                    location center;
+             -                }
+             -            }
+             -            management {
+             -                type provider-managed;
+             -            }
+             -            locations {
+             -                location center;
+             -            }
+             -            vpn-policies {
+             -                vpn-policy 1 {
+             -                    entries 1 {
+             -                        vpn 45;
+             -                    }
+             -                }
+             -            }
+             -            default-ce-vlan-id 1;
+             -            site-network-accesses {
+             -                site-network-access 1 {
+             -                    device-reference jun105;
+             -                    connection {
+             -                        oam {
+             -                            md-name A;
+             -                            md-level 1;
+             -                        }
+             -                    }
+             -                    vpn-attachment {
+             -                        vpn-policy-id 1;
+             -                    }
+             -                    service {
+             -                        svc-mtu 1500;
+             -                    }
+             -                }
+             -            }
+             -        }
+                  }
+              }
+    }
+}
+12:36:10 admin@ncs(config)# commit
+Aborted: RPC error towards nok150: lock_denied: 
+            MINOR: MGMT_CORE #2052: Exclusive datastore access unavailable - model-driven interface editing global candidate
+        
+12:36:21 admin@ncs(config)# commit
+Commit complete.
+12:37:10 admin@ncs(config)# devices device nok150 compare-config 
+diff 
+ devices {
+     device nok150 {
+         config {
+             configure {
+                 qos {
+                     sap-ingress 2 {
+                         policer 1 {
+                             rate {
+                             }
+                         }
+                     }
+                 }
+                 service {
+                     vprn tenant-1k {
+                         interface BD150 {
+                             ipv4 {
+                                 vrrp 1 {
+                                 }
+                             }
+                         }
+                     }
+                 }
+             }
+         }
+     }
+ }
+
+12:37:47 admin@ncs(config)# devices device jun105 compare-config
+12:37:57 admin@ncs(config)# 

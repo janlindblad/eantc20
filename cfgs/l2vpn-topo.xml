@@ -1,0 +1,14 @@
+<config xmlns="http://tail-f.com/ns/config/1.0">
+  <topo-l2 xmlns="http://example.com/eantc/lsa-topology-l2">
+    <vpn-name>45</vpn-name>
+    <device-name>jun105</device-name>
+    <interface>xe-0/1/7</interface>
+    <router-id>100.0.0.105</router-id>
+  </topo-l2>
+  <topo-l2 xmlns="http://example.com/eantc/lsa-topology-l2">
+    <vpn-name>45</vpn-name>
+    <device-name>nok150</device-name>
+    <interface>esat-2/1/10</interface>
+    <router-id>100.0.0.150</router-id>
+  </topo-l2>
+</config>
