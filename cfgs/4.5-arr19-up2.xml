@@ -1,0 +1,24 @@
+<config xmlns="http://tail-f.com/ns/config/1.0">
+  <devices xmlns="http://tail-f.com/ns/ncs">
+  <device>
+    <name>ari19</name>
+      <config>
+      <interfaces xmlns="http://openconfig.net/yang/interfaces">
+      <interface>
+        <name>Vxlan1</name>
+          <arista-vxlan xmlns="http://arista.com/yang/experimental/eos/vxlan">
+          <config>
+          <vlan-to-vnis>
+          <vlan-to-vni>
+            <vlan>7</vlan>
+            <vni>10007</vni>
+          </vlan-to-vni>
+          </vlan-to-vnis>
+          </config>
+          </arista-vxlan>
+      </interface>
+      </interfaces>
+      </config>
+  </device>
+  </devices>
+</config>

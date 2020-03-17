@@ -1,0 +1,27 @@
+<config xmlns="http://tail-f.com/ns/config/1.0">
+  <devices xmlns="http://tail-f.com/ns/ncs">
+  <device>
+    <name>ari19</name>
+      <config>
+      <arista xmlns="http://arista.com/yang/experimental/eos">
+      <eos>
+      <evpn xmlns="http://arista.com/yang/experimental/eos/evpn">
+      <evpn-instances>
+      <evpn-instance>
+        <name>nokiatest</name>
+          <config>
+            <name>nokiatest</name>
+            <instance-type>VLAN_AWARE_BUNDLE</instance-type>
+            <route-distinguisher>100.0.0.19:100</route-distinguisher>
+            <redistribute>ROUTER_MAC</redistribute>
+            <redistribute>HOST_ROUTE</redistribute>
+          </config>
+      </evpn-instance>
+      </evpn-instances>
+      </evpn>
+      </eos>
+      </arista>
+      </config>
+  </device>
+  </devices>
+</config>

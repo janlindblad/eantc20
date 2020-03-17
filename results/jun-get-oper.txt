@@ -1,58 +1,3 @@
-4.4 Juniper
-
-
-=====[#1]=====>
-
-15:07:28 admin@ncs(config)# devices device jun105 sync-f
-result true
-
-=====[#2]=====>
-
-15:07:32 admin@ncs(config)# rollback configuration 
-15:07:44 admin@ncs(config)# show c
-devices device jun105
- config
-  configuration interfaces interface xe-0/1/7
-   no disable
-  !
- !
-!
-15:07:45 admin@ncs(config)# commit
-Commit complete.
-15:07:52 admin@ncs(config)# rollback configuration 
-15:08:00 admin@ncs(config)# show c
-devices device jun105
- config
-  configuration interfaces interface xe-0/1/7
-   disable
-  !
- !
-!
-15:08:02 admin@ncs(config)# commit
-Commit complete.
-15:08:05 admin@ncs(config)# devices device jun105 rpc rpc-get-interface-information
-15:10:49 admin@ncs(config-device-jun105)# 
-15:11:00 admin@ncs(config-device-jun105)# devices device jun105 rpc rpc-get-interface-information xe-0/1/7
-Terminated: 15
-JLINDBLA-M-W0J2:eantc20 jlindbla$ ncs_cli -Cu admin
-
-admin connected from 127.0.0.1 using console on JLINDBLA-M-W0J2
-15:13:53 admin@ncs# devices device jun105 rpc rpc-get-interface-informationget-interface-informationTerminated: 15
-JLINDBLA-M-W0J2:eantc20 jlindbla$ ncs_cli -Cu admin
-
-admin connected from 127.0.0.1 using console on JLINDBLA-M-W0J2
-15:14:23 admin@ncs# devices device jun105 rpc rpc-get-interface-informationTerminated: 15
-JLINDBLA-M-W0J2:eantc20 jlindbla$ ncs_cli -Cu admin
-
-admin connected from 127.0.0.1 using console on JLINDBLA-M-W0J2
-15:15:04 admin@ncs# coml
-                    ^
-% Invalid input detected at '^' marker.
-15:15:04 admin@ncs# compl
-Possible completions:
-  complete-on-space   Enable/disable completion on space
-  compliance          Compliance reporting
-15:15:04 admin@ncs# complete-on-space false 
 15:15:10 admin@ncs# devices device jun105 rpc rpc-get-interface-information get-interface-information interface-name xe-0/1/7
 interface-information <physical-interface>
                          <name>
@@ -493,6 +438,3 @@ interface-information <physical-interface>
                            </address-family>
                          </logical-interface>
                        </physical-interface>
-                       
-15:18:00 admin@ncs# 
-

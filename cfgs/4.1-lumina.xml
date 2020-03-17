@@ -1,0 +1,23 @@
+<evpn xmlns="http://example.com/eantc20/evpn">
+  <sites>
+    <site>
+      <name>site-a</name>
+      <ipv4-address>100.0.0.150</ipv4-address>
+      <device>Nokia-SR1-1</device>
+      <interface>esat-2/1/10:7</interface>
+    </site>
+    <site>
+      <name>site-z</name>
+      <ipv4-address>100.0.0.105</ipv4-address>
+      <device>Juniper-MX204-6</device>
+      <interface>xe-0/1/7.0</interface>
+    </site>
+  </sites>
+  <connections>
+    <connection>
+      <name>netconf-test-4-7</name>
+      <a>site-a</a>
+      <z>site-z</z>
+    </connection>
+  </connections>
+</evpn>

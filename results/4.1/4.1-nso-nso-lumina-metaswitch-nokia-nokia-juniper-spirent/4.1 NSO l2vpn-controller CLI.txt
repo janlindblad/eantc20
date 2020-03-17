@@ -1,0 +1,12 @@
+4.1 NSO l2vpn-controller CLI
+
+
+13:17:16 admin@ncs# 
+13:19:01 admin@ncs# 
+System message at 2020-03-13 13:21:33...
+Commit performed by l2vpn-controller via ssh using netconf.
+13:19:01 admin@ncs# 
+System message at 2020-03-13 13:28:31...
+Commit performed by l2vpn-controller via ssh using netconf.
+13:19:01 admin@ncs# 
+13:31:07 admin@ncs# 

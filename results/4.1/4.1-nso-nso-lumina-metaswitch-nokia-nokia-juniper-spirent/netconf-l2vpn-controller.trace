@@ -1,0 +1,558 @@
+>>>>out 13-Mar-2020::13:20:25.197 user: admin/2370 thandle 24098 hostname JLINDBLA-M-W0J2 device l2vpn-controller
+<hello xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <capabilities>
+    <capability>urn:ietf:params:netconf:base:1.0</capability>
+    <capability>urn:ietf:params:netconf:base:1.1</capability>
+  </capabilities>
+</hello>
+
+<<<<in 13-Mar-2020::13:20:25.202 user: admin/2370 thandle 24098 hostname JLINDBLA-M-W0J2 device l2vpn-controller
+<hello xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <capabilities>
+    <capability>urn:ietf:params:netconf:base:1.0</capability>
+    <capability>urn:ietf:params:netconf:base:1.1</capability>
+    <capability>urn:ietf:params:netconf:capability:writable-running:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:rollback-on-error:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:validate:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:validate:1.1</capability>
+    <capability>urn:ietf:params:netconf:capability:xpath:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:notification:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:interleave:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:partial-lock:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:with-defaults:1.0?basic-mode=explicit&amp;also-supported=report-all-tagged,report-all</capability>
+    <capability>urn:ietf:params:netconf:capability:yang-library:1.0?revision=2019-01-04&amp;module-set-id=e7896ddcf4e856f67b75d6284d52b117</capability>
+    <capability>urn:ietf:params:netconf:capability:yang-library:1.1?revision=2019-01-04&amp;content-id=e7896ddcf4e856f67b75d6284d52b117</capability>
+    <capability>http://tail-f.com/ns/netconf/actions/1.0</capability>
+    <capability>http://example.com/eantc/lsa-topology-l2?module=lsa-topo-l2</capability>
+    <capability>http://tail-f.com/ns/aaa/1.1?module=tailf-aaa&amp;revision=2018-09-12</capability>
+    <capability>http://tail-f.com/ns/common/query?module=tailf-common-query&amp;revision=2017-12-15</capability>
+    <capability>http://tail-f.com/ns/kicker?module=tailf-kicker&amp;revision=2017-09-28</capability>
+    <capability>http://tail-f.com/ns/ncs-alarms?module=tailf-ncs-alarms&amp;revision=2019-04-09</capability>
+    <capability>http://tail-f.com/ns/ncs-ned?module=tailf-ncs-ned&amp;revision=2019-04-09</capability>
+    <capability>http://tail-f.com/ns/ncs-progress?module=tailf-ncs-progress&amp;revision=2019-06-27</capability>
+    <capability>http://tail-f.com/ns/ncs-scheduler?module=tailf-ncs-scheduler&amp;revision=2019-10-17</capability>
+    <capability>http://tail-f.com/ns/ncs-snmp?module=tailf-ncs-snmp&amp;revision=2017-03-16</capability>
+    <capability>http://tail-f.com/ns/ncs-webui?module=tailf-ncs-webui&amp;revision=2013-01-16</capability>
+    <capability>http://tail-f.com/ns/netconf/ncs?module=tailf-netconf-ncs&amp;revision=2019-06-27</capability>
+    <capability>http://tail-f.com/ns/netconf/query?module=tailf-netconf-query&amp;revision=2017-01-06</capability>
+    <capability>http://tail-f.com/ns/progress?module=tailf-progress&amp;revision=2018-06-14</capability>
+    <capability>http://tail-f.com/ns/webui?module=tailf-webui&amp;revision=2013-03-07</capability>
+    <capability>http://tail-f.com/ns/webui-one?module=tailf-webui-one&amp;revision=2019-06-27</capability>
+    <capability>http://tail-f.com/yang/acm?module=tailf-acm&amp;revision=2013-03-07</capability>
+    <capability>http://tail-f.com/yang/common?module=tailf-common&amp;revision=2019-11-30</capability>
+    <capability>http://tail-f.com/yang/common-monitoring?module=tailf-common-monitoring&amp;revision=2019-04-09</capability>
+    <capability>http://tail-f.com/yang/configuration-policy?module=tailf-configuration-policy&amp;revision=2010-11-04</capability>
+    <capability>http://tail-f.com/yang/ncs-acm?module=tailf-ncs-acm&amp;revision=2019-11-28</capability>
+    <capability>http://tail-f.com/yang/ncs-monitoring?module=tailf-ncs-monitoring&amp;revision=2019-04-09</capability>
+    <capability>http://tail-f.com/yang/netconf-monitoring?module=tailf-netconf-monitoring&amp;revision=2019-03-28</capability>
+    <capability>http://tail-f.com/yang/xsd-types?module=tailf-xsd-types&amp;revision=2017-11-20</capability>
+    <capability>http://tailf.com/ns/encryption-usm?module=encryption-usm</capability>
+    <capability>http://tailf.com/ns/snmp?module=snmp&amp;revision=2010-10-22</capability>
+    <capability>urn:ietf:params:xml:ns:netconf:base:1.0?module=ietf-netconf&amp;revision=2011-06-01&amp;features=writable-running,rollback-on-error,validate,xpath</capability>
+    <capability>urn:ietf:params:xml:ns:netconf:partial-lock:1.0?module=ietf-netconf-partial-lock&amp;revision=2009-10-19</capability>
+    <capability>urn:ietf:params:xml:ns:yang:iana-crypt-hash?module=iana-crypt-hash&amp;revision=2014-08-06&amp;features=crypt-hash-sha-512,crypt-hash-sha-256,crypt-hash-md5</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-inet-types?module=ietf-inet-types&amp;revision=2013-07-15</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-acm?module=ietf-netconf-acm&amp;revision=2018-02-14</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring?module=ietf-netconf-monitoring&amp;revision=2010-10-04</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-notifications?module=ietf-netconf-notifications&amp;revision=2012-02-06</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults?module=ietf-netconf-with-defaults&amp;revision=2011-06-01</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-restconf-monitoring?module=ietf-restconf-monitoring&amp;revision=2017-01-26</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-x509-cert-to-name?module=ietf-x509-cert-to-name&amp;revision=2014-12-10</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-yang-smiv2?module=ietf-yang-smiv2&amp;revision=2012-06-22</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-yang-types?module=ietf-yang-types&amp;revision=2013-07-15</capability>
+  </capabilities>
+  <session-id>1009</session-id>
+</hello>
+
+>>>>out 13-Mar-2020::13:20:25.222 user: admin/2370 thandle 24098 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1009
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="1">
+  <start-transaction xmlns="http://tail-f.com/ns/netconf/transactions/1.0">
+    <target>
+      <running/>
+    </target>
+    <with-inactive xmlns="http://tail-f.com/ns/netconf/inactive/1.0"/>
+  </start-transaction>
+</rpc>
+
+>>>>out 13-Mar-2020::13:20:25.222 user: admin/2370 thandle 24098 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1009
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="2">
+  <get xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <filter>
+      <netconf-state xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring">
+        <datastores>
+          <datastore>
+            <name>running</name>
+            <transaction-id xmlns="http://tail-f.com/yang/netconf-monitoring"/>
+          </datastore>
+        </datastores>
+      </netconf-state>
+    </filter>
+    <with-inactive xmlns="http://tail-f.com/ns/netconf/inactive/1.0"/>
+  </get>
+</rpc>
+
+<<<<in 13-Mar-2020::13:20:25.232 user: admin/2370 thandle 24098 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1009
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="1">
+  <ok/>
+</rpc-reply>
+
+<<<<in 13-Mar-2020::13:20:25.241 user: admin/2370 thandle 24098 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1009
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="2">
+  <data>
+    <netconf-state xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring">
+      <datastores>
+        <datastore>
+          <name>running</name>
+          <transaction-id xmlns="http://tail-f.com/yang/netconf-monitoring">1584-101551-149520</transaction-id>
+        </datastore>
+      </datastores>
+    </netconf-state>
+  </data>
+</rpc-reply>
+
+>>>>out 13-Mar-2020::13:20:25.245 user: admin/2370 thandle 24098 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1009
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="3">
+  <edit-config xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <target>
+      <running/>
+    </target>
+    <test-option>set</test-option>
+    <error-option>rollback-on-error</error-option>
+    <with-inactive xmlns="http://tail-f.com/ns/netconf/inactive/1.0"/>
+    <config>
+      <l2vpn-svc xmlns="lsa-urn:ietf:params:xml:ns:yang:ietf-l2vpn-svc">
+        <sites>
+          <site>
+            <site-id>berlin</site-id>
+            <devices>
+              <device>
+                <device-id>nok150</device-id>
+                <location>center</location>
+              </device>
+            </devices>
+            <locations>
+              <location>
+                <location-id>center</location-id>
+              </location>
+            </locations>
+            <management>
+              <type>provider-managed</type>
+            </management>
+            <site-network-accesses>
+              <site-network-access>
+                <network-access-id>1</network-access-id>
+                <vpn-attachment>
+                  <vpn-policy-id>1</vpn-policy-id>
+                </vpn-attachment>
+                <device-reference>nok150</device-reference>
+                <service>
+                  <svc-mtu>1500</svc-mtu>
+                </service>
+                <connection>
+                  <oam>
+                    <md-name>1</md-name>
+                    <md-level>1</md-level>
+                  </oam>
+                </connection>
+              </site-network-access>
+            </site-network-accesses>
+            <default-ce-vlan-id>1</default-ce-vlan-id>
+            <private>
+              <re-deploy-counter>2</re-deploy-counter>
+            </private>
+            <vpn-policies>
+              <vpn-policy>
+                <vpn-policy-id>1</vpn-policy-id>
+                <entries>
+                  <id>1</id>
+                  <vpn>
+                    <vpn-id>45</vpn-id>
+                  </vpn>
+                </entries>
+              </vpn-policy>
+            </vpn-policies>
+          </site>
+          <site>
+            <site-id>london</site-id>
+            <devices>
+              <device>
+                <device-id>met134</device-id>
+                <location>center</location>
+              </device>
+            </devices>
+            <locations>
+              <location>
+                <location-id>center</location-id>
+              </location>
+            </locations>
+            <management>
+              <type>provider-managed</type>
+            </management>
+            <site-network-accesses>
+              <site-network-access>
+                <network-access-id>1</network-access-id>
+                <vpn-attachment>
+                  <vpn-policy-id>1</vpn-policy-id>
+                </vpn-attachment>
+                <device-reference>met134</device-reference>
+                <service>
+                  <svc-mtu>1500</svc-mtu>
+                </service>
+                <connection>
+                  <oam>
+                    <md-name>A</md-name>
+                    <md-level>1</md-level>
+                  </oam>
+                </connection>
+              </site-network-access>
+            </site-network-accesses>
+            <default-ce-vlan-id>1</default-ce-vlan-id>
+            <private>
+              <re-deploy-counter>7</re-deploy-counter>
+            </private>
+            <vpn-policies>
+              <vpn-policy>
+                <vpn-policy-id>1</vpn-policy-id>
+                <entries>
+                  <id>1</id>
+                  <vpn>
+                    <vpn-id>45</vpn-id>
+                  </vpn>
+                </entries>
+              </vpn-policy>
+            </vpn-policies>
+          </site>
+        </sites>
+        <vpn-services>
+          <vpn-service>
+            <vpn-id>45</vpn-id>
+            <ce-vlan-preservation>true</ce-vlan-preservation>
+            <ce-vlan-cos-preservation>true</ce-vlan-cos-preservation>
+            <frame-delivery>
+              <multicast-gp-port-mapping>static-mapping</multicast-gp-port-mapping>
+            </frame-delivery>
+          </vpn-service>
+        </vpn-services>
+      </l2vpn-svc>
+      <topo-l2 xmlns="http://example.com/eantc/lsa-topology-l2">
+        <vpn-name>45</vpn-name>
+        <device-name>met134</device-name>
+        <interface>xe9</interface>
+        <router-id>100.0.0.134</router-id>
+      </topo-l2>
+      <topo-l2 xmlns="http://example.com/eantc/lsa-topology-l2">
+        <vpn-name>45</vpn-name>
+        <device-name>nok150</device-name>
+        <interface>1/1/c4/1</interface>
+        <router-id>100.0.0.150</router-id>
+      </topo-l2>
+    </config>
+  </edit-config>
+</rpc>
+
+>>>>out 13-Mar-2020::13:20:25.246 user: admin/2370 thandle 24098 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1009
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="4">
+  <prepare-transaction xmlns="http://tail-f.com/ns/netconf/transactions/1.0"/>
+</rpc>
+
+<<<<in 13-Mar-2020::13:20:25.296 user: admin/2370 thandle 24098 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1009
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="3">
+  <ok/>
+</rpc-reply>
+
+<<<<in 13-Mar-2020::13:20:28.054 user: admin/2370 thandle 24098 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1009
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="4">
+  <ok/>
+</rpc-reply>
+
+>>>>out 13-Mar-2020::13:20:28.054 user: admin/2370 thandle 24098 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1009
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="5">
+  <commit-transaction xmlns="http://tail-f.com/ns/netconf/transactions/1.0"/>
+</rpc>
+
+>>>>out 13-Mar-2020::13:20:28.055 user: admin/2370 thandle 24098 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1009
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="6">
+  <get xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <filter>
+      <netconf-state xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring">
+        <datastores>
+          <datastore>
+            <name>running</name>
+            <transaction-id xmlns="http://tail-f.com/yang/netconf-monitoring"/>
+          </datastore>
+        </datastores>
+      </netconf-state>
+    </filter>
+    <with-inactive xmlns="http://tail-f.com/ns/netconf/inactive/1.0"/>
+  </get>
+</rpc>
+
+<<<<in 13-Mar-2020::13:20:29.119 user: admin/2370 thandle 24098 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1009
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="5">
+  <ok/>
+</rpc-reply>
+
+<<<<in 13-Mar-2020::13:20:29.119 user: admin/2370 thandle 24098 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1009
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="6">
+  <data>
+    <netconf-state xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring">
+      <datastores>
+        <datastore>
+          <name>running</name>
+          <transaction-id xmlns="http://tail-f.com/yang/netconf-monitoring">1584-102089-475441</transaction-id>
+        </datastore>
+      </datastores>
+    </netconf-state>
+  </data>
+</rpc-reply>
+
+>>>>out 13-Mar-2020::13:21:00.229 user: admin/2370 thandle 24098 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1009
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="7">
+  <close-session/>
+</rpc>
+
+>>>>out 13-Mar-2020::13:21:00.230 user: admin/2370 thandle 24098 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1009 NCS close
+>>>>out 13-Mar-2020::13:27:24.205 user: admin/2370 thandle 24126 hostname JLINDBLA-M-W0J2 device l2vpn-controller
+<hello xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <capabilities>
+    <capability>urn:ietf:params:netconf:base:1.0</capability>
+    <capability>urn:ietf:params:netconf:base:1.1</capability>
+  </capabilities>
+</hello>
+
+<<<<in 13-Mar-2020::13:27:24.207 user: admin/2370 thandle 24126 hostname JLINDBLA-M-W0J2 device l2vpn-controller
+<hello xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <capabilities>
+    <capability>urn:ietf:params:netconf:base:1.0</capability>
+    <capability>urn:ietf:params:netconf:base:1.1</capability>
+    <capability>urn:ietf:params:netconf:capability:writable-running:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:rollback-on-error:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:validate:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:validate:1.1</capability>
+    <capability>urn:ietf:params:netconf:capability:xpath:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:notification:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:interleave:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:partial-lock:1.0</capability>
+    <capability>urn:ietf:params:netconf:capability:with-defaults:1.0?basic-mode=explicit&amp;also-supported=report-all-tagged,report-all</capability>
+    <capability>urn:ietf:params:netconf:capability:yang-library:1.0?revision=2019-01-04&amp;module-set-id=e7896ddcf4e856f67b75d6284d52b117</capability>
+    <capability>urn:ietf:params:netconf:capability:yang-library:1.1?revision=2019-01-04&amp;content-id=e7896ddcf4e856f67b75d6284d52b117</capability>
+    <capability>http://tail-f.com/ns/netconf/actions/1.0</capability>
+    <capability>http://example.com/eantc/lsa-topology-l2?module=lsa-topo-l2</capability>
+    <capability>http://tail-f.com/ns/aaa/1.1?module=tailf-aaa&amp;revision=2018-09-12</capability>
+    <capability>http://tail-f.com/ns/common/query?module=tailf-common-query&amp;revision=2017-12-15</capability>
+    <capability>http://tail-f.com/ns/kicker?module=tailf-kicker&amp;revision=2017-09-28</capability>
+    <capability>http://tail-f.com/ns/ncs-alarms?module=tailf-ncs-alarms&amp;revision=2019-04-09</capability>
+    <capability>http://tail-f.com/ns/ncs-ned?module=tailf-ncs-ned&amp;revision=2019-04-09</capability>
+    <capability>http://tail-f.com/ns/ncs-progress?module=tailf-ncs-progress&amp;revision=2019-06-27</capability>
+    <capability>http://tail-f.com/ns/ncs-scheduler?module=tailf-ncs-scheduler&amp;revision=2019-10-17</capability>
+    <capability>http://tail-f.com/ns/ncs-snmp?module=tailf-ncs-snmp&amp;revision=2017-03-16</capability>
+    <capability>http://tail-f.com/ns/ncs-webui?module=tailf-ncs-webui&amp;revision=2013-01-16</capability>
+    <capability>http://tail-f.com/ns/netconf/ncs?module=tailf-netconf-ncs&amp;revision=2019-06-27</capability>
+    <capability>http://tail-f.com/ns/netconf/query?module=tailf-netconf-query&amp;revision=2017-01-06</capability>
+    <capability>http://tail-f.com/ns/progress?module=tailf-progress&amp;revision=2018-06-14</capability>
+    <capability>http://tail-f.com/ns/webui?module=tailf-webui&amp;revision=2013-03-07</capability>
+    <capability>http://tail-f.com/ns/webui-one?module=tailf-webui-one&amp;revision=2019-06-27</capability>
+    <capability>http://tail-f.com/yang/acm?module=tailf-acm&amp;revision=2013-03-07</capability>
+    <capability>http://tail-f.com/yang/common?module=tailf-common&amp;revision=2019-11-30</capability>
+    <capability>http://tail-f.com/yang/common-monitoring?module=tailf-common-monitoring&amp;revision=2019-04-09</capability>
+    <capability>http://tail-f.com/yang/configuration-policy?module=tailf-configuration-policy&amp;revision=2010-11-04</capability>
+    <capability>http://tail-f.com/yang/ncs-acm?module=tailf-ncs-acm&amp;revision=2019-11-28</capability>
+    <capability>http://tail-f.com/yang/ncs-monitoring?module=tailf-ncs-monitoring&amp;revision=2019-04-09</capability>
+    <capability>http://tail-f.com/yang/netconf-monitoring?module=tailf-netconf-monitoring&amp;revision=2019-03-28</capability>
+    <capability>http://tail-f.com/yang/xsd-types?module=tailf-xsd-types&amp;revision=2017-11-20</capability>
+    <capability>http://tailf.com/ns/encryption-usm?module=encryption-usm</capability>
+    <capability>http://tailf.com/ns/snmp?module=snmp&amp;revision=2010-10-22</capability>
+    <capability>urn:ietf:params:xml:ns:netconf:base:1.0?module=ietf-netconf&amp;revision=2011-06-01&amp;features=writable-running,rollback-on-error,validate,xpath</capability>
+    <capability>urn:ietf:params:xml:ns:netconf:partial-lock:1.0?module=ietf-netconf-partial-lock&amp;revision=2009-10-19</capability>
+    <capability>urn:ietf:params:xml:ns:yang:iana-crypt-hash?module=iana-crypt-hash&amp;revision=2014-08-06&amp;features=crypt-hash-sha-512,crypt-hash-sha-256,crypt-hash-md5</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-inet-types?module=ietf-inet-types&amp;revision=2013-07-15</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-acm?module=ietf-netconf-acm&amp;revision=2018-02-14</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring?module=ietf-netconf-monitoring&amp;revision=2010-10-04</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-notifications?module=ietf-netconf-notifications&amp;revision=2012-02-06</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults?module=ietf-netconf-with-defaults&amp;revision=2011-06-01</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-restconf-monitoring?module=ietf-restconf-monitoring&amp;revision=2017-01-26</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-x509-cert-to-name?module=ietf-x509-cert-to-name&amp;revision=2014-12-10</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-yang-smiv2?module=ietf-yang-smiv2&amp;revision=2012-06-22</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-yang-types?module=ietf-yang-types&amp;revision=2013-07-15</capability>
+  </capabilities>
+  <session-id>1018</session-id>
+</hello>
+
+>>>>out 13-Mar-2020::13:27:24.233 user: admin/2370 thandle 24126 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1018
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="1">
+  <start-transaction xmlns="http://tail-f.com/ns/netconf/transactions/1.0">
+    <target>
+      <running/>
+    </target>
+    <with-inactive xmlns="http://tail-f.com/ns/netconf/inactive/1.0"/>
+  </start-transaction>
+</rpc>
+
+>>>>out 13-Mar-2020::13:27:24.233 user: admin/2370 thandle 24126 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1018
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="2">
+  <get xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <filter>
+      <netconf-state xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring">
+        <datastores>
+          <datastore>
+            <name>running</name>
+            <transaction-id xmlns="http://tail-f.com/yang/netconf-monitoring"/>
+          </datastore>
+        </datastores>
+      </netconf-state>
+    </filter>
+    <with-inactive xmlns="http://tail-f.com/ns/netconf/inactive/1.0"/>
+  </get>
+</rpc>
+
+<<<<in 13-Mar-2020::13:27:24.245 user: admin/2370 thandle 24126 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1018
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="1">
+  <ok/>
+</rpc-reply>
+
+<<<<in 13-Mar-2020::13:27:24.250 user: admin/2370 thandle 24126 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1018
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="2">
+  <data>
+    <netconf-state xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring">
+      <datastores>
+        <datastore>
+          <name>running</name>
+          <transaction-id xmlns="http://tail-f.com/yang/netconf-monitoring">1584-102089-475441</transaction-id>
+        </datastore>
+      </datastores>
+    </netconf-state>
+  </data>
+</rpc-reply>
+
+>>>>out 13-Mar-2020::13:27:24.254 user: admin/2370 thandle 24126 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1018
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="3">
+  <edit-config xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <target>
+      <running/>
+    </target>
+    <test-option>set</test-option>
+    <error-option>rollback-on-error</error-option>
+    <with-inactive xmlns="http://tail-f.com/ns/netconf/inactive/1.0"/>
+    <config>
+      <l2vpn-svc xmlns="lsa-urn:ietf:params:xml:ns:yang:ietf-l2vpn-svc">
+        <sites>
+          <site xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0"
+                nc:operation="delete">
+            <site-id>berlin</site-id>
+          </site>
+          <site xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0"
+                nc:operation="delete">
+            <site-id>london</site-id>
+          </site>
+        </sites>
+        <vpn-services>
+          <vpn-service xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0"
+                       nc:operation="delete">
+            <vpn-id>45</vpn-id>
+          </vpn-service>
+        </vpn-services>
+      </l2vpn-svc>
+      <topo-l2 xmlns="http://example.com/eantc/lsa-topology-l2"
+               xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0"
+               nc:operation="delete">
+        <vpn-name>45</vpn-name>
+        <device-name>met134</device-name>
+      </topo-l2>
+      <topo-l2 xmlns="http://example.com/eantc/lsa-topology-l2"
+               xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0"
+               nc:operation="delete">
+        <vpn-name>45</vpn-name>
+        <device-name>nok150</device-name>
+      </topo-l2>
+    </config>
+  </edit-config>
+</rpc>
+
+>>>>out 13-Mar-2020::13:27:24.255 user: admin/2370 thandle 24126 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1018
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="4">
+  <prepare-transaction xmlns="http://tail-f.com/ns/netconf/transactions/1.0"/>
+</rpc>
+
+<<<<in 13-Mar-2020::13:27:24.265 user: admin/2370 thandle 24126 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1018
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="3">
+  <ok/>
+</rpc-reply>
+
+<<<<in 13-Mar-2020::13:27:26.440 user: admin/2370 thandle 24126 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1018
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="4">
+  <ok/>
+</rpc-reply>
+
+>>>>out 13-Mar-2020::13:27:26.440 user: admin/2370 thandle 24126 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1018
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="5">
+  <commit-transaction xmlns="http://tail-f.com/ns/netconf/transactions/1.0"/>
+</rpc>
+
+>>>>out 13-Mar-2020::13:27:26.441 user: admin/2370 thandle 24126 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1018
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="6">
+  <get xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <filter>
+      <netconf-state xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring">
+        <datastores>
+          <datastore>
+            <name>running</name>
+            <transaction-id xmlns="http://tail-f.com/yang/netconf-monitoring"/>
+          </datastore>
+        </datastores>
+      </netconf-state>
+    </filter>
+    <with-inactive xmlns="http://tail-f.com/ns/netconf/inactive/1.0"/>
+  </get>
+</rpc>
+
+<<<<in 13-Mar-2020::13:27:27.497 user: admin/2370 thandle 24126 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1018
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="5">
+  <ok/>
+</rpc-reply>
+
+<<<<in 13-Mar-2020::13:27:27.502 user: admin/2370 thandle 24126 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1018
+<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+           message-id="6">
+  <data>
+    <netconf-state xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring">
+      <datastores>
+        <datastore>
+          <name>running</name>
+          <transaction-id xmlns="http://tail-f.com/yang/netconf-monitoring">1584-102508-387695</transaction-id>
+        </datastore>
+      </datastores>
+    </netconf-state>
+  </data>
+</rpc-reply>
+
+>>>>out 13-Mar-2020::13:27:58.128 user: admin/2370 thandle 24126 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1018
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="7">
+  <close-session/>
+</rpc>
+
+>>>>out 13-Mar-2020::13:27:58.129 user: admin/2370 thandle 24126 hostname JLINDBLA-M-W0J2 device l2vpn-controller session-id=1018 NCS close

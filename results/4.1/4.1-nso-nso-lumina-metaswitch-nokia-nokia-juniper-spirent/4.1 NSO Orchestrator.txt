@@ -1,0 +1,124 @@
+4.1 NSO Orchestrator
+
+13:14:14 admin@ncs(config)# show full-configuration evpn 
+% No entries found.
+13:14:35 admin@ncs(config)# show full-configuration devices device l2vpn-controller config l2vpn-svc 
+% No entries found.
+13:14:52 admin@ncs(config)# show full-configuration devices device l2vpn-controller config topo-l2  
+% No entries found.
+13:14:57 admin@ncs(config)# rollback c
+13:15:13 admin@ncs(config)# show c
+evpn sites site site-a
+ ipv4-address 100.0.0.150
+ device       Nokia-SR1-2
+ interface    1/1/c4/1:45
+!
+evpn sites site site-z
+ ipv4-address 100.0.0.105
+ device       Juniper-MX204-6
+ interface    xe-0/1/7.200
+!
+evpn connections connection netconf-test-4-7
+ a site-a
+ z site-z
+!
+devices device l2vpn-controller
+ config
+  topo-l2 45 met134
+   interface xe9
+   router-id 100.0.0.134
+  !
+  topo-l2 45 nok150
+   interface 1/1/c4/1
+   router-id 100.0.0.150
+  !
+  l2vpn-svc vpn-services vpn-service 45
+   frame-delivery multicast-gp-port-mapping static-mapping
+   ce-vlan-preservation     true
+   ce-vlan-cos-preservation true
+  !
+  l2vpn-svc sites site berlin
+   devices device nok150
+   !
+   locations location center
+   !
+   devices device nok150
+    location center
+   !
+   management type provider-managed
+   vpn-policies vpn-policy 1
+    entries 1
+     vpn 45
+     !
+    !
+   !
+   default-ce-vlan-id 1
+   site-network-accesses site-network-access 1
+    device-reference nok150
+    connection oam md-name 1
+    connection oam md-level 1
+    vpn-attachment vpn-policy-id 1
+    service svc-mtu 1500
+   !
+  !
+  l2vpn-svc sites site london
+   devices device met134
+   !
+   locations location center
+   !
+   devices device met134
+    location center
+   !
+   management type provider-managed
+   vpn-policies vpn-policy 1
+    entries 1
+     vpn 45
+     !
+    !
+   !
+   default-ce-vlan-id 1
+   site-network-accesses site-network-access 1
+    device-reference met134
+    connection oam md-name A
+    connection oam md-level 1
+    vpn-attachment vpn-policy-id 1
+    service svc-mtu 1500
+   !
+  !
+ !
+!
+13:15:34 admin@ncs(config)# commit                                                                  
+Commit complete.
+13:20:29 admin@ncs(config)# 
+13:27:08 admin@ncs(config)# 
+13:27:08 admin@ncs(config)# rollback c                                                            
+13:27:11 admin@ncs(config)# show c
+no evpn connections connection netconf-test-4-7
+no evpn sites site site-a
+no evpn sites site site-z
+devices device l2vpn-controller
+ config
+  no topo-l2 45 met134
+  no topo-l2 45 nok150
+  l2vpn-svc sites site berlin
+   vpn-policies vpn-policy 1
+    entries 1
+     no vpn 45
+    !
+   !
+  !
+  l2vpn-svc sites site london
+   vpn-policies vpn-policy 1
+    entries 1
+     no vpn 45
+    !
+   !
+  !
+  no l2vpn-svc vpn-services vpn-service 45
+  no l2vpn-svc sites site berlin
+  no l2vpn-svc sites site london
+ !
+!
+13:27:13 admin@ncs(config)# commit
+Commit complete.
+13:27:27 admin@ncs(config)# 
